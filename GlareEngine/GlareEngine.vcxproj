@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{819b941b-3428-4faa-a97e-5a0611c634e6}</ProjectGuid>
+    <RootNamespace>GlareEngine</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <ProjectName>GlareEngine</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>.\EngineEditor;.\Sky\Public;.\Main\Public;.\Water\Public;.\ShaderSource\Public;.\PSO\Public;.\Core\Public;$(IncludePath)</IncludePath>
+    <EnableManagedIncrementalBuild>false</EnableManagedIncrementalBuild>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\Main\Public;.\Core\Public;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <OpenMPSupport>false</OpenMPSupport>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="Core\Public\L3DInputLayout.h" />
+    <ClInclude Include="Core\Public\d3dx12.h" />
+    <ClInclude Include="Core\Public\DDSTextureLoader.h" />
+    <ClInclude Include="Core\Public\L3DBaseApp.h" />
+    <ClInclude Include="Core\Public\L3DCamera.h" />
+    <ClInclude Include="Core\Public\L3DGameTimer.h" />
+    <ClInclude Include="Core\Public\L3DGeometryGenerator.h" />
+    <ClInclude Include="Core\Public\L3DMathHelper.h" />
+    <ClInclude Include="Core\Public\L3DTextureManage.h" />
+    <ClInclude Include="Core\Public\L3DUploadBuffer.h" />
+    <ClInclude Include="Core\Public\L3DUtil.h" />
+    <ClInclude Include="Core\Public\L3DVertex.h" />
+    <ClInclude Include="EngineEditor\EngineGUI.h" />
+    <ClInclude Include="EngineEditor\imconfig.h" />
+    <ClInclude Include="EngineEditor\imgui.h" />
+    <ClInclude Include="EngineEditor\imgui_impl_dx12.h" />
+    <ClInclude Include="EngineEditor\imgui_impl_win32.h" />
+    <ClInclude Include="EngineEditor\imgui_internal.h" />
+    <ClInclude Include="EngineEditor\imstb_rectpack.h" />
+    <ClInclude Include="EngineEditor\imstb_textedit.h" />
+    <ClInclude Include="EngineEditor\imstb_truetype.h" />
+    <ClInclude Include="Main\Public\FrameResource.h" />
+    <ClInclude Include="Main\Public\framework.h" />
+    <ClInclude Include="Main\Public\GameMain.h" />
+    <ClInclude Include="Main\Public\targetver.h" />
+    <ClInclude Include="PSO\Public\PSOManager.h" />
+    <ClInclude Include="RanderEffects\HDRSky\Public\Sky.h" />
+    <ClInclude Include="RanderEffects\Shadow\Public\ShadowMap.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="ShaderSource\Public\BaseShader.h" />
+    <ClInclude Include="ShaderSource\Public\SimpleGeometryInstanceShader.h" />
+    <ClInclude Include="ShaderSource\Public\GerstnerWaveShader.h" />
+    <ClInclude Include="ShaderSource\Public\SkyShader.h" />
+    <ClInclude Include="ShaderSource\Public\ShadowMapShader.h" />
+    <ClInclude Include="Water\Public\Waves.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Core\Private\DDSTextureLoader.cpp" />
+    <ClCompile Include="Core\Private\L3DBaseApp.cpp" />
+    <ClCompile Include="Core\Private\L3DCamera.cpp" />
+    <ClCompile Include="Core\Private\L3DGameTimer.cpp" />
+    <ClCompile Include="Core\Private\L3DGeometryGenerator.cpp" />
+    <ClCompile Include="Core\Private\L3DInputLayout.cpp" />
+    <ClCompile Include="Core\Private\L3DMathHelper.cpp" />
+    <ClCompile Include="Core\Private\L3DTextureManage.cpp" />
+    <ClCompile Include="Core\Private\L3DUtil.cpp" />
+    <ClCompile Include="Core\Private\L3DVertex.cpp" />
+    <ClCompile Include="EngineEditor\EngineGUI.cpp" />
+    <ClCompile Include="EngineEditor\imgui.cpp" />
+    <ClCompile Include="EngineEditor\imgui_demo.cpp" />
+    <ClCompile Include="EngineEditor\imgui_draw.cpp" />
+    <ClCompile Include="EngineEditor\imgui_impl_dx12.cpp" />
+    <ClCompile Include="EngineEditor\imgui_impl_win32.cpp" />
+    <ClCompile Include="EngineEditor\imgui_widgets.cpp" />
+    <ClCompile Include="Main\Private\FrameResource.cpp" />
+    <ClCompile Include="Main\Private\GameMain.cpp" />
+    <ClCompile Include="PSO\Private\PSOManager.cpp" />
+    <ClCompile Include="RanderEffects\HDRSky\Private\Sky.cpp" />
+    <ClCompile Include="RanderEffects\Shadow\Private\ShadowMap.cpp" />
+    <ClCompile Include="ShaderSource\Private\BaseShader.cpp" />
+    <ClCompile Include="ShaderSource\Private\SimpleGeometryInstanceShader.cpp" />
+    <ClCompile Include="ShaderSource\Private\GerstnerWaveShader.cpp" />
+    <ClCompile Include="ShaderSource\Private\SkyShader.cpp" />
+    <ClCompile Include="ShaderSource\Private\ShadowMapShader.cpp" />
+    <ClCompile Include="Water\Private\Waves.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="GlareEngine.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Textures\ICONS\gamecontroller_128px_1180532_easyicon.net.ico" />
+    <Image Include="Textures\ICONS\gameicon.ico" />
+    <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="UIAutomationProvider" />
+    <Reference Include="UIAutomationTypes" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\DefaultPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\DefaultVS.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\SimpleGeoInstancePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\SkyPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\SkyVS.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
+    </FxCompile>
+    <None Include="Shaders\Common.hlsli">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\PBRLighting.hlsli">
+      <FileType>Document</FileType>
+    </None>
+    <FxCompile Include="Shaders\SimpleGeoInstanceVS.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
+      <FileType>Document</FileType>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="imgui.ini" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

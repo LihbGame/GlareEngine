@@ -1,0 +1,59 @@
+#include "Common.hlsli"
+
+
+struct VertexOut
+{
+	float4 PosH    : SV_POSITION;
+	float3 PosW    : POSITION;
+	float3 NormalW : NORMAL;
+	float3 TangentW:TANGENT;
+	float2 TexC    : TEXCOORD;
+	nointerpolation uint MatIndex  : MATINDEX;
+};
+
+
+float4 PS(VertexOut pin) : SV_Target
+{
+// Vector from point being lit to eye. 
+float3 toEyeW = normalize(gEyePosW - pin.PosW);
+// Interpolating normal can unnormalize it, so renormalize it.
+pin.NormalW = normalize(pin.NormalW);
+pin.TangentW = normalize(pin.TangentW);
+
+// Fetch the material data.
+MaterialData matData = gMaterialData[pin.MatIndex];
+
+// ”≤Ó’⁄µ≤”≥…‰
+float3 ModeSpacetoEye = WorldSpaceToTBN(toEyeW, pin.NormalW, pin.TangentW);
+float2 UV = ParallaxMapping(matData.HeightMapIndex, pin.TexC, ModeSpacetoEye,matData.height_scale);
+
+
+float4 diffuseAlbedo = gSRVMap[matData.DiffuseMapIndex].Sample(gsamAnisotropicWrap, UV);
+float Roughness = gSRVMap[matData.RoughnessMapIndex].Sample(gsamAnisotropicWrap, UV).x;
+float Metallic = gSRVMap[matData.MetallicMapIndex].Sample(gsamAnisotropicWrap, UV).x;
+float AO = gSRVMap[matData.AOMapIndex].Sample(gsamAnisotropicWrap, UV).x;
+
+
+// Indirect lighting.
+float4 ambient = gAmbientLight * diffuseAlbedo*AO;
+
+//Sample normal
+float3 normalMapSample = gSRVMap[matData.NormalMapIndex].Sample(gsamAnisotropicWrap, UV).xyz;
+//tansform normal
+float3 bumpedNormalW = NormalSampleToModelSpace(normalMapSample, pin.NormalW, pin.TangentW);
+bumpedNormalW = normalize(bumpedNormalW);
+
+Material mat = { diffuseAlbedo, matData.FresnelR0, Roughness,Metallic,AO };
+//no shadow now
+float3 shadowFactor = 1.0f;
+float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
+	bumpedNormalW, toEyeW, shadowFactor);
+
+float4 litColor = ambient + directLight;
+
+// Common convention to take alpha from diffuse material.
+litColor.a = matData.DiffuseAlbedo.a;
+
+
+return litColor;
+}

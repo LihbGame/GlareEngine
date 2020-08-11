@@ -1,0 +1,251 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Textures">
+      <UniqueIdentifier>{afbe4a8b-e03c-4627-a574-ce50266d5292}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MainSource">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{f3e6b7ed-bbb4-403b-9fc6-8b9d9db0fe59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Water">
+      <UniqueIdentifier>{6ebc6743-b666-4eb3-a90c-95633b2984de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ShaderSource">
+      <UniqueIdentifier>{34f3a5c2-c954-4c57-9d77-1d4bd7142b39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PSO">
+      <UniqueIdentifier>{82737a19-a026-4c32-af2f-9a91a66637f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{1312ce06-4815-46cd-b329-4b35cf7df9de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Private">
+      <UniqueIdentifier>{80d93d6a-cc1d-4d8d-acb5-a6cf03c7af88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Public">
+      <UniqueIdentifier>{d983d34f-0cd0-4f96-aaba-04413689cab2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MainSource\Public">
+      <UniqueIdentifier>{9644f50e-7e4a-4a10-a1ab-d648578eb0db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MainSource\Private">
+      <UniqueIdentifier>{751e6986-631b-4d4a-ab45-77a88484c038}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ShaderSource\Public">
+      <UniqueIdentifier>{119da44f-cd75-4f06-b842-6c9acdbcf5ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ShaderSource\Private">
+      <UniqueIdentifier>{981dd6ee-b961-41ac-a94c-ba6638a718ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PSO\Public">
+      <UniqueIdentifier>{df6db798-3af9-43fd-b578-4a730b43c766}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PSO\Private">
+      <UniqueIdentifier>{eec62a95-5a3a-4178-a4e3-dede8323a968}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Water\Public">
+      <UniqueIdentifier>{4e8e8f0d-84c0-40b1-a740-19ae7f96c57c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Water\Private">
+      <UniqueIdentifier>{1fb19b1b-aee5-473f-b224-a6f5021fb047}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Core\Public\d3dx12.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Public\DDSTextureLoader.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Public\L3DBaseApp.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Public\L3DCamera.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Public\L3DGameTimer.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Public\L3DGeometryGenerator.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Public\L3DMathHelper.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Public\L3DUploadBuffer.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Public\L3DUtil.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Main\Public\FrameResource.h">
+      <Filter>MainSource\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Main\Public\framework.h">
+      <Filter>MainSource\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Main\Public\GameMain.h">
+      <Filter>MainSource\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Main\Public\targetver.h">
+      <Filter>MainSource\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderSource\Public\BaseShader.h">
+      <Filter>ShaderSource\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderSource\Public\GerstnerWaveShader.h">
+      <Filter>ShaderSource\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Water\Public\Waves.h">
+      <Filter>Water\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Public\L3DTextureManage.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Public\L3DVertex.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Public\L3DInputLayout.h" />
+    <ClInclude Include="ShaderSource\Public\SkyShader.h" />
+    <ClInclude Include="EngineEditor\EngineGUI.h" />
+    <ClInclude Include="EngineEditor\imconfig.h" />
+    <ClInclude Include="EngineEditor\imgui.h" />
+    <ClInclude Include="EngineEditor\imgui_impl_dx12.h" />
+    <ClInclude Include="EngineEditor\imgui_impl_win32.h" />
+    <ClInclude Include="EngineEditor\imgui_internal.h" />
+    <ClInclude Include="EngineEditor\imstb_rectpack.h" />
+    <ClInclude Include="EngineEditor\imstb_textedit.h" />
+    <ClInclude Include="EngineEditor\imstb_truetype.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="ShaderSource\Public\SimpleGeometryInstanceShader.h" />
+    <ClInclude Include="PSO\Public\PSOManager.h">
+      <Filter>PSO\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="RanderEffects\HDRSky\Public\Sky.h" />
+    <ClInclude Include="RanderEffects\Shadow\Public\ShadowMap.h" />
+    <ClInclude Include="ShaderSource\Public\ShadowMapShader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Core\Private\DDSTextureLoader.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Private\L3DBaseApp.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Private\L3DCamera.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Private\L3DGameTimer.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Private\L3DGeometryGenerator.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Private\L3DMathHelper.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Private\L3DUtil.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Main\Private\FrameResource.cpp">
+      <Filter>MainSource\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Main\Private\GameMain.cpp">
+      <Filter>MainSource\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
+      <Filter>ShaderSource\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSource\Private\GerstnerWaveShader.cpp">
+      <Filter>ShaderSource\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Water\Private\Waves.cpp">
+      <Filter>Water\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Private\L3DTextureManage.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Private\L3DVertex.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Private\L3DInputLayout.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSource\Private\SkyShader.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\EngineGUI.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\imgui.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\imgui_demo.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\imgui_draw.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\imgui_impl_dx12.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\imgui_impl_win32.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\imgui_widgets.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSource\Private\SimpleGeometryInstanceShader.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="PSO\Private\PSOManager.cpp">
+      <Filter>PSO\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="RanderEffects\HDRSky\Private\Sky.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="RanderEffects\Shadow\Private\ShadowMap.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSource\Private\ShadowMapShader.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Textures\ICONS\gamecontroller_128px_1180532_easyicon.net.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Textures\ICONS\gameicon.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\SkyPS.hlsl" />
+    <FxCompile Include="Shaders\SkyVS.hlsl" />
+    <FxCompile Include="Shaders\SimpleGeoInstanceVS.hlsl" />
+    <FxCompile Include="Shaders\SimpleGeoInstancePS.hlsl" />
+    <FxCompile Include="Shaders\DefaultVS.hlsl" />
+    <FxCompile Include="Shaders\DefaultPS.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="imgui.ini" />
+    <None Include="Shaders\Common.hlsli" />
+    <None Include="Shaders\PBRLighting.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="GlareEngine.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
