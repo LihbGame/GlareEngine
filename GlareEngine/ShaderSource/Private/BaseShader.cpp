@@ -8,15 +8,15 @@ mGSShaderPath(GSShaderPath)
     //vs shader
     if (mVSShaderPath != L"")
     {
-        mVSShaders = d3dUtil::CompileShader(mVSShaderPath, nullptr, "VS", "vs_5_1");
+        mVSShaders = L3DUtil::CompileShader(mVSShaderPath, nullptr, "VS", "vs_5_1");
     }
     if (mPSShaderPath != L"")
     {
-        mPSShaders = d3dUtil::CompileShader(mPSShaderPath, nullptr, "PS", "ps_5_1");
+        mPSShaders = L3DUtil::CompileShader(mPSShaderPath, nullptr, "PS", "ps_5_1");
     }
     if (mGSShaderPath != L"")
     {
-        mGSShaders = d3dUtil::CompileShader(mGSShaderPath, nullptr, "GS", "gs_5_1");
+        mGSShaders = L3DUtil::CompileShader(mGSShaderPath, nullptr, "GS", "gs_5_1");
     }
 }
 

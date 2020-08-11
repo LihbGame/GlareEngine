@@ -135,7 +135,7 @@ enum class PSOName : int
 {
 	Opaque = 0,
 	Instance,
-	Shadow_Opaque,
+	InstanceSimpleShadow_Opaque,
 	Sky,
 	Count
 };

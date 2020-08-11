@@ -7,10 +7,13 @@
 #include "L3DGeometryGenerator.h"
 #include "Waves.h"
 #include "FrameResource.h"
+
+//shader head files
 #include "BaseShader.h"
 #include "GerstnerWaveShader.h"
 #include "SkyShader.h"
 #include "SimpleGeometryInstanceShader.h"
+#include "SimpleGeometryShadowMapShader.h"
 
 #include "PSOManager.h"
 #include "L3DCamera.h"

@@ -182,7 +182,7 @@
     <ClInclude Include="ShaderSource\Public\SimpleGeometryInstanceShader.h" />
     <ClInclude Include="ShaderSource\Public\GerstnerWaveShader.h" />
     <ClInclude Include="ShaderSource\Public\SkyShader.h" />
-    <ClInclude Include="ShaderSource\Public\ShadowMapShader.h" />
+    <ClInclude Include="ShaderSource\Public\SimpleGeometryShadowMapShader.h" />
     <ClInclude Include="Water\Public\Waves.h" />
   </ItemGroup>
   <ItemGroup>
@@ -212,7 +212,7 @@
     <ClCompile Include="ShaderSource\Private\SimpleGeometryInstanceShader.cpp" />
     <ClCompile Include="ShaderSource\Private\GerstnerWaveShader.cpp" />
     <ClCompile Include="ShaderSource\Private\SkyShader.cpp" />
-    <ClCompile Include="ShaderSource\Private\ShadowMapShader.cpp" />
+    <ClCompile Include="ShaderSource\Private\SimpleGeometryShadowMapShader.cpp" />
     <ClCompile Include="Water\Private\Waves.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -250,6 +250,22 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\SimpleGeoInstanceShadowPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\SimpleGeoInstanceShadowVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shaders\SkyPS.hlsl">

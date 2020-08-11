@@ -131,7 +131,7 @@
     </ClInclude>
     <ClInclude Include="RanderEffects\HDRSky\Public\Sky.h" />
     <ClInclude Include="RanderEffects\Shadow\Public\ShadowMap.h" />
-    <ClInclude Include="ShaderSource\Public\ShadowMapShader.h" />
+    <ClInclude Include="ShaderSource\Public\SimpleGeometryShadowMapShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Private\DDSTextureLoader.cpp">
@@ -215,7 +215,7 @@
     <ClCompile Include="RanderEffects\Shadow\Private\ShadowMap.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="ShaderSource\Private\ShadowMapShader.cpp">
+    <ClCompile Include="ShaderSource\Private\SimpleGeometryShadowMapShader.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
@@ -237,6 +237,8 @@
     <FxCompile Include="Shaders\SimpleGeoInstancePS.hlsl" />
     <FxCompile Include="Shaders\DefaultVS.hlsl" />
     <FxCompile Include="Shaders\DefaultPS.hlsl" />
+    <FxCompile Include="Shaders\SimpleGeoInstanceShadowVS.hlsl" />
+    <FxCompile Include="Shaders\SimpleGeoInstanceShadowPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini" />

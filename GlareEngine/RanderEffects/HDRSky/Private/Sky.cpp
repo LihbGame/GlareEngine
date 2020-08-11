@@ -40,10 +40,10 @@ void Sky::BuildSkyMesh()
 	ThrowIfFailed(D3DCreateBlob(ibByteSize, &mSkyMesh->IndexBufferCPU));
 	CopyMemory(mSkyMesh->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 	//GPU Buffer
-	mSkyMesh->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice,
+	mSkyMesh->VertexBufferGPU = L3DUtil::CreateDefaultBuffer(md3dDevice,
 		mCommandList, vertices.data(), vbByteSize, mSkyMesh->VertexBufferUploader);
 
-	mSkyMesh->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice,
+	mSkyMesh->IndexBufferGPU = L3DUtil::CreateDefaultBuffer(md3dDevice,
 		mCommandList, indices.data(), ibByteSize, mSkyMesh->IndexBufferUploader);
 
 	mSkyMesh->VertexByteStride = sizeof(Pos);

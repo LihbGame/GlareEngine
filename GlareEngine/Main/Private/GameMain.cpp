@@ -159,11 +159,22 @@ void GameApp::Draw(const GameTimer& gt)
 	//重用命令列表将重用内存。
 	ThrowIfFailed(mCommandList->Reset(cmdListAlloc.Get(), mPSOs.get()->GetPSO(PSOName::Opaque).Get()));
 
+
+	{
+		//SET SRV Descriptor heap
+		ID3D12DescriptorHeap* descriptorHeaps[] = { mSrvDescriptorHeap.Get() };
+		mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+		//Set Graphics Root Signature
+		mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
+	}
+
+	//draw shadow
+	DrawSceneToShadowMap();
+
+
+	//放在绘制阴影的后面
 	mCommandList->RSSetViewports(1, &mScreenViewport);
 	mCommandList->RSSetScissorRects(1, &mScissorRect);
-
-
-
 
 	if (m4xMsaaState)//MSAA
 	{
@@ -196,34 +207,35 @@ void GameApp::Draw(const GameTimer& gt)
 		mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 	}
 
-	//SET SRV Descriptor heap
-	ID3D12DescriptorHeap* descriptorHeaps[] = { mSrvDescriptorHeap.Get() };
-	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-	//Set Graphics Root Signature
-	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
-	//Set Graphics Root CBV in slot 2
-	auto passCB = mCurrFrameResource->PassCB->Resource();
-	mCommandList->SetGraphicsRootConstantBufferView(1, passCB->GetGPUVirtualAddress());
-	// Bind all the materials used in this scene.  For structured buffers, we can bypass the heap and 
-	// set as a root descriptor.
-	auto matBuffer = mCurrFrameResource->MaterialBuffer->Resource();
-	mCommandList->SetGraphicsRootShaderResourceView(3, matBuffer->GetGPUVirtualAddress());
-	// Bind the sky cube map.  For our demos, we just use one "world" cube map representing the environment
-	// from far away, so all objects will use the same cube map and we only need to set it once per-frame.  
-	// If we wanted to use "local" cube maps, we would have to change them per-object, or dynamically
-	// index into an array of cube maps.
-	CD3DX12_GPU_DESCRIPTOR_HANDLE skyTexDescriptor(mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-	skyTexDescriptor.Offset(mMaterials[L"Sky"]->DiffuseSrvHeapIndex, mCbvSrvDescriptorSize);
-	mCommandList->SetGraphicsRootDescriptorTable(4, skyTexDescriptor);
-	
+	//root descriptors
+	{
+		//Set Graphics Root CBV in slot 2
+		auto passCB = mCurrFrameResource->PassCB->Resource();
+		mCommandList->SetGraphicsRootConstantBufferView(1, passCB->GetGPUVirtualAddress());
 
-	// Bind all the textures used in this scene.  Observe
-	// that we only have to specify the first descriptor in the table.  
-	// The root signature knows how many descriptors are expected in the table.
-	mCommandList->SetGraphicsRootDescriptorTable(5, mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+		// Bind all the materials used in this scene.  For structured buffers, we can bypass the heap and 
+	// set as a root descriptor.
+		auto matBuffer = mCurrFrameResource->MaterialBuffer->Resource();
+		mCommandList->SetGraphicsRootShaderResourceView(3, matBuffer->GetGPUVirtualAddress());
+		// Bind the sky cube map.  For our demos, we just use one "world" cube map representing the environment
+		// from far away, so all objects will use the same cube map and we only need to set it once per-frame.  
+		// If we wanted to use "local" cube maps, we would have to change them per-object, or dynamically
+		// index into an array of cube maps.
+		CD3DX12_GPU_DESCRIPTOR_HANDLE skyTexDescriptor(mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+		skyTexDescriptor.Offset(mMaterials[L"Sky"]->DiffuseSrvHeapIndex, mCbvSrvDescriptorSize);
+		mCommandList->SetGraphicsRootDescriptorTable(4, skyTexDescriptor);
+
+
+		// Bind all the textures used in this scene.  Observe
+		// that we only have to specify the first descriptor in the table.  
+		// The root signature knows how many descriptors are expected in the table.
+		mCommandList->SetGraphicsRootDescriptorTable(5, mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+	}
+
 
 
 	//Draw Render Items (Opaque)
+	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Opaque).Get());
 	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
 	
 	//Draw Instanse 
@@ -744,7 +756,7 @@ void GameApp::BuildShadersAndInputLayout()
 	mShaders["GerstnerWave"] = new GerstnerWaveShader(L"Shaders\\DefaultVS.hlsl", L"Shaders\\DefaultPS.hlsl", L"");
 	mShaders["Sky"] = new SkyShader(L"Shaders\\SkyVS.hlsl", L"Shaders\\SkyPS.hlsl", L"");
 	mShaders["Instance"] = new SimpleGeometryInstanceShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\SimpleGeoInstancePS.hlsl", L"");
-	//mShaders["ShadowMap"]=
+	mShaders["InstanceSimpleGeoShadowMap"]= new SimpleGeometryShadowMapShader(L"Shaders\\SimpleGeoInstanceShadowVS.hlsl", L"Shaders\\SimpleGeoInstanceShadowPS.hlsl", L"");
 
 }
 
@@ -778,10 +790,10 @@ void GameApp::BuildSimpleGeometry()
 	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
 	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 	//GPU Buffer
-	geo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+	geo->VertexBufferGPU = L3DUtil::CreateDefaultBuffer(md3dDevice.Get(),
 		mCommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader);
 
-	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+	geo->IndexBufferGPU = L3DUtil::CreateDefaultBuffer(md3dDevice.Get(),
 		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
 
 	geo->VertexByteStride = sizeof(PosNormalTangentTexc);
@@ -837,10 +849,10 @@ void GameApp::BuildLandGeometry()
 	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
 	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 
-	geo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+	geo->VertexBufferGPU = L3DUtil::CreateDefaultBuffer(md3dDevice.Get(),
 		mCommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader);
 
-	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+	geo->IndexBufferGPU = L3DUtil::CreateDefaultBuffer(md3dDevice.Get(),
 		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
 
 	geo->VertexByteStride = sizeof(PosNormalTangentTexc);
@@ -896,7 +908,7 @@ void GameApp::BuildWavesGeometryBuffers()
 	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
 	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 
-	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+	geo->IndexBufferGPU = L3DUtil::CreateDefaultBuffer(md3dDevice.Get(),
 		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
 
 	geo->VertexByteStride = sizeof(PosNormalTexc);
@@ -987,7 +999,7 @@ void GameApp::BuildPSOs()
 
 
 	//
-	// PSO for Instance Sphere.
+	// PSO for Instance CUBE.
 	//
 	Input = mShaders["Instance"]->GetInputLayout();
 	mPSOs->BuildPSO(md3dDevice.Get(),
@@ -1017,6 +1029,42 @@ void GameApp::BuildPSOs()
 		{});
 
 
+	//
+	// PSO for Instance CUBE shadow.
+	//
+	D3D12_RASTERIZER_DESC ShadowRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	ShadowRasterizerState.DepthBias = 100000;
+	ShadowRasterizerState.DepthBiasClamp = 0.0f;
+	ShadowRasterizerState.SlopeScaledDepthBias = 1.0f;
+	RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
+	Input = mShaders["InstanceSimpleGeoShadowMap"]->GetInputLayout();
+	mPSOs->BuildPSO(md3dDevice.Get(),
+		PSOName::InstanceSimpleShadow_Opaque,
+		mRootSignature.Get(),
+		{ reinterpret_cast<BYTE*>(mShaders["InstanceSimpleGeoShadowMap"]->GetVSShader()->GetBufferPointer()),
+			mShaders["InstanceSimpleGeoShadowMap"]->GetVSShader()->GetBufferSize() },
+		{},
+		{},
+		{},
+		{},
+		{},
+		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
+		UINT_MAX,
+		ShadowRasterizerState,
+		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
+		{ Input.data(), (UINT)Input.size() },
+		{},
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+		0,
+		RTVFormats,
+		mDepthStencilFormat,
+		{ UINT(m4xMsaaState ? 4 : 1) ,UINT(0) },
+		0,
+		{},
+		{});
+
+
+
 }
 
 void GameApp::BuildFrameResources()
@@ -1024,7 +1072,7 @@ void GameApp::BuildFrameResources()
 	for (int i = 0; i < gNumFrameResources; ++i)
 	{
 		mFrameResources.push_back(std::make_unique<FrameResource>(md3dDevice.Get(),
-			1, (UINT)mAllRitems.size(), (UINT)mMaterials.size(), mWaves->VertexCount()));
+			2, (UINT)mAllRitems.size(), (UINT)mMaterials.size(), mWaves->VertexCount()));
 	}
 }
 
@@ -1196,7 +1244,7 @@ void GameApp::BuildSimpleGeoInstanceItems()
 					1.0f, 0.0f, 0.0f, 0.0f,
 					0.0f, 1.0f, 0.0f, 0.0f,
 					0.0f, 0.0f, 1.0f, 0.0f,
-					x + j * dx, 10.0f, y + i*dy , 1.0f);
+					x + j * dx, 2.5f, y + i*dy , 1.0f);
 
 				InstanceSphereRitem->Instances[index].MaterialIndex = rand() % (mMaterials.size() - 1);
 				InstanceSphereRitem->Instances[index].TexTransform= MathHelper::Identity4x4();
@@ -1209,7 +1257,7 @@ void GameApp::BuildSimpleGeoInstanceItems()
 void GameApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems)
 {
 	//sizeof ObjectConstants 
-	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
+	UINT objCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 	
 	auto objectCB = mCurrFrameResource->SimpleObjectCB->Resource();
 
@@ -1391,34 +1439,34 @@ void GameApp::UpdateShadowPassCB(const GameTimer& gt)
 
 void GameApp::DrawSceneToShadowMap()
 {
-	//mCommandList->RSSetViewports(1, &mShadowMap->Viewport());
-	//mCommandList->RSSetScissorRects(1, &mShadowMap->ScissorRect());
+	mCommandList->RSSetViewports(1, &mShadowMap->Viewport());
+	mCommandList->RSSetScissorRects(1, &mShadowMap->ScissorRect());
 
-	//// Change to DEPTH_WRITE.
-	//mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mShadowMap->Resource(),
-	//	D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_DEPTH_WRITE));
+	// Change to DEPTH_WRITE.
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mShadowMap->Resource(),
+		D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_DEPTH_WRITE));
 
-	//UINT passCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(PassConstants));
+	UINT passCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(PassConstants));
 
-	//// Clear the back buffer and depth buffer.
-	//mCommandList->ClearDepthStencilView(mShadowMap->Dsv(),
-	//	D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+	// Clear the back buffer and depth buffer.
+	mCommandList->ClearDepthStencilView(mShadowMap->Dsv(),
+		D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
-	//// Set null render target because we are only going to draw to
-	//// depth buffer.  Setting a null render target will disable color writes.
-	//// Note the active PSO also must specify a render target count of 0.
-	//mCommandList->OMSetRenderTargets(0, nullptr, false, &mShadowMap->Dsv());
+	// Set null render target because we are only going to draw to
+	// depth buffer.  Setting a null render target will disable color writes.
+	// Note the active PSO also must specify a render target count of 0.
+	mCommandList->OMSetRenderTargets(0, nullptr, false, &mShadowMap->Dsv());
 
-	//// Bind the pass constant buffer for the shadow map pass.
-	//auto passCB = mCurrFrameResource->PassCB->Resource();
-	//D3D12_GPU_VIRTUAL_ADDRESS passCBAddress = passCB->GetGPUVirtualAddress() + 1 * passCBByteSize;
-	//mCommandList->SetGraphicsRootConstantBufferView(1, passCBAddress);
+	// Bind the pass constant buffer for the shadow map pass.
+	auto passCB = mCurrFrameResource->PassCB->Resource();
+	D3D12_GPU_VIRTUAL_ADDRESS passCBAddress = passCB->GetGPUVirtualAddress() + 1 * passCBByteSize;
+	mCommandList->SetGraphicsRootConstantBufferView(1, passCBAddress);
 
-	//mCommandList->SetPipelineState(mPSOs["shadow_opaque"].Get());
-
-	//DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
-
-	//// Change back to GENERIC_READ so we can read the texture in a shader.
-	//mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mShadowMap->Resource(),
-	//	D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_GENERIC_READ));
+	//Simple Instance  Shadow map
+	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::InstanceSimpleShadow_Opaque).Get());
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
+	// Change back to GENERIC_READ so we can read the texture in a shader.
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mShadowMap->Resource(),
+		D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_GENERIC_READ));
 }

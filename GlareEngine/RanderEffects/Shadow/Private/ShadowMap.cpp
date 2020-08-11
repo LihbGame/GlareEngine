@@ -9,6 +9,13 @@ ShadowMap::ShadowMap(ID3D12Device* device, UINT width, UINT height)
 	mViewport = { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f };
 	mScissorRect = { 0, 0, (int)width, (int)height };
 
+
+// 由于我们知道场景的构造方式，因此手动估算场景边界球;
+//网格是“最宽的对象”，宽度为20，深度为30.0f，以世界空间原点为中心; 
+//通常，您需要遍历每个世界空间顶点位置并计算边界球体;
+	mSceneBounds.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	mSceneBounds.Radius = sqrtf(15.0f * 15.0f + 15.0f * 15.0f);
+
 	BuildResource();
 }
 

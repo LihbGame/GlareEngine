@@ -85,7 +85,7 @@ inline std::wstring AnsiToWString(const std::string& str)
 #endif 		
     */
 
-class d3dUtil
+class L3DUtil
 {
 public:
 
