@@ -86,18 +86,6 @@
     <ClInclude Include="Core\Public\L3DUtil.h">
       <Filter>Core\Public</Filter>
     </ClInclude>
-    <ClInclude Include="Main\Public\FrameResource.h">
-      <Filter>MainSource\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Main\Public\framework.h">
-      <Filter>MainSource\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Main\Public\GameMain.h">
-      <Filter>MainSource\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Main\Public\targetver.h">
-      <Filter>MainSource\Public</Filter>
-    </ClInclude>
     <ClInclude Include="ShaderSource\Public\BaseShader.h">
       <Filter>ShaderSource\Public</Filter>
     </ClInclude>
@@ -132,6 +120,19 @@
     <ClInclude Include="RanderEffects\HDRSky\Public\Sky.h" />
     <ClInclude Include="RanderEffects\Shadow\Public\ShadowMap.h" />
     <ClInclude Include="ShaderSource\Public\SimpleGeometryShadowMapShader.h" />
+    <ClInclude Include="EngineMain\Public\FrameResource.h">
+      <Filter>MainSource\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineMain\Public\framework.h">
+      <Filter>MainSource\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineMain\Public\GameMain.h">
+      <Filter>MainSource\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineMain\Public\targetver.h">
+      <Filter>MainSource\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Private\DDSTextureLoader.cpp">
@@ -154,12 +155,6 @@
     </ClCompile>
     <ClCompile Include="Core\Private\L3DUtil.cpp">
       <Filter>Core\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Main\Private\FrameResource.cpp">
-      <Filter>MainSource\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Main\Private\GameMain.cpp">
-      <Filter>MainSource\Private</Filter>
     </ClCompile>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
       <Filter>ShaderSource\Private</Filter>
@@ -216,6 +211,15 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="ShaderSource\Private\SimpleGeometryShadowMapShader.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineMain\Private\FrameResource.cpp">
+      <Filter>MainSource\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineMain\Private\GameMain.cpp">
+      <Filter>MainSource\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>

@@ -22,6 +22,8 @@
 #include "EngineGUI.h"
 #include "ShadowMap.h"
 
+#include "SimpleGeoInstance.h"
+
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 using namespace DirectX::PackedVector;
@@ -208,7 +210,7 @@ private:
 	//Instance Culling
 	bool mFrustumCullingEnabled = true;
 	BoundingFrustum mCamFrustum;
-
+	std::unique_ptr<SimpleGeoInstance> mSimpleGeoInstance;
 	//shadow map 
 	std::unique_ptr<ShadowMap> mShadowMap;
 

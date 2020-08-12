@@ -84,7 +84,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\Main\Public;.\Core\Public;$(IncludePath)</IncludePath>
+    <IncludePath>.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\EngineMain\Public;.\Core\Public;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -170,13 +170,14 @@
     <ClInclude Include="EngineEditor\imstb_rectpack.h" />
     <ClInclude Include="EngineEditor\imstb_textedit.h" />
     <ClInclude Include="EngineEditor\imstb_truetype.h" />
-    <ClInclude Include="Main\Public\FrameResource.h" />
-    <ClInclude Include="Main\Public\framework.h" />
-    <ClInclude Include="Main\Public\GameMain.h" />
-    <ClInclude Include="Main\Public\targetver.h" />
+    <ClInclude Include="EngineMain\Public\FrameResource.h" />
+    <ClInclude Include="EngineMain\Public\framework.h" />
+    <ClInclude Include="EngineMain\Public\GameMain.h" />
+    <ClInclude Include="EngineMain\Public\targetver.h" />
     <ClInclude Include="PSO\Public\PSOManager.h" />
     <ClInclude Include="RanderEffects\HDRSky\Public\Sky.h" />
     <ClInclude Include="RanderEffects\Shadow\Public\ShadowMap.h" />
+    <ClInclude Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ShaderSource\Public\BaseShader.h" />
     <ClInclude Include="ShaderSource\Public\SimpleGeometryInstanceShader.h" />
@@ -203,11 +204,12 @@
     <ClCompile Include="EngineEditor\imgui_impl_dx12.cpp" />
     <ClCompile Include="EngineEditor\imgui_impl_win32.cpp" />
     <ClCompile Include="EngineEditor\imgui_widgets.cpp" />
-    <ClCompile Include="Main\Private\FrameResource.cpp" />
-    <ClCompile Include="Main\Private\GameMain.cpp" />
+    <ClCompile Include="EngineMain\Private\FrameResource.cpp" />
+    <ClCompile Include="EngineMain\Private\GameMain.cpp" />
     <ClCompile Include="PSO\Private\PSOManager.cpp" />
     <ClCompile Include="RanderEffects\HDRSky\Private\Sky.cpp" />
     <ClCompile Include="RanderEffects\Shadow\Private\ShadowMap.cpp" />
+    <ClCompile Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.cpp" />
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp" />
     <ClCompile Include="ShaderSource\Private\SimpleGeometryInstanceShader.cpp" />
     <ClCompile Include="ShaderSource\Private\GerstnerWaveShader.cpp" />

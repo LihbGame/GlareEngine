@@ -77,7 +77,8 @@ bool GameApp::Initialize()
 	mSky= std::make_unique<Sky>(md3dDevice.Get(), mCommandList.Get(),5.0f,20,20);
 	//shadow map
 	mShadowMap = std::make_unique<ShadowMap>(md3dDevice.Get(), ShadowMapSize, ShadowMapSize);
-
+	//Simple Geometry Instance Draw
+	mSimpleGeoInstance = std::make_unique<SimpleGeoInstance>(mCommandList.Get(), md3dDevice.Get());
 
 
 	BuildAllMaterials();
@@ -762,53 +763,8 @@ void GameApp::BuildShadersAndInputLayout()
 
 void GameApp::BuildSimpleGeometry()
 {
-	GeometryGenerator Geo;
-	GeometryGenerator::MeshData Sphere = Geo.CreateSphere(10.0f, 50, 50);
-	GeometryGenerator::MeshData Cube = Geo.CreateBox(5, 5, 5, 1);
-
-	std::vector<PosNormalTangentTexc> vertices(Cube.Vertices.size());
-	for (size_t i = 0; i < Cube.Vertices.size(); ++i)
-	{
-		vertices[i].Pos = Cube.Vertices[i].Position;
-		vertices[i].Normal = Cube.Vertices[i].Normal;
-		vertices[i].Tangent = Cube.Vertices[i].TangentU;
-		vertices[i].Texc = Cube.Vertices[i].TexC;
-	}
-
-	const UINT vbByteSize = (UINT)vertices.size() * sizeof(PosNormalTangentTexc);
-
-	std::vector<std::uint16_t> indices = Cube.GetIndices16();
-	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
-
-	auto geo = std::make_unique<MeshGeometry>();
-	geo->Name = "SphereGeo";
-
-	//CPU Vertex Buffer
-	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
-	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
-	//CPU Index Buffer
-	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
-	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
-	//GPU Buffer
-	geo->VertexBufferGPU = L3DUtil::CreateDefaultBuffer(md3dDevice.Get(),
-		mCommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader);
-
-	geo->IndexBufferGPU = L3DUtil::CreateDefaultBuffer(md3dDevice.Get(),
-		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
-
-	geo->VertexByteStride = sizeof(PosNormalTangentTexc);
-	geo->VertexBufferByteSize = vbByteSize;
-	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
-	geo->IndexBufferByteSize = ibByteSize;
-
-	SubmeshGeometry submesh;
-	submesh.IndexCount = (UINT)indices.size();
-	submesh.StartIndexLocation = 0;
-	submesh.BaseVertexLocation = 0;
-	submesh.Bounds.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	submesh.Bounds.Extents = XMFLOAT3(10.0f, 10.0f, 10.0f);
-	geo->DrawArgs["Sphere"] = submesh;
-	mGeometries["SphereGeo"] = std::move(geo);
+	//box mesh
+	mGeometries["Box"] = std::move(mSimpleGeoInstance->GetSimpleGeoMesh(SimpleGeometry::Box));
 	
 	//build sky geometrie
 	mSky->BuildSkyMesh();
@@ -1211,14 +1167,14 @@ void GameApp::BuildSimpleGeoInstanceItems()
 	auto InstanceSphereRitem = std::make_unique<RenderItem>();
 	InstanceSphereRitem->World = MathHelper::Identity4x4();
 	InstanceSphereRitem->TexTransform = MathHelper::Identity4x4();
-	InstanceSphereRitem->ObjCBIndex = -1;//not important in instance items
+	InstanceSphereRitem->ObjCBIndex = -1;//not important in instance item
 	InstanceSphereRitem->Mat = mMaterials[L"PBRBrass"].get();
-	InstanceSphereRitem->Geo = mGeometries["SphereGeo"].get();
+	InstanceSphereRitem->Geo = mGeometries["Box"].get();
 	InstanceSphereRitem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	InstanceSphereRitem->IndexCount = InstanceSphereRitem->Geo->DrawArgs["Sphere"].IndexCount;
-	InstanceSphereRitem->StartIndexLocation = InstanceSphereRitem->Geo->DrawArgs["Sphere"].StartIndexLocation;
-	InstanceSphereRitem->BaseVertexLocation = InstanceSphereRitem->Geo->DrawArgs["Sphere"].BaseVertexLocation;
-	InstanceSphereRitem->Bounds = InstanceSphereRitem->Geo->DrawArgs["Sphere"].Bounds;
+	InstanceSphereRitem->IndexCount = InstanceSphereRitem->Geo->DrawArgs["Box"].IndexCount;
+	InstanceSphereRitem->StartIndexLocation = InstanceSphereRitem->Geo->DrawArgs["Box"].StartIndexLocation;
+	InstanceSphereRitem->BaseVertexLocation = InstanceSphereRitem->Geo->DrawArgs["Box"].BaseVertexLocation;
+	InstanceSphereRitem->Bounds = InstanceSphereRitem->Geo->DrawArgs["Box"].Bounds;
 	
 	// Generate instance data.
 	const int n = 5;
