@@ -4,7 +4,8 @@
 struct VertexOut
 {
     float4 PosH    : SV_POSITION;
-    float3 PosW    : POSITION;
+    float4 ShadowPosH : POSITION0;
+    float3 PosW    : POSITION1;
     float3 NormalW : NORMAL;
     float3 TangentW:TANGENT;
     float2 TexC    : TEXCOORD;
@@ -43,12 +44,14 @@ float3 bumpedNormalW = NormalSampleToModelSpace(normalMapSample, pin.NormalW, pi
 bumpedNormalW = normalize(bumpedNormalW);
 
 Material mat = { diffuseAlbedo, matData.FresnelR0, Roughness,Metallic,AO };
-//no shadow now
-float3 shadowFactor = 1.0f;
+
+// Only the first light casts a shadow.
+float3 shadowFactor = float3(1.0f, 1.0f, 1.0f);
+shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
 float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
     bumpedNormalW, toEyeW, shadowFactor);
 
-float4 litColor = ambient + directLight;
+float4 litColor = ambient*shadowFactor[0] + directLight;
 
 // Common convention to take alpha from diffuse material.
 litColor.a = matData.DiffuseAlbedo.a;

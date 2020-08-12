@@ -389,6 +389,16 @@ void GameApp::CreateDescriptorHeaps()
 		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	}
 
+	//Shadow Map
+	{
+		auto dsvCpuStart = mDsvHeap->GetCPUDescriptorHandleForHeapStart();
+		mShadowMap->BuildDescriptors(hDescriptor,
+			CD3DX12_CPU_DESCRIPTOR_HANDLE(dsvCpuStart, 1, mDsvDescriptorSize));//把shadow map的DSV存放在DSV堆中的第二个位置
+		SRVIndex++;
+		// next descriptor
+		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
+	}
+
 	mSRVSize = SRVIndex;
 
 	//HDR Sky
@@ -407,16 +417,6 @@ void GameApp::CreateDescriptorHeaps()
 		// next descriptor
 		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	}
-
-	//Shadow Map
-	{
-		auto dsvCpuStart = mDsvHeap->GetCPUDescriptorHandleForHeapStart();
-		mShadowMap->BuildDescriptors(hDescriptor,
-			CD3DX12_CPU_DESCRIPTOR_HANDLE(dsvCpuStart, 1, mDsvDescriptorSize));//把shadow map的DSV存放在DSV堆中的第二个位置
-	}
-
-
-
 
 
 	//GUI
@@ -989,7 +989,7 @@ void GameApp::BuildPSOs()
 	// PSO for Instance CUBE shadow.
 	//
 	D3D12_RASTERIZER_DESC ShadowRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	ShadowRasterizerState.DepthBias = 100000;
+	ShadowRasterizerState.DepthBias = 10000;
 	ShadowRasterizerState.DepthBiasClamp = 0.0f;
 	ShadowRasterizerState.SlopeScaledDepthBias = 1.0f;
 	RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
@@ -1271,7 +1271,7 @@ XMFLOAT3 GameApp::GetHillsNormal(float x, float z)const
 
 
 //Samplers
-std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> GameApp::GetStaticSamplers()
+std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> GameApp::GetStaticSamplers()
 {
 	// Applications usually only need a handful of samplers.  So just define them all up front
 	// and keep them available as part of the root signature.  
@@ -1322,10 +1322,23 @@ std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> GameApp::GetStaticSamplers()
 		0.0f,                              // mipLODBias
 		8);                                // maxAnisotropy
 
+	const CD3DX12_STATIC_SAMPLER_DESC shadow(
+		6, // shaderRegister
+		D3D12_FILTER_COMPARISON_MIN_LINEAR_MAG_POINT_MIP_LINEAR, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_BORDER,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_BORDER,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_BORDER,  // addressW
+		0.0f,                               // mipLODBias
+		16,                                 // maxAnisotropy
+		D3D12_COMPARISON_FUNC_LESS_EQUAL,
+		D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE);
+
 	return {
 		pointWrap, pointClamp,
 		linearWrap, linearClamp,
-		anisotropicWrap, anisotropicClamp };
+		anisotropicWrap, anisotropicClamp,
+		shadow
+	};
 }
 
 
@@ -1421,7 +1434,8 @@ void GameApp::DrawSceneToShadowMap()
 	//Simple Instance  Shadow map
 	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::InstanceSimpleShadow_Opaque).Get());
 	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
-	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
+	
+	//DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
 	// Change back to GENERIC_READ so we can read the texture in a shader.
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mShadowMap->Resource(),
 		D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_GENERIC_READ));

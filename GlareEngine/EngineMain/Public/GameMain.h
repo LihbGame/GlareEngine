@@ -136,7 +136,7 @@ private:
 	//创建资源描述堆
 	void CreateDescriptorHeaps();
 	//sampler
-	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> GetStaticSamplers();
+	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> GetStaticSamplers();
 
 	//waves
 	float GetHillsHeight(float x, float z)const;

@@ -47,7 +47,7 @@ struct InstanceData
 TextureCube gCubeMap : register(t0);
 //纹理数组，仅着色器模型5.1+支持。 与Texture2DArray不同，
 //此数组中的纹理可以具有不同的大小和格式，使其比纹理数组更灵活。
-Texture2D gSRVMap[36] : register(t1);
+Texture2D gSRVMap[37] : register(t1);
 //放入space1，因此纹理数组不会与这些资源重叠。
 //纹理数组将占用space0中的寄存器t0，t1，...，t3。
 StructuredBuffer<MaterialData> gMaterialData : register(t1, space1);
@@ -59,6 +59,7 @@ SamplerState gsamLinearWrap       : register(s2);
 SamplerState gsamLinearClamp      : register(s3);
 SamplerState gsamAnisotropicWrap  : register(s4);
 SamplerState gsamAnisotropicClamp : register(s5);
+SamplerComparisonState gsamShadow : register(s6);
 
 //每帧变化的每个渲染项的常量数据。
 cbuffer cbPerObject : register(b0)
@@ -180,4 +181,42 @@ float2 ParallaxMapping(uint HeightMapIndex,float2 texCoords, float3 viewDir,floa
     float2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
 
     return finalTexCoords;
+}
+
+
+
+//---------------------------------------------------------------------------------------
+// PCF for shadow mapping.
+//---------------------------------------------------------------------------------------
+
+float CalcShadowFactor(float4 shadowPosH)
+{
+    // Complete projection by doing division by w.
+    shadowPosH.xyz /= shadowPosH.w;
+
+    // Depth in NDC space.
+    float depth = shadowPosH.z;
+
+    uint width, height, numMips;
+    gSRVMap[36].GetDimensions(0, width, height, numMips);
+
+    // Texel size.
+    float dx = 1.0f / (float)width;
+
+    float percentLit = 0.0f;
+    const float2 offsets[9] =
+    {
+        float2(-dx,  -dx), float2(0.0f,  -dx), float2(dx,  -dx),
+        float2(-dx, 0.0f), float2(0.0f, 0.0f), float2(dx, 0.0f),
+        float2(-dx,  +dx), float2(0.0f,  +dx), float2(dx,  +dx)
+    };
+
+    [unroll]
+    for (int i = 0; i < 9; ++i)
+    {
+        percentLit += gSRVMap[36].SampleCmpLevelZero(gsamShadow,
+            shadowPosH.xy + offsets[i], depth).r;
+    }
+
+    return percentLit / 9.0f;
 }
