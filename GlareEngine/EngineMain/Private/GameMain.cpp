@@ -989,7 +989,7 @@ void GameApp::BuildPSOs()
 	// PSO for Instance CUBE shadow.
 	//
 	D3D12_RASTERIZER_DESC ShadowRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	ShadowRasterizerState.DepthBias = 10000;
+	ShadowRasterizerState.DepthBias = 25000;
 	ShadowRasterizerState.DepthBiasClamp = 0.0f;
 	ShadowRasterizerState.SlopeScaledDepthBias = 1.0f;
 	RTVFormats[0] = DXGI_FORMAT_UNKNOWN;

@@ -132,7 +132,7 @@ void ShadowMap::UpdateShadowTransform(const GameTimer& gt)
 	// Animate the lights (and hence shadows).
 	//need light manager but we not have it now .now we just let shadow to manage it.
 	//we well add it when we coding sence manager.
-	mLightRotationAngle += 0.1f * gt.DeltaTime();
+	//mLightRotationAngle += 0.01f * gt.DeltaTime();
 
 	XMMATRIX R = XMMatrixRotationY(mLightRotationAngle);
 	for (int i = 0; i < 3; ++i)

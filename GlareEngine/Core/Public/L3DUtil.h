@@ -25,7 +25,7 @@
 #include "L3DMathHelper.h"
 
 using namespace DirectX;
-
+using namespace std;
 extern const int gNumFrameResources;
 
 inline void d3dSetDebugName(IDXGIObject* obj, const char* name)
@@ -273,7 +273,7 @@ struct Texture
 	// Unique material name for lookup.
 	std::string Name;
 
-	std::wstring Filename;
+	std::string Filename;
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> Resource = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12Resource> UploadHeap = nullptr;

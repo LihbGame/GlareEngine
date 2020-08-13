@@ -92,9 +92,6 @@
     <ClInclude Include="ShaderSource\Public\GerstnerWaveShader.h">
       <Filter>ShaderSource\Public</Filter>
     </ClInclude>
-    <ClInclude Include="Water\Public\Waves.h">
-      <Filter>Water\Public</Filter>
-    </ClInclude>
     <ClInclude Include="Core\Public\L3DTextureManage.h">
       <Filter>Core\Public</Filter>
     </ClInclude>
@@ -133,6 +130,12 @@
       <Filter>MainSource\Public</Filter>
     </ClInclude>
     <ClInclude Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.h" />
+    <ClInclude Include="Core\Public\WICTextureLoader12.h" />
+    <ClInclude Include="RanderEffects\Water\Public\Waves.h">
+      <Filter>Water\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation\ModelMesh.h" />
+    <ClInclude Include="Animation\ModelLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Private\DDSTextureLoader.cpp">
@@ -161,9 +164,6 @@
     </ClCompile>
     <ClCompile Include="ShaderSource\Private\GerstnerWaveShader.cpp">
       <Filter>ShaderSource\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Water\Private\Waves.cpp">
-      <Filter>Water\Private</Filter>
     </ClCompile>
     <ClCompile Include="Core\Private\L3DTextureManage.cpp">
       <Filter>Core\Private</Filter>
@@ -220,6 +220,18 @@
       <Filter>MainSource\Private</Filter>
     </ClCompile>
     <ClCompile Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Private\WICTextureLoader12.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="RanderEffects\Water\Private\Waves.cpp">
+      <Filter>Water\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation\ModelMesh.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation\ModelLoader.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
