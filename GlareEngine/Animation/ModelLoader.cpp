@@ -128,7 +128,7 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
     if (mesh->mMaterialIndex >= 0)
     {
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-        vector<Texture> DiffuseMaps = this->LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", scene);
+        //vector<Texture> DiffuseMaps = this->LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", scene);
 
         //vector<Texture> NormalMaps = this->LoadMaterialTextures(material, aiTextureType_NORMALS, "texture_Normal", scene);
         //vector<Texture> AOMaps = this->LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_ao", scene);
@@ -136,7 +136,7 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
         //vector<Texture> MetallicMaps = this->LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_metallic", scene);
         //vector<Texture> RoughnessMaps = this->LoadMaterialTextures(material, aiTextureType_SHININESS, "texture_roughness", scene);
         //NOW ONLY USE DIFFUSE MAP FOR TEST
-        textures.insert(textures.end(), DiffuseMaps.begin(), DiffuseMaps.end());
+        //textures.insert(textures.end(), DiffuseMaps.begin(), DiffuseMaps.end());
 
     }
     return ModelMesh(dev, pCommandList, vertices, indices, textures);
@@ -169,47 +169,46 @@ ID3D12Resource* ModelLoader::GetTextureFromModel(const aiScene* scene, int textu
 
 
 
-vector<Texture> ModelLoader::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName, const aiScene* scene)
-{
-    vector<Texture> textures;
-    for (UINT i = 0; i < mat->GetTextureCount(type); i++)
-    {
-        aiString str;
-        mat->GetTexture(type, i, &str);
-        // Check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
-        bool skip = false;
-        for (UINT j = 0; j < textures_loaded.size(); j++)
-        {
-            if (std::strcmp(textures_loaded[j].Filename.c_str(), str.C_Str()) == 0)
-            {
-                textures.push_back(textures_loaded[j]);
-                skip = true; // A texture with the same filepath has already been loaded, continue to next one. (optimization)
-                break;
-            }
-        }
-        //     if (!skip)
-        //     {   // If texture hasn't been loaded already, load it
-        //            HRESULT hr;
-        //            Texture texture;
-        //            if (textype == "embedded compressed texture")
-        //            {
-        //                   int textureindex = GetTextureIndex(&str);
-        //                   texture.Resource = GetTextureFromModel(scene, textureindex);
-        //            }
-        //            else
-        //            {
-        //                   string filename = string(str.C_Str());
-        //                   filename = directory + '/' + filename;
-        //                   wstring filenamews = wstring(filename.begin(), filename.end());
-        //                   hr = CreateWICTextureFromFile(dev, devcon, filenamews.c_str(), nullptr, &texture.texture);
-        //                   if (FAILED(hr))
-        //                         MessageBox(hwnd, L"Texture couldn't be loaded", L"Error!", MB_ICONERROR | MB_OK);
-        //            }
-        //            texture.type = typeName;
-        //            texture.path = str.C_Str();
-        //            textures.push_back(texture);
-        //            this->textures_loaded.push_back(texture);  // Store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
-        //     }
-    }
-    return textures;
-}
+//vector<Texture> ModelLoader::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName, const aiScene* scene)
+//{
+//    vector<Texture> textures;
+//    for (UINT i = 0; i < mat->GetTextureCount(type); i++)
+//    {
+//        aiString str;
+//        mat->GetTexture(type, i, &str);
+//        // Check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
+//        bool skip = false;
+//        for (UINT j = 0; j < textures_loaded.size(); j++)
+//        {
+//            if (std::strcmp(textures_loaded[j].Filename.c_str(), str.C_Str()) == 0)
+//            {
+//                textures.push_back(textures_loaded[j]);
+//                skip = true; // A texture with the same filepath has already been loaded, continue to next one. (optimization)
+//                break;
+//            }
+//        }
+//        if (!skip)
+//        {   // If texture hasn't been loaded already, load it
+//            HRESULT hr;
+//            Texture texture;
+//            if (textype == "embedded compressed texture")
+//            {
+//                int textureindex = GetTextureIndex(&str);
+//                texture.Resource = GetTextureFromModel(scene, textureindex);
+//            }
+//            else
+//            {
+//                string filename = string(str.C_Str());
+//                filename = directory + '/' + filename;
+//                wstring filenamews = wstring(filename.begin(), filename.end());
+//                L3DUtil::CreateWICTextureFromFile(dev,pCommandList, texture.Resource, filenamews);
+//                
+//            }
+//            texture.type = typeName;
+//            texture.path = str.C_Str();
+//            textures.push_back(texture);
+//            this->textures_loaded.push_back(texture);  // Store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
+//        }
+//    }
+//    return textures;
+//}

@@ -214,4 +214,7 @@ private:
 	//shadow map 
 	std::unique_ptr<ShadowMap> mShadowMap;
 
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> mmResource;
+	ComPtr<ID3D12Resource> uploadRes;
 };

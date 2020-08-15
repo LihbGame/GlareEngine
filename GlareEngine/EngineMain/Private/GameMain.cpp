@@ -80,6 +80,9 @@ bool GameApp::Initialize()
 	//Simple Geometry Instance Draw
 	mSimpleGeoInstance = std::make_unique<SimpleGeoInstance>(mCommandList.Get(), md3dDevice.Get());
 
+	L3DUtil::CreateWICTextureFromFile(mCommandQueue.Get(), md3dDevice.Get(), mCommandList.Get(), mmResource.ReleaseAndGetAddressOf(), uploadRes.ReleaseAndGetAddressOf(), L"C:\\Users/GE/Desktop/skyboxs/TEST.jpg");
+
+
 
 	BuildAllMaterials();
 	CreateDescriptorHeaps();
@@ -93,6 +96,15 @@ bool GameApp::Initialize()
 	BuildFrameResources();
 	BuildPSOs();
 	
+
+
+	
+
+	//init UI
+	mEngineUI->InitGUI(mhMainWnd, md3dDevice.Get(), mGUISrvDescriptorHeap.Get());
+	
+	
+	
 	// 执行初始化命令。
 	ThrowIfFailed(mCommandList->Close());
 	ID3D12CommandList* cmdsLists[] = { mCommandList.Get() };
@@ -101,10 +113,6 @@ bool GameApp::Initialize()
 	// 等待初始化完成。
 	FlushCommandQueue();
 
-
-	//init UI
-	mEngineUI->InitGUI(mhMainWnd,md3dDevice.Get(), mGUISrvDescriptorHeap.Get());
-	
 	return true;
 }
 
@@ -324,7 +332,7 @@ void GameApp::CreateDescriptorHeaps()
 	
 	for (auto &e : mPBRTextureName)
 	{
-		DeffuseTex = mTextureManage->GetTexture(e + L"\\" + e + L"_albedo")->Resource;
+		DeffuseTex =mTextureManage->GetTexture(e + L"\\" + e + L"_albedo")->Resource;
 		NormalTex = mTextureManage->GetTexture(e + L"\\" + e + L"_normal")->Resource;
 		AOTex = mTextureManage->GetTexture(e + L"\\" + e + L"_ao")->Resource;
 		MetallicTex = mTextureManage->GetTexture(e + L"\\" + e + L"_metallic")->Resource;

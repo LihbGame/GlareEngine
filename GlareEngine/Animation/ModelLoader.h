@@ -1,7 +1,6 @@
 //#pragma once
 
 #include "L3DUtil.h"
-#include "WICTextureLoader12.h"
 #include "ModelMesh.h"
 
 
@@ -32,7 +31,7 @@ private:
 private://functions
     void ProcessNode(aiNode* node, const aiScene* scene);
     ModelMesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
-    vector<Texture> LoadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName, const aiScene* scene);
+   // vector<Texture> LoadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName, const aiScene* scene);
     string DetermineTextureType(const aiScene* scene, aiMaterial* mat);
     int GetTextureIndex(aiString* str);
     ID3D12Resource* GetTextureFromModel(const aiScene* scene, int textureindex);

@@ -23,6 +23,7 @@
 #include "d3dx12.h"
 #include "DDSTextureLoader.h"
 #include "L3DMathHelper.h"
+#include "WICTextureLoader12.h"
 
 using namespace DirectX;
 using namespace std;
@@ -91,7 +92,7 @@ public:
 
     static bool IsKeyDown(int vkeyCode);
 
-    static std::string ToString(HRESULT hr);
+    static std::string ToString(HRESULT hr)=delete;
 
     static UINT CalcConstantBufferByteSize(UINT byteSize)
     {
@@ -123,6 +124,10 @@ public:
 		const D3D_SHADER_MACRO* defines,
 		const std::string& entrypoint,
 		const std::string& target);
+
+
+    static void CreateWICTextureFromFile(ID3D12CommandQueue* commandQueue,ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, ID3D12Resource** tex, ID3D12Resource** Uploadtex, wstring filename);
+
 };
 
 class DxException
