@@ -126,8 +126,8 @@ public:
 		const std::string& target);
 
 
-    static void CreateWICTextureFromFile(ID3D12CommandQueue* commandQueue,ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, ID3D12Resource** tex, ID3D12Resource** Uploadtex, wstring filename);
-
+    static void CreateWICTextureFromFile(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, ID3D12Resource** tex, ID3D12Resource** Uploadtex, wstring filename);
+    static void CreateWICTextureFromMemory(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, ID3D12Resource** tex, ID3D12Resource** Uploadtex,unsigned char* data, int size);
 };
 
 class DxException
@@ -277,6 +277,8 @@ struct Texture
 {
 	// Unique material name for lookup.
 	std::string Name;
+    //only for model material 
+    std::string type;
 
 	std::string Filename;
 

@@ -49,10 +49,10 @@ void ModelMesh::SetupMesh()
     mMeshGeo.IndexBufferByteSize = ibByteSize;
 
 
-    ///not need sub mesh
-    //SubmeshGeometry submesh;
-    //submesh.IndexCount = (UINT)indices.size();
-    //submesh.StartIndexLocation = 0;
-    //submesh.BaseVertexLocation = 0;
-    //mMeshGeo->DrawArgs["Model Mesh"] = submesh;
+   
+    SubmeshGeometry submesh;
+    submesh.IndexCount = (UINT)indices.size();
+    submesh.StartIndexLocation = 0;
+    submesh.BaseVertexLocation = 0;
+    mMeshGeo.DrawArgs["Model Mesh"] = submesh;
 }

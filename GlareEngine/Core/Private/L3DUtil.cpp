@@ -113,7 +113,7 @@ ComPtr<ID3DBlob> L3DUtil::CompileShader(
 	return byteCode;
 }
 
-void L3DUtil::CreateWICTextureFromFile(ID3D12CommandQueue* commandQueue,ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, ID3D12Resource** tex, ID3D12Resource** Uploadtex,wstring filename)
+void L3DUtil::CreateWICTextureFromFile(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, ID3D12Resource** tex, ID3D12Resource** Uploadtex,wstring filename)
 {
     std::unique_ptr<uint8_t[]> decodedData;
     D3D12_SUBRESOURCE_DATA subresource;
@@ -135,6 +135,37 @@ void L3DUtil::CreateWICTextureFromFile(ID3D12CommandQueue* commandQueue,ID3D12De
             D3D12_RESOURCE_STATE_GENERIC_READ,
             nullptr,
             IID_PPV_ARGS(Uploadtex)));
+
+    UpdateSubresources(CommandList, *tex, *Uploadtex,
+        0, 0, 1, &subresource);
+
+    auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(*tex,
+        D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    CommandList->ResourceBarrier(1, &barrier);
+}
+
+void L3DUtil::CreateWICTextureFromMemory(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, ID3D12Resource** tex, ID3D12Resource** Uploadtex,unsigned char* data,int size)
+{
+    std::unique_ptr<uint8_t[]> decodedData;
+    D3D12_SUBRESOURCE_DATA subresource;
+    ThrowIfFailed(LoadWICTextureFromMemoryEx(d3dDevice, data, 0,size,
+        D3D12_RESOURCE_FLAG_NONE, WIC_LOADER_MIP_AUTOGEN, tex,
+        decodedData, subresource));
+
+    const UINT64 uploadBufferSize = GetRequiredIntermediateSize(*tex, 0, 1);
+
+    CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
+
+    auto desc = CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize);
+
+    // Create the GPU upload buffer.
+    ThrowIfFailed(d3dDevice->CreateCommittedResource(
+        &heapProps,
+        D3D12_HEAP_FLAG_NONE,
+        &desc,
+        D3D12_RESOURCE_STATE_GENERIC_READ,
+        nullptr,
+        IID_PPV_ARGS(Uploadtex)));
 
     UpdateSubresources(CommandList, *tex, *Uploadtex,
         0, 0, 1, &subresource);

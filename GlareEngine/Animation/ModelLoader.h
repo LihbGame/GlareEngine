@@ -13,26 +13,38 @@
 class ModelLoader
 {
 public:
-    ModelLoader();
+    ModelLoader(HWND hwnd, ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList);
     ~ModelLoader();
 
 
-    bool Load(HWND hwnd, ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList, std::string filename);
+    bool Load(string filename);
+
+   
+    void DrawModel(string ModelName);
+
+    vector<ModelMesh>& GetModelMesh(string ModelName);
 
     void Close();
 
 private:
     ID3D12Device* dev;
     ID3D12GraphicsCommandList* pCommandList;
-    std::vector<ModelMesh> meshes;
-    string directory;
-    vector<Texture> textures_loaded;
     HWND hwnd;
+
+    unordered_map<string,vector<ModelMesh>> meshes;
+
+    string directory;
+    string ModelName;
+    vector<Texture> textures_loaded;
+
 private://functions
     void ProcessNode(aiNode* node, const aiScene* scene);
     ModelMesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
-   // vector<Texture> LoadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName, const aiScene* scene);
+    vector<Texture> LoadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName, const aiScene* scene);
     string DetermineTextureType(const aiScene* scene, aiMaterial* mat);
     int GetTextureIndex(aiString* str);
-    ID3D12Resource* GetTextureFromModel(const aiScene* scene, int textureindex);
+    void GetTextureFromModel(const aiScene* scene, int textureindex, Texture& texture);
+
+
+
 };

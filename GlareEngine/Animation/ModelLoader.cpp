@@ -1,7 +1,10 @@
 #include "ModelLoader.h"
 
 
-ModelLoader::ModelLoader()
+ModelLoader::ModelLoader(HWND hwnd, ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList)
+:dev(dev),
+hwnd(hwnd),
+pCommandList(CommandList)
 {
 }
 
@@ -11,12 +14,14 @@ ModelLoader::~ModelLoader()
 }
 
 
-bool ModelLoader::Load(HWND hwnd, ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList, std::string filename)
+bool ModelLoader::Load(string filename)
 {
     Assimp::Importer importer;
 
+    directory = "Model/";
 
-    const aiScene* pScene = importer.ReadFile(filename,
+    string FullName= directory + filename;
+    const aiScene* pScene = importer.ReadFile(FullName,
         aiProcessPreset_TargetRealtime_Quality |
         aiProcess_ConvertToLeftHanded);
 
@@ -25,16 +30,21 @@ bool ModelLoader::Load(HWND hwnd, ID3D12Device* dev, ID3D12GraphicsCommandList* 
         MessageBox(hwnd, L"assimp scene create failed!", L"error", 0);
         return false;
     }
+    int it = filename.find_last_of('/');
+    this->directory += filename.substr(0, it +1);
 
-    this->directory = filename.substr(0, filename.find_last_of('/'));
-
-
-
-    this->dev = dev;
-    this->hwnd = hwnd;
-    this->pCommandList = CommandList;
+    this->ModelName = filename.substr(it + 1, filename.find_last_of('.') - it - 1);
     ProcessNode(pScene->mRootNode, pScene);
     return true;
+}
+
+void ModelLoader::DrawModel(string ModelName)
+{
+}
+
+vector<ModelMesh>& ModelLoader::GetModelMesh(string ModelName)
+{
+    return meshes[ModelName];
 }
 
 
@@ -49,7 +59,7 @@ void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene)
     for (UINT i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes.push_back(this->ProcessMesh(mesh, scene));
+        meshes[ModelName].push_back(this->ProcessMesh(mesh, scene));
     }
 
 
@@ -128,7 +138,7 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
     if (mesh->mMaterialIndex >= 0)
     {
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-        //vector<Texture> DiffuseMaps = this->LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", scene);
+        vector<Texture> DiffuseMaps = this->LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", scene);
 
         //vector<Texture> NormalMaps = this->LoadMaterialTextures(material, aiTextureType_NORMALS, "texture_Normal", scene);
         //vector<Texture> AOMaps = this->LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_ao", scene);
@@ -136,7 +146,7 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
         //vector<Texture> MetallicMaps = this->LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_metallic", scene);
         //vector<Texture> RoughnessMaps = this->LoadMaterialTextures(material, aiTextureType_SHININESS, "texture_roughness", scene);
         //NOW ONLY USE DIFFUSE MAP FOR TEST
-        //textures.insert(textures.end(), DiffuseMaps.begin(), DiffuseMaps.end());
+        textures.insert(textures.end(), DiffuseMaps.begin(), DiffuseMaps.end());
 
     }
     return ModelMesh(dev, pCommandList, vertices, indices, textures);
@@ -150,65 +160,88 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
 string ModelLoader::DetermineTextureType(const aiScene* scene, aiMaterial* mat)
 {
-    return string();
+    aiString textypeStr;
+    mat->GetTexture(aiTextureType_DIFFUSE, 0, &textypeStr);
+    string textypeteststr = textypeStr.C_Str();
+    if (textypeteststr == "*0" || textypeteststr == "*1" || textypeteststr == "*2" || textypeteststr == "*3" || textypeteststr == "*4" || textypeteststr == "*5")
+    {
+        if (scene->mTextures[0]->mHeight == 0)
+        {
+            return "embedded compressed texture";
+        }
+        else
+        {
+            return "embedded non-compressed texture";
+        }
+    }
+    if (textypeteststr.find('.') != string::npos)
+    {
+        return "textures are on disk";
+    }
+    return " ";
 }
 
 
 
 int ModelLoader::GetTextureIndex(aiString* str)
 {
-    return 0;
+    string tistr;
+    tistr = str->C_Str();
+    tistr = tistr.substr(1);
+    return stoi(tistr);
 }
 
 
 
-ID3D12Resource* ModelLoader::GetTextureFromModel(const aiScene* scene, int textureindex)
+void ModelLoader::GetTextureFromModel(const aiScene* scene, int textureindex, Texture& texture)
 {
-    return nullptr;
+    int* size = reinterpret_cast<int*>(&scene->mTextures[textureindex]->mWidth);
+    L3DUtil::CreateWICTextureFromMemory(dev, pCommandList, texture.Resource.ReleaseAndGetAddressOf(), texture.UploadHeap.ReleaseAndGetAddressOf(), reinterpret_cast<unsigned char*>(scene->mTextures[textureindex]->pcData),*size);
 }
 
 
 
-//vector<Texture> ModelLoader::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName, const aiScene* scene)
-//{
-//    vector<Texture> textures;
-//    for (UINT i = 0; i < mat->GetTextureCount(type); i++)
-//    {
-//        aiString str;
-//        mat->GetTexture(type, i, &str);
-//        // Check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
-//        bool skip = false;
-//        for (UINT j = 0; j < textures_loaded.size(); j++)
-//        {
-//            if (std::strcmp(textures_loaded[j].Filename.c_str(), str.C_Str()) == 0)
-//            {
-//                textures.push_back(textures_loaded[j]);
-//                skip = true; // A texture with the same filepath has already been loaded, continue to next one. (optimization)
-//                break;
-//            }
-//        }
-//        if (!skip)
-//        {   // If texture hasn't been loaded already, load it
-//            HRESULT hr;
-//            Texture texture;
-//            if (textype == "embedded compressed texture")
-//            {
-//                int textureindex = GetTextureIndex(&str);
-//                texture.Resource = GetTextureFromModel(scene, textureindex);
-//            }
-//            else
-//            {
-//                string filename = string(str.C_Str());
-//                filename = directory + '/' + filename;
-//                wstring filenamews = wstring(filename.begin(), filename.end());
-//                L3DUtil::CreateWICTextureFromFile(dev,pCommandList, texture.Resource, filenamews);
-//                
-//            }
-//            texture.type = typeName;
-//            texture.path = str.C_Str();
-//            textures.push_back(texture);
-//            this->textures_loaded.push_back(texture);  // Store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
-//        }
-//    }
-//    return textures;
-//}
+vector<Texture> ModelLoader::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName, const aiScene* scene)
+{
+    vector<Texture> textures;
+    for (UINT i = 0; i < mat->GetTextureCount(type); i++)
+    {
+        aiString str;
+        mat->GetTexture(type, i, &str);
+        // Check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
+        bool skip = false;
+        for (UINT j = 0; j < textures_loaded.size(); j++)
+        {
+            if (std::strcmp(textures_loaded[j].Filename.c_str(), str.C_Str()) == 0)
+            {
+                textures.push_back(textures_loaded[j]);
+                skip = true; // A texture with the same filepath has already been loaded, continue to next one. (optimization)
+                break;
+            }
+        }
+        if (!skip)
+        {   // If texture hasn't been loaded already, load it
+            Texture texture;
+            if (textype == "embedded compressed texture")
+            {
+                int textureindex = GetTextureIndex(&str);
+                GetTextureFromModel(scene, textureindex,texture);
+            }
+            else
+            {
+                string filename = string(str.C_Str());
+                int it = (int)filename.find_last_of('\\');
+                filename = filename.substr(it+1, filename.size()-it);
+
+                filename = directory + filename;
+                wstring filenamews = wstring(filename.begin(), filename.end());
+                L3DUtil::CreateWICTextureFromFile(dev, pCommandList, texture.Resource.ReleaseAndGetAddressOf(), texture.UploadHeap.ReleaseAndGetAddressOf(), filenamews);
+            }
+            texture.type = typeName;
+            texture.Filename = str.C_Str();
+            textures.push_back(texture);
+            this->textures_loaded.push_back(texture);  // Store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
+        }
+    }
+    return textures;
+}

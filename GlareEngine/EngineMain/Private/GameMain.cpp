@@ -79,31 +79,27 @@ bool GameApp::Initialize()
 	mShadowMap = std::make_unique<ShadowMap>(md3dDevice.Get(), ShadowMapSize, ShadowMapSize);
 	//Simple Geometry Instance Draw
 	mSimpleGeoInstance = std::make_unique<SimpleGeoInstance>(mCommandList.Get(), md3dDevice.Get());
-
-	L3DUtil::CreateWICTextureFromFile(mCommandQueue.Get(), md3dDevice.Get(), mCommandList.Get(), mmResource.ReleaseAndGetAddressOf(), uploadRes.ReleaseAndGetAddressOf(), L"C:\\Users/GE/Desktop/skyboxs/TEST.jpg");
-
-
-
-	BuildAllMaterials();
-	CreateDescriptorHeaps();
-	BuildRootSignature();
-	BuildShadersAndInputLayout();
-	BuildSimpleGeometry();
-	BuildLandGeometry();
-	BuildWavesGeometryBuffers();
-	BuildRenderItems();
-	BuildSimpleGeoInstanceItems();
-	BuildFrameResources();
-	BuildPSOs();
-	
+	//init model loader
+	mModelLoder = std::make_unique<ModelLoader>(mhMainWnd, md3dDevice.Get(), mCommandList.Get());
 
 
-	
+	{
+		LoadModel();
+		BuildAllMaterials();
+		CreateDescriptorHeaps();
+		BuildRootSignature();
+		BuildShadersAndInputLayout();
+		BuildSimpleGeometry();
+		BuildLandGeometry();
+		BuildWavesGeometryBuffers();
+		BuildRenderItems();
+		BuildSimpleGeoInstanceItems();
+		BuildFrameResources();
+		BuildPSOs();
+	}
 
 	//init UI
 	mEngineUI->InitGUI(mhMainWnd, md3dDevice.Get(), mGUISrvDescriptorHeap.Get());
-	
-	
 	
 	// 执行初始化命令。
 	ThrowIfFailed(mCommandList->Close());
@@ -1172,17 +1168,28 @@ void GameApp::BuildRenderItems()
 
 void GameApp::BuildSimpleGeoInstanceItems()
 {
+	// MODEL TEST CODE
+#pragma region MODEL_TEST_CODE
+	 LMeshGeo = mModelLoder->GetModelMesh("Blue_Tree_03d")[0].mMeshGeo;
+	 BoundingBox lbox;
+	 lbox.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	 lbox.Extents= XMFLOAT3(200.0f, 200.0f, 200.0f);
+#pragma endregion
+
+
+
+
 	auto InstanceSphereRitem = std::make_unique<RenderItem>();
 	InstanceSphereRitem->World = MathHelper::Identity4x4();
 	InstanceSphereRitem->TexTransform = MathHelper::Identity4x4();
 	InstanceSphereRitem->ObjCBIndex = -1;//not important in instance item
 	InstanceSphereRitem->Mat = mMaterials[L"PBRBrass"].get();
-	InstanceSphereRitem->Geo = mGeometries["Box"].get();
+	InstanceSphereRitem->Geo = &LMeshGeo;//mGeometries["Box"].get();
 	InstanceSphereRitem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	InstanceSphereRitem->IndexCount = InstanceSphereRitem->Geo->DrawArgs["Box"].IndexCount;
-	InstanceSphereRitem->StartIndexLocation = InstanceSphereRitem->Geo->DrawArgs["Box"].StartIndexLocation;
-	InstanceSphereRitem->BaseVertexLocation = InstanceSphereRitem->Geo->DrawArgs["Box"].BaseVertexLocation;
-	InstanceSphereRitem->Bounds = InstanceSphereRitem->Geo->DrawArgs["Box"].Bounds;
+	InstanceSphereRitem->IndexCount = LMeshGeo.DrawArgs["Model Mesh"].IndexCount;// InstanceSphereRitem->Geo->DrawArgs["Box"].IndexCount;
+	InstanceSphereRitem->StartIndexLocation = LMeshGeo.DrawArgs["Model Mesh"].StartIndexLocation;//InstanceSphereRitem->Geo->DrawArgs["Box"].StartIndexLocation;
+	InstanceSphereRitem->BaseVertexLocation = LMeshGeo.DrawArgs["Model Mesh"].BaseVertexLocation;// InstanceSphereRitem->Geo->DrawArgs["Box"].BaseVertexLocation;
+	InstanceSphereRitem->Bounds = lbox;//InstanceSphereRitem->Geo->DrawArgs["Box"].Bounds;
 	
 	// Generate instance data.
 	const int n = 5;
@@ -1204,11 +1211,11 @@ void GameApp::BuildSimpleGeoInstanceItems()
 			{
 				int index =i * n + j;
 				// Position instanced along a 3D grid.
-				InstanceSphereRitem->Instances[index].World = XMFLOAT4X4(
-					1.0f, 0.0f, 0.0f, 0.0f,
-					0.0f, 1.0f, 0.0f, 0.0f,
-					0.0f, 0.0f, 1.0f, 0.0f,
-					x + j * dx, 2.5f, y + i*dy , 1.0f);
+				XMStoreFloat4x4(&InstanceSphereRitem->Instances[index].World, XMMatrixRotationX(MathHelper::Pi / 2)*XMMatrixRotationY(MathHelper::RandF()* MathHelper::Pi) * XMLoadFloat4x4(&XMFLOAT4X4(
+					0.03f, 0.0f, 0.0f, 0.0f,
+					0.0f, 0.03f, 0.0f, 0.0f,
+					0.0f, 0.0f, 0.03f, 0.0f,
+					x + j * dx, 0.0f, y + i * dy, 1.0f)));
 
 				InstanceSphereRitem->Instances[index].MaterialIndex = rand() % (mMaterials.size() - 1);
 				InstanceSphereRitem->Instances[index].TexTransform= MathHelper::Identity4x4();
@@ -1347,6 +1354,14 @@ std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> GameApp::GetStaticSamplers()
 		anisotropicWrap, anisotropicClamp,
 		shadow
 	};
+}
+
+void GameApp::LoadModel()
+{
+	mModelLoder->Load("BlueTree/Blue_Tree_03a.fbx");
+	mModelLoder->Load("BlueTree/Blue_Tree_03b.fbx");
+	mModelLoder->Load("BlueTree/Blue_Tree_03c.fbx");
+	mModelLoder->Load("BlueTree/Blue_Tree_03d.fbx");
 }
 
 

@@ -21,7 +21,7 @@
 #include "Sky.h"
 #include "EngineGUI.h"
 #include "ShadowMap.h"
-
+#include "ModelLoader.h"
 #include "SimpleGeoInstance.h"
 
 using Microsoft::WRL::ComPtr;
@@ -137,6 +137,10 @@ private:
 	void CreateDescriptorHeaps();
 	//sampler
 	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> GetStaticSamplers();
+	//Load model
+	void LoadModel();
+
+
 
 	//waves
 	float GetHillsHeight(float x, float z)const;
@@ -213,8 +217,7 @@ private:
 	std::unique_ptr<SimpleGeoInstance> mSimpleGeoInstance;
 	//shadow map 
 	std::unique_ptr<ShadowMap> mShadowMap;
-
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> mmResource;
-	ComPtr<ID3D12Resource> uploadRes;
+	//Model Loader
+	std::unique_ptr<ModelLoader> mModelLoder;
+	MeshGeometry LMeshGeo;
 };
