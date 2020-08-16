@@ -80,7 +80,7 @@ bool GameApp::Initialize()
 	//Simple Geometry Instance Draw
 	mSimpleGeoInstance = std::make_unique<SimpleGeoInstance>(mCommandList.Get(), md3dDevice.Get());
 	//init model loader
-	mModelLoder = std::make_unique<ModelLoader>(mhMainWnd, md3dDevice.Get(), mCommandList.Get());
+	mModelLoder = std::make_unique<ModelLoader>(mhMainWnd, md3dDevice.Get(), mCommandList.Get(), mTextureManage.get());
 
 
 	{
@@ -244,7 +244,7 @@ void GameApp::Draw(const GameTimer& gt)
 	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
 	
 	//Draw Instanse 
-	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Instance).Get());
+	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::StaticComplexModelInstance).Get());
 	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
 
 	//Draw Sky box
@@ -304,12 +304,12 @@ void GameApp::CreateDescriptorHeaps()
 {
 	int SRVIndex = 0;
 	UINT PBRTextureNum = (UINT)(mPBRTextureName.size() * 6);
-
+	UINT ModelTextureNum = (UINT)mModelLoder->GetAllModelTextures().size() * 6;
 	//
 	// Create the SRV heap.
 	//
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-	srvHeapDesc.NumDescriptors = PBRTextureNum+2;//PBR Textures+sky+shadow map
+	srvHeapDesc.NumDescriptors = PBRTextureNum+ ModelTextureNum+2;//PBR Textures+sky+shadow map+model pbr texture
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mSrvDescriptorHeap)));
@@ -319,78 +319,32 @@ void GameApp::CreateDescriptorHeaps()
 	//
 	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
-	ComPtr<ID3D12Resource> DeffuseTex = nullptr;
-	ComPtr<ID3D12Resource> NormalTex = nullptr; 
-	ComPtr<ID3D12Resource> AOTex = nullptr;
-	ComPtr<ID3D12Resource> MetallicTex = nullptr;
-	ComPtr<ID3D12Resource> RoughnessTex = nullptr; 
-	ComPtr<ID3D12Resource> HeightTex = nullptr;
-	
+	unordered_map<string, ID3D12Resource*> PBRTexResource;
+	//simple geometry PBR Texture
 	for (auto &e : mPBRTextureName)
 	{
-		DeffuseTex =mTextureManage->GetTexture(e + L"\\" + e + L"_albedo")->Resource;
-		NormalTex = mTextureManage->GetTexture(e + L"\\" + e + L"_normal")->Resource;
-		AOTex = mTextureManage->GetTexture(e + L"\\" + e + L"_ao")->Resource;
-		MetallicTex = mTextureManage->GetTexture(e + L"\\" + e + L"_metallic")->Resource;
-		RoughnessTex = mTextureManage->GetTexture(e + L"\\" + e + L"_roughness")->Resource;
-		HeightTex = mTextureManage->GetTexture(e + L"\\" + e + L"_height")->Resource;
+		PBRTexResource["Deffuse"] =mTextureManage->GetTexture(e + L"\\" + e + L"_albedo")->Resource.Get();
+		PBRTexResource["Normal"] = mTextureManage->GetTexture(e + L"\\" + e + L"_normal")->Resource.Get();
+		PBRTexResource["AO"] = mTextureManage->GetTexture(e + L"\\" + e + L"_ao")->Resource.Get();
+		PBRTexResource["Metallic"] = mTextureManage->GetTexture(e + L"\\" + e + L"_metallic")->Resource.Get();
+		PBRTexResource["Roughness"] = mTextureManage->GetTexture(e + L"\\" + e + L"_roughness")->Resource.Get();
+		PBRTexResource["Height"] = mTextureManage->GetTexture(e + L"\\" + e + L"_height")->Resource.Get();
+
+		CreatePBRSRVinDescriptorHeap(PBRTexResource, &SRVIndex, &hDescriptor,e);
+	}
 
 
-		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		srvDesc.Format = DeffuseTex->GetDesc().Format;
-		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Texture2D.MostDetailedMip = 0;
-		srvDesc.Texture2D.MipLevels = DeffuseTex->GetDesc().MipLevels;
-		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-		md3dDevice->CreateShaderResourceView(DeffuseTex.Get(), &srvDesc, hDescriptor);
-		mMaterials[e]->DiffuseSrvHeapIndex = SRVIndex++;
+	//Load model 
+	for (auto& e : mModelLoder->GetAllModelTextures())
+	{
+		PBRTexResource["Deffuse"] = e.second[0]->Resource.Get();
+		PBRTexResource["AO"] = e.second[1]->Resource.Get();
+		PBRTexResource["Metallic"] = e.second[2]->Resource.Get();
+		PBRTexResource["Normal"] = e.second[3]->Resource.Get();
+		PBRTexResource["Roughness"] = e.second[4]->Resource.Get();
+		PBRTexResource["Height"] = e.second[5]->Resource.Get();
 
-		// next descriptor
-		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
-
-		srvDesc.Format = NormalTex->GetDesc().Format;
-		srvDesc.Texture2D.MipLevels = NormalTex->GetDesc().MipLevels;
-		md3dDevice->CreateShaderResourceView(NormalTex.Get(), &srvDesc, hDescriptor);
-		mMaterials[e]->NormalSrvHeapIndex = SRVIndex++;
-
-
-		// next descriptor
-		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
-
-		srvDesc.Format = AOTex->GetDesc().Format;
-		srvDesc.Texture2D.MipLevels = AOTex->GetDesc().MipLevels;
-		md3dDevice->CreateShaderResourceView(AOTex.Get(), &srvDesc, hDescriptor);
-		mMaterials[e]->AoSrvHeapIndex = SRVIndex++;
-
-
-		// next descriptor
-		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
-
-		srvDesc.Format = MetallicTex->GetDesc().Format;
-		srvDesc.Texture2D.MipLevels = MetallicTex->GetDesc().MipLevels;
-		md3dDevice->CreateShaderResourceView(MetallicTex.Get(), &srvDesc, hDescriptor);
-		mMaterials[e]->MetallicSrvHeapIndex = SRVIndex++;
-
-
-		// next descriptor
-		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
-
-		srvDesc.Format = RoughnessTex->GetDesc().Format;
-		srvDesc.Texture2D.MipLevels = RoughnessTex->GetDesc().MipLevels;
-		md3dDevice->CreateShaderResourceView(RoughnessTex.Get(), &srvDesc, hDescriptor);
-		mMaterials[e]->RoughnessSrvHeapIndex = SRVIndex++;
-
-		// next descriptor
-		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
-
-		srvDesc.Format = HeightTex->GetDesc().Format;
-		srvDesc.Texture2D.MipLevels = HeightTex->GetDesc().MipLevels;
-		md3dDevice->CreateShaderResourceView(HeightTex.Get(), &srvDesc, hDescriptor);
-		mMaterials[e]->HeightSrvHeapIndex = SRVIndex++;
-		
-		// next descriptor
-		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
+		CreatePBRSRVinDescriptorHeap(PBRTexResource, &SRVIndex, &hDescriptor, wstring(e.first.begin(), e.first.end()));
 	}
 
 	//Shadow Map
@@ -431,6 +385,70 @@ void GameApp::CreateDescriptorHeaps()
 		desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 		ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&mGUISrvDescriptorHeap)));
 	}
+
+}
+
+void GameApp::CreatePBRSRVinDescriptorHeap(
+	unordered_map<string,ID3D12Resource*> TexResource, 
+	int* SRVIndex, 
+	CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor,
+	wstring MaterialName)
+{
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Format = TexResource["Deffuse"]->GetDesc().Format;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.MipLevels = TexResource["Deffuse"]->GetDesc().MipLevels;
+	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+	md3dDevice->CreateShaderResourceView(TexResource["Deffuse"], &srvDesc, *hDescriptor);
+	mMaterials[MaterialName]->DiffuseSrvHeapIndex = (*SRVIndex)++;
+
+	// next descriptor
+	hDescriptor->Offset(1, mCbvSrvDescriptorSize);
+
+	srvDesc.Format = TexResource["Normal"]->GetDesc().Format;
+	srvDesc.Texture2D.MipLevels = TexResource["Normal"]->GetDesc().MipLevels;
+	md3dDevice->CreateShaderResourceView(TexResource["Normal"], &srvDesc, *hDescriptor);
+	mMaterials[MaterialName]->NormalSrvHeapIndex = (*SRVIndex)++;
+
+
+	// next descriptor
+	hDescriptor->Offset(1, mCbvSrvDescriptorSize);
+
+	srvDesc.Format = TexResource["AO"]->GetDesc().Format;
+	srvDesc.Texture2D.MipLevels = TexResource["AO"]->GetDesc().MipLevels;
+	md3dDevice->CreateShaderResourceView(TexResource["AO"], &srvDesc, *hDescriptor);
+	mMaterials[MaterialName]->AoSrvHeapIndex = (*SRVIndex)++;
+
+
+	// next descriptor
+	hDescriptor->Offset(1, mCbvSrvDescriptorSize);
+
+	srvDesc.Format = TexResource["Metallic"]->GetDesc().Format;
+	srvDesc.Texture2D.MipLevels = TexResource["Metallic"]->GetDesc().MipLevels;
+	md3dDevice->CreateShaderResourceView(TexResource["Metallic"], &srvDesc, *hDescriptor);
+	mMaterials[MaterialName]->MetallicSrvHeapIndex = (*SRVIndex)++;
+
+
+	// next descriptor
+	hDescriptor->Offset(1, mCbvSrvDescriptorSize);
+
+	srvDesc.Format = TexResource["Roughness"]->GetDesc().Format;
+	srvDesc.Texture2D.MipLevels = TexResource["Roughness"]->GetDesc().MipLevels;
+	md3dDevice->CreateShaderResourceView(TexResource["Roughness"], &srvDesc, *hDescriptor);
+	mMaterials[MaterialName]->RoughnessSrvHeapIndex = (*SRVIndex)++;
+
+	// next descriptor
+	hDescriptor->Offset(1, mCbvSrvDescriptorSize);
+
+	srvDesc.Format = TexResource["Height"]->GetDesc().Format;
+	srvDesc.Texture2D.MipLevels = TexResource["Height"]->GetDesc().MipLevels;
+	md3dDevice->CreateShaderResourceView(TexResource["Height"], &srvDesc, *hDescriptor);
+	mMaterials[MaterialName]->HeightSrvHeapIndex = (*SRVIndex)++;
+
+	// next descriptor
+	hDescriptor->Offset(1, mCbvSrvDescriptorSize);
 
 }
 
@@ -762,7 +780,7 @@ void GameApp::BuildShadersAndInputLayout()
 	mShaders["Sky"] = new SkyShader(L"Shaders\\SkyVS.hlsl", L"Shaders\\SkyPS.hlsl", L"");
 	mShaders["Instance"] = new SimpleGeometryInstanceShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\SimpleGeoInstancePS.hlsl", L"");
 	mShaders["InstanceSimpleGeoShadowMap"]= new SimpleGeometryShadowMapShader(L"Shaders\\SimpleGeoInstanceShadowVS.hlsl", L"Shaders\\SimpleGeoInstanceShadowPS.hlsl", L"");
-
+	mShaders["StaticComplexModelInstance"] = new ComplexStaticModelInstanceShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\ComplexModelInstancePS.hlsl", L"");
 }
 
 void GameApp::BuildSimpleGeometry()
@@ -1025,6 +1043,37 @@ void GameApp::BuildPSOs()
 
 
 
+	//
+	// PSO for Complex Model Instance .
+	//
+	RTVFormats[0] = mBackBufferFormat;//only one rtv
+	Input = mShaders["StaticComplexModelInstance"]->GetInputLayout();
+	mPSOs->BuildPSO(md3dDevice.Get(),
+		PSOName::StaticComplexModelInstance,
+		mRootSignature.Get(),
+		{ reinterpret_cast<BYTE*>(mShaders["StaticComplexModelInstance"]->GetVSShader()->GetBufferPointer()),
+			mShaders["StaticComplexModelInstance"]->GetVSShader()->GetBufferSize() },
+		{ reinterpret_cast<BYTE*>(mShaders["StaticComplexModelInstance"]->GetPSShader()->GetBufferPointer()),
+		mShaders["StaticComplexModelInstance"]->GetPSShader()->GetBufferSize() },
+		{},
+		{},
+		{},
+		{},
+		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
+		UINT_MAX,
+		CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
+		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
+		{ Input.data(), (UINT)Input.size() },
+		{},
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+		1,
+		RTVFormats,
+		mDepthStencilFormat,
+		{ UINT(m4xMsaaState ? 4 : 1) ,UINT(0) },
+		0,
+		{},
+		{});
+
 }
 
 void GameApp::BuildFrameResources()
@@ -1042,6 +1091,10 @@ void GameApp::BuildAllMaterials()
 	int MatCBIndex = 0;
 	int DiffuseSrvHeapIndex = 0;
 	XMFLOAT4X4  MatTransform = MathHelper::Identity4x4();
+
+
+#pragma region Simple Geometry Material
+
 	//white_spruce_tree_bark Material
 	BuildMaterials(
 		L"PBRwhite_spruce_tree_bark",
@@ -1096,6 +1149,24 @@ void GameApp::BuildAllMaterials()
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 		XMFLOAT3(0.1f, 0.1f, 0.1f),
 		MatTransform);
+#pragma endregion
+
+
+#pragma region Load Model Material
+	MatTransform = MathHelper::Identity4x4();
+	for (auto e : mModelLoder->GetAllModelTextures())
+	{
+		BuildMaterials(
+			wstring(e.first.begin(), e.first.end()),
+			MatCBIndex++,
+			0.09f,
+			XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+			XMFLOAT3(0.1f, 0.1f, 0.1f),
+			MatTransform,
+			true);
+	}
+#pragma endregion
+
 
 	//Sky Material
 	{
@@ -1111,7 +1182,8 @@ void GameApp::BuildMaterials(
 	float Height_Scale,
 	XMFLOAT4 DiffuseAlbedo, 
 	XMFLOAT3 FresnelR0,
-	XMFLOAT4X4 MatTransform)
+	XMFLOAT4X4 MatTransform,
+	bool isModelTexture)
 {
 	auto  Mat = std::make_unique<Material>();
 	Mat->Name = name;
@@ -1121,6 +1193,8 @@ void GameApp::BuildMaterials(
 	Mat->MatTransform = MatTransform;
 	Mat->height_scale = Height_Scale;
 	mMaterials[name] = std::move(Mat);
+
+	if(!isModelTexture)
 	mPBRTextureName.push_back(name);
 }
 
@@ -1170,7 +1244,7 @@ void GameApp::BuildSimpleGeoInstanceItems()
 {
 	// MODEL TEST CODE
 #pragma region MODEL_TEST_CODE
-	 LMeshGeo = mModelLoder->GetModelMesh("Blue_Tree_03d")[0].mMeshGeo;
+	 LMeshGeo = mModelLoder->GetModelMesh("Blue_Tree_02a")[0].mMeshGeo;
 	 BoundingBox lbox;
 	 lbox.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	 lbox.Extents= XMFLOAT3(200.0f, 200.0f, 200.0f);
@@ -1211,13 +1285,13 @@ void GameApp::BuildSimpleGeoInstanceItems()
 			{
 				int index =i * n + j;
 				// Position instanced along a 3D grid.
-				XMStoreFloat4x4(&InstanceSphereRitem->Instances[index].World, XMMatrixRotationX(MathHelper::Pi / 2)*XMMatrixRotationY(MathHelper::RandF()* MathHelper::Pi) * XMLoadFloat4x4(&XMFLOAT4X4(
+				XMStoreFloat4x4(&InstanceSphereRitem->Instances[index].World,XMMatrixRotationY(MathHelper::RandF()* MathHelper::Pi) * XMLoadFloat4x4(&XMFLOAT4X4(
 					0.03f, 0.0f, 0.0f, 0.0f,
 					0.0f, 0.03f, 0.0f, 0.0f,
 					0.0f, 0.0f, 0.03f, 0.0f,
 					x + j * dx, 0.0f, y + i * dy, 1.0f)));
 
-				InstanceSphereRitem->Instances[index].MaterialIndex = rand() % (mMaterials.size() - 1);
+				InstanceSphereRitem->Instances[index].MaterialIndex = (mMaterials.size() - 2);
 				InstanceSphereRitem->Instances[index].TexTransform= MathHelper::Identity4x4();
 			}
 		}
@@ -1362,6 +1436,7 @@ void GameApp::LoadModel()
 	mModelLoder->Load("BlueTree/Blue_Tree_03b.fbx");
 	mModelLoder->Load("BlueTree/Blue_Tree_03c.fbx");
 	mModelLoder->Load("BlueTree/Blue_Tree_03d.fbx");
+	mModelLoder->Load("BlueTree/Blue_Tree_02a.fbx");
 }
 
 

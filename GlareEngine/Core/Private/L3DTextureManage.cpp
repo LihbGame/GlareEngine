@@ -32,3 +32,12 @@ std::unique_ptr<Texture>& L3DTextureManage::GetTexture(std::wstring name)
 	}
 	return mTextures[name];
 }
+
+std::unique_ptr<Texture>& L3DTextureManage::GetModelTexture(std::wstring name)
+{
+	if (mTextures.find(name) == mTextures.end())
+	{
+		CreateTexture(name,name + L".dds");
+	}
+	return mTextures[name];
+}

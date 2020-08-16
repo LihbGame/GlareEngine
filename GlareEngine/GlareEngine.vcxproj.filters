@@ -136,6 +136,7 @@
     </ClInclude>
     <ClInclude Include="Animation\ModelMesh.h" />
     <ClInclude Include="Animation\ModelLoader.h" />
+    <ClInclude Include="ShaderSource\Public\ComplexStaticModelInstanceShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Private\DDSTextureLoader.cpp">
@@ -234,6 +235,9 @@
     <ClCompile Include="Animation\ModelLoader.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
+    <ClCompile Include="ShaderSource\Private\ComplexStaticModelInstanceShader.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -255,6 +259,7 @@
     <FxCompile Include="Shaders\DefaultPS.hlsl" />
     <FxCompile Include="Shaders\SimpleGeoInstanceShadowVS.hlsl" />
     <FxCompile Include="Shaders\SimpleGeoInstanceShadowPS.hlsl" />
+    <FxCompile Include="Shaders\ComplexModelInstancePS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini" />

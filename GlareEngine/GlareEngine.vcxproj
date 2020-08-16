@@ -185,6 +185,7 @@
     <ClInclude Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ShaderSource\Public\BaseShader.h" />
+    <ClInclude Include="ShaderSource\Public\ComplexStaticModelInstanceShader.h" />
     <ClInclude Include="ShaderSource\Public\SimpleGeometryInstanceShader.h" />
     <ClInclude Include="ShaderSource\Public\GerstnerWaveShader.h" />
     <ClInclude Include="ShaderSource\Public\SkyShader.h" />
@@ -219,6 +220,7 @@
     <ClCompile Include="RanderEffects\Shadow\Private\ShadowMap.cpp" />
     <ClCompile Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.cpp" />
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp" />
+    <ClCompile Include="ShaderSource\Private\ComplexStaticModelInstanceShader.cpp" />
     <ClCompile Include="ShaderSource\Private\SimpleGeometryInstanceShader.cpp" />
     <ClCompile Include="ShaderSource\Private\GerstnerWaveShader.cpp" />
     <ClCompile Include="ShaderSource\Private\SkyShader.cpp" />
@@ -241,6 +243,14 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Shaders\ComplexModelInstancePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="Shaders\DefaultPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>

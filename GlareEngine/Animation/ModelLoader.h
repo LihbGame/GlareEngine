@@ -2,7 +2,7 @@
 
 #include "L3DUtil.h"
 #include "ModelMesh.h"
-
+#include "L3DTextureManage.h"
 
 //assimp head
 #include <assimp\Importer.hpp>
@@ -13,7 +13,7 @@
 class ModelLoader
 {
 public:
-    ModelLoader(HWND hwnd, ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList);
+    ModelLoader(HWND hwnd, ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList,L3DTextureManage* TextureManage);
     ~ModelLoader();
 
 
@@ -23,7 +23,7 @@ public:
     void DrawModel(string ModelName);
 
     vector<ModelMesh>& GetModelMesh(string ModelName);
-
+    unordered_map<string, vector<Texture*>>& GetAllModelTextures();
     void Close();
 
 private:
@@ -32,11 +32,14 @@ private:
     HWND hwnd;
 
     unordered_map<string,vector<ModelMesh>> meshes;
+    unordered_map<string, vector<Texture*>> ModelTextures;
 
     string directory;
     string ModelName;
-    vector<Texture> textures_loaded;
+    L3DTextureManage* pTextureManage;
 
+    //not use
+    vector<Texture > Textures;
 private://functions
     void ProcessNode(aiNode* node, const aiScene* scene);
     ModelMesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
@@ -45,6 +48,6 @@ private://functions
     int GetTextureIndex(aiString* str);
     void GetTextureFromModel(const aiScene* scene, int textureindex, Texture& texture);
 
-
-
+    
+    void LoadPBRTexture(string texturename);
 };

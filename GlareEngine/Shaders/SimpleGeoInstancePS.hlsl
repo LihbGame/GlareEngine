@@ -24,9 +24,10 @@ pin.TangentW = normalize(pin.TangentW);
 // Fetch the material data.
 MaterialData matData = gMaterialData[pin.MatIndex];
 
+
 // ”≤Ó’⁄µ≤”≥…‰
 float3 ModeSpacetoEye = WorldSpaceToTBN(toEyeW, pin.NormalW, pin.TangentW);
-float2 UV = ParallaxMapping(matData.HeightMapIndex, pin.TexC, ModeSpacetoEye,matData.height_scale);
+float2 UV = ParallaxMapping(matData.HeightMapIndex, pin.TexC, ModeSpacetoEye, matData.height_scale);
 
 
 float4 diffuseAlbedo = gSRVMap[matData.DiffuseMapIndex].Sample(gsamAnisotropicWrap, UV);
@@ -54,8 +55,7 @@ float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
 float4 litColor = ambient*shadowFactor[0] + directLight;
 
 // Common convention to take alpha from diffuse material.
-litColor.a = matData.DiffuseAlbedo.a;
-
-
+litColor.a = diffuseAlbedo.a;
+clip(litColor.a - 0.1f);
 return litColor;
 }

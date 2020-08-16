@@ -1,10 +1,11 @@
 #include "ModelLoader.h"
 
 
-ModelLoader::ModelLoader(HWND hwnd, ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList)
+ModelLoader::ModelLoader(HWND hwnd, ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList,L3DTextureManage* TextureManage)
 :dev(dev),
 hwnd(hwnd),
-pCommandList(CommandList)
+pCommandList(CommandList),
+pTextureManage(TextureManage)
 {
 }
 
@@ -30,7 +31,7 @@ bool ModelLoader::Load(string filename)
         MessageBox(hwnd, L"assimp scene create failed!", L"error", 0);
         return false;
     }
-    int it = filename.find_last_of('/');
+    int it = (int)filename.find_last_of('/');
     this->directory += filename.substr(0, it +1);
 
     this->ModelName = filename.substr(it + 1, filename.find_last_of('.') - it - 1);
@@ -45,6 +46,11 @@ void ModelLoader::DrawModel(string ModelName)
 vector<ModelMesh>& ModelLoader::GetModelMesh(string ModelName)
 {
     return meshes[ModelName];
+}
+
+unordered_map<string, vector<Texture*>>& ModelLoader::GetAllModelTextures()
+{
+    return ModelTextures;
 }
 
 
@@ -134,27 +140,35 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
             indices.push_back(face.mIndices[j]);
     }
 
-    //Material
+    ////Material
+    //if (mesh->mMaterialIndex >= 0)
+    //{
+    //    aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+    //    vector<Texture> DiffuseMaps = this->LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", scene);
+    //    //vector<Texture> NormalMaps = this->LoadMaterialTextures(material, aiTextureType_NORMALS, "texture_Normal", scene);
+    //    //vector<Texture> AOMaps = this->LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_ao", scene);
+    //    //vector<Texture> HeightMaps = this->LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_height", scene);
+    //    //vector<Texture> MetallicMaps = this->LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_metallic", scene);
+    //    //vector<Texture> RoughnessMaps = this->LoadMaterialTextures(material, aiTextureType_SHININESS, "texture_roughness", scene);
+    //    //NOW ONLY USE DIFFUSE MAP FOR TEST
+    //    textures.insert(textures.end(), DiffuseMaps.begin(), DiffuseMaps.end());
+    //}
+
     if (mesh->mMaterialIndex >= 0)
     {
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-        vector<Texture> DiffuseMaps = this->LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", scene);
+        aiString texturename;
+        material->GetTexture(aiTextureType_DIFFUSE, 0, &texturename);
+        string texture(texturename.C_Str());
 
-        //vector<Texture> NormalMaps = this->LoadMaterialTextures(material, aiTextureType_NORMALS, "texture_Normal", scene);
-        //vector<Texture> AOMaps = this->LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_ao", scene);
-        //vector<Texture> HeightMaps = this->LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_height", scene);
-        //vector<Texture> MetallicMaps = this->LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_metallic", scene);
-        //vector<Texture> RoughnessMaps = this->LoadMaterialTextures(material, aiTextureType_SHININESS, "texture_roughness", scene);
-        //NOW ONLY USE DIFFUSE MAP FOR TEST
-        textures.insert(textures.end(), DiffuseMaps.begin(), DiffuseMaps.end());
-
+        int it = (int)texture.find_last_of('\\');
+        texture = texture.substr(it + 1, texture.find_last_of('.') - it - 1);
+        LoadPBRTexture(texture);
     }
+
+
     return ModelMesh(dev, pCommandList, vertices, indices, textures);
 }
-
-
-
-
 
 
 
@@ -199,6 +213,29 @@ void ModelLoader::GetTextureFromModel(const aiScene* scene, int textureindex, Te
     L3DUtil::CreateWICTextureFromMemory(dev, pCommandList, texture.Resource.ReleaseAndGetAddressOf(), texture.UploadHeap.ReleaseAndGetAddressOf(), reinterpret_cast<unsigned char*>(scene->mTextures[textureindex]->pcData),*size);
 }
 
+void ModelLoader::LoadPBRTexture(string texturename)
+{
+    string rootfilename = directory +"PBRTextures/"+ texturename;
+    //aldedo
+    string Fullfilenames = rootfilename + "_albedo";
+    ModelTextures[texturename].push_back(pTextureManage->GetModelTexture(wstring(Fullfilenames.begin(), Fullfilenames.end())).get());
+    //ao
+    Fullfilenames = rootfilename + "_ao";
+    ModelTextures[texturename].push_back(pTextureManage->GetModelTexture(wstring(Fullfilenames.begin(), Fullfilenames.end())).get());
+    //Metallic
+    Fullfilenames = rootfilename + "_metallic";
+    ModelTextures[texturename].push_back(pTextureManage->GetModelTexture(wstring(Fullfilenames.begin(), Fullfilenames.end())).get());
+    //normal
+    Fullfilenames = rootfilename + "_normal";
+    ModelTextures[texturename].push_back(pTextureManage->GetModelTexture(wstring(Fullfilenames.begin(), Fullfilenames.end())).get());
+    //Roughness
+    Fullfilenames = rootfilename + "_roughness";
+    ModelTextures[texturename].push_back(pTextureManage->GetModelTexture(wstring(Fullfilenames.begin(), Fullfilenames.end())).get());
+    //Height
+    Fullfilenames = rootfilename + "_height";
+    ModelTextures[texturename].push_back(pTextureManage->GetModelTexture(wstring(Fullfilenames.begin(), Fullfilenames.end())).get());
+}
+
 
 
 vector<Texture> ModelLoader::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName, const aiScene* scene)
@@ -210,11 +247,11 @@ vector<Texture> ModelLoader::LoadMaterialTextures(aiMaterial* mat, aiTextureType
         mat->GetTexture(type, i, &str);
         // Check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
         bool skip = false;
-        for (UINT j = 0; j < textures_loaded.size(); j++)
+        for (UINT j = 0; j < Textures.size(); j++)
         {
-            if (std::strcmp(textures_loaded[j].Filename.c_str(), str.C_Str()) == 0)
+            if (std::strcmp(Textures[j].Filename.c_str(), str.C_Str()) == 0)
             {
-                textures.push_back(textures_loaded[j]);
+                textures.push_back(Textures[j]);
                 skip = true; // A texture with the same filepath has already been loaded, continue to next one. (optimization)
                 break;
             }
@@ -240,7 +277,7 @@ vector<Texture> ModelLoader::LoadMaterialTextures(aiMaterial* mat, aiTextureType
             texture.type = typeName;
             texture.Filename = str.C_Str();
             textures.push_back(texture);
-            this->textures_loaded.push_back(texture);  // Store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
+            this->Textures.push_back(texture);  // Store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
         }
     }
     return textures;

@@ -10,6 +10,7 @@ public:
 
 	void CreateTexture(std::wstring name, std::wstring filename);
 	std::unique_ptr<Texture>& GetTexture(std::wstring name);
+	std::unique_ptr<Texture>& GetModelTexture(std::wstring name);
 private:
 	ID3D12Device * md3dDevice;
 	ID3D12GraphicsCommandList *mCommandList;

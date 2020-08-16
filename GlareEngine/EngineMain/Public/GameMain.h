@@ -14,6 +14,7 @@
 #include "SkyShader.h"
 #include "SimpleGeometryInstanceShader.h"
 #include "SimpleGeometryShadowMapShader.h"
+#include "ComplexStaticModelInstanceShader.h"
 
 #include "PSOManager.h"
 #include "L3DCamera.h"
@@ -127,7 +128,9 @@ private:
 	void BuildFrameResources();
 	//创建材质信息
 	void BuildAllMaterials();
-	void BuildMaterials(wstring name, int MatCBIndex, float Height_Scale, XMFLOAT4 DiffuseAlbedo, XMFLOAT3 FresnelR0,XMFLOAT4X4 MatTransform);
+	void BuildMaterials(wstring name, int MatCBIndex, float Height_Scale, XMFLOAT4 DiffuseAlbedo, XMFLOAT3 FresnelR0,XMFLOAT4X4 MatTransform,bool isModelTexture=false);
+	
+	
 	//创建渲染项
 	void BuildRenderItems();
 	void BuildSimpleGeoInstanceItems();
@@ -135,6 +138,8 @@ private:
 	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
 	//创建资源描述堆
 	void CreateDescriptorHeaps();
+	void CreatePBRSRVinDescriptorHeap(unordered_map<string, ID3D12Resource*> TexResource,int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor,wstring MaterialName);
+
 	//sampler
 	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> GetStaticSamplers();
 	//Load model
