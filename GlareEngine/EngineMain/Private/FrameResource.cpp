@@ -1,6 +1,6 @@
 #include "FrameResource.h"
 #define InstanceCount 25
-FrameResource::FrameResource(ID3D12Device* device, UINT passCount, UINT objectCount, UINT materialCount, UINT waveVertCount)
+FrameResource::FrameResource(ID3D12Device* device, UINT passCount, UINT InstanceModelSubMeshNum, UINT objectCount, UINT materialCount, UINT waveVertCount)
 {
     ThrowIfFailed(device->CreateCommandAllocator(
         D3D12_COMMAND_LIST_TYPE_DIRECT,
@@ -10,7 +10,10 @@ FrameResource::FrameResource(ID3D12Device* device, UINT passCount, UINT objectCo
     PassCB = std::make_unique<UploadBuffer<PassConstants>>(device, passCount, true);
     MaterialBuffer = std::make_unique<UploadBuffer<MaterialData>>(device, materialCount, false);
     SimpleObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(device, objectCount, true);
-    InstanceSimpleObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(device, InstanceCount, false);
+    
+
+    InstanceSimpleObjectCB=std::make_unique<UploadBuffer<InstanceConstants>>(device, InstanceCount, false);
+
     WavesVB = std::make_unique<UploadBuffer<PosNormalTexc>>(device, waveVertCount, false);
 }
 

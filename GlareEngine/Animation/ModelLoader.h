@@ -24,6 +24,9 @@ public:
 
     vector<ModelMesh>& GetModelMesh(string ModelName);
     unordered_map<string, vector<Texture*>>& GetAllModelTextures();
+
+
+    vector<string> GetModelTextureNames(string modelname);
     void Close();
 
 private:
@@ -33,7 +36,7 @@ private:
 
     unordered_map<string,vector<ModelMesh>> meshes;
     unordered_map<string, vector<Texture*>> ModelTextures;
-
+    unordered_map<string, vector<string>> ModelTexturesName;
     string directory;
     string ModelName;
     L3DTextureManage* pTextureManage;

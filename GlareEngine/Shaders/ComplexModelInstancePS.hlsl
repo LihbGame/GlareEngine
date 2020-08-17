@@ -27,7 +27,7 @@ float4 PS(VertexOut pin) : SV_Target
 
 	float4 diffuseAlbedo = gSRVMap[matData.DiffuseMapIndex].Sample(gsamAnisotropicWrap, pin.TexC);
 	float Roughness = gSRVMap[matData.RoughnessMapIndex].Sample(gsamAnisotropicWrap, pin.TexC).x;
-	float Metallic = gSRVMap[matData.MetallicMapIndex].Sample(gsamAnisotropicWrap, pin.TexC).x;
+	float Metallic = gSRVMap[matData.MetallicMapIndex].Sample(gsamAnisotropicWrap, pin.TexC).w;
 	float AO = gSRVMap[matData.AOMapIndex].Sample(gsamAnisotropicWrap, pin.TexC).x;
 
 

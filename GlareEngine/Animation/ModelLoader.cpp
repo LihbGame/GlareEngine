@@ -55,6 +55,11 @@ unordered_map<string, vector<Texture*>>& ModelLoader::GetAllModelTextures()
 
 
 
+vector<string> ModelLoader::GetModelTextureNames(string modelname)
+{
+    return ModelTexturesName[modelname];
+}
+
 void ModelLoader::Close()
 {
 }
@@ -215,6 +220,9 @@ void ModelLoader::GetTextureFromModel(const aiScene* scene, int textureindex, Te
 
 void ModelLoader::LoadPBRTexture(string texturename)
 {
+    //store model's texture name
+    ModelTexturesName[ModelName].push_back(texturename);
+
     string rootfilename = directory +"PBRTextures/"+ texturename;
     //aldedo
     string Fullfilenames = rootfilename + "_albedo";

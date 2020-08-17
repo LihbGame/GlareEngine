@@ -93,7 +93,7 @@ bool GameApp::Initialize()
 		BuildLandGeometry();
 		BuildWavesGeometryBuffers();
 		BuildRenderItems();
-		BuildSimpleGeoInstanceItems();
+		BuildModelGeoInstanceItems();
 		BuildFrameResources();
 		BuildPSOs();
 	}
@@ -576,35 +576,34 @@ void GameApp::UpdateInstanceCBs(const GameTimer& gt)
 	for (auto& e : mRitemLayer[(int)RenderLayer::InstanceSimpleItems])
 	{
 		const auto& instanceData = e->Instances;
-
 		int visibleInstanceCount = 0;
-
-		for (UINT i = 0; i < (UINT)instanceData.size(); ++i)
-		{
-			XMMATRIX world = XMLoadFloat4x4(&instanceData[i].World);
-			XMMATRIX texTransform = XMLoadFloat4x4(&instanceData[i].TexTransform);
-
-			XMMATRIX invWorld = XMMatrixInverse(&XMMatrixDeterminant(world), world);
-
-			// 视图空间转换到局部空间
-			XMMATRIX viewToLocal = XMMatrixMultiply(invView, invWorld);
-
-			// 将摄像机视锥从视图空间转换为对象的局部空间。
-			BoundingFrustum localSpaceFrustum;
-			mCamFrustum.Transform(localSpaceFrustum, viewToLocal);
-
-			// 在局部空间中执行盒子/视锥相交测试。
-			if ((localSpaceFrustum.Contains(e->Bounds) != DirectX::DISJOINT) || (mFrustumCullingEnabled == false))
+		
+			for (UINT i = 0; i < (UINT)instanceData.size(); ++i)
 			{
-				ObjectConstants data;
-				XMStoreFloat4x4(&data.World, XMMatrixTranspose(world));
-				XMStoreFloat4x4(&data.TexTransform, XMMatrixTranspose(texTransform));
-				data.MaterialIndex = instanceData[i].MaterialIndex;
-				// 将实例数据写入可见对象的结构化缓冲区。
-				currInstanceBuffer->CopyData(visibleInstanceCount++, data);
-			}
-		}
+				XMMATRIX world = XMLoadFloat4x4(&instanceData[i].World);
+				XMMATRIX texTransform = XMLoadFloat4x4(&instanceData[i].TexTransform);
 
+				XMMATRIX invWorld = XMMatrixInverse(&XMMatrixDeterminant(world), world);
+
+				// 视图空间转换到局部空间
+				XMMATRIX viewToLocal = XMMatrixMultiply(invView, invWorld);
+
+				// 将摄像机视锥从视图空间转换为对象的局部空间。
+				BoundingFrustum localSpaceFrustum;
+				mCamFrustum.Transform(localSpaceFrustum, viewToLocal);
+
+				// 在局部空间中执行盒子/视锥相交测试。
+				if ((localSpaceFrustum.Contains(e->Bounds) != DirectX::DISJOINT) || (mFrustumCullingEnabled == false))
+				{
+					InstanceConstants data;
+					XMStoreFloat4x4(&data.World, XMMatrixTranspose(world));
+					XMStoreFloat4x4(&data.TexTransform, XMMatrixTranspose(texTransform));
+					data.MaterialIndex = instanceData[i].MaterialIndex;
+					// 将实例数据写入可见对象的结构化缓冲区。
+					currInstanceBuffer->CopyData(visibleInstanceCount++, data);
+				}
+			}
+		
 		e->InstanceCount = visibleInstanceCount;
 
 	}
@@ -725,7 +724,7 @@ void GameApp::UpdateWaves(const GameTimer& gt)
 	}
 
 	// Set the dynamic VB of the wave renderitem to the current frame VB.
-	mSphereRitem->Geo->VertexBufferGPU = currWavesVB->Resource();
+	mSphereRitem->Geo[0]->VertexBufferGPU = currWavesVB->Resource();
 }
 
 void GameApp::BuildRootSignature()
@@ -1081,7 +1080,7 @@ void GameApp::BuildFrameResources()
 	for (int i = 0; i < gNumFrameResources; ++i)
 	{
 		mFrameResources.push_back(std::make_unique<FrameResource>(md3dDevice.Get(),
-			2, (UINT)mAllRitems.size(), (UINT)mMaterials.size(), mWaves->VertexCount()));
+			2,(UINT)mModelLoder->GetModelMesh("mercMaleMarksman").size(), (UINT)mAllRitems.size(), (UINT)mMaterials.size(), mWaves->VertexCount()));
 	}
 }
 
@@ -1211,11 +1210,11 @@ void GameApp::BuildRenderItems()
 		XMStoreFloat4x4(&LandRitem->TexTransform, XMMatrixScaling(5.0, 5.0, 5.0));
 		LandRitem->ObjCBIndex = ObjCBIndex++;
 		LandRitem->Mat = mMaterials[L"PBRharshbricks"].get();
-		LandRitem->Geo = mGeometries["landGeo"].get();
+		LandRitem->Geo.push_back(mGeometries["landGeo"].get());
 		LandRitem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-		LandRitem->IndexCount = LandRitem->Geo->DrawArgs["grid"].IndexCount;
-		LandRitem->StartIndexLocation = LandRitem->Geo->DrawArgs["grid"].StartIndexLocation;
-		LandRitem->BaseVertexLocation = LandRitem->Geo->DrawArgs["grid"].BaseVertexLocation;
+		LandRitem->IndexCount.push_back(LandRitem->Geo[0]->DrawArgs["grid"].IndexCount);
+		LandRitem->StartIndexLocation.push_back(LandRitem->Geo[0]->DrawArgs["grid"].StartIndexLocation);
+		LandRitem->BaseVertexLocation.push_back(LandRitem->Geo[0]->DrawArgs["grid"].BaseVertexLocation);
 		LandRitem->InstanceCount = 1;
 		mRitemLayer[(int)RenderLayer::Opaque].push_back(LandRitem.get());
 		mAllRitems.push_back(std::move(LandRitem));
@@ -1227,11 +1226,11 @@ void GameApp::BuildRenderItems()
 		skyRitem->TexTransform = MathHelper::Identity4x4();
 		skyRitem->ObjCBIndex = ObjCBIndex++;
 		skyRitem->Mat = mMaterials[L"Sky"].get();
-		skyRitem->Geo = mGeometries["Sky"].get();
+		skyRitem->Geo.push_back(mGeometries["Sky"].get());
 		skyRitem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-		skyRitem->IndexCount = skyRitem->Geo->DrawArgs["Sphere"].IndexCount;
-		skyRitem->StartIndexLocation = skyRitem->Geo->DrawArgs["Sphere"].StartIndexLocation;
-		skyRitem->BaseVertexLocation = skyRitem->Geo->DrawArgs["Sphere"].BaseVertexLocation;
+		skyRitem->IndexCount.push_back(skyRitem->Geo[0]->DrawArgs["Sphere"].IndexCount);
+		skyRitem->StartIndexLocation.push_back(skyRitem->Geo[0]->DrawArgs["Sphere"].StartIndexLocation);
+		skyRitem->BaseVertexLocation.push_back(skyRitem->Geo[0]->DrawArgs["Sphere"].BaseVertexLocation);
 		skyRitem->InstanceCount = 1;
 		mRitemLayer[(int)RenderLayer::Sky].push_back(skyRitem.get());
 		mAllRitems.push_back(std::move(skyRitem));
@@ -1240,32 +1239,34 @@ void GameApp::BuildRenderItems()
 
 }
 
-void GameApp::BuildSimpleGeoInstanceItems()
+void GameApp::BuildModelGeoInstanceItems()
 {
 	// MODEL TEST CODE
 #pragma region MODEL_TEST_CODE
-	 LMeshGeo = mModelLoder->GetModelMesh("Blue_Tree_02a")[0].mMeshGeo;
-	 BoundingBox lbox;
-	 lbox.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	 lbox.Extents= XMFLOAT3(200.0f, 200.0f, 200.0f);
-#pragma endregion
 
-
+	BoundingBox lbox;
+	lbox.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	lbox.Extents = XMFLOAT3(200.0f, 200.0f, 200.0f);
 
 
 	auto InstanceSphereRitem = std::make_unique<RenderItem>();
+	for (auto& e : mModelLoder->GetModelMesh("mercMaleMarksman"))
+	{
+		InstanceSphereRitem->Geo.push_back(&e.mMeshGeo);
+		InstanceSphereRitem->IndexCount.push_back(e.mMeshGeo.DrawArgs["Model Mesh"].IndexCount);
+		InstanceSphereRitem->StartIndexLocation.push_back(e.mMeshGeo.DrawArgs["Model Mesh"].StartIndexLocation);
+		InstanceSphereRitem->BaseVertexLocation.push_back(e.mMeshGeo.DrawArgs["Model Mesh"].BaseVertexLocation);
+	}
+	
 	InstanceSphereRitem->World = MathHelper::Identity4x4();
 	InstanceSphereRitem->TexTransform = MathHelper::Identity4x4();
 	InstanceSphereRitem->ObjCBIndex = -1;//not important in instance item
 	InstanceSphereRitem->Mat = mMaterials[L"PBRBrass"].get();
-	InstanceSphereRitem->Geo = &LMeshGeo;//mGeometries["Box"].get();
 	InstanceSphereRitem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	InstanceSphereRitem->IndexCount = LMeshGeo.DrawArgs["Model Mesh"].IndexCount;// InstanceSphereRitem->Geo->DrawArgs["Box"].IndexCount;
-	InstanceSphereRitem->StartIndexLocation = LMeshGeo.DrawArgs["Model Mesh"].StartIndexLocation;//InstanceSphereRitem->Geo->DrawArgs["Box"].StartIndexLocation;
-	InstanceSphereRitem->BaseVertexLocation = LMeshGeo.DrawArgs["Model Mesh"].BaseVertexLocation;// InstanceSphereRitem->Geo->DrawArgs["Box"].BaseVertexLocation;
-	InstanceSphereRitem->Bounds = lbox;//InstanceSphereRitem->Geo->DrawArgs["Box"].Bounds;
+	InstanceSphereRitem->Bounds = lbox;
 	
 	// Generate instance data.
+	///Hard code
 	const int n = 5;
 	InstanceSphereRitem->Instances.resize(n * n);
 	InstanceSphereRitem->InstanceCount = 0;//init count
@@ -1285,18 +1286,20 @@ void GameApp::BuildSimpleGeoInstanceItems()
 			{
 				int index =i * n + j;
 				// Position instanced along a 3D grid.
-				XMStoreFloat4x4(&InstanceSphereRitem->Instances[index].World,XMMatrixRotationY(MathHelper::RandF()* MathHelper::Pi) * XMLoadFloat4x4(&XMFLOAT4X4(
-					0.03f, 0.0f, 0.0f, 0.0f,
-					0.0f, 0.03f, 0.0f, 0.0f,
-					0.0f, 0.0f, 0.03f, 0.0f,
+				XMStoreFloat4x4(&InstanceSphereRitem->Instances[index].World, XMMatrixRotationX(MathHelper::Pi/2)*XMMatrixRotationY(MathHelper::RandF()* MathHelper::Pi) * XMLoadFloat4x4(&XMFLOAT4X4(
+					0.09f, 0.0f, 0.0f, 0.0f,
+					0.0f, 0.09f, 0.0f, 0.0f,
+					0.0f, 0.0f, 0.09f, 0.0f,
 					x + j * dx, 0.0f, y + i * dy, 1.0f)));
 
-				InstanceSphereRitem->Instances[index].MaterialIndex = (mMaterials.size() - 2);
+				InstanceSphereRitem->Instances[index].MaterialIndex = mMaterials[L"MercenaryMale"]->MatCBIndex;// (UINT)(mMaterials.size() - 3);
 				InstanceSphereRitem->Instances[index].TexTransform= MathHelper::Identity4x4();
 			}
 		}
 		mRitemLayer[(int)RenderLayer::InstanceSimpleItems].push_back(InstanceSphereRitem.get());
 		mAllRitems.push_back(std::move(InstanceSphereRitem));
+
+#pragma endregion
 }
 
 void GameApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems)
@@ -1312,9 +1315,23 @@ void GameApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vec
 	{
 		auto ri = ritems[i];
 
-		cmdList->IASetVertexBuffers(0, 1, &ri->Geo->VertexBufferView());
-		cmdList->IASetIndexBuffer(&ri->Geo->IndexBufferView());
-		cmdList->IASetPrimitiveTopology(ri->PrimitiveType);
+		D3D12_GPU_VIRTUAL_ADDRESS objCBAddress;
+		if (ri->ObjCBIndex >= 0)
+		{
+			objCBAddress = objectCB->GetGPUVirtualAddress() + ri->ObjCBIndex * objCBByteSize;
+		}
+		else//instance draw call
+		{
+			objCBAddress = objectCB->GetGPUVirtualAddress();
+		}
+		cmdList->SetGraphicsRootConstantBufferView(0, objCBAddress);
+
+
+		for (int MeshNum=0;MeshNum<ri->Geo.size();++MeshNum)
+		{
+			cmdList->IASetVertexBuffers(0, 1, &ri->Geo[MeshNum]->VertexBufferView());
+			cmdList->IASetIndexBuffer(&ri->Geo[MeshNum]->IndexBufferView());
+			cmdList->IASetPrimitiveTopology(ri->PrimitiveType);
 
 
 			// Set the instance buffer to use for this render-item.  For structured buffers, we can bypass 
@@ -1323,19 +1340,8 @@ void GameApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vec
 			mCommandList->SetGraphicsRootShaderResourceView(2, instanceBuffer->GetGPUVirtualAddress());
 
 
-			D3D12_GPU_VIRTUAL_ADDRESS objCBAddress;
-			if (ri->ObjCBIndex >= 0)
-			{
-				objCBAddress = objectCB->GetGPUVirtualAddress() + ri->ObjCBIndex * objCBByteSize;
-			}
-			else//instance draw call
-			{
-				objCBAddress = objectCB->GetGPUVirtualAddress();
-			}
-			cmdList->SetGraphicsRootConstantBufferView(0, objCBAddress);
-
-
-		cmdList->DrawIndexedInstanced(ri->IndexCount, ri->InstanceCount, ri->StartIndexLocation, ri->BaseVertexLocation, 0);
+			cmdList->DrawIndexedInstanced(ri->IndexCount[MeshNum], ri->InstanceCount, ri->StartIndexLocation[MeshNum], ri->BaseVertexLocation[MeshNum], 0);
+		}
 	}
 }
 
@@ -1437,6 +1443,7 @@ void GameApp::LoadModel()
 	mModelLoder->Load("BlueTree/Blue_Tree_03c.fbx");
 	mModelLoder->Load("BlueTree/Blue_Tree_03d.fbx");
 	mModelLoder->Load("BlueTree/Blue_Tree_02a.fbx");
+	mModelLoder->Load("mercMaleMarksman/mercMaleMarksman.fbx");
 }
 
 

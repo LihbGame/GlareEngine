@@ -47,21 +47,21 @@ struct RenderItem
 	int ObjCBIndex = -1;
 
 	Material* Mat = nullptr;
-	MeshGeometry* Geo = nullptr;
+	vector<MeshGeometry*> Geo;
 
 	// Primitive topology.
 	D3D12_PRIMITIVE_TOPOLOGY PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	//Instance Data
 	BoundingBox Bounds;
-	std::vector<ObjectConstants> Instances;
+	std::vector<InstanceConstants> Instances;
 
 
 	// DrawIndexedInstanced parameters.
-	UINT IndexCount = 0;
-	UINT InstanceCount = 0;
-	UINT StartIndexLocation = 0;
-	int BaseVertexLocation = 0;
+	UINT InstanceCount;
+	vector<UINT> IndexCount;
+	vector<UINT> StartIndexLocation;
+	vector<int> BaseVertexLocation;
 };
 
 enum class RenderLayer : int
@@ -133,7 +133,7 @@ private:
 	
 	//创建渲染项
 	void BuildRenderItems();
-	void BuildSimpleGeoInstanceItems();
+	void BuildModelGeoInstanceItems();
 	//绘制渲染项
 	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
 	//创建资源描述堆
@@ -224,5 +224,5 @@ private:
 	std::unique_ptr<ShadowMap> mShadowMap;
 	//Model Loader
 	std::unique_ptr<ModelLoader> mModelLoder;
-	MeshGeometry LMeshGeo;
+	
 };
