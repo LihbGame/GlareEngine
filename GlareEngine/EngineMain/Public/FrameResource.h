@@ -94,7 +94,7 @@ public:
     std::unique_ptr<UploadBuffer<PassConstants>> PassCB = nullptr;
     std::unique_ptr<UploadBuffer<MaterialData>> MaterialBuffer = nullptr;
     std::unique_ptr<UploadBuffer<ObjectConstants>> SimpleObjectCB = nullptr;
-    std::unique_ptr<UploadBuffer<InstanceConstants>> InstanceSimpleObjectCB;
+    vector<std::unique_ptr<UploadBuffer<InstanceConstants>>> InstanceSimpleObjectCB ;
 
     // 在GPU处理完引用它的命令之前，我们无法更新动态顶点缓冲区。 
     //因此，每个框架都需要自己的框架。

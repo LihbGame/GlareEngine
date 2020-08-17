@@ -572,12 +572,15 @@ void GameApp::UpdateInstanceCBs(const GameTimer& gt)
 	XMMATRIX view = mCamera.GetView();
 	XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
 
-	auto currInstanceBuffer = mCurrFrameResource->InstanceSimpleObjectCB.get();
+	
 	for (auto& e : mRitemLayer[(int)RenderLayer::InstanceSimpleItems])
 	{
 		const auto& instanceData = e->Instances;
 		int visibleInstanceCount = 0;
-		
+		for (int matNum = 0; matNum < mModelLoder->GetModelTextureNames("mercMaleMarksman").size(); ++matNum)
+		{
+			visibleInstanceCount = 0;
+			auto currInstanceBuffer = mCurrFrameResource->InstanceSimpleObjectCB[matNum].get();
 			for (UINT i = 0; i < (UINT)instanceData.size(); ++i)
 			{
 				XMMATRIX world = XMLoadFloat4x4(&instanceData[i].World);
@@ -598,12 +601,13 @@ void GameApp::UpdateInstanceCBs(const GameTimer& gt)
 					InstanceConstants data;
 					XMStoreFloat4x4(&data.World, XMMatrixTranspose(world));
 					XMStoreFloat4x4(&data.TexTransform, XMMatrixTranspose(texTransform));
-					data.MaterialIndex = instanceData[i].MaterialIndex;
+					string matname = mModelLoder->GetModelTextureNames("mercMaleMarksman")[matNum];
+					data.MaterialIndex = mMaterials[wstring(matname.begin(),matname.end())]->MatCBIndex;
 					// 将实例数据写入可见对象的结构化缓冲区。
 					currInstanceBuffer->CopyData(visibleInstanceCount++, data);
 				}
 			}
-		
+		}
 		e->InstanceCount = visibleInstanceCount;
 
 	}
@@ -1336,7 +1340,7 @@ void GameApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vec
 
 			// Set the instance buffer to use for this render-item.  For structured buffers, we can bypass 
 			// the heap and set as a root descriptor.
-			auto instanceBuffer = mCurrFrameResource->InstanceSimpleObjectCB->Resource();
+			auto instanceBuffer = mCurrFrameResource->InstanceSimpleObjectCB[MeshNum]->Resource();
 			mCommandList->SetGraphicsRootShaderResourceView(2, instanceBuffer->GetGPUVirtualAddress());
 
 
