@@ -10,6 +10,7 @@ struct VertexOut
 {
 	float4 PosH    : SV_POSITION;
 	float2 TexC    : TEXCOORD;
+	nointerpolation uint MatIndex  : MATINDEX;
 };
 
 VertexOut VS(VertexIn vin, uint instanceID : SV_InstanceID)
@@ -21,7 +22,7 @@ VertexOut VS(VertexIn vin, uint instanceID : SV_InstanceID)
 	float4x4 world = instData.World;
 	float4x4 texTransform = instData.TexTransform;
 
-
+	vout.MatIndex = instData.MaterialIndex;
 
 	// Transform to world space.
 	float4 posW = mul(float4(vin.PosL, 1.0f), world);
@@ -29,7 +30,7 @@ VertexOut VS(VertexIn vin, uint instanceID : SV_InstanceID)
 	vout.PosH = mul(posW, gViewProj);
 
 	// Output vertex attributes for interpolation across triangle.
-	float2 texC = mul(float4(vin.TexC, 0.0f, 1.0f), texTransform).xy;
+	vout.TexC = mul(float4(vin.TexC, 0.0f, 1.0f), texTransform).xy;
 
 	return vout;
 }

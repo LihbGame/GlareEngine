@@ -13,7 +13,6 @@
 
 #include "PBRLighting.hlsli"
 
-#define MaxSubMesh 10
 
 
 struct MaterialData
@@ -47,7 +46,7 @@ struct InstanceData
 TextureCube gCubeMap : register(t0);
 //纹理数组，仅着色器模型5.1+支持。 与Texture2DArray不同，
 //此数组中的纹理可以具有不同的大小和格式，使其比纹理数组更灵活。
-Texture2D gSRVMap[55] : register(t1);
+Texture2D gSRVMap[49] : register(t1);
 //放入space1，因此纹理数组不会与这些资源重叠。
 //纹理数组将占用space0中的寄存器t0，t1，...，t3。
 StructuredBuffer<MaterialData> gMaterialData : register(t1, space1);
@@ -198,7 +197,7 @@ float CalcShadowFactor(float4 shadowPosH)
     float depth = shadowPosH.z;
 
     uint width, height, numMips;
-    gSRVMap[54].GetDimensions(0, width, height, numMips);
+    gSRVMap[48].GetDimensions(0, width, height, numMips);
 
     // Texel size.
     float dx = 1.0f / (float)width;
@@ -214,7 +213,7 @@ float CalcShadowFactor(float4 shadowPosH)
     [unroll]
     for (int i = 0; i < 9; ++i)
     {
-        percentLit += gSRVMap[54].SampleCmpLevelZero(gsamShadow,
+        percentLit += gSRVMap[48].SampleCmpLevelZero(gsamShadow,
             shadowPosH.xy + offsets[i], depth).r;
     }
 

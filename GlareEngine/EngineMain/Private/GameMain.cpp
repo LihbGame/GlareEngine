@@ -173,6 +173,31 @@ void GameApp::Draw(const GameTimer& gt)
 		mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 	}
 
+	//root descriptors
+	{
+		
+
+	// Bind all the materials used in this scene.  For structured buffers, we can bypass the heap and 
+	// set as a root descriptor.
+		auto matBuffer = mCurrFrameResource->MaterialBuffer->Resource();
+		mCommandList->SetGraphicsRootShaderResourceView(3, matBuffer->GetGPUVirtualAddress());
+		// Bind the sky cube map.  For our demos, we just use one "world" cube map representing the environment
+		// from far away, so all objects will use the same cube map and we only need to set it once per-frame.  
+		// If we wanted to use "local" cube maps, we would have to change them per-object, or dynamically
+		// index into an array of cube maps.
+		CD3DX12_GPU_DESCRIPTOR_HANDLE skyTexDescriptor(mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+		skyTexDescriptor.Offset(mMaterials[L"Sky"]->DiffuseSrvHeapIndex, mCbvSrvDescriptorSize);
+		mCommandList->SetGraphicsRootDescriptorTable(4, skyTexDescriptor);
+
+
+		// Bind all the textures used in this scene.  Observe
+		// that we only have to specify the first descriptor in the table.  
+		// The root signature knows how many descriptors are expected in the table.
+		mCommandList->SetGraphicsRootDescriptorTable(5, mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+	}
+
+
+
 	//draw shadow
 	DrawSceneToShadowMap();
 
@@ -212,31 +237,10 @@ void GameApp::Draw(const GameTimer& gt)
 		mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 	}
 
-	//root descriptors
-	{
-		//Set Graphics Root CBV in slot 2
-		auto passCB = mCurrFrameResource->PassCB->Resource();
-		mCommandList->SetGraphicsRootConstantBufferView(1, passCB->GetGPUVirtualAddress());
-
-		// Bind all the materials used in this scene.  For structured buffers, we can bypass the heap and 
-	// set as a root descriptor.
-		auto matBuffer = mCurrFrameResource->MaterialBuffer->Resource();
-		mCommandList->SetGraphicsRootShaderResourceView(3, matBuffer->GetGPUVirtualAddress());
-		// Bind the sky cube map.  For our demos, we just use one "world" cube map representing the environment
-		// from far away, so all objects will use the same cube map and we only need to set it once per-frame.  
-		// If we wanted to use "local" cube maps, we would have to change them per-object, or dynamically
-		// index into an array of cube maps.
-		CD3DX12_GPU_DESCRIPTOR_HANDLE skyTexDescriptor(mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-		skyTexDescriptor.Offset(mMaterials[L"Sky"]->DiffuseSrvHeapIndex, mCbvSrvDescriptorSize);
-		mCommandList->SetGraphicsRootDescriptorTable(4, skyTexDescriptor);
-
-
-		// Bind all the textures used in this scene.  Observe
-		// that we only have to specify the first descriptor in the table.  
-		// The root signature knows how many descriptors are expected in the table.
-		mCommandList->SetGraphicsRootDescriptorTable(5, mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-	}
-
+	
+	//Set Graphics Root CBV in slot 2
+	auto passCB = mCurrFrameResource->PassCB->Resource();
+	mCommandList->SetGraphicsRootConstantBufferView(1, passCB->GetGPUVirtualAddress());
 
 
 	//Draw Render Items (Opaque)
@@ -577,7 +581,7 @@ void GameApp::UpdateInstanceCBs(const GameTimer& gt)
 	{
 		const auto& instanceData = e->Instances;
 		int visibleInstanceCount = 0;
-		for (int matNum = 0; matNum < mModelLoder->GetModelTextureNames("mercMaleMarksman").size(); ++matNum)
+		for (int matNum = 0; matNum < mModelLoder->GetModelTextureNames("Blue_Tree_02a").size(); ++matNum)
 		{
 			visibleInstanceCount = 0;
 			auto currInstanceBuffer = mCurrFrameResource->InstanceSimpleObjectCB[matNum].get();
@@ -601,7 +605,7 @@ void GameApp::UpdateInstanceCBs(const GameTimer& gt)
 					InstanceConstants data;
 					XMStoreFloat4x4(&data.World, XMMatrixTranspose(world));
 					XMStoreFloat4x4(&data.TexTransform, XMMatrixTranspose(texTransform));
-					string matname = mModelLoder->GetModelTextureNames("mercMaleMarksman")[matNum];
+					string matname = mModelLoder->GetModelTextureNames("Blue_Tree_02a")[matNum];
 					data.MaterialIndex = mMaterials[wstring(matname.begin(),matname.end())]->MatCBIndex;
 					// 将实例数据写入可见对象的结构化缓冲区。
 					currInstanceBuffer->CopyData(visibleInstanceCount++, data);
@@ -980,7 +984,7 @@ void GameApp::BuildPSOs()
 
 
 	//
-	// PSO for Instance CUBE.
+	// PSO for Instance .
 	//
 	Input = mShaders["Instance"]->GetInputLayout();
 	mPSOs->BuildPSO(md3dDevice.Get(),
@@ -1011,7 +1015,7 @@ void GameApp::BuildPSOs()
 
 
 	//
-	// PSO for Instance CUBE shadow.
+	// PSO for Instance  shadow.
 	//
 	D3D12_RASTERIZER_DESC ShadowRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	ShadowRasterizerState.DepthBias = 25000;
@@ -1024,7 +1028,8 @@ void GameApp::BuildPSOs()
 		mRootSignature.Get(),
 		{ reinterpret_cast<BYTE*>(mShaders["InstanceSimpleGeoShadowMap"]->GetVSShader()->GetBufferPointer()),
 			mShaders["InstanceSimpleGeoShadowMap"]->GetVSShader()->GetBufferSize() },
-		{},
+		{ reinterpret_cast<BYTE*>(mShaders["InstanceSimpleGeoShadowMap"]->GetPSShader()->GetBufferPointer()),
+		mShaders["InstanceSimpleGeoShadowMap"]->GetPSShader()->GetBufferSize() },
 		{},
 		{},
 		{},
@@ -1084,7 +1089,7 @@ void GameApp::BuildFrameResources()
 	for (int i = 0; i < gNumFrameResources; ++i)
 	{
 		mFrameResources.push_back(std::make_unique<FrameResource>(md3dDevice.Get(),
-			2,(UINT)mModelLoder->GetModelMesh("mercMaleMarksman").size(), (UINT)mAllRitems.size(), (UINT)mMaterials.size(), mWaves->VertexCount()));
+			2,(UINT)mModelLoder->GetModelMesh("Blue_Tree_02a").size(), (UINT)mAllRitems.size(), (UINT)mMaterials.size(), mWaves->VertexCount()));
 	}
 }
 
@@ -1254,7 +1259,7 @@ void GameApp::BuildModelGeoInstanceItems()
 
 
 	auto InstanceSphereRitem = std::make_unique<RenderItem>();
-	for (auto& e : mModelLoder->GetModelMesh("mercMaleMarksman"))
+	for (auto& e : mModelLoder->GetModelMesh("Blue_Tree_02a"))
 	{
 		InstanceSphereRitem->Geo.push_back(&e.mMeshGeo);
 		InstanceSphereRitem->IndexCount.push_back(e.mMeshGeo.DrawArgs["Model Mesh"].IndexCount);
@@ -1290,13 +1295,13 @@ void GameApp::BuildModelGeoInstanceItems()
 			{
 				int index =i * n + j;
 				// Position instanced along a 3D grid.
-				XMStoreFloat4x4(&InstanceSphereRitem->Instances[index].World, XMMatrixRotationX(MathHelper::Pi/2)*XMMatrixRotationY(MathHelper::RandF()* MathHelper::Pi) * XMLoadFloat4x4(&XMFLOAT4X4(
-					0.09f, 0.0f, 0.0f, 0.0f,
-					0.0f, 0.09f, 0.0f, 0.0f,
-					0.0f, 0.0f, 0.09f, 0.0f,
+				XMStoreFloat4x4(&InstanceSphereRitem->Instances[index].World, /*XMMatrixRotationX(MathHelper::Pi/2)**/XMMatrixRotationY(MathHelper::RandF()* MathHelper::Pi) * XMLoadFloat4x4(&XMFLOAT4X4(
+					0.04f, 0.0f, 0.0f, 0.0f,
+					0.0f, 0.04f, 0.0f, 0.0f,
+					0.0f, 0.0f, 0.04f, 0.0f,
 					x + j * dx, 0.0f, y + i * dy, 1.0f)));
 
-				InstanceSphereRitem->Instances[index].MaterialIndex = mMaterials[L"MercenaryMale"]->MatCBIndex;// (UINT)(mMaterials.size() - 3);
+				InstanceSphereRitem->Instances[index].MaterialIndex = (UINT)(mMaterials.size() - 3);
 				InstanceSphereRitem->Instances[index].TexTransform= MathHelper::Identity4x4();
 			}
 		}
@@ -1447,7 +1452,7 @@ void GameApp::LoadModel()
 	mModelLoder->Load("BlueTree/Blue_Tree_03c.fbx");
 	mModelLoder->Load("BlueTree/Blue_Tree_03d.fbx");
 	mModelLoder->Load("BlueTree/Blue_Tree_02a.fbx");
-	mModelLoder->Load("mercMaleMarksman/mercMaleMarksman.fbx");
+	mModelLoder->Load("TraumaGuard/TraumaGuard.fbx");
 }
 
 
