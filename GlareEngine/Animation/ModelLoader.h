@@ -1,13 +1,10 @@
 //#pragma once
 
-#include "L3DUtil.h"
+
 #include "ModelMesh.h"
 #include "L3DTextureManage.h"
+#include "Animation.h"
 
-//assimp head
-#include <assimp\Importer.hpp>
-#include <assimp\scene.h>
-#include <assimp\postprocess.h>
 
 
 class ModelLoader
@@ -15,10 +12,11 @@ class ModelLoader
 public:
     ModelLoader(HWND hwnd, ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList,L3DTextureManage* TextureManage);
     ~ModelLoader();
-
-
-    bool Load(string filename);
-
+   
+    //load model mesh data
+    bool LoadModel(string filename);
+    //load animation data
+    bool LoadAnimation(string filename);
    
     void DrawModel(string ModelName);
 
@@ -43,14 +41,24 @@ private:
 
     //not use
     vector<Texture > Textures;
-private://functions
+
+    aiMatrix4x4 m_global_inverse_transform;
+
+    //animation string:model name 
+    unordered_map<string,vector<Animation>> mAnimations;
+
+
+private:
+    ///mesh functions
+    ModelLoader() {};
     void ProcessNode(aiNode* node, const aiScene* scene);
     ModelMesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
     vector<Texture> LoadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName, const aiScene* scene);
     string DetermineTextureType(const aiScene* scene, aiMaterial* mat);
     int GetTextureIndex(aiString* str);
     void GetTextureFromModel(const aiScene* scene, int textureindex, Texture& texture);
+    void LoadPBRTexture(string texturename);
 
     
-    void LoadPBRTexture(string texturename);
+
 };

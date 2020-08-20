@@ -15,7 +15,7 @@ ModelLoader::~ModelLoader()
 }
 
 
-bool ModelLoader::Load(string filename)
+bool ModelLoader::LoadModel(string filename)
 {
     Assimp::Importer importer;
 
@@ -31,11 +31,20 @@ bool ModelLoader::Load(string filename)
         MessageBox(hwnd, L"assimp scene create failed!", L"error", 0);
         return false;
     }
+
+    m_global_inverse_transform = pScene->mRootNode->mTransformation;
+    m_global_inverse_transform.Inverse();
+
     int it = (int)filename.find_last_of('/');
     this->directory += filename.substr(0, it +1);
 
     this->ModelName = filename.substr(it + 1, filename.find_last_of('.') - it - 1);
     ProcessNode(pScene->mRootNode, pScene);
+    return true;
+}
+
+bool ModelLoader::LoadAnimation(string filename)
+{
     return true;
 }
 

@@ -137,6 +137,7 @@
     <ClInclude Include="Animation\ModelMesh.h" />
     <ClInclude Include="Animation\ModelLoader.h" />
     <ClInclude Include="ShaderSource\Public\ComplexStaticModelInstanceShader.h" />
+    <ClInclude Include="Animation\Animation.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Private\DDSTextureLoader.cpp">
@@ -236,6 +237,9 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="ShaderSource\Private\ComplexStaticModelInstanceShader.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation\Animation.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>

@@ -44,9 +44,11 @@ GameApp::~GameApp()
 	if (md3dDevice != nullptr)
 		FlushCommandQueue();
 
-	delete mShaders["GerstnerWave"];
-	mShaders["GerstnerWave"] = nullptr;
-
+	for (auto& e : mShaders)
+	{
+		delete e.second;
+		e.second = nullptr;
+	}
 
 
 	
@@ -1447,13 +1449,13 @@ std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> GameApp::GetStaticSamplers()
 
 void GameApp::LoadModel()
 {
-	mModelLoder->Load("BlueTree/Blue_Tree_03a.fbx");
-	mModelLoder->Load("BlueTree/Blue_Tree_03b.fbx");
-	mModelLoder->Load("BlueTree/Blue_Tree_03c.fbx");
-	mModelLoder->Load("BlueTree/Blue_Tree_03d.fbx");
-	mModelLoder->Load("BlueTree/Blue_Tree_02a.fbx");
-	mModelLoder->Load("TraumaGuard/TraumaGuard.fbx");
-}
+	mModelLoder->LoadModel("BlueTree/Blue_Tree_03a.fbx");
+	mModelLoder->LoadModel("BlueTree/Blue_Tree_03b.fbx");
+	mModelLoder->LoadModel("BlueTree/Blue_Tree_03c.fbx");
+	mModelLoder->LoadModel("BlueTree/Blue_Tree_03d.fbx");
+	mModelLoder->LoadModel("BlueTree/Blue_Tree_02a.fbx");
+	mModelLoder->LoadModel("TraumaGuard/TraumaGuard.fbx");
+}					
 
 
 
