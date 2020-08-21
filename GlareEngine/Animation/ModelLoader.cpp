@@ -1,4 +1,4 @@
-#include "ModelLoader.h"
+﻿#include "ModelLoader.h"
 
 
 ModelLoader::ModelLoader(HWND hwnd, ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList,L3DTextureManage* TextureManage)
@@ -28,23 +28,48 @@ bool ModelLoader::LoadModel(string filename)
 
     if (pScene == NULL)
     {
-        MessageBox(hwnd, L"assimp scene create failed!", L"error", 0);
+        MessageBox(hwnd, L"assimp model mesh scene create failed!", L"error", 0);
         return false;
     }
 
-    m_global_inverse_transform = pScene->mRootNode->mTransformation;
-    m_global_inverse_transform.Inverse();
+    
 
     int it = (int)filename.find_last_of('/');
     this->directory += filename.substr(0, it +1);
 
     this->ModelName = filename.substr(it + 1, filename.find_last_of('.') - it - 1);
-    ProcessNode(pScene->mRootNode, pScene);
+    ProcessNode(pScene->mRootNode, pScene,false);
     return true;
 }
 
 bool ModelLoader::LoadAnimation(string filename)
 {
+    Assimp::Importer importer;
+
+    directory = "Model/";
+
+    string FullName = directory + filename;
+    const aiScene* pScene = importer.ReadFile(FullName,
+        aiProcess_ConvertToLeftHanded);
+
+    if (pScene == NULL)
+    {
+        MessageBox(hwnd, L"assimp animation scene create failed!", L"error", 0);
+        return false;
+    }
+
+  
+    int it = (int)filename.find_last_of('@');
+    //this->directory += filename.substr(0, it + 1);
+    this->ModelName= filename.substr(filename.find_last_of('/') + 1, filename.find_last_of('@') - it - 1);
+    this->AnimeName = filename.substr(it + 1, filename.find_last_of('.') - it - 1);
+   
+    pCurrentAnimation = &mAnimations[ModelName][AnimeName];
+    
+    pCurrentAnimation->m_global_inverse_transform = pScene->mRootNode->mTransformation;
+    pCurrentAnimation->m_global_inverse_transform.Inverse();
+    
+    ProcessNode(pScene->mRootNode, pScene,true);
     return true;
 }
 
@@ -74,19 +99,27 @@ void ModelLoader::Close()
 }
 
 
-void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene)
+void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene,bool isAnimation)
 {
     for (UINT i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes[ModelName].push_back(this->ProcessMesh(mesh, scene));
+        if (!isAnimation)
+        {
+            meshes[ModelName].push_back(this->ProcessMesh(mesh, scene));
+        }
+        else
+        {
+           
+            this->ProcessAnimation(mesh, scene);
+        }
     }
 
 
 
     for (UINT i = 0; i < node->mNumChildren; i++)
     {
-        this->ProcessNode(node->mChildren[i], scene);
+        this->ProcessNode(node->mChildren[i], scene, isAnimation);
     }
 }
 
@@ -182,6 +215,44 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
 
     return ModelMesh(dev, pCommandList, vertices, indices, textures);
+}
+
+void ModelLoader::ProcessAnimation(aiMesh* mesh, const aiScene* scene)
+{
+    // load bones
+    for (UINT i = 0; i < mesh->mNumBones; i++)
+    {
+        UINT bone_index = 0;
+        string bone_name(mesh->mBones[i]->mName.data);
+
+#if defined(_DEBUG)
+        string DebugInfo(ModelName + "-->" + AnimeName + ":" + bone_name);
+        ::OutputDebugStringA(DebugInfo.c_str());
+#endif
+
+        if (pCurrentAnimation->m_bone_mapping.find(bone_name)
+            == pCurrentAnimation->m_bone_mapping.end())
+        {
+            // Allocate an index for a new bone
+            bone_index = pCurrentAnimation->m_num_bones++;
+            BoneMatrix bi;
+            pCurrentAnimation->m_bone_matrices.push_back(bi);
+            pCurrentAnimation->m_bone_matrices[bone_index].Offset_Matrix = mesh->mBones[i]->mOffsetMatrix;
+            pCurrentAnimation->m_bone_mapping[bone_name] = bone_index;  
+        }
+        else
+        {
+            bone_index = pCurrentAnimation->m_bone_mapping[bone_name];
+        }
+
+        for (UINT j = 0; j < mesh->mBones[i]->mNumWeights; j++)
+        {
+            UINT vertex_id = mesh->mBones[i]->mWeights[j].mVertexId; 
+            float weight = mesh->mBones[i]->mWeights[j].mWeight;
+            pCurrentAnimation->bones_id_weights_for_each_vertex[vertex_id].addBoneData(bone_index, weight);
+        }
+    }
+    pCurrentAnimation->SetUpMesh();//bone data for AI stage
 }
 
 

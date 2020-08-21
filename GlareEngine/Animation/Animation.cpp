@@ -51,6 +51,10 @@ void Animation::BoneTransform(double time_in_sec, vector<aiMatrix4x4>& transform
 {
 }
 
+void Animation::SetUpMesh()
+{
+}
+
 void VertexBoneData::addBoneData(int bone_id, float weight)
 {
 }

@@ -37,28 +37,27 @@ private:
     unordered_map<string, vector<string>> ModelTexturesName;
     string directory;
     string ModelName;
+    string AnimeName;
     L3DTextureManage* pTextureManage;
 
     //not use
     vector<Texture > Textures;
 
-    aiMatrix4x4 m_global_inverse_transform;
+    
 
     //animation string:model name 
-    unordered_map<string,vector<Animation>> mAnimations;
-
+    unordered_map<string,map<string,Animation>> mAnimations;
+    Animation* pCurrentAnimation;
 
 private:
     ///mesh functions
     ModelLoader() {};
-    void ProcessNode(aiNode* node, const aiScene* scene);
+    void ProcessNode(aiNode* node, const aiScene* scene,bool isAniamtion);
     ModelMesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
+    void ProcessAnimation(aiMesh* mesh, const aiScene* scene);
     vector<Texture> LoadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName, const aiScene* scene);
     string DetermineTextureType(const aiScene* scene, aiMaterial* mat);
     int GetTextureIndex(aiString* str);
     void GetTextureFromModel(const aiScene* scene, int textureindex, Texture& texture);
     void LoadPBRTexture(string texturename);
-
-    
-
 };
