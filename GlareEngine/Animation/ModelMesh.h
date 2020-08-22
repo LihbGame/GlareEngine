@@ -19,8 +19,5 @@ public:
     ~ModelMesh();
 private:
     void SetupMesh();
-
-
-
 };
 

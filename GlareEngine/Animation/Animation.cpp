@@ -51,10 +51,30 @@ void Animation::BoneTransform(double time_in_sec, vector<aiMatrix4x4>& transform
 {
 }
 
-void Animation::SetUpMesh()
+void Animation::SetUpMesh(ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList)
 {
+    const UINT vbByteSize = (UINT)bones_id_weights_for_each_vertex.size() * sizeof(VertexBoneData);
+
+    mBoneGeo.Name = "Bone Mesh";
+    ThrowIfFailed(D3DCreateBlob(vbByteSize, &mBoneGeo.VertexBufferCPU));
+    CopyMemory(mBoneGeo.VertexBufferCPU->GetBufferPointer(), bones_id_weights_for_each_vertex.data(), vbByteSize);
+
+    mBoneGeo.VertexBufferGPU = L3DUtil::CreateDefaultBuffer(dev,
+        CommandList, bones_id_weights_for_each_vertex.data(), vbByteSize, mBoneGeo.VertexBufferUploader);
+
+    mBoneGeo.VertexByteStride = sizeof(VertexBoneData);
+    mBoneGeo.VertexBufferByteSize = vbByteSize;
+
+    //SubmeshGeometry submesh;
+    //submesh.IndexCount = (UINT)indices.size();
+    //submesh.StartIndexLocation = 0;
+    //submesh.BaseVertexLocation = 0;
+    //mBoneGeo.DrawArgs["Model Mesh"] = submesh;
 }
 
 void VertexBoneData::addBoneData(int bone_id, float weight)
 {
+
+
+
 }

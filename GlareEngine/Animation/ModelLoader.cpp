@@ -64,10 +64,9 @@ bool ModelLoader::LoadAnimation(string filename)
     this->ModelName= filename.substr(filename.find_last_of('/') + 1, filename.find_last_of('@') - it - 1);
     this->AnimeName = filename.substr(it + 1, filename.find_last_of('.') - it - 1);
    
-    pCurrentAnimation = &mAnimations[ModelName][AnimeName];
     
-    pCurrentAnimation->m_global_inverse_transform = pScene->mRootNode->mTransformation;
-    pCurrentAnimation->m_global_inverse_transform.Inverse();
+    m_global_inverse_transform = pScene->mRootNode->mTransformation;
+    m_global_inverse_transform.Inverse();
     
     ProcessNode(pScene->mRootNode, pScene,true);
     return true;
@@ -110,12 +109,9 @@ void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene,bool isAnimatio
         }
         else
         {
-           
-            this->ProcessAnimation(mesh, scene);
+            mAnimations[ModelName][AnimeName].push_back(this->ProcessAnimation(mesh, scene));
         }
     }
-
-
 
     for (UINT i = 0; i < node->mNumChildren; i++)
     {
@@ -217,8 +213,10 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
     return ModelMesh(dev, pCommandList, vertices, indices, textures);
 }
 
-void ModelLoader::ProcessAnimation(aiMesh* mesh, const aiScene* scene)
+Animation ModelLoader::ProcessAnimation(aiMesh* mesh, const aiScene* scene)
 {
+    Animation LAnime;
+    LAnime.bones_id_weights_for_each_vertex.resize(mesh->mNumVertices);
     // load bones
     for (UINT i = 0; i < mesh->mNumBones; i++)
     {
@@ -230,29 +228,31 @@ void ModelLoader::ProcessAnimation(aiMesh* mesh, const aiScene* scene)
         ::OutputDebugStringA(DebugInfo.c_str());
 #endif
 
-        if (pCurrentAnimation->m_bone_mapping.find(bone_name)
-            == pCurrentAnimation->m_bone_mapping.end())
+        if (LAnime.m_bone_mapping.find(bone_name)
+            == LAnime.m_bone_mapping.end())
         {
             // Allocate an index for a new bone
-            bone_index = pCurrentAnimation->m_num_bones++;
+            bone_index = LAnime.m_num_bones++;
             BoneMatrix bi;
-            pCurrentAnimation->m_bone_matrices.push_back(bi);
-            pCurrentAnimation->m_bone_matrices[bone_index].Offset_Matrix = mesh->mBones[i]->mOffsetMatrix;
-            pCurrentAnimation->m_bone_mapping[bone_name] = bone_index;  
+             LAnime.m_bone_matrices.push_back(bi);
+             LAnime.m_bone_matrices[bone_index].Offset_Matrix = mesh->mBones[i]->mOffsetMatrix;
+             LAnime.m_bone_mapping[bone_name] = bone_index;  
         }
         else
         {
-            bone_index = pCurrentAnimation->m_bone_mapping[bone_name];
+            bone_index = LAnime.m_bone_mapping[bone_name];
         }
 
         for (UINT j = 0; j < mesh->mBones[i]->mNumWeights; j++)
         {
             UINT vertex_id = mesh->mBones[i]->mWeights[j].mVertexId; 
             float weight = mesh->mBones[i]->mWeights[j].mWeight;
-            pCurrentAnimation->bones_id_weights_for_each_vertex[vertex_id].addBoneData(bone_index, weight);
+            LAnime.bones_id_weights_for_each_vertex[vertex_id].addBoneData(bone_index, weight);
         }
     }
-    pCurrentAnimation->SetUpMesh();//bone data for AI stage
+    LAnime.SetUpMesh(dev, pCommandList);//bone data for AI stage
+
+    return LAnime;
 }
 
 
