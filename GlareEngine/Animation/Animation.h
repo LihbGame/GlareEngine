@@ -30,11 +30,32 @@ struct VertexBoneData
 };
 
 
+class AnimationMesh
+{
+public:
+    AnimationMesh() {}
+    ~AnimationMesh() {}
+ 
+    void SetUpMesh(ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList);
+public:
+    //anime data
+    vector<VertexBoneData> bones_id_weights_for_each_vertex;
+
+    MeshGeometry mBoneGeo;
+
+
+   
+    aiMatrix4x4 m_global_inverse_transform;
+    int m_bone_location[MAX_BONES];
+    float ticks_per_second = 0.0f;
+
+};
+
 class Animation
 {
 public:
-	Animation();
-	~Animation();
+    Animation();
+    ~Animation();
 
 
 
@@ -50,20 +71,20 @@ public:
 
     void ReadNodeHierarchy(float p_animation_time, const aiNode* p_node, const aiMatrix4x4 parent_transform);
     void BoneTransform(double time_in_sec, vector<aiMatrix4x4>& transforms);
-   
-    void SetUpMesh(ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList);
-public:
-    //anime data
-    vector<VertexBoneData> bones_id_weights_for_each_vertex;
 
-    MeshGeometry mBoneGeo;
+    aiQuaternion Quatlerp(aiQuaternion a, aiQuaternion b, float blend);
+public:
+    const aiScene* pAnimeScene=nullptr;
+
+    vector<AnimationMesh> mBoneMeshs;
+
 
     map<string, int> m_bone_mapping; // maps a bone name and their index
     int m_num_bones = 0;
     vector<BoneMatrix> m_bone_matrices;
-   
+
     aiMatrix4x4 m_global_inverse_transform;
     int m_bone_location[MAX_BONES];
     float ticks_per_second = 0.0f;
-};
 
+};

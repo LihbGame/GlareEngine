@@ -43,10 +43,11 @@ private:
     //not use
     vector<Texture > Textures;
 
-    
+    Assimp::Importer importer;
+    const aiScene* pAnimeScene;
 
     //animation string:model name 
-    unordered_map<string,map<string, vector<Animation>>> mAnimations;
+    unordered_map<string,map<string, Animation>> mAnimations;
 
     aiMatrix4x4 m_global_inverse_transform;
 private:
@@ -54,7 +55,7 @@ private:
     ModelLoader() {};
     void ProcessNode(aiNode* node, const aiScene* scene,bool isAniamtion);
     ModelMesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
-    Animation ProcessAnimation(aiMesh* mesh, const aiScene* scene);
+    AnimationMesh ProcessAnimation(aiMesh* mesh, const aiScene* scene);
     vector<Texture> LoadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName, const aiScene* scene);
     string DetermineTextureType(const aiScene* scene, aiMaterial* mat);
     int GetTextureIndex(aiString* str);

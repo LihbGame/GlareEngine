@@ -12,13 +12,12 @@ pTextureManage(TextureManage)
 
 ModelLoader::~ModelLoader()
 {
+    importer.FreeScene();
 }
 
 
 bool ModelLoader::LoadModel(string filename)
 {
-    Assimp::Importer importer;
-
     directory = "Model/";
 
     string FullName= directory + filename;
@@ -44,15 +43,13 @@ bool ModelLoader::LoadModel(string filename)
 
 bool ModelLoader::LoadAnimation(string filename)
 {
-    Assimp::Importer importer;
-
     directory = "Model/";
 
     string FullName = directory + filename;
-    const aiScene* pScene = importer.ReadFile(FullName,
+    const aiScene* pAnimeScene = importer.ReadFile(FullName,
         aiProcess_ConvertToLeftHanded);
 
-    if (pScene == NULL)
+    if (pAnimeScene == NULL)
     {
         MessageBox(hwnd, L"assimp animation scene create failed!", L"error", 0);
         return false;
@@ -65,10 +62,13 @@ bool ModelLoader::LoadAnimation(string filename)
     this->AnimeName = filename.substr(it + 1, filename.find_last_of('.') - it - 1);
    
     
-    m_global_inverse_transform = pScene->mRootNode->mTransformation;
+    m_global_inverse_transform = pAnimeScene->mRootNode->mTransformation;
     m_global_inverse_transform.Inverse();
     
-    ProcessNode(pScene->mRootNode, pScene,true);
+    mAnimations[ModelName][AnimeName].m_global_inverse_transform = m_global_inverse_transform;
+    mAnimations[ModelName][AnimeName].pAnimeScene = pAnimeScene;
+
+    ProcessNode(pAnimeScene->mRootNode, pAnimeScene,true);
     return true;
 }
 
@@ -109,7 +109,7 @@ void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene,bool isAnimatio
         }
         else
         {
-            mAnimations[ModelName][AnimeName].push_back(this->ProcessAnimation(mesh, scene));
+            mAnimations[ModelName][AnimeName].mBoneMeshs.push_back(this->ProcessAnimation(mesh, scene));
         }
     }
 
@@ -213,9 +213,9 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
     return ModelMesh(dev, pCommandList, vertices, indices, textures);
 }
 
-Animation ModelLoader::ProcessAnimation(aiMesh* mesh, const aiScene* scene)
+AnimationMesh ModelLoader::ProcessAnimation(aiMesh* mesh, const aiScene* scene)
 {
-    Animation LAnime;
+    AnimationMesh LAnime;
     LAnime.bones_id_weights_for_each_vertex.resize(mesh->mNumVertices);
     // load bones
     for (UINT i = 0; i < mesh->mNumBones; i++)
@@ -228,19 +228,19 @@ Animation ModelLoader::ProcessAnimation(aiMesh* mesh, const aiScene* scene)
         ::OutputDebugStringA(DebugInfo.c_str());
 #endif
 
-        if (LAnime.m_bone_mapping.find(bone_name)
-            == LAnime.m_bone_mapping.end())
+        if (mAnimations[ModelName][AnimeName].m_bone_mapping.find(bone_name)
+            == mAnimations[ModelName][AnimeName].m_bone_mapping.end())
         {
             // Allocate an index for a new bone
-            bone_index = LAnime.m_num_bones++;
+            bone_index = mAnimations[ModelName][AnimeName].m_num_bones++;
             BoneMatrix bi;
-             LAnime.m_bone_matrices.push_back(bi);
-             LAnime.m_bone_matrices[bone_index].Offset_Matrix = mesh->mBones[i]->mOffsetMatrix;
-             LAnime.m_bone_mapping[bone_name] = bone_index;  
+            mAnimations[ModelName][AnimeName].m_bone_matrices.push_back(bi);
+            mAnimations[ModelName][AnimeName].m_bone_matrices[bone_index].Offset_Matrix = mesh->mBones[i]->mOffsetMatrix;
+            mAnimations[ModelName][AnimeName].m_bone_mapping[bone_name] = bone_index;  
         }
         else
         {
-            bone_index = LAnime.m_bone_mapping[bone_name];
+            bone_index = mAnimations[ModelName][AnimeName].m_bone_mapping[bone_name];
         }
 
         for (UINT j = 0; j < mesh->mBones[i]->mNumWeights; j++)
