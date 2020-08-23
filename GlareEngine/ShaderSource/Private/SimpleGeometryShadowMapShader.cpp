@@ -1,7 +1,7 @@
 #include "SimpleGeometryShadowMapShader.h"
 #include "L3DInputLayout.h"
-SimpleGeometryShadowMapShader::SimpleGeometryShadowMapShader(wstring VSShaderPath, wstring PSShaderPath, wstring GSShaderPath)
-	:BaseShader(VSShaderPath, PSShaderPath, GSShaderPath)
+SimpleGeometryShadowMapShader::SimpleGeometryShadowMapShader(wstring VSShaderPath, wstring PSShaderPath, wstring GSShaderPath, const D3D_SHADER_MACRO* defines)
+	:BaseShader(VSShaderPath, PSShaderPath, GSShaderPath, defines)
 {
 }
 

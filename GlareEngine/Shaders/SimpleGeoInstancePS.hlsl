@@ -56,6 +56,9 @@ float4 litColor = ambient*shadowFactor[0] + directLight;
 
 // Common convention to take alpha from diffuse material.
 litColor.a = diffuseAlbedo.a;
+
+#ifdef ALPHA_TEST
 clip(litColor.a - 0.1f);
+#endif
 return litColor;
 }

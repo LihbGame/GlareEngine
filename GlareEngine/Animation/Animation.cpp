@@ -140,52 +140,48 @@ void Animation::ReadNodeHierarchy(float p_animation_time, const aiNode* p_node, 
 {
     string node_name(p_node->mName.data);
 
-    //������� node, �� ������� ������������ �������, ������������� �������� ���� ������(aiNodeAnim).
     const aiAnimation* animation = pAnimeScene->mAnimations[0];
     aiMatrix4x4 node_transform = p_node->mTransformation;
 
-    const aiNodeAnim* node_anim = FindNodeAnim(animation, node_name); // ����� ������� �� ����� ����
+    const aiNodeAnim* node_anim = FindNodeAnim(animation, node_name); 
 
     if (node_anim)
     {
 
         //scaling
-        //aiVector3D scaling_vector = node_anim->mScalingKeys[2].mValue;
         aiVector3D scaling_vector = CalcInterpolatedScaling(p_animation_time, node_anim);
         aiMatrix4x4 scaling_matr;
         aiMatrix4x4::Scaling(scaling_vector, scaling_matr);
 
         //rotation
-        //aiQuaternion rotate_quat = node_anim->mRotationKeys[2].mValue;
         aiQuaternion rotate_quat = CalcInterpolatedRotation(p_animation_time, node_anim);
         aiMatrix4x4 rotate_matr = aiMatrix4x4(rotate_quat.GetMatrix());
 
         //translation
-        //aiVector3D translate_vector = node_anim->mPositionKeys[2].mValue;
         aiVector3D translate_vector = CalcInterpolatedPosition(p_animation_time, node_anim);
         aiMatrix4x4 translate_matr;
         aiMatrix4x4::Translation(translate_vector, translate_matr);
 
         if (string(node_anim->mNodeName.data) == string("Head"))
         {
-            aiQuaternion rotate_head = aiQuaternion(rotate_head_xz.w, rotate_head_xz.x, rotate_head_xz.y, rotate_head_xz.z);
-
-            node_transform = translate_matr * (rotate_matr * aiMatrix4x4(rotate_head.GetMatrix())) * scaling_matr;
+           // aiQuaternion rotate_head = aiQuaternion(rotate_head_xz.w, rotate_head_xz.x, rotate_head_xz.y, rotate_head_xz.z);
+       
+           // node_transform = translate_matr * (rotate_matr * aiMatrix4x4(rotate_head.GetMatrix())) * scaling_matr;
         }
         else
         {
-            node_transform = translate_matr * rotate_matr * scaling_matr;
+            node_transform = scaling_matr * rotate_matr * translate_matr;
         }
 
     }
 
-    aiMatrix4x4 global_transform = parent_transform * node_transform;
+    aiMatrix4x4 global_transform = node_transform * parent_transform;
 
-    // ���� � node �� �������� ����������� bone, �� �� node ������ ��������� � ������ bone !!!
+   
     if (m_bone_mapping.find(node_name) != m_bone_mapping.end()) // true if node_name exist in bone_mapping
     {
         UINT bone_index = m_bone_mapping[node_name];
-        m_bone_matrices[bone_index].Final_World_Transform = m_global_inverse_transform * global_transform * m_bone_matrices[bone_index].Offset_Matrix;
+        m_bone_matrices[bone_index].Final_World_Transform = m_bone_matrices[bone_index].Offset_Matrix * global_transform * m_global_inverse_transform;
     }
 
     for (UINT i = 0; i < p_node->mNumChildren; i++)
@@ -195,8 +191,22 @@ void Animation::ReadNodeHierarchy(float p_animation_time, const aiNode* p_node, 
 
 }
 
-void Animation::BoneTransform(double time_in_sec, vector<aiMatrix4x4>& transforms)
+void Animation::UpadateBoneTransform(double time_in_sec, vector<aiMatrix4x4>& transforms)
 {
+    aiMatrix4x4 identity_matrix; // = mat4(1.0f);
+
+    double time_in_ticks = time_in_sec * ticks_per_second;
+    float animation_time = fmod(time_in_ticks, pAnimeScene->mAnimations[0]->mDuration);
+    // animation_time 
+
+    ReadNodeHierarchy(animation_time, pAnimeScene->mRootNode, identity_matrix);
+
+    transforms.resize(m_num_bones);
+
+    for (UINT i = 0; i < m_num_bones; i++)
+    {
+        transforms[i] = m_bone_matrices[i].Final_World_Transform;
+    }
 }
 
 aiQuaternion Animation::Quatlerp(aiQuaternion a, aiQuaternion b, float blend)

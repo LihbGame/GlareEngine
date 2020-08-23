@@ -27,6 +27,10 @@ public:
     vector<string> GetModelTextureNames(string modelname);
     void Close();
 
+
+
+    //animation string:model name 
+    unordered_map<string, map<string, Animation>> mAnimations;
 private:
     ID3D12Device* dev;
     ID3D12GraphicsCommandList* pCommandList;
@@ -46,8 +50,7 @@ private:
     Assimp::Importer importer;
     const aiScene* pAnimeScene;
 
-    //animation string:model name 
-    unordered_map<string,map<string, Animation>> mAnimations;
+   
 
     aiMatrix4x4 m_global_inverse_transform;
 private:

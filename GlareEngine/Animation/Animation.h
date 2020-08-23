@@ -42,13 +42,6 @@ public:
     vector<VertexBoneData> bones_id_weights_for_each_vertex;
 
     MeshGeometry mBoneGeo;
-
-
-   
-    aiMatrix4x4 m_global_inverse_transform;
-    int m_bone_location[MAX_BONES];
-    float ticks_per_second = 0.0f;
-
 };
 
 class Animation
@@ -70,7 +63,7 @@ public:
     aiVector3D CalcInterpolatedScaling(float p_animation_time, const aiNodeAnim* p_node_anim);
 
     void ReadNodeHierarchy(float p_animation_time, const aiNode* p_node, const aiMatrix4x4 parent_transform);
-    void BoneTransform(double time_in_sec, vector<aiMatrix4x4>& transforms);
+    void UpadateBoneTransform(double time_in_sec, vector<aiMatrix4x4>& transforms);
 
     aiQuaternion Quatlerp(aiQuaternion a, aiQuaternion b, float blend);
 public:
@@ -84,7 +77,7 @@ public:
     vector<BoneMatrix> m_bone_matrices;
 
     aiMatrix4x4 m_global_inverse_transform;
-    int m_bone_location[MAX_BONES];
+    //int m_bone_location[MAX_BONES];
     float ticks_per_second = 0.0f;
 
 };

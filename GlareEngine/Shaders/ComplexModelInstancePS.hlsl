@@ -51,7 +51,9 @@ float4 PS(VertexOut pin) : SV_Target
 
 	// Common convention to take alpha from diffuse material.
 	litColor.a = diffuseAlbedo.a;
-	clip(litColor.a - 0.1f);
 
+#ifdef ALPHA_TEST
+	clip(litColor.a - 0.1f);
+#endif
 	return litColor;
 }

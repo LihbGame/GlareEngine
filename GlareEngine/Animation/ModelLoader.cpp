@@ -58,7 +58,7 @@ bool ModelLoader::LoadAnimation(string filename)
   
     int it = (int)filename.find_last_of('@');
     //this->directory += filename.substr(0, it + 1);
-    this->ModelName= filename.substr(filename.find_last_of('/') + 1, filename.find_last_of('@') - it - 1);
+    this->ModelName= filename.substr(filename.find_last_of('/') + 1, filename.find_last_of('@') - filename.find_last_of('/') - 1);
     this->AnimeName = filename.substr(it + 1, filename.find_last_of('.') - it - 1);
    
     
@@ -67,6 +67,18 @@ bool ModelLoader::LoadAnimation(string filename)
     
     mAnimations[ModelName][AnimeName].m_global_inverse_transform = m_global_inverse_transform;
     mAnimations[ModelName][AnimeName].pAnimeScene = pAnimeScene;
+
+
+    if (pAnimeScene->mAnimations[0]->mTicksPerSecond != 0.0)
+    {
+        mAnimations[ModelName][AnimeName].ticks_per_second = (float)pAnimeScene->mAnimations[0]->mTicksPerSecond;
+    }
+    else
+    {
+        mAnimations[ModelName][AnimeName].ticks_per_second = 25.0f;
+    }
+
+
 
     ProcessNode(pAnimeScene->mRootNode, pAnimeScene,true);
     return true;
@@ -224,7 +236,7 @@ AnimationMesh ModelLoader::ProcessAnimation(aiMesh* mesh, const aiScene* scene)
         string bone_name(mesh->mBones[i]->mName.data);
 
 #if defined(_DEBUG)
-        string DebugInfo(ModelName + "-->" + AnimeName + ":" + bone_name);
+        string DebugInfo(ModelName + "-->" + AnimeName + ":" + bone_name+"\n");
         ::OutputDebugStringA(DebugInfo.c_str());
 #endif
 

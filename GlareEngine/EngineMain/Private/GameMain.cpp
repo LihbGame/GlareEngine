@@ -151,6 +151,9 @@ void GameApp::Update(const GameTimer& gt)
 	mShadowMap->UpdateShadowTransform(gt);
 	UpdateMainPassCB(gt);
 	UpdateShadowPassCB(gt);
+	UpdateAnimation(gt);
+
+
 	//UpdateWaves(gt);
 }
 
@@ -785,11 +788,17 @@ void GameApp::BuildRootSignature()
 
 void GameApp::BuildShadersAndInputLayout()
 {
+	const D3D_SHADER_MACRO alphaTestDefines[] =
+	{
+		"ALPHA_TEST", "1",
+		NULL, NULL
+	};
+
 	mShaders["GerstnerWave"] = new GerstnerWaveShader(L"Shaders\\DefaultVS.hlsl", L"Shaders\\DefaultPS.hlsl", L"");
 	mShaders["Sky"] = new SkyShader(L"Shaders\\SkyVS.hlsl", L"Shaders\\SkyPS.hlsl", L"");
 	mShaders["Instance"] = new SimpleGeometryInstanceShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\SimpleGeoInstancePS.hlsl", L"");
-	mShaders["InstanceSimpleGeoShadowMap"]= new SimpleGeometryShadowMapShader(L"Shaders\\SimpleGeoInstanceShadowVS.hlsl", L"Shaders\\SimpleGeoInstanceShadowPS.hlsl", L"");
-	mShaders["StaticComplexModelInstance"] = new ComplexStaticModelInstanceShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\ComplexModelInstancePS.hlsl", L"");
+	mShaders["InstanceSimpleGeoShadowMap"]= new SimpleGeometryShadowMapShader(L"Shaders\\SimpleGeoInstanceShadowVS.hlsl", L"Shaders\\SimpleGeoInstanceShadowPS.hlsl", L"", alphaTestDefines);
+	mShaders["StaticComplexModelInstance"] = new ComplexStaticModelInstanceShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\ComplexModelInstancePS.hlsl", L"", alphaTestDefines);
 }
 
 void GameApp::BuildSimpleGeometry()
@@ -1455,6 +1464,9 @@ void GameApp::LoadModel()
 	mModelLoder->LoadModel("BlueTree/Blue_Tree_03d.fbx");
 	mModelLoder->LoadModel("BlueTree/Blue_Tree_02a.fbx");
 	mModelLoder->LoadModel("TraumaGuard/TraumaGuard.fbx");
+
+	mModelLoder->LoadAnimation("TraumaGuard/TraumaGuard@ActiveIdleLoop.fbx");
+	
 }					
 
 
@@ -1519,6 +1531,18 @@ void GameApp::UpdateShadowPassCB(const GameTimer& gt)
 
 	auto currPassCB = mCurrFrameResource->PassCB.get();
 	currPassCB->CopyData(1, mShadowPassCB);
+}
+
+void GameApp::UpdateAnimation(const GameTimer& gt)
+{
+	static float time = gt.TotalTime();
+	double time_in_sec = gt.TotalTime() / 1000.0;
+	time += gt.DeltaTime();
+	if (time >= 33.0f)
+	{
+		mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].UpadateBoneTransform(time_in_sec, transforms);
+		time -= 33.0f;
+	}
 }
 
 

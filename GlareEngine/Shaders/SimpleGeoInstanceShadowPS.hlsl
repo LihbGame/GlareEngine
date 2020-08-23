@@ -20,6 +20,7 @@ void PS(VertexOut pin)
 	// Dynamically look up the texture in the array.
 	float a = gSRVMap[diffuseMapIndex].Sample(gsamAnisotropicWrap, pin.TexC).a;
 
+#ifdef ALPHA_TEST
 	clip(a - 0.1f);
-
+#endif
 }

@@ -109,6 +109,7 @@ private:
 
 	void UpdateShadowPassCB(const GameTimer& gt);
 
+	void UpdateAnimation(const GameTimer& gt);
 
 	void DrawSceneToShadowMap();
 
@@ -225,4 +226,5 @@ private:
 	//Model Loader
 	std::unique_ptr<ModelLoader> mModelLoder;
 	
+	vector<aiMatrix4x4> transforms;
 };
