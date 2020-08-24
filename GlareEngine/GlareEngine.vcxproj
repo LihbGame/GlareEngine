@@ -189,6 +189,7 @@
     <ClInclude Include="ShaderSource\Public\ComplexStaticModelInstanceShader.h" />
     <ClInclude Include="ShaderSource\Public\SimpleGeometryInstanceShader.h" />
     <ClInclude Include="ShaderSource\Public\GerstnerWaveShader.h" />
+    <ClInclude Include="ShaderSource\Public\SkinAnimeShader.h" />
     <ClInclude Include="ShaderSource\Public\SkyShader.h" />
     <ClInclude Include="ShaderSource\Public\SimpleGeometryShadowMapShader.h" />
     <ClInclude Include="RanderEffects\Water\Public\Waves.h" />
@@ -225,6 +226,7 @@
     <ClCompile Include="ShaderSource\Private\ComplexStaticModelInstanceShader.cpp" />
     <ClCompile Include="ShaderSource\Private\SimpleGeometryInstanceShader.cpp" />
     <ClCompile Include="ShaderSource\Private\GerstnerWaveShader.cpp" />
+    <ClCompile Include="ShaderSource\Private\SkinAnimeShader.cpp" />
     <ClCompile Include="ShaderSource\Private\SkyShader.cpp" />
     <ClCompile Include="ShaderSource\Private\SimpleGeometryShadowMapShader.cpp" />
     <ClCompile Include="RanderEffects\Water\Private\Waves.cpp" />

@@ -17,6 +17,11 @@ struct ObjectConstants
 };
 
 
+struct SkinnedConstants
+{
+    DirectX::XMFLOAT4X4 BoneTransforms[96];
+};
+
 struct InstanceConstants
 {
     DirectX::XMFLOAT4X4 World = MathHelper::Identity4x4();
@@ -79,7 +84,7 @@ struct FrameResource
 {
 public:
     
-    FrameResource(ID3D12Device* device, UINT passCount,UINT InstanceModelSubMeshNum, UINT objectCount, UINT materialCount, UINT waveVertCount);
+    FrameResource(ID3D12Device* device, UINT passCount,UINT InstanceModelSubMeshNum, UINT  skinnedObjectCount, UINT objectCount, UINT materialCount, UINT waveVertCount);
     FrameResource(const FrameResource& rhs) = delete;
     FrameResource& operator=(const FrameResource& rhs) = delete;
     ~FrameResource();
@@ -94,6 +99,7 @@ public:
     std::unique_ptr<UploadBuffer<PassConstants>> PassCB = nullptr;
     std::unique_ptr<UploadBuffer<MaterialData>> MaterialBuffer = nullptr;
     std::unique_ptr<UploadBuffer<ObjectConstants>> SimpleObjectCB = nullptr;
+    std::unique_ptr<UploadBuffer<SkinnedConstants>> SkinnedCB = nullptr;
     vector<std::unique_ptr<UploadBuffer<InstanceConstants>>> InstanceSimpleObjectCB ;
 
     // 在GPU处理完引用它的命令之前，我们无法更新动态顶点缓冲区。 

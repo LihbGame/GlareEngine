@@ -610,7 +610,7 @@ void GameApp::UpdateInstanceCBs(const GameTimer& gt)
 					InstanceConstants data;
 					XMStoreFloat4x4(&data.World, XMMatrixTranspose(world));
 					XMStoreFloat4x4(&data.TexTransform, XMMatrixTranspose(texTransform));
-					string matname = mModelLoder->GetModelTextureNames("Blue_Tree_02a")[matNum];
+					string matname = mModelLoder->GetModelTextureNames("TraumaGuard")[matNum];
 					data.MaterialIndex = mMaterials[wstring(matname.begin(),matname.end())]->MatCBIndex;
 					// 将实例数据写入可见对象的结构化缓冲区。
 					currInstanceBuffer->CopyData(visibleInstanceCount++, data);
@@ -794,11 +794,19 @@ void GameApp::BuildShadersAndInputLayout()
 		NULL, NULL
 	};
 
+	const D3D_SHADER_MACRO SkinAnimeDefines[] =
+	{
+		"SKINNED","1",
+		NULL, NULL
+	};
+
 	mShaders["GerstnerWave"] = new GerstnerWaveShader(L"Shaders\\DefaultVS.hlsl", L"Shaders\\DefaultPS.hlsl", L"");
 	mShaders["Sky"] = new SkyShader(L"Shaders\\SkyVS.hlsl", L"Shaders\\SkyPS.hlsl", L"");
 	mShaders["Instance"] = new SimpleGeometryInstanceShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\SimpleGeoInstancePS.hlsl", L"");
 	mShaders["InstanceSimpleGeoShadowMap"]= new SimpleGeometryShadowMapShader(L"Shaders\\SimpleGeoInstanceShadowVS.hlsl", L"Shaders\\SimpleGeoInstanceShadowPS.hlsl", L"", alphaTestDefines);
 	mShaders["StaticComplexModelInstance"] = new ComplexStaticModelInstanceShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\ComplexModelInstancePS.hlsl", L"", alphaTestDefines);
+	mShaders["SkinAnime"]== new SkinAnimeShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\ComplexModelInstancePS.hlsl", L"");
+
 }
 
 void GameApp::BuildSimpleGeometry()
@@ -1100,7 +1108,7 @@ void GameApp::BuildFrameResources()
 	for (int i = 0; i < gNumFrameResources; ++i)
 	{
 		mFrameResources.push_back(std::make_unique<FrameResource>(md3dDevice.Get(),
-			2,(UINT)mModelLoder->GetModelMesh("Blue_Tree_02a").size(), (UINT)mAllRitems.size(), (UINT)mMaterials.size(), mWaves->VertexCount()));
+			2,(UINT)mModelLoder->GetModelMesh("TraumaGuard").size(),1,(UINT)mAllRitems.size(), (UINT)mMaterials.size(), mWaves->VertexCount()));
 	}
 }
 
@@ -1270,7 +1278,7 @@ void GameApp::BuildModelGeoInstanceItems()
 
 
 	auto InstanceSphereRitem = std::make_unique<RenderItem>();
-	for (auto& e : mModelLoder->GetModelMesh("Blue_Tree_02a"))
+	for (auto& e : mModelLoder->GetModelMesh("TraumaGuard"))
 	{
 		InstanceSphereRitem->Geo.push_back(&e.mMeshGeo);
 		InstanceSphereRitem->IndexCount.push_back(e.mMeshGeo.DrawArgs["Model Mesh"].IndexCount);
@@ -1306,7 +1314,7 @@ void GameApp::BuildModelGeoInstanceItems()
 			{
 				int index =i * n + j;
 				// Position instanced along a 3D grid.
-				XMStoreFloat4x4(&InstanceSphereRitem->Instances[index].World, /*XMMatrixRotationX(MathHelper::Pi/2)**/XMMatrixRotationY(MathHelper::RandF()* MathHelper::Pi) * XMLoadFloat4x4(&XMFLOAT4X4(
+				XMStoreFloat4x4(&InstanceSphereRitem->Instances[index].World, XMMatrixRotationX(MathHelper::Pi/2)*XMMatrixRotationY(MathHelper::RandF()* MathHelper::Pi) * XMLoadFloat4x4(&XMFLOAT4X4(
 					0.04f, 0.0f, 0.0f, 0.0f,
 					0.0f, 0.04f, 0.0f, 0.0f,
 					0.0f, 0.0f, 0.04f, 0.0f,
@@ -1349,7 +1357,16 @@ void GameApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vec
 
 		for (int MeshNum=0;MeshNum<ri->Geo.size();++MeshNum)
 		{
-			cmdList->IASetVertexBuffers(0, 1, &ri->Geo[MeshNum]->VertexBufferView());
+			if (ri->Geo.size() > 1)//test
+			{
+				const D3D12_VERTEX_BUFFER_VIEW* pViews[] = { &ri->Geo[MeshNum]->VertexBufferView(),&mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].mBoneMeshs[MeshNum].mBoneGeo.VertexBufferView() };
+				cmdList->IASetVertexBuffers(0, 2, *pViews);
+			}
+			else
+			{
+				cmdList->IASetVertexBuffers(0, 1, &ri->Geo[MeshNum]->VertexBufferView());
+
+			}
 			cmdList->IASetIndexBuffer(&ri->Geo[MeshNum]->IndexBufferView());
 			cmdList->IASetPrimitiveTopology(ri->PrimitiveType);
 

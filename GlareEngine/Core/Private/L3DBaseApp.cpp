@@ -85,7 +85,7 @@ int D3DApp::Run()
 		else
 		{
 			mTimer.Tick();
-			if (!mAppPaused)
+			if (1/*!mAppPaused*/)
 			{
 				timepase += mTimer.DeltaTime();
 				Update(mTimer);
@@ -296,8 +296,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
  
 LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
-		return true;
+	ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam);
 
 
 	switch( msg )
@@ -365,6 +364,7 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				else if( mResizing )//正在调整大小
 				{
+					
 					// 如果用户正在拖动调整大小条，我们不会在此处调整缓冲区的大小，
 					//因为当用户不断拖动调整大小条时，会向窗口发送一个WM_SIZE消息流，
 					//并且为每个WM_SIZE调整大小是没有意义的（并且很慢） 通过拖动调整大小条收到的消息。
@@ -422,6 +422,25 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return 0;
 	case WM_MOUSEMOVE:
 		OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		return 0;
+	case EVENT_SYSTEM_DESKTOPSWITCH:
+		if (mSwapChain)
+		{
+			if (mSwapChain)
+			{
+				if (mFullscreenState)
+				{
+					mClientHeight = GetSystemMetrics(SM_CYSCREEN);
+					mClientWidth = GetSystemMetrics(SM_CXSCREEN);
+					OnResize();
+					mSwapChain->SetFullscreenState(true, NULL);
+				}
+				else
+				{
+					mSwapChain->SetFullscreenState(false, NULL);
+				}
+			}
+		}
 		return 0;
     case WM_KEYUP:
         if(wParam == VK_ESCAPE)

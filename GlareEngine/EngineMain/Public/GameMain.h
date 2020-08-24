@@ -15,6 +15,7 @@
 #include "SimpleGeometryInstanceShader.h"
 #include "SimpleGeometryShadowMapShader.h"
 #include "ComplexStaticModelInstanceShader.h"
+#include "SkinAnimeShader.h"
 
 #include "PSOManager.h"
 #include "L3DCamera.h"

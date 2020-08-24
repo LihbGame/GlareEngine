@@ -7,5 +7,6 @@ public:
 	static std::vector<D3D12_INPUT_ELEMENT_DESC> PosNormalTexc;
 	static std::vector<D3D12_INPUT_ELEMENT_DESC> PosNormalTangentTexc;
 	static std::vector<D3D12_INPUT_ELEMENT_DESC> InstancePosNormalTangentTexc;
+	static std::vector<D3D12_INPUT_ELEMENT_DESC> SkinAnimeVertex;
 };
 

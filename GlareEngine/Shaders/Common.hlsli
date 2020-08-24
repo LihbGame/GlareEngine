@@ -99,7 +99,10 @@ cbuffer cbPass : register(b1)
 };
 
 
-
+cbuffer cbSkinned : register(b2)
+{
+    float4x4 gBoneTransforms[96];
+};
 
 //---------------------------------------------------------------------------------------
 // Transforms a normal map sample to model space.

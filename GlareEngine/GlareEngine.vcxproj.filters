@@ -138,6 +138,7 @@
     <ClInclude Include="Animation\ModelLoader.h" />
     <ClInclude Include="ShaderSource\Public\ComplexStaticModelInstanceShader.h" />
     <ClInclude Include="Animation\Animation.h" />
+    <ClInclude Include="ShaderSource\Public\SkinAnimeShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Private\DDSTextureLoader.cpp">
@@ -240,6 +241,9 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="Animation\Animation.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSource\Private\SkinAnimeShader.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
