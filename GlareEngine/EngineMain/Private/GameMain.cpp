@@ -796,6 +796,7 @@ void GameApp::BuildShadersAndInputLayout()
 
 	const D3D_SHADER_MACRO SkinAnimeDefines[] =
 	{
+		"ALPHA_TEST", "1",
 		"SKINNED","1",
 		NULL, NULL
 	};
@@ -805,7 +806,7 @@ void GameApp::BuildShadersAndInputLayout()
 	mShaders["Instance"] = new SimpleGeometryInstanceShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\SimpleGeoInstancePS.hlsl", L"");
 	mShaders["InstanceSimpleGeoShadowMap"]= new SimpleGeometryShadowMapShader(L"Shaders\\SimpleGeoInstanceShadowVS.hlsl", L"Shaders\\SimpleGeoInstanceShadowPS.hlsl", L"", alphaTestDefines);
 	mShaders["StaticComplexModelInstance"] = new ComplexStaticModelInstanceShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\ComplexModelInstancePS.hlsl", L"", alphaTestDefines);
-	mShaders["SkinAnime"]== new SkinAnimeShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\ComplexModelInstancePS.hlsl", L"");
+	mShaders["SkinAnime"]= new SkinAnimeShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\ComplexModelInstancePS.hlsl", L"",SkinAnimeDefines);
 
 }
 

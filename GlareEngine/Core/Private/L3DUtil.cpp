@@ -100,6 +100,7 @@ ComPtr<ID3DBlob> L3DUtil::CompileShader(
 
 	HRESULT hr = S_OK;
 
+
 	ComPtr<ID3DBlob> byteCode = nullptr;
 	ComPtr<ID3DBlob> errors;
 	hr = D3DCompileFromFile(filename.c_str(), defines, D3D_COMPILE_STANDARD_FILE_INCLUDE,

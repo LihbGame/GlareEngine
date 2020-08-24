@@ -5,7 +5,7 @@
 class BaseShader
 {
 public:
-	BaseShader(wstring VSShaderPath, wstring PSShaderPath, wstring GSShaderPath = L"", const D3D_SHADER_MACRO* defines=nullptr);
+	BaseShader(wstring VSShaderPath, wstring PSShaderPath, wstring GSShaderPath = L"", _In_reads_opt_(_Inexpressible_(defines->Name != NULL)) const D3D_SHADER_MACRO* defines=nullptr);
 	~BaseShader();
 
 
