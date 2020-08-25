@@ -191,7 +191,7 @@ void Animation::ReadNodeHierarchy(float p_animation_time, const aiNode* p_node, 
 
 }
 
-void Animation::UpadateBoneTransform(double time_in_sec, vector<aiMatrix4x4>& transforms)
+void Animation::UpadateBoneTransform(double time_in_sec, vector<XMFLOAT4X4>& transforms)
 {
     aiMatrix4x4 identity_matrix; // = mat4(1.0f);
 
@@ -205,8 +205,53 @@ void Animation::UpadateBoneTransform(double time_in_sec, vector<aiMatrix4x4>& tr
 
     for (UINT i = 0; i < m_num_bones; i++)
     {
-        transforms[i] = m_bone_matrices[i].Final_World_Transform;
+        transforms[i]=AiToXM(m_bone_matrices[i].Final_World_Transform);
+        XMStoreFloat4x4(&transforms[i],XMMatrixTranspose(XMLoadFloat4x4(&transforms[i])));
     }
+}
+
+void Animation::SetUpMesh(ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList)
+{
+    const UINT vbByteSize = (UINT)bones_id_weights_for_each_vertex.size() * sizeof(VertexBoneData);
+
+    mBoneGeo.Name = "Bone Mesh";
+    ThrowIfFailed(D3DCreateBlob(vbByteSize, &mBoneGeo.VertexBufferCPU));
+    CopyMemory(mBoneGeo.VertexBufferCPU->GetBufferPointer(), bones_id_weights_for_each_vertex.data(), vbByteSize);
+
+    mBoneGeo.VertexBufferGPU = L3DUtil::CreateDefaultBuffer(dev,
+        CommandList, bones_id_weights_for_each_vertex.data(), vbByteSize, mBoneGeo.VertexBufferUploader);
+
+    mBoneGeo.VertexByteStride = sizeof(VertexBoneData);
+    mBoneGeo.VertexBufferByteSize = vbByteSize;
+}
+
+XMFLOAT4X4 Animation::AiToXM(aiMatrix4x4 ai_matr)
+{
+    XMFLOAT4X4 lmat;
+
+    lmat._11 = ai_matr.a1;
+    lmat._12 = ai_matr.a2;
+    lmat._13 = ai_matr.a3;
+    lmat._14 = ai_matr.a4;
+
+    lmat._21 = ai_matr.b1;
+    lmat._22 = ai_matr.b2;
+    lmat._23 = ai_matr.b3;
+    lmat._24 = ai_matr.b4;
+
+    lmat._31 = ai_matr.c1;
+    lmat._32 = ai_matr.c2;
+    lmat._33 = ai_matr.c3;
+    lmat._34 = ai_matr.c4;
+
+    lmat._41 = ai_matr.d1;
+    lmat._42 = ai_matr.d2;
+    lmat._43 = ai_matr.d3;
+    lmat._44 = ai_matr.d4;
+
+
+
+    return lmat;
 }
 
 aiQuaternion Animation::Quatlerp(aiQuaternion a, aiQuaternion b, float blend)

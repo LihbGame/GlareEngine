@@ -85,7 +85,7 @@ int D3DApp::Run()
 		else
 		{
 			mTimer.Tick();
-			if (1/*!mAppPaused*/)
+			if (!mAppPaused)
 			{
 				timepase += mTimer.DeltaTime();
 				Update(mTimer);

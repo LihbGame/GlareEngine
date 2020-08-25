@@ -227,5 +227,5 @@ private:
 	//Model Loader
 	std::unique_ptr<ModelLoader> mModelLoder;
 	
-	vector<aiMatrix4x4> transforms;
+	vector<XMFLOAT4X4> transforms;
 };

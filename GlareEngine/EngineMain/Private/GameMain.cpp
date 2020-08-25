@@ -185,20 +185,20 @@ void GameApp::Draw(const GameTimer& gt)
 	// Bind all the materials used in this scene.  For structured buffers, we can bypass the heap and 
 	// set as a root descriptor.
 		auto matBuffer = mCurrFrameResource->MaterialBuffer->Resource();
-		mCommandList->SetGraphicsRootShaderResourceView(3, matBuffer->GetGPUVirtualAddress());
+		mCommandList->SetGraphicsRootShaderResourceView(4, matBuffer->GetGPUVirtualAddress());
 		// Bind the sky cube map.  For our demos, we just use one "world" cube map representing the environment
 		// from far away, so all objects will use the same cube map and we only need to set it once per-frame.  
 		// If we wanted to use "local" cube maps, we would have to change them per-object, or dynamically
 		// index into an array of cube maps.
 		CD3DX12_GPU_DESCRIPTOR_HANDLE skyTexDescriptor(mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 		skyTexDescriptor.Offset(mMaterials[L"Sky"]->DiffuseSrvHeapIndex, mCbvSrvDescriptorSize);
-		mCommandList->SetGraphicsRootDescriptorTable(4, skyTexDescriptor);
+		mCommandList->SetGraphicsRootDescriptorTable(5, skyTexDescriptor);
 
 
 		// Bind all the textures used in this scene.  Observe
 		// that we only have to specify the first descriptor in the table.  
 		// The root signature knows how many descriptors are expected in the table.
-		mCommandList->SetGraphicsRootDescriptorTable(5, mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+		mCommandList->SetGraphicsRootDescriptorTable(6, mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	}
 
 
@@ -253,7 +253,7 @@ void GameApp::Draw(const GameTimer& gt)
 	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
 	
 	//Draw Instanse 
-	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::StaticComplexModelInstance).Get());
+	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::SkinAnime).Get());
 	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
 
 	//Draw Sky box
@@ -749,21 +749,22 @@ void GameApp::BuildRootSignature()
 	texTable1.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, mSRVSize, 1, 0);
 
 	// Root parameter can be a table, root descriptor or root constants.
-	CD3DX12_ROOT_PARAMETER slotRootParameter[6];
+	CD3DX12_ROOT_PARAMETER slotRootParameter[7];
 	// Perfomance TIP: Order from most frequent to least frequent.
 	// Create root CBV.
 	slotRootParameter[0].InitAsConstantBufferView(0);
 	slotRootParameter[1].InitAsConstantBufferView(1);
-	slotRootParameter[2].InitAsShaderResourceView(0, 1);
-	slotRootParameter[3].InitAsShaderResourceView(1, 1);
+	slotRootParameter[2].InitAsConstantBufferView(2);
+	slotRootParameter[3].InitAsShaderResourceView(0, 1);
+	slotRootParameter[4].InitAsShaderResourceView(1, 1);
 	
 
-	slotRootParameter[4].InitAsDescriptorTable(1, &texTable0, D3D12_SHADER_VISIBILITY_PIXEL);
-	slotRootParameter[5].InitAsDescriptorTable(1, &texTable1, D3D12_SHADER_VISIBILITY_ALL);
+	slotRootParameter[5].InitAsDescriptorTable(1, &texTable0, D3D12_SHADER_VISIBILITY_PIXEL);
+	slotRootParameter[6].InitAsDescriptorTable(1, &texTable1, D3D12_SHADER_VISIBILITY_ALL);
 
 	auto staticSamplers = GetStaticSamplers();
 	// A root signature is an array of root parameters.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(6, slotRootParameter, 
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(7, slotRootParameter, 
 		(UINT)staticSamplers.size(), staticSamplers.data(), 
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
@@ -1102,6 +1103,38 @@ void GameApp::BuildPSOs()
 		{},
 		{});
 
+
+	//
+	// PSO for skin anime .
+	//
+	RTVFormats[0] = mBackBufferFormat;//only one rtv
+	Input = mShaders["SkinAnime"]->GetInputLayout();
+	mPSOs->BuildPSO(md3dDevice.Get(),
+		PSOName::SkinAnime,
+		mRootSignature.Get(),
+		{ reinterpret_cast<BYTE*>(mShaders["SkinAnime"]->GetVSShader()->GetBufferPointer()),
+			mShaders["SkinAnime"]->GetVSShader()->GetBufferSize() },
+		{ reinterpret_cast<BYTE*>(mShaders["SkinAnime"]->GetPSShader()->GetBufferPointer()),
+		mShaders["SkinAnime"]->GetPSShader()->GetBufferSize() },
+		{},
+		{},
+		{},
+		{},
+		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
+		UINT_MAX,
+		CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
+		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
+		{ Input.data(), (UINT)Input.size() },
+		{},
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+		1,
+		RTVFormats,
+		mDepthStencilFormat,
+		{ UINT(m4xMsaaState ? 4 : 1) ,UINT(0) },
+		0,
+		{},
+		{});
+
 }
 
 void GameApp::BuildFrameResources()
@@ -1315,7 +1348,7 @@ void GameApp::BuildModelGeoInstanceItems()
 			{
 				int index =i * n + j;
 				// Position instanced along a 3D grid.
-				XMStoreFloat4x4(&InstanceSphereRitem->Instances[index].World, XMMatrixRotationX(MathHelper::Pi/2)*XMMatrixRotationY(MathHelper::RandF()* MathHelper::Pi) * XMLoadFloat4x4(&XMFLOAT4X4(
+				XMStoreFloat4x4(&InstanceSphereRitem->Instances[index].World, /*XMMatrixRotationX(MathHelper::Pi/2)**/XMMatrixRotationY(MathHelper::RandF()* MathHelper::Pi) * XMLoadFloat4x4(&XMFLOAT4X4(
 					0.04f, 0.0f, 0.0f, 0.0f,
 					0.0f, 0.04f, 0.0f, 0.0f,
 					0.0f, 0.0f, 0.04f, 0.0f,
@@ -1335,9 +1368,10 @@ void GameApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vec
 {
 	//sizeof ObjectConstants 
 	UINT objCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
-	
-	auto objectCB = mCurrFrameResource->SimpleObjectCB->Resource();
+	UINT skinnedCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(SkinnedConstants));
 
+	auto objectCB = mCurrFrameResource->SimpleObjectCB->Resource();
+	auto skinnedCB = mCurrFrameResource->SkinnedCB->Resource();
 
 	// For each render item...
 	for (size_t i = 0; i < ritems.size(); ++i)
@@ -1360,8 +1394,11 @@ void GameApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vec
 		{
 			if (ri->Geo.size() > 1)//test
 			{
-				const D3D12_VERTEX_BUFFER_VIEW* pViews[] = { &ri->Geo[MeshNum]->VertexBufferView(),&mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].mBoneMeshs[MeshNum].mBoneGeo.VertexBufferView() };
-				cmdList->IASetVertexBuffers(0, 2, *pViews);
+				D3D12_GPU_VIRTUAL_ADDRESS skinnedCBAddress = skinnedCB->GetGPUVirtualAddress();
+				cmdList->SetGraphicsRootConstantBufferView(2, skinnedCBAddress);
+				//const D3D12_VERTEX_BUFFER_VIEW* pViews[] = { &ri->Geo[MeshNum]->VertexBufferView(),&mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].mBoneMeshs[MeshNum].mBoneGeo.VertexBufferView() };
+				cmdList->IASetVertexBuffers(0, 1, &ri->Geo[MeshNum]->VertexBufferView());
+				cmdList->IASetVertexBuffers(1, 1, &mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].mBoneGeo.VertexBufferView());
 			}
 			else
 			{
@@ -1375,7 +1412,7 @@ void GameApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vec
 			// Set the instance buffer to use for this render-item.  For structured buffers, we can bypass 
 			// the heap and set as a root descriptor.
 			auto instanceBuffer = mCurrFrameResource->InstanceSimpleObjectCB[MeshNum]->Resource();
-			mCommandList->SetGraphicsRootShaderResourceView(2, instanceBuffer->GetGPUVirtualAddress());
+			mCommandList->SetGraphicsRootShaderResourceView(3, instanceBuffer->GetGPUVirtualAddress());
 
 
 			cmdList->DrawIndexedInstanced(ri->IndexCount[MeshNum], ri->InstanceCount, ri->StartIndexLocation[MeshNum], ri->BaseVertexLocation[MeshNum], 0);
@@ -1553,14 +1590,27 @@ void GameApp::UpdateShadowPassCB(const GameTimer& gt)
 
 void GameApp::UpdateAnimation(const GameTimer& gt)
 {
-	static float time = gt.TotalTime();
-	double time_in_sec = gt.TotalTime() / 1000.0;
+	auto currSkinnedCB = mCurrFrameResource->SkinnedCB.get();
+	static float time = 0.0f;
+	double time_in_sec = gt.TotalTime();
 	time += gt.DeltaTime();
-	if (time >= 33.0f)
-	{
+	/*if (time >= 3.0f)
+	{*/
 		mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].UpadateBoneTransform(time_in_sec, transforms);
-		time -= 33.0f;
-	}
+		time -= 3.0f;
+	
+
+		SkinnedConstants skinnedConstants;
+		std::copy(
+			std::begin(transforms),
+			std::end(transforms),
+			&skinnedConstants.BoneTransforms[0]);
+
+		currSkinnedCB->CopyData(0, skinnedConstants);
+	
+	//}
+
+
 }
 
 
@@ -1591,7 +1641,7 @@ void GameApp::DrawSceneToShadowMap()
 
 	//Simple Instance  Shadow map
 	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::InstanceSimpleShadow_Opaque).Get());
-	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
+	//DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
 	
 	//DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
 	// Change back to GENERIC_READ so we can read the texture in a shader.

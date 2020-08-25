@@ -16,8 +16,9 @@ struct BoneMatrix
 
 struct VertexBoneData
 {
-    int BoneIds[NUM_BONES_PER_VEREX];
     float weights[NUM_BONES_PER_VEREX];
+    int BoneIds[NUM_BONES_PER_VEREX];
+   
 
     VertexBoneData()
     {
@@ -63,7 +64,11 @@ public:
     aiVector3D CalcInterpolatedScaling(float p_animation_time, const aiNodeAnim* p_node_anim);
 
     void ReadNodeHierarchy(float p_animation_time, const aiNode* p_node, const aiMatrix4x4 parent_transform);
-    void UpadateBoneTransform(double time_in_sec, vector<aiMatrix4x4>& transforms);
+    void UpadateBoneTransform(double time_in_sec, vector<XMFLOAT4X4>& transforms);
+
+    void SetUpMesh(ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList);
+
+    XMFLOAT4X4 AiToXM(aiMatrix4x4 ai_matr);
 
     aiQuaternion Quatlerp(aiQuaternion a, aiQuaternion b, float blend);
 public:
@@ -71,6 +76,10 @@ public:
 
     vector<AnimationMesh> mBoneMeshs;
 
+
+    //anime data
+    vector<VertexBoneData> bones_id_weights_for_each_vertex;
+    MeshGeometry mBoneGeo;
 
     map<string, int> m_bone_mapping; // maps a bone name and their index
     int m_num_bones = 0;

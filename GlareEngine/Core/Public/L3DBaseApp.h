@@ -138,5 +138,6 @@ enum class PSOName : int
 	InstanceSimpleShadow_Opaque,
 	Sky,
 	StaticComplexModelInstance,
+	SkinAnime,
 	Count
 };

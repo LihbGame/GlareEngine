@@ -81,6 +81,8 @@ bool ModelLoader::LoadAnimation(string filename)
 
 
     ProcessNode(pAnimeScene->mRootNode, pAnimeScene,true);
+
+    mAnimations[ModelName][AnimeName].SetUpMesh(dev, pCommandList);
     return true;
 }
 
@@ -121,7 +123,7 @@ void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene,bool isAnimatio
         }
         else
         {
-            mAnimations[ModelName][AnimeName].mBoneMeshs.push_back(this->ProcessAnimation(mesh, scene));
+            this->ProcessAnimation(mesh, scene);
         }
     }
 
@@ -228,7 +230,7 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 AnimationMesh ModelLoader::ProcessAnimation(aiMesh* mesh, const aiScene* scene)
 {
     AnimationMesh LAnime;
-    LAnime.bones_id_weights_for_each_vertex.resize(mesh->mNumVertices);
+    mAnimations[ModelName][AnimeName].bones_id_weights_for_each_vertex.resize(mAnimations[ModelName][AnimeName].bones_id_weights_for_each_vertex.size()+mesh->mNumVertices);
     // load bones
     for (UINT i = 0; i < mesh->mNumBones; i++)
     {
@@ -259,10 +261,12 @@ AnimationMesh ModelLoader::ProcessAnimation(aiMesh* mesh, const aiScene* scene)
         {
             UINT vertex_id = mesh->mBones[i]->mWeights[j].mVertexId; 
             float weight = mesh->mBones[i]->mWeights[j].mWeight;
-            LAnime.bones_id_weights_for_each_vertex[vertex_id].addBoneData(bone_index, weight);
+            mAnimations[ModelName][AnimeName].bones_id_weights_for_each_vertex[vertex_id].addBoneData(bone_index, weight);
         }
     }
-    LAnime.SetUpMesh(dev, pCommandList);//bone data for AI stage
+
+
+    //LAnime.SetUpMesh(dev, pCommandList);//bone data for AI stage
 
     return LAnime;
 }
