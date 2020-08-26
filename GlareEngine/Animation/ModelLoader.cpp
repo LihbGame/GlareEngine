@@ -44,10 +44,10 @@ bool ModelLoader::LoadModel(string filename)
 bool ModelLoader::LoadAnimation(string filename)
 {
     directory = "Model/";
-
     string FullName = directory + filename;
     const aiScene* pAnimeScene = importer.ReadFile(FullName,
-        aiProcess_ConvertToLeftHanded);
+        aiProcess_ConvertToLeftHanded| aiProcess_Triangulate | aiProcess_GenSmoothNormals |
+        aiProcess_FlipUVs);
 
     if (pAnimeScene == NULL)
     {
@@ -82,7 +82,7 @@ bool ModelLoader::LoadAnimation(string filename)
 
     ProcessNode(pAnimeScene->mRootNode, pAnimeScene,true);
 
-    mAnimations[ModelName][AnimeName].SetUpMesh(dev, pCommandList);
+    //mAnimations[ModelName][AnimeName].SetUpMesh(dev, pCommandList);
     return true;
 }
 
@@ -123,7 +123,7 @@ void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene,bool isAnimatio
         }
         else
         {
-            this->ProcessAnimation(mesh, scene);
+            mAnimations[ModelName][AnimeName].mBoneMeshs.push_back(this->ProcessAnimation(mesh, scene));
         }
     }
 
@@ -230,7 +230,7 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 AnimationMesh ModelLoader::ProcessAnimation(aiMesh* mesh, const aiScene* scene)
 {
     AnimationMesh LAnime;
-    mAnimations[ModelName][AnimeName].bones_id_weights_for_each_vertex.resize(mAnimations[ModelName][AnimeName].bones_id_weights_for_each_vertex.size()+mesh->mNumVertices);
+    LAnime.bones_id_weights_for_each_vertex.resize(mesh->mNumVertices);
     // load bones
     for (UINT i = 0; i < mesh->mNumBones; i++)
     {
@@ -261,12 +261,12 @@ AnimationMesh ModelLoader::ProcessAnimation(aiMesh* mesh, const aiScene* scene)
         {
             UINT vertex_id = mesh->mBones[i]->mWeights[j].mVertexId; 
             float weight = mesh->mBones[i]->mWeights[j].mWeight;
-            mAnimations[ModelName][AnimeName].bones_id_weights_for_each_vertex[vertex_id].addBoneData(bone_index, weight);
+            LAnime.bones_id_weights_for_each_vertex[vertex_id].addBoneData(bone_index, weight);
         }
     }
 
 
-    //LAnime.SetUpMesh(dev, pCommandList);//bone data for AI stage
+    LAnime.SetUpMesh(dev, pCommandList);//bone data for IA stage
 
     return LAnime;
 }

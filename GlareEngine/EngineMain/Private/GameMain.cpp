@@ -1329,7 +1329,7 @@ void GameApp::BuildModelGeoInstanceItems()
 	
 	// Generate instance data.
 	///Hard code
-	const int n = 5;
+	const int n =2;
 	InstanceSphereRitem->Instances.resize(n * n);
 	InstanceSphereRitem->InstanceCount = 0;//init count
 
@@ -1398,7 +1398,7 @@ void GameApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vec
 				cmdList->SetGraphicsRootConstantBufferView(2, skinnedCBAddress);
 				//const D3D12_VERTEX_BUFFER_VIEW* pViews[] = { &ri->Geo[MeshNum]->VertexBufferView(),&mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].mBoneMeshs[MeshNum].mBoneGeo.VertexBufferView() };
 				cmdList->IASetVertexBuffers(0, 1, &ri->Geo[MeshNum]->VertexBufferView());
-				cmdList->IASetVertexBuffers(1, 1, &mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].mBoneGeo.VertexBufferView());
+				cmdList->IASetVertexBuffers(1, 1, &mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].mBoneMeshs[MeshNum].mBoneGeo.VertexBufferView());
 			}
 			else
 			{

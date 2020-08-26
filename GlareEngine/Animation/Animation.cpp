@@ -111,6 +111,7 @@ aiQuaternion Animation::CalcInterpolatedRotation(float p_animation_time, const a
     aiQuaternion start_quat = p_node_anim->mRotationKeys[rotation_index].mValue;
     aiQuaternion end_quat = p_node_anim->mRotationKeys[next_rotation_index].mValue;
 
+
     return Quatlerp(start_quat, end_quat, factor);
 }
 
@@ -170,18 +171,18 @@ void Animation::ReadNodeHierarchy(float p_animation_time, const aiNode* p_node, 
         }
         else
         {
-            node_transform = scaling_matr * rotate_matr * translate_matr;
+            node_transform =translate_matr *  rotate_matr*scaling_matr  ;
         }
 
     }
 
-    aiMatrix4x4 global_transform = node_transform * parent_transform;
+    aiMatrix4x4 global_transform =parent_transform *node_transform  ;
 
    
     if (m_bone_mapping.find(node_name) != m_bone_mapping.end()) // true if node_name exist in bone_mapping
     {
         UINT bone_index = m_bone_mapping[node_name];
-        m_bone_matrices[bone_index].Final_World_Transform = m_bone_matrices[bone_index].Offset_Matrix * global_transform * m_global_inverse_transform;
+        m_bone_matrices[bone_index].Final_World_Transform =m_global_inverse_transform  * global_transform *m_bone_matrices[bone_index].Offset_Matrix ;
     }
 
     for (UINT i = 0; i < p_node->mNumChildren; i++)
@@ -206,7 +207,7 @@ void Animation::UpadateBoneTransform(double time_in_sec, vector<XMFLOAT4X4>& tra
     for (UINT i = 0; i < m_num_bones; i++)
     {
         transforms[i]=AiToXM(m_bone_matrices[i].Final_World_Transform);
-        XMStoreFloat4x4(&transforms[i],XMMatrixTranspose(XMLoadFloat4x4(&transforms[i])));
+        //XMStoreFloat4x4(&transforms[i],XMMatrixTranspose(XMLoadFloat4x4(&transforms[i])));
     }
 }
 
@@ -306,7 +307,7 @@ void VertexBoneData::addBoneData(int bone_id, float weight)
 {
     for (UINT i = 0; i < NUM_BONES_PER_VEREX; i++)
     {
-        if (weights[i] == 0.0)
+        if (weights[i]==0.0f)
         {
             BoneIds[i] = bone_id;
             weights[i] = weight;
