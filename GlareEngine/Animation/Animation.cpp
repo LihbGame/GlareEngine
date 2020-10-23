@@ -142,8 +142,8 @@ void Animation::ReadNodeHierarchy(float p_animation_time, const aiNode* p_node, 
     string node_name(p_node->mName.data);
 
     const aiAnimation* animation = pAnimeScene->mAnimations[0];
-    aiMatrix4x4 node_transform = p_node->mTransformation;
-
+    aiMatrix4x4 node_transform= p_node->mTransformation;
+    node_transform = node_transform.Transpose();
     const aiNodeAnim* node_anim = FindNodeAnim(animation, node_name); 
 
     if (node_anim)
@@ -171,18 +171,18 @@ void Animation::ReadNodeHierarchy(float p_animation_time, const aiNode* p_node, 
         }
         else
         {
-            node_transform =translate_matr *  rotate_matr*scaling_matr  ;
+            node_transform = translate_matr.Transpose();// *rotate_matr* scaling_matr;
         }
 
     }
 
-    aiMatrix4x4 global_transform =parent_transform *node_transform  ;
+    aiMatrix4x4 global_transform = node_transform;// *parent_transform;
 
    
     if (m_bone_mapping.find(node_name) != m_bone_mapping.end()) // true if node_name exist in bone_mapping
     {
         UINT bone_index = m_bone_mapping[node_name];
-        m_bone_matrices[bone_index].Final_World_Transform =m_global_inverse_transform  * global_transform *m_bone_matrices[bone_index].Offset_Matrix ;
+        m_bone_matrices[bone_index].Final_World_Transform = global_transform;/// *m_global_inverse_transform;
     }
 
     for (UINT i = 0; i < p_node->mNumChildren; i++)

@@ -44,11 +44,12 @@ bool ModelLoader::LoadModel(string filename)
 bool ModelLoader::LoadAnimation(string filename)
 {
     directory = "Model/";
+
+
+
     string FullName = directory + filename;
     const aiScene* pAnimeScene = importer.ReadFile(FullName,
-        aiProcess_ConvertToLeftHanded| aiProcess_Triangulate | aiProcess_GenSmoothNormals |
-        aiProcess_FlipUVs);
-
+        aiProcess_ConvertToLeftHanded );
     if (pAnimeScene == NULL)
     {
         MessageBox(hwnd, L"assimp animation scene create failed!", L"error", 0);
@@ -256,7 +257,7 @@ AnimationMesh ModelLoader::ProcessAnimation(aiMesh* mesh, const aiScene* scene)
         {
             bone_index = mAnimations[ModelName][AnimeName].m_bone_mapping[bone_name];
         }
-
+        
         for (UINT j = 0; j < mesh->mBones[i]->mNumWeights; j++)
         {
             UINT vertex_id = mesh->mBones[i]->mWeights[j].mVertexId; 
