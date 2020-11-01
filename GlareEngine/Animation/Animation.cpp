@@ -1,11 +1,16 @@
 ﻿#include "Animation.h"
 
+const aiMatrix4x4 IdentityMatrix;
+
+
 Animation::Animation()
 {
 }
 
 Animation::~Animation()
 {
+    delete mRootNode;
+    delete mAnimEvaluator;
 }
 
 UINT Animation::FindPosition(float p_animation_time, const aiNodeAnim* p_node_anim)
@@ -280,6 +285,151 @@ aiQuaternion Animation::Quatlerp(aiQuaternion a, aiQuaternion b, float blend)
     }
 
     return result.Normalize();
+}
+
+void Animation::InitAnime()
+{
+    // build the nodes-for-bones table
+    if(pAnimeScene!=nullptr)
+    for (unsigned int i = 0; i < pAnimeScene->mNumMeshes; ++i) {
+        const aiMesh* mesh = pAnimeScene->mMeshes[i];
+        for (unsigned int n = 0; n < mesh->mNumBones; ++n) {
+            const aiBone* bone = mesh->mBones[n];
+
+            mBoneNodesByName[bone->mName.data] = pAnimeScene->mRootNode->FindNode(bone->mName);
+        }
+    }
+
+    // 更改当前动画还会为该动画创建节点树
+    // 释放前一个动画的数据
+    delete mRootNode;  mRootNode = nullptr;
+    delete mAnimEvaluator;  mAnimEvaluator = nullptr;
+    mNodesByName.clear();
+
+    //创建内部节点树。 即使在无效的动画索引的情况下也要执行此操作，
+    //以便正确设置转换矩阵以模仿当前场景
+    mRootNode = CreateNodeTree(pAnimeScene->mRootNode, nullptr);
+
+    // 为此动画创建一个Evaluator
+    mAnimEvaluator = new AnimEvaluator(pAnimeScene->mAnimations[0]);
+}
+
+void Animation::Calculate(double pTime)
+{
+    // invalid anim
+    if (!mAnimEvaluator) {
+        return;
+    }
+
+    // calculate current local transformations
+    mAnimEvaluator->Evaluate(pTime);
+
+    // and update all node transformations with the results
+    UpdateTransforms(mRootNode, mAnimEvaluator->GetTransformations());
+}
+
+const aiMatrix4x4& Animation::GetLocalTransform(const aiNode* node) const
+{
+    NodeMap::const_iterator it = mNodesByName.find(node);
+    if (it == mNodesByName.end()) {
+        return IdentityMatrix;
+    }
+
+    return it->second->mLocalTransform;
+}
+
+const aiMatrix4x4& Animation::GetGlobalTransform(const aiNode* node) const
+{
+    NodeMap::const_iterator it = mNodesByName.find(node);
+    if (it == mNodesByName.end()) {
+        return IdentityMatrix;
+    }
+
+    return it->second->mGlobalTransform;
+}
+
+const std::vector<aiMatrix4x4>& Animation::GetBoneMatrices(const aiNode* pNode, size_t pMeshIndex)
+{
+    assert(pMeshIndex < pNode->mNumMeshes);
+    size_t meshIndex = pNode->mMeshes[pMeshIndex];
+    assert(meshIndex < pAnimeScene->mNumMeshes);
+    const aiMesh* mesh = pAnimeScene->mMeshes[meshIndex];
+
+    // resize array and initialize it with identity matrices
+    mTransforms.resize(mesh->mNumBones, aiMatrix4x4());
+
+    // calculate the mesh's inverse global transform
+    aiMatrix4x4 globalInverseMeshTransform = GetGlobalTransform(pNode);
+    globalInverseMeshTransform.Inverse();
+
+    // Bone matrices transform from mesh coordinates in bind pose to mesh coordinates in skinned pose
+    // Therefore the formula is offsetMatrix * currentGlobalTransform * inverseCurrentMeshTransform
+    for (size_t a = 0; a < mesh->mNumBones; ++a) {
+        const aiBone* bone = mesh->mBones[a];
+        const aiMatrix4x4& currentGlobalTransform = GetGlobalTransform(mBoneNodesByName[bone->mName.data]);
+        mTransforms[a] = globalInverseMeshTransform * currentGlobalTransform * bone->mOffsetMatrix;
+    }
+
+    // and return the result
+    return mTransforms;
+}
+
+SceneAnimNode* Animation::CreateNodeTree(aiNode* pNode, SceneAnimNode* pParent)
+{
+    // create a node
+    SceneAnimNode* internalNode = new SceneAnimNode(pNode->mName.data);
+    internalNode->mParent = pParent;
+    mNodesByName[pNode] = internalNode;
+
+    // copy its transformation
+    internalNode->mLocalTransform = pNode->mTransformation;
+    CalculateGlobalTransform(internalNode);
+
+    // find the index of the animation track affecting this node, if any
+    internalNode->mChannelIndex = -1;
+    const aiAnimation* currentAnim = pAnimeScene->mAnimations[0];
+    for (unsigned int a = 0; a < currentAnim->mNumChannels; a++) {
+        if (currentAnim->mChannels[a]->mNodeName.data == internalNode->mName) {
+            internalNode->mChannelIndex = a;
+            break;
+        }
+    }
+    
+    // continue for all child nodes and assign the created internal nodes as our children
+    for (unsigned int a = 0; a < pNode->mNumChildren; ++a) {
+        SceneAnimNode* childNode = CreateNodeTree(pNode->mChildren[a], internalNode);
+        internalNode->mChildren.push_back(childNode);
+    }
+
+    return internalNode;
+}
+
+void Animation::UpdateTransforms(SceneAnimNode* pNode, const std::vector<aiMatrix4x4>& pTransforms)
+{
+    // update node local transform
+    if (pNode->mChannelIndex != -1) {
+       assert(static_cast<unsigned int>(pNode->mChannelIndex) < pTransforms.size());
+        pNode->mLocalTransform = pTransforms[pNode->mChannelIndex];
+    }
+
+    // update global transform as well
+    CalculateGlobalTransform(pNode);
+
+    // continue for all children
+    for (std::vector<SceneAnimNode*>::iterator it = pNode->mChildren.begin(); it != pNode->mChildren.end(); ++it) {
+        UpdateTransforms(*it, pTransforms);
+    }
+}
+
+void Animation::CalculateGlobalTransform(SceneAnimNode* pInternalNode)
+{
+    //连接所有父变换以获得该节点的全局变换
+    pInternalNode->mGlobalTransform = pInternalNode->mLocalTransform;
+    SceneAnimNode* node = pInternalNode->mParent;
+    while (node) {
+        pInternalNode->mGlobalTransform = node->mLocalTransform * pInternalNode->mGlobalTransform;
+        node = node->mParent;
+    }
 }
 
 void AnimationMesh::SetUpMesh(ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList)
