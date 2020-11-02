@@ -83,6 +83,9 @@ bool ModelLoader::LoadAnimation(string filename)
 
     ProcessNode(pAnimeScene->mRootNode, pAnimeScene,true);
 
+    //init anime
+    mAnimations[ModelName][AnimeName].InitAnime();
+
     //mAnimations[ModelName][AnimeName].SetUpMesh(dev, pCommandList);
     return true;
 }

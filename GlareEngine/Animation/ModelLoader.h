@@ -1,9 +1,8 @@
 //#pragma once
 
-
+#include "Animations.h"
 #include "ModelMesh.h"
 #include "L3DTextureManage.h"
-#include "Animation.h"
 
 
 
@@ -26,7 +25,6 @@ public:
 
     vector<string> GetModelTextureNames(string modelname);
     void Close();
-
 
 
     //animation string:model name 
