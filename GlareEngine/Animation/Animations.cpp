@@ -148,12 +148,11 @@ void Animation::ReadNodeHierarchy(float p_animation_time, const aiNode* p_node, 
 
     const aiAnimation* Animation = pAnimeScene->mAnimations[0];
     aiMatrix4x4 node_transform= p_node->mTransformation;
-    node_transform = node_transform.Transpose();
+    node_transform = node_transform.Inverse();
     const aiNodeAnim* node_anim = FindNodeAnim(Animation, node_name); 
 
     if (node_anim)
     {
-
         //scaling
         aiVector3D scaling_vector = CalcInterpolatedScaling(p_animation_time, node_anim);
         aiMatrix4x4 scaling_matr;
@@ -168,26 +167,19 @@ void Animation::ReadNodeHierarchy(float p_animation_time, const aiNode* p_node, 
         aiMatrix4x4 translate_matr;
         aiMatrix4x4::Translation(translate_vector, translate_matr);
 
-        if (string(node_anim->mNodeName.data) == string("Head"))
-        {
-           // aiQuaternion rotate_head = aiQuaternion(rotate_head_xz.w, rotate_head_xz.x, rotate_head_xz.y, rotate_head_xz.z);
-       
-           // node_transform = translate_matr * (rotate_matr * aiMatrix4x4(rotate_head.GetMatrix())) * scaling_matr;
-        }
-        else
-        {
-            node_transform = translate_matr.Transpose();// *rotate_matr* scaling_matr;
-        }
+        node_transform = translate_matr*rotate_matr*scaling_matr;// *rotate_matr* scaling_matr;
+      
 
     }
 
-    aiMatrix4x4 global_transform = node_transform;// *parent_transform;
+    aiMatrix4x4 global_transform =parent_transform* node_transform;
 
-   
+
     if (m_bone_mapping.find(node_name) != m_bone_mapping.end()) // true if node_name exist in bone_mapping
     {
-        UINT bone_index = m_bone_mapping[node_name];
-        m_bone_matrices[bone_index].Final_World_Transform = global_transform;/// *m_global_inverse_transform;
+         UINT bone_index =m_bone_mapping[node_name];
+         m_bone_matrices[bone_index].Final_World_Transform = m_global_inverse_transform * global_transform;// *m_bone_matrices[bone_index].Offset_Matrix;/// *;
+
     }
 
     for (UINT i = 0; i < p_node->mNumChildren; i++)
@@ -212,7 +204,7 @@ void Animation::UpadateBoneTransform(double time_in_sec, vector<XMFLOAT4X4>& tra
     for (UINT i = 0; i < m_num_bones; i++)
     {
         transforms[i]=AiToXM(m_bone_matrices[i].Final_World_Transform);
-        //XMStoreFloat4x4(&transforms[i],XMMatrixTranspose(XMLoadFloat4x4(&transforms[i])));
+        XMStoreFloat4x4(&transforms[i],XMMatrixTranspose(XMLoadFloat4x4(&transforms[i])));
     }
 }
 
@@ -236,23 +228,23 @@ XMFLOAT4X4 Animation::AiToXM(aiMatrix4x4 ai_matr)
     XMFLOAT4X4 lmat;
 
     lmat._11 = ai_matr.a1;
-    lmat._12 = ai_matr.a2;
-    lmat._13 = ai_matr.a3;
-    lmat._14 = ai_matr.a4;
+    lmat._12 = ai_matr.b1;
+    lmat._13 = ai_matr.c1;
+    lmat._14 = ai_matr.d1;
 
-    lmat._21 = ai_matr.b1;
+    lmat._21 = ai_matr.a2;
     lmat._22 = ai_matr.b2;
-    lmat._23 = ai_matr.b3;
-    lmat._24 = ai_matr.b4;
+    lmat._23 = ai_matr.c2;
+    lmat._24 = ai_matr.d2;
 
-    lmat._31 = ai_matr.c1;
-    lmat._32 = ai_matr.c2;
+    lmat._31 = ai_matr.a3;
+    lmat._32 = ai_matr.b3;
     lmat._33 = ai_matr.c3;
-    lmat._34 = ai_matr.c4;
+    lmat._34 = ai_matr.d3;
 
-    lmat._41 = ai_matr.d1;
-    lmat._42 = ai_matr.d2;
-    lmat._43 = ai_matr.d3;
+    lmat._41 = ai_matr.a4;
+    lmat._42 = ai_matr.b4;
+    lmat._43 = ai_matr.c4;
     lmat._44 = ai_matr.d4;
 
 
@@ -348,30 +340,37 @@ const aiMatrix4x4& Animation::GetGlobalTransform(const aiNode* node) const
     return it->second->mGlobalTransform;
 }
 
-const std::vector<aiMatrix4x4>& Animation::GetBoneMatrices(const aiNode* pNode, size_t pMeshIndex)
+void Animation::GetBoneMatrices(const aiNode* pNode, size_t pMeshIndex)
 {
-    assert(pMeshIndex < pNode->mNumMeshes);
-    size_t meshIndex = pNode->mMeshes[pMeshIndex];
-    assert(meshIndex < pAnimeScene->mNumMeshes);
-    const aiMesh* mesh = pAnimeScene->mMeshes[meshIndex];
+// resize array and initialize it with identity matrices
+        mTransforms.resize(96, aiMatrix4x4());
+        int index = 0;
+    for (UINT i = 0; i < pNode->mNumMeshes; i++)
+    {
+        size_t meshIndex = pNode->mMeshes[i];
+        assert(meshIndex < pAnimeScene->mNumMeshes);
+        const aiMesh* mesh = pAnimeScene->mMeshes[meshIndex];
 
-    // resize array and initialize it with identity matrices
-    mTransforms.resize(mesh->mNumBones, aiMatrix4x4());
+        
+        // calculate the mesh's inverse global transform
+        aiMatrix4x4 globalInverseMeshTransform = GetGlobalTransform(pNode);
+        globalInverseMeshTransform.Inverse();
 
-    // calculate the mesh's inverse global transform
-    aiMatrix4x4 globalInverseMeshTransform = GetGlobalTransform(pNode);
-    globalInverseMeshTransform.Inverse();
-
-    // Bone matrices transform from mesh coordinates in bind pose to mesh coordinates in skinned pose
-    // Therefore the formula is offsetMatrix * currentGlobalTransform * inverseCurrentMeshTransform
-    for (size_t a = 0; a < mesh->mNumBones; ++a) {
-        const aiBone* bone = mesh->mBones[a];
-        const aiMatrix4x4& currentGlobalTransform = GetGlobalTransform(mBoneNodesByName[bone->mName.data]);
-        mTransforms[a] = globalInverseMeshTransform * currentGlobalTransform * bone->mOffsetMatrix;
+        // Bone matrices transform from mesh coordinates in bind pose to mesh coordinates in skinned pose
+        // Therefore the formula is offsetMatrix * currentGlobalTransform * inverseCurrentMeshTransform
+        for (size_t a = 0; a < mesh->mNumBones; ++a) {
+            const aiBone* bone = mesh->mBones[a];
+             aiMatrix4x4 currentGlobalTransform = GetLocalTransform(mBoneNodesByName[bone->mName.data]);
+             aiMatrix4x4 sda = bone->mOffsetMatrix;
+             mTransforms[(index+ pMeshIndex)%80]= currentGlobalTransform.Inverse();
+             index++;
+        }
     }
-
+    for (UINT i = 0; i < pNode->mNumChildren; i++)
+    {
+        this->GetBoneMatrices(pNode->mChildren[i], pMeshIndex);
+    }
     // and return the result
-    return mTransforms;
 }
 
 SceneAnimNode* Animation::CreateNodeTree(aiNode* pNode, SceneAnimNode* pParent)

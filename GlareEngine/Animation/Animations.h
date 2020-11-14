@@ -151,7 +151,7 @@ public:
     //@param pNode承载网格的节点。
     //@param pMeshIndex节点的网格阵列中网格的索引。NODE的网格阵列，而不是场景的网格阵列！ 省略使用节点的第一个网格，通常也是唯一的一个。
     //@return对骨矩阵向量的引用。直到下一次调用GetBoneMatrices（）; 为止。
-    const std::vector<aiMatrix4x4>& GetBoneMatrices(const aiNode* pNode,
+    void GetBoneMatrices(const aiNode* pNode,
         size_t pMeshIndex = 0);
 
     //递归创建与当前场景和动画匹配的内部节点结构。

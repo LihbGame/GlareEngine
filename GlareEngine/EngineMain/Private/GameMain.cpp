@@ -37,6 +37,7 @@ GameApp::GameApp(HINSTANCE hInstance)
 	: D3DApp(hInstance)
 {
 	mEngineUI = make_unique<EngineGUI>();
+	transforms.resize(96);
 }
 
 GameApp::~GameApp()
@@ -1594,18 +1595,35 @@ void GameApp::UpdateAnimation(const GameTimer& gt)
 	static float time = 0.0f;
 	double time_in_sec = gt.TotalTime();
 	time += gt.DeltaTime();
+	int itime = time;
 	/*if (time >= 3.0f)
 	{*/
+		static int x = 0;
+		if (itime%200 == 0)
+		{
+			x++;
+			//mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].UpadateBoneTransform(time_in_sec, transforms);
+		}
+		if (x > 80)
+		{
+			x = 0;
+		}
 		mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].UpadateBoneTransform(time_in_sec, transforms);
+		//mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].Calculate(time_in_sec);
 		time -= 3.0f;
-	
+		//mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].GetBoneMatrices(mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].pAnimeScene->mRootNode,x);
+		/*int i = 0;
+		for (auto e : mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].mTransforms)
+		{
+			transforms[i++]=(mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].AiToXM(e));
+		}*/
 
 		SkinnedConstants skinnedConstants;
 		std::copy(
 			std::begin(transforms),
 			std::end(transforms),
 			&skinnedConstants.BoneTransforms[0]);
-
+		
 		currSkinnedCB->CopyData(0, skinnedConstants);
 	
 	//}

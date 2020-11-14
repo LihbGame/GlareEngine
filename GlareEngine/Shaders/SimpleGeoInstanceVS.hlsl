@@ -36,15 +36,15 @@ VertexOut VS(VertexIn vin, uint instanceID : SV_InstanceID)
 	weights[2] = vin.BoneWeights.z;
 	weights[3] = vin.BoneWeights.w;
 
-	float4x4 bone_transform = gBoneTransforms[vin.BoneIndices[3]] * weights[0];
-	bone_transform += gBoneTransforms[vin.BoneIndices[2]] * weights[1];
-	bone_transform += gBoneTransforms[vin.BoneIndices[1]] * weights[2];
-	bone_transform += gBoneTransforms[vin.BoneIndices[0]] * weights[3];
+	float4x4 bone_transform = gBoneTransforms[vin.BoneIndices[0]]* weights[0];
+	bone_transform += gBoneTransforms[vin.BoneIndices[1]] * weights[1];
+	bone_transform += gBoneTransforms[vin.BoneIndices[2]] * weights[2];
+	bone_transform += gBoneTransforms[vin.BoneIndices[3]] * weights[3];
 
 
-	vin.PosL = mul(float4(vin.PosL, 1.0f), bone_transform).xyz;
-	vin.NormalL = mul(vin.NormalL, (float3x3)bone_transform);
-	vin.TangentL.xyz = mul(vin.TangentL.xyz, (float3x3)bone_transform);
+	vin.PosL = mul(float4(vin.PosL, 1.0f),bone_transform).xyz;
+	vin.NormalL = mul(vin.NormalL,(float3x3)bone_transform );
+	vin.TangentL.xyz = mul( vin.TangentL.xyz,(float3x3)bone_transform);
 
 #endif
 

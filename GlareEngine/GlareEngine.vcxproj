@@ -151,7 +151,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Animation\Animation.h" />
+    <ClInclude Include="Animation\Animations.h" />
+    <ClInclude Include="Animation\AnimEvaluator.h" />
     <ClInclude Include="Animation\ModelLoader.h" />
     <ClInclude Include="Animation\ModelMesh.h" />
     <ClInclude Include="Core\Public\L3DInputLayout.h" />
@@ -195,7 +196,8 @@
     <ClInclude Include="RanderEffects\Water\Public\Waves.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Animation\Animation.cpp" />
+    <ClCompile Include="Animation\Animations.cpp" />
+    <ClCompile Include="Animation\AnimEvaluator.cpp" />
     <ClCompile Include="Animation\ModelMesh.cpp" />
     <ClCompile Include="Core\Private\DDSTextureLoader.cpp" />
     <ClCompile Include="Core\Private\L3DBaseApp.cpp" />
