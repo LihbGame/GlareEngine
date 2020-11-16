@@ -1311,7 +1311,6 @@ void GameApp::BuildModelGeoInstanceItems()
 	lbox.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	lbox.Extents = XMFLOAT3(200.0f, 200.0f, 200.0f);
 
-
 	auto InstanceSphereRitem = std::make_unique<RenderItem>();
 	for (auto& e : mModelLoder->GetModelMesh("Blue_Tree_02a"))
 	{
