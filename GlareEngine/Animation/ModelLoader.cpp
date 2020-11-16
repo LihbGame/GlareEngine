@@ -41,15 +41,15 @@ bool ModelLoader::LoadModel(string filename)
     return true;
 }
 
-bool ModelLoader::LoadAnimation(string filename)
+bool ModelLoader::LoadAnimation(string filename, map<string, int> BoneNames)
 {
     directory = "Model/";
 
-
-
+    mBoneNames = BoneNames;
+    
     string FullName = directory + filename;
     const aiScene* pAnimeScene = importer.ReadFile(FullName,
-        aiProcess_ConvertToLeftHanded );
+        aiProcessPreset_TargetRealtime_Quality);
     if (pAnimeScene == NULL)
     {
         MessageBox(hwnd, L"assimp animation scene create failed!", L"error", 0);
@@ -80,11 +80,9 @@ bool ModelLoader::LoadAnimation(string filename)
     }
 
 
-
     ProcessNode(pAnimeScene->mRootNode, pAnimeScene,true);
-
     //init anime
-    mAnimations[ModelName][AnimeName].InitAnime();
+   // mAnimations[ModelName][AnimeName].InitAnime();
 
     //mAnimations[ModelName][AnimeName].SetUpMesh(dev, pCommandList);
     return true;
@@ -240,26 +238,25 @@ AnimationMesh ModelLoader::ProcessAnimation(aiMesh* mesh, const aiScene* scene)
     {
         UINT bone_index = 0;
         string bone_name(mesh->mBones[i]->mName.data);
-
 #if defined(_DEBUG)
         string DebugInfo(ModelName + "-->" + AnimeName + ":" + bone_name+"\n");
         ::OutputDebugStringA(DebugInfo.c_str());
 #endif
 
-        if (mAnimations[ModelName][AnimeName].m_bone_mapping.find(bone_name)
-            == mAnimations[ModelName][AnimeName].m_bone_mapping.end())
-        {
-            // Allocate an index for a new bone
-            bone_index = mAnimations[ModelName][AnimeName].m_num_bones++;
-            BoneMatrix bi;
-            mAnimations[ModelName][AnimeName].m_bone_matrices.push_back(bi);
-            mAnimations[ModelName][AnimeName].m_bone_matrices[bone_index].Offset_Matrix = mesh->mBones[i]->mOffsetMatrix;
-            mAnimations[ModelName][AnimeName].m_bone_mapping[bone_name] = bone_index;  
-        }
-        else
-        {
-            bone_index = mAnimations[ModelName][AnimeName].m_bone_mapping[bone_name];
-        }
+        //if (mAnimations[ModelName][AnimeName].m_bone_mapping.find(bone_name)
+        //    == mAnimations[ModelName][AnimeName].m_bone_mapping.end())
+        //{
+        //    // Allocate an index for a new bone
+        //    bone_index = mAnimations[ModelName][AnimeName].m_num_bones++;
+        //    BoneMatrix bi;
+        //    mAnimations[ModelName][AnimeName].m_bone_matrices.push_back(bi);
+        //    mAnimations[ModelName][AnimeName].m_bone_matrices[bone_index].Offset_Matrix = mesh->mBones[i]->mOffsetMatrix;
+        //    mAnimations[ModelName][AnimeName].m_bone_mapping[bone_name] = bone_index;  
+        //}
+        //else
+        //{
+            bone_index = mBoneNames[bone_name];// mAnimations[ModelName][AnimeName].m_bone_mapping[bone_name];
+        //}
         
         for (UINT j = 0; j < mesh->mBones[i]->mNumWeights; j++)
         {

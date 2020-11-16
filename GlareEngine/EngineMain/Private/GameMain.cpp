@@ -399,7 +399,7 @@ void GameApp::CreateDescriptorHeaps()
 }
 
 void GameApp::CreatePBRSRVinDescriptorHeap(
-	unordered_map<string,ID3D12Resource*> TexResource, 
+	unordered_map<std::string,ID3D12Resource*> TexResource,
 	int* SRVIndex, 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor,
 	wstring MaterialName)
@@ -611,7 +611,7 @@ void GameApp::UpdateInstanceCBs(const GameTimer& gt)
 					InstanceConstants data;
 					XMStoreFloat4x4(&data.World, XMMatrixTranspose(world));
 					XMStoreFloat4x4(&data.TexTransform, XMMatrixTranspose(texTransform));
-					string matname = mModelLoder->GetModelTextureNames("TraumaGuard")[matNum];
+					string matname = mModelLoder->GetModelTextureNames("Blue_Tree_02a")[matNum];
 					data.MaterialIndex = mMaterials[wstring(matname.begin(),matname.end())]->MatCBIndex;
 					// 将实例数据写入可见对象的结构化缓冲区。
 					currInstanceBuffer->CopyData(visibleInstanceCount++, data);
@@ -1143,7 +1143,7 @@ void GameApp::BuildFrameResources()
 	for (int i = 0; i < gNumFrameResources; ++i)
 	{
 		mFrameResources.push_back(std::make_unique<FrameResource>(md3dDevice.Get(),
-			2,(UINT)mModelLoder->GetModelMesh("TraumaGuard").size(),1,(UINT)mAllRitems.size(), (UINT)mMaterials.size(), mWaves->VertexCount()));
+			2,(UINT)mModelLoder->GetModelMesh("Blue_Tree_02a").size(),1,(UINT)mAllRitems.size(), (UINT)mMaterials.size(), mWaves->VertexCount()));
 	}
 }
 
@@ -1313,7 +1313,7 @@ void GameApp::BuildModelGeoInstanceItems()
 
 
 	auto InstanceSphereRitem = std::make_unique<RenderItem>();
-	for (auto& e : mModelLoder->GetModelMesh("TraumaGuard"))
+	for (auto& e : mModelLoder->GetModelMesh("Blue_Tree_02a"))
 	{
 		InstanceSphereRitem->Geo.push_back(&e.mMeshGeo);
 		InstanceSphereRitem->IndexCount.push_back(e.mMeshGeo.DrawArgs["Model Mesh"].IndexCount);
@@ -1330,7 +1330,7 @@ void GameApp::BuildModelGeoInstanceItems()
 	
 	// Generate instance data.
 	///Hard code
-	const int n =2;
+	const int n =5;
 	InstanceSphereRitem->Instances.resize(n * n);
 	InstanceSphereRitem->InstanceCount = 0;//init count
 
@@ -1521,7 +1521,8 @@ void GameApp::LoadModel()
 	mModelLoder->LoadModel("BlueTree/Blue_Tree_02a.fbx");
 	mModelLoder->LoadModel("TraumaGuard/TraumaGuard.fbx");
 
-	mModelLoder->LoadAnimation("TraumaGuard/TraumaGuard@ActiveIdleLoop.fbx");
+	//AnimationPlayback["TraumaGuard@ActiveIdleLoop"].OnInitialize();
+	mModelLoder->LoadAnimation("TraumaGuard/TraumaGuard@ActiveIdleLoop.fbx", AnimationPlayback["TraumaGuard@ActiveIdleLoop"].GetBoneNames());
 	
 }					
 
@@ -1595,22 +1596,21 @@ void GameApp::UpdateAnimation(const GameTimer& gt)
 	static float time = 0.0f;
 	double time_in_sec = gt.TotalTime();
 	time += gt.DeltaTime();
-	int itime = time;
+	static int j = 0;
+	/*if (time > 0.3)
+	{*/
+		AnimationPlayback["TraumaGuard@ActiveIdleLoop"].OnUpdate(gt.DeltaTime(), 0);
+		//transforms = AnimationPlayback["TraumaGuard@ActiveIdleLoop"].GetModelTransforms();
+		time=0;
+	//}
+	
+
+
 	/*if (time >= 3.0f)
 	{*/
-		static int x = 0;
-		if (itime%200 == 0)
-		{
-			x++;
-			//mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].UpadateBoneTransform(time_in_sec, transforms);
-		}
-		if (x > 80)
-		{
-			x = 0;
-		}
 		mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].UpadateBoneTransform(time_in_sec, transforms);
 		//mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].Calculate(time_in_sec);
-		time -= 3.0f;
+		//time -= 3.0f;
 		//mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].GetBoneMatrices(mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].pAnimeScene->mRootNode,x);
 		/*int i = 0;
 		for (auto e : mModelLoder->mAnimations["TraumaGuard"]["ActiveIdleLoop"].mTransforms)
@@ -1659,9 +1659,9 @@ void GameApp::DrawSceneToShadowMap()
 
 	//Simple Instance  Shadow map
 	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::InstanceSimpleShadow_Opaque).Get());
-	//DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
 	
-	//DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
 	// Change back to GENERIC_READ so we can read the texture in a shader.
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mShadowMap->Resource(),
 		D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_GENERIC_READ));

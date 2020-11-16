@@ -140,6 +140,7 @@
     <ClInclude Include="ShaderSource\Public\SkinAnimeShader.h" />
     <ClInclude Include="Animation\AnimEvaluator.h" />
     <ClInclude Include="Animation\Animations.h" />
+    <ClInclude Include="Animation\OzzAnimePlayBack.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Private\DDSTextureLoader.cpp">

@@ -6,7 +6,7 @@ struct VertexIn
 	float3 NormalL : NORMAL;
 	float3 TangentL: TANGENT;
 	float2 TexC    : TEXCOORD;
-#ifdef SKINNED
+#ifdef SKINNED1
 	float4 BoneWeights : WEIGHTS;
 	uint4 BoneIndices  : BONEINDICES;
 #endif
@@ -29,7 +29,7 @@ VertexOut VS(VertexIn vin, uint instanceID : SV_InstanceID)
 {
 	VertexOut vout = (VertexOut)0.0f;
 
-#ifdef SKINNED
+#ifdef SKINNED1
 	float weights[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	weights[0] = vin.BoneWeights.x;
 	weights[1] = vin.BoneWeights.y;

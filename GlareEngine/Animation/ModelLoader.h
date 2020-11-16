@@ -15,7 +15,7 @@ public:
     //load model mesh data
     bool LoadModel(string filename);
     //load animation data
-    bool LoadAnimation(string filename);
+    bool LoadAnimation(string filename, map<string, int> BoneNames);
    
     void DrawModel(string ModelName);
 
@@ -33,7 +33,7 @@ private:
     ID3D12Device* dev;
     ID3D12GraphicsCommandList* pCommandList;
     HWND hwnd;
-
+    map<string,int> mBoneNames;
     unordered_map<string,vector<ModelMesh>> meshes;
     unordered_map<string, vector<Texture*>> ModelTextures;
     unordered_map<string, vector<string>> ModelTexturesName;

@@ -25,6 +25,7 @@
 #include "ShadowMap.h"
 #include "ModelLoader.h"
 #include "SimpleGeoInstance.h"
+#include "OzzAnimePlayBack.h"
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
@@ -48,7 +49,7 @@ struct RenderItem
 	int ObjCBIndex = -1;
 
 	Material* Mat = nullptr;
-	vector<MeshGeometry*> Geo;
+	std::vector<MeshGeometry*> Geo;
 
 	// Primitive topology.
 	D3D12_PRIMITIVE_TOPOLOGY PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -60,9 +61,9 @@ struct RenderItem
 
 	// DrawIndexedInstanced parameters.
 	UINT InstanceCount;
-	vector<UINT> IndexCount;
-	vector<UINT> StartIndexLocation;
-	vector<int> BaseVertexLocation;
+	std::vector<UINT> IndexCount;
+	std::vector<UINT> StartIndexLocation;
+	std::vector<int> BaseVertexLocation;
 };
 
 enum class RenderLayer : int
@@ -140,7 +141,7 @@ private:
 	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
 	//创建资源描述堆
 	void CreateDescriptorHeaps();
-	void CreatePBRSRVinDescriptorHeap(unordered_map<string, ID3D12Resource*> TexResource,int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor,wstring MaterialName);
+	void CreatePBRSRVinDescriptorHeap(unordered_map<std::string, ID3D12Resource*> TexResource,int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor,wstring MaterialName);
 
 	//sampler
 	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> GetStaticSamplers();
@@ -227,5 +228,8 @@ private:
 	//Model Loader
 	std::unique_ptr<ModelLoader> mModelLoder;
 	
-	vector<XMFLOAT4X4> transforms;
+	std::vector<XMFLOAT4X4> transforms;
+
+	//play back anime 
+	std::unordered_map<std::string, AnimePlayback> AnimationPlayback;
 };
