@@ -141,6 +141,7 @@
     <ClInclude Include="Animation\AnimEvaluator.h" />
     <ClInclude Include="Animation\Animations.h" />
     <ClInclude Include="Animation\OzzAnimePlayBack.h" />
+    <ClInclude Include="RanderEffects\ShockWaveWater\Public\ShockWaveWater.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Private\DDSTextureLoader.cpp">
@@ -249,6 +250,9 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="Animation\Animations.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="RanderEffects\ShockWaveWater\Private\ShockWaveWater.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>

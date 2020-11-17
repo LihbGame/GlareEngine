@@ -144,7 +144,7 @@ void D3DApp::CreateRtvAndDsvDescriptorHeaps()
         &dsvHeapDesc, IID_PPV_ARGS(mDsvHeap.GetAddressOf())));
 
 
-	// Create descriptor heaps for MSAA render target viewsand depth stencil views.
+	// Create descriptor heaps for MSAA render target views and depth stencil views.
 	D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc = {};
 	rtvDescriptorHeapDesc.NumDescriptors = 1;
 	rtvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
