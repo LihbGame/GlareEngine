@@ -25,7 +25,7 @@
 #include "ShadowMap.h"
 #include "ModelLoader.h"
 #include "SimpleGeoInstance.h"
-#include "OzzAnimePlayBack.h"
+//#include "OzzAnimePlayBack.h"
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
@@ -231,5 +231,5 @@ private:
 	std::vector<XMFLOAT4X4> transforms;
 
 	//play back anime 
-	std::unordered_map<std::string, AnimePlayback> AnimationPlayback;
+	//std::unordered_map<std::string, AnimePlayback> AnimationPlayback;
 };

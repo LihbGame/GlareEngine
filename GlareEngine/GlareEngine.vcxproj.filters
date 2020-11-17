@@ -278,10 +278,26 @@
     <None Include="imgui.ini" />
     <None Include="Shaders\Common.hlsli" />
     <None Include="Shaders\PBRLighting.hlsli" />
+    <None Include="Dependences\lib\assimp.dll" />
+    <None Include="Dependences\lib\assimp-vc140-mt.dll" />
+    <None Include="Dependences\lib\assimp-vc142-mtd.pdb" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GlareEngine.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="Dependences\lib\ozz\debug\ozz_animation_d.lib" />
+    <Library Include="Dependences\lib\ozz\debug\sample_framework_d.lib" />
+    <Library Include="Dependences\lib\ozz\debug\ozz_animation_offline_d.lib" />
+    <Library Include="Dependences\lib\ozz\debug\ozz_animation_tools_d.lib" />
+    <Library Include="Dependences\lib\ozz\debug\ozz_base_d.lib" />
+    <Library Include="Dependences\lib\ozz\debug\ozz_geometry_d.lib" />
+    <Library Include="Dependences\lib\ozz\debug\ozz_options_d.lib" />
+    <Library Include="Dependences\lib\assimp.lib" />
+    <Library Include="Dependences\lib\assimp-vc140-mt.lib" />
+    <Library Include="Dependences\lib\assimp-vc142-mtd.lib" />
+    <Library Include="Dependences\lib\IrrXMLd.lib" />
   </ItemGroup>
 </Project>

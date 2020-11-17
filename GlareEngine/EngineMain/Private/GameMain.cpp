@@ -152,9 +152,8 @@ void GameApp::Update(const GameTimer& gt)
 	mShadowMap->UpdateShadowTransform(gt);
 	UpdateMainPassCB(gt);
 	UpdateShadowPassCB(gt);
-	UpdateAnimation(gt);
 
-
+	//UpdateAnimation(gt);
 	//UpdateWaves(gt);
 }
 
@@ -1521,7 +1520,7 @@ void GameApp::LoadModel()
 	mModelLoder->LoadModel("TraumaGuard/TraumaGuard.fbx");
 
 	//AnimationPlayback["TraumaGuard@ActiveIdleLoop"].OnInitialize();
-	mModelLoder->LoadAnimation("TraumaGuard/TraumaGuard@ActiveIdleLoop.fbx", AnimationPlayback["TraumaGuard@ActiveIdleLoop"].GetBoneNames());
+	mModelLoder->LoadAnimation("TraumaGuard/TraumaGuard@ActiveIdleLoop.fbx");
 	
 }					
 
@@ -1598,7 +1597,6 @@ void GameApp::UpdateAnimation(const GameTimer& gt)
 	static int j = 0;
 	/*if (time > 0.3)
 	{*/
-		AnimationPlayback["TraumaGuard@ActiveIdleLoop"].OnUpdate(gt.DeltaTime(), 0);
 		//transforms = AnimationPlayback["TraumaGuard@ActiveIdleLoop"].GetModelTransforms();
 		time=0;
 	//}

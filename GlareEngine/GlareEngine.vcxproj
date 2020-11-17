@@ -23,7 +23,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{819b941b-3428-4faa-a97e-5a0611c634e6}</ProjectGuid>
     <RootNamespace>GlareEngine</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <ProjectName>GlareEngine</ProjectName>
   </PropertyGroup>
@@ -45,7 +45,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -85,7 +85,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>.\Dependences\include;.\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\EngineMain\Public;.\Core\Public;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\GlareEngine\GlareEngine\Dependences\lib\ozz\debug;.\Dependences\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>.\Dependences\lib\ozz\debug;.\Dependences\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -123,7 +123,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -308,6 +308,9 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
     </FxCompile>
+    <None Include="Dependences\lib\assimp-vc140-mt.dll" />
+    <None Include="Dependences\lib\assimp-vc142-mtd.pdb" />
+    <None Include="Dependences\lib\assimp.dll" />
     <None Include="Shaders\Common.hlsli">
       <FileType>Document</FileType>
     </None>
@@ -323,6 +326,19 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="Dependences\lib\assimp-vc140-mt.lib" />
+    <Library Include="Dependences\lib\assimp-vc142-mtd.lib" />
+    <Library Include="Dependences\lib\assimp.lib" />
+    <Library Include="Dependences\lib\IrrXMLd.lib" />
+    <Library Include="Dependences\lib\ozz\debug\ozz_animation_d.lib" />
+    <Library Include="Dependences\lib\ozz\debug\ozz_animation_offline_d.lib" />
+    <Library Include="Dependences\lib\ozz\debug\ozz_animation_tools_d.lib" />
+    <Library Include="Dependences\lib\ozz\debug\ozz_base_d.lib" />
+    <Library Include="Dependences\lib\ozz\debug\ozz_geometry_d.lib" />
+    <Library Include="Dependences\lib\ozz\debug\ozz_options_d.lib" />
+    <Library Include="Dependences\lib\ozz\debug\sample_framework_d.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

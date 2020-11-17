@@ -15,7 +15,7 @@ public:
     //load model mesh data
     bool LoadModel(string filename);
     //load animation data
-    bool LoadAnimation(string filename, map<string, int> BoneNames);
+    bool LoadAnimation(string filename);
    
     void DrawModel(string ModelName);
 

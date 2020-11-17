@@ -41,12 +41,11 @@ bool ModelLoader::LoadModel(string filename)
     return true;
 }
 
-bool ModelLoader::LoadAnimation(string filename, map<string, int> BoneNames)
+bool ModelLoader::LoadAnimation(string filename)
 {
     directory = "Model/";
 
-    mBoneNames = BoneNames;
-    
+
     string FullName = directory + filename;
     const aiScene* pAnimeScene = importer.ReadFile(FullName,
         aiProcessPreset_TargetRealtime_Quality);
