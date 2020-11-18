@@ -252,20 +252,10 @@ void D3DApp::OnResize()
 		D3D12_RESOURCE_STATE_COMMON,
         &optClear,
         IID_PPV_ARGS(mDepthStencilBuffer.GetAddressOf())));
-	//MSAA
-	if (m4xMsaaState)
-	{
-		D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-		dsvDesc.Format = mDepthStencilFormat;
-		dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMS;
-		// Create descriptor to mip level 0 of entire resource using the format of the resource.
-		md3dDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), &dsvDesc, DepthStencilView());
-	}
-	else
-	{
-		// Create descriptor to mip level 0 of entire resource using the format of the resource.
-		md3dDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), nullptr, DepthStencilView());
-	}
+
+	// Create descriptor to mip level 0 of entire resource using the format of the resource.
+	md3dDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), nullptr, DepthStencilView());
+	
     // 将资源从其初始状态转换为用作深度缓冲区。
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mDepthStencilBuffer.Get(),
 		D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));

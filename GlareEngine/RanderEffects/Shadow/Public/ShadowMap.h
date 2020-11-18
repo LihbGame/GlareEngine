@@ -1,7 +1,7 @@
 #pragma once
 
 #include "L3DUtil.h"
-#include <Core\Public\L3DGameTimer.h>
+#include "L3DGameTimer.h"
 class ShadowMap
 {
 public:

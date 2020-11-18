@@ -72,6 +72,8 @@ bool GameApp::Initialize()
 	mPSOs = std::make_unique<PSO>();
 	//wave :not use
 	mWaves = std::make_unique<Waves>(256,256, 4.0f, 0.03f, 8.0f, 0.2f);
+	//ShockWaveWater
+	mShockWaveWater = std::make_unique<ShockWaveWater>(md3dDevice.Get(), mClientWidth, mClientHeight,m4xMsaaState);
 	//camera
 	mCamera.LookAt(XMFLOAT3(20.0f, 20.0f, 20.0f), XMFLOAT3(0.0f,0.0f,0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f));
 	//texture manage
@@ -314,11 +316,16 @@ void GameApp::CreateDescriptorHeaps()
 	int SRVIndex = 0;
 	UINT PBRTextureNum = (UINT)(mPBRTextureName.size() * 6);
 	UINT ModelTextureNum = (UINT)mModelLoder->GetAllModelTextures().size() * 6;
+	UINT ShockWaveWater = 2;
 	//
 	// Create the SRV heap.
 	//
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-	srvHeapDesc.NumDescriptors = PBRTextureNum+ ModelTextureNum+2;//PBR Textures+sky+shadow map+model pbr texture
+	//PBR Textures
+	//sky+shadow map=2
+	//model PBR texture
+	//ShockWaveWater map
+	srvHeapDesc.NumDescriptors = PBRTextureNum+ ModelTextureNum+ ShockWaveWater+2;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mSrvDescriptorHeap)));
@@ -362,6 +369,19 @@ void GameApp::CreateDescriptorHeaps()
 		mShadowMap->BuildDescriptors(hDescriptor,
 			CD3DX12_CPU_DESCRIPTOR_HANDLE(dsvCpuStart, 1, mDsvDescriptorSize));//把shadow map的DSV存放在DSV堆中的第二个位置
 		SRVIndex++;
+		// next descriptor
+		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
+	}
+
+	//ShockWaveWater
+	{
+		CD3DX12_CPU_DESCRIPTOR_HANDLE RefractionSRVDescriptor = hDescriptor;
+		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE ReflectionRTVDescriptor = hDescriptor;
+		
+		mShockWaveWater->BuildDescriptors(RefractionSRVDescriptor,
+			ReflectionRTVDescriptor);
+		SRVIndex += 2;
 		// next descriptor
 		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	}

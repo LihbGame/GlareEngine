@@ -25,6 +25,7 @@
 #include "ShadowMap.h"
 #include "ModelLoader.h"
 #include "SimpleGeoInstance.h"
+#include "ShockWaveWater.h"
 //#include "OzzAnimePlayBack.h"
 
 using Microsoft::WRL::ComPtr;
@@ -229,6 +230,10 @@ private:
 	std::unique_ptr<ModelLoader> mModelLoder;
 	
 	std::vector<XMFLOAT4X4> transforms;
+
+	//ShockWaveWater
+	std::unique_ptr<ShockWaveWater> mShockWaveWater;
+
 
 	//play back anime 
 	//std::unordered_map<std::string, AnimePlayback> AnimationPlayback;
