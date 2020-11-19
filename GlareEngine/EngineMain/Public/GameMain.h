@@ -154,7 +154,7 @@ private:
 	XMFLOAT3 GetHillsNormal(float x, float z)const;
 
 	//ShockWaveWater
-	void DrawWaterReflectionMap();
+	void DrawWaterReflectionMap(const GameTimer& gt);
 
 
 private:

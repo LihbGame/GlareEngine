@@ -222,11 +222,11 @@ void GameApp::Draw(const GameTimer& gt)
 		auto rtvDescriptor = m_msaaRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 		auto dsvDescriptor = mDsvHeap->GetCPUDescriptorHandleForHeapStart();
 
-		mCommandList->OMSetRenderTargets(1, &rtvDescriptor,false, &dsvDescriptor);
+		mCommandList->OMSetRenderTargets(1, &rtvDescriptor, false, &dsvDescriptor);
 
 		mCommandList->ClearRenderTargetView(rtvDescriptor, Colors::Black, 0, nullptr);
-		mCommandList->ClearDepthStencilView(dsvDescriptor, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-	
+		mCommandList->ClearDepthStencilView(dsvDescriptor, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+
 	}
 	else
 	{
@@ -240,51 +240,59 @@ void GameApp::Draw(const GameTimer& gt)
 		mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 	}
 
+	{
+		//Set Graphics Root CBV in slot 2
+		auto passCB = mCurrFrameResource->PassCB->Resource();
+		mCommandList->SetGraphicsRootConstantBufferView(1, passCB->GetGPUVirtualAddress());
+
+
+		//Draw Render Items (Opaque)
+		mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Opaque).Get());
+		DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
+
+		//Draw Instanse 
+		mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::SkinAnime).Get());
+		DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
+
+		//Draw Sky box
+		mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Sky).Get());
+		DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Sky]);
+	}
+
+	D3D12_RESOURCE_BARRIER barriers[2] =
+	{
+		CD3DX12_RESOURCE_BARRIER::Transition(
+			mMSAARenderTargetBuffer.Get(),
+			D3D12_RESOURCE_STATE_RENDER_TARGET,
+			D3D12_RESOURCE_STATE_RESOLVE_SOURCE),
+		CD3DX12_RESOURCE_BARRIER::Transition(
+			CurrentBackBuffer(),
+			D3D12_RESOURCE_STATE_PRESENT,
+			D3D12_RESOURCE_STATE_RESOLVE_DEST)
+	};
+	mCommandList->ResourceBarrier(2, barriers);
+	//Draw Shock Wave Water
+	DrawWaterReflectionMap(gt);
 	
-	//Set Graphics Root CBV in slot 2
-	auto passCB = mCurrFrameResource->PassCB->Resource();
-	mCommandList->SetGraphicsRootConstantBufferView(1, passCB->GetGPUVirtualAddress());
-
-
-	//Draw Render Items (Opaque)
-	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Opaque).Get());
-	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
-	
-	//Draw Instanse 
-	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::SkinAnime).Get());
-	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
-
-	//Draw Sky box
-	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Sky).Get());
-	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Sky]);
-
-	
-	//Draw UI
-	mEngineUI->DrawUI(mCommandList.Get());
 
 
 	if (m4xMsaaState)
 	{
-		D3D12_RESOURCE_BARRIER barriers[2] =
-		{
-			CD3DX12_RESOURCE_BARRIER::Transition(
-				mMSAARenderTargetBuffer.Get(),
-				D3D12_RESOURCE_STATE_RENDER_TARGET,
-				D3D12_RESOURCE_STATE_RESOLVE_SOURCE),
-			CD3DX12_RESOURCE_BARRIER::Transition(
-				CurrentBackBuffer(),
-				D3D12_RESOURCE_STATE_PRESENT,
-				D3D12_RESOURCE_STATE_RESOLVE_DEST)
-		};
-		mCommandList->ResourceBarrier(2, barriers);
-		mCommandList->ResolveSubresource(CurrentBackBuffer(), 0, mMSAARenderTargetBuffer.Get(), 0, mBackBufferFormat);
+	
+		mCommandList->ResolveSubresource(CurrentBackBuffer(), 0, mShockWaveWater->ReflectionRTV(), 0, mBackBufferFormat);
+		//mCommandList->ResolveSubresource(CurrentBackBuffer(), 0, mMSAARenderTargetBuffer.Get(), 0, mBackBufferFormat);
+		
 	}
+	// Indicate a state transition on the resource usage.
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+		D3D12_RESOURCE_STATE_RESOLVE_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-		// Indicate a state transition on the resource usage.
-		mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
-			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
-
-
+	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), false, NULL);
+	//Draw UI
+	mEngineUI->DrawUI(mCommandList.Get());
+    // Indicate a state transition on the resource usage.
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
 
 	// Done recording commands.
@@ -1080,8 +1088,8 @@ void GameApp::BuildPSOs()
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
 		0,
 		RTVFormats,
-		mDepthStencilFormat,
-		{ UINT(m4xMsaaState ? 4 : 1) ,UINT(0) },
+		DXGI_FORMAT_D32_FLOAT,
+		{ UINT(1) ,UINT(0) },
 		0,
 		{},
 		{});
@@ -1454,19 +1462,15 @@ XMFLOAT3 GameApp::GetHillsNormal(float x, float z)const
 	return n;
 }
 
-void GameApp::DrawWaterReflectionMap()
+void GameApp::DrawWaterReflectionMap(const GameTimer& gt)
 {
-
 	mCommandList->RSSetViewports(1, &mScreenViewport);
 	mCommandList->RSSetScissorRects(1, &mScissorRect);
-
 	// Apply reflection on WorldViewProj matrix
 	XMMATRIX View = mCamera.GetView();
 	XMMATRIX Proj = mCamera.GetProj();
 	mCamera.SetView(XMMatrixScaling(1.0f, -1.0f, 1.0f) * View);
-
-
-
+	UpdateMainPassCB(gt);
 	if (m4xMsaaState)//MSAA
 	{
 		D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -1500,7 +1504,20 @@ void GameApp::DrawWaterReflectionMap()
 	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Sky).Get());
 	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Sky]);
 
+	
 
+	D3D12_RESOURCE_BARRIER barriers[1] =
+	{
+		CD3DX12_RESOURCE_BARRIER::Transition(
+			mShockWaveWater->ReflectionRTV(),
+			D3D12_RESOURCE_STATE_RENDER_TARGET,
+			D3D12_RESOURCE_STATE_RESOLVE_SOURCE)
+	};
+	mCommandList->ResourceBarrier(1, barriers);
+	
+	mCommandList->ResolveSubresource(CurrentBackBuffer(), 0, mShockWaveWater->ReflectionRTV(), 0, mBackBufferFormat);
+	//RESET States
+	mCamera.SetView(View);
 }
 
 
@@ -1705,14 +1722,17 @@ void GameApp::DrawSceneToShadowMap()
 
 	UINT passCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(PassConstants));
 
-	// Clear the back buffer and depth buffer.
-	mCommandList->ClearDepthStencilView(mShadowMap->Dsv(),
-		D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 	// Set null render target because we are only going to draw to
 	// depth buffer.  Setting a null render target will disable color writes.
 	// Note the active PSO also must specify a render target count of 0.
 	mCommandList->OMSetRenderTargets(0, nullptr, false, &mShadowMap->Dsv());
+
+	// Clear the back buffer and depth buffer.
+	mCommandList->ClearDepthStencilView(mShadowMap->Dsv(),
+		D3D12_CLEAR_FLAG_DEPTH , 1.0f, 0, 0, nullptr);
+
+	
 
 	// Bind the pass constant buffer for the shadow map pass.
 	auto passCB = mCurrFrameResource->PassCB->Resource();
