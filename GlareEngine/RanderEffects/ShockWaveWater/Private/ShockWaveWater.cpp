@@ -23,34 +23,39 @@ ShockWaveWater::~ShockWaveWater()
 {
 }
 
-ID3D12Resource* ShockWaveWater::ReflectionSRV()
+ID3D12Resource* ShockWaveWater::ReflectionSRV()const
 {
 	return nullptr;
 }
 
-ID3D12Resource* ShockWaveWater::SingleReflectionSRV()
+ID3D12Resource* ShockWaveWater::SingleReflectionSRV()const
 {
 	return nullptr;
 }
 
-ID3D12Resource* ShockWaveWater::SingleRefractionSRV()
+ID3D12Resource* ShockWaveWater::SingleRefractionSRV()const
 {
 	return nullptr;
 }
 
-ID3D12Resource* ShockWaveWater::FoamSRV()
+ID3D12Resource* ShockWaveWater::FoamSRV()const
 {
 	return nullptr;
 }
 
-ID3D12Resource* ShockWaveWater::ReflectionRTV()
+ID3D12Resource* ShockWaveWater::ReflectionRTV()const
+{
+	return mReflectionRTV.Get();
+}
+
+ID3D12Resource* ShockWaveWater::ReflectionDepthMapDSV()const
 {
 	return nullptr;
 }
 
-ID3D12Resource* ShockWaveWater::ReflectionDepthMapDSV()
+D3D12_CPU_DESCRIPTOR_HANDLE ShockWaveWater::ReflectionDescriptor() const
 {
-	return nullptr;
+	return mReflectionRTVHeap->GetCPUDescriptorHandleForHeapStart();
 }
 
 void ShockWaveWater::BuildDescriptors(CD3DX12_CPU_DESCRIPTOR_HANDLE RefractionSRVDescriptor, CD3DX12_CPU_DESCRIPTOR_HANDLE ReflectionSRVDescriptor)

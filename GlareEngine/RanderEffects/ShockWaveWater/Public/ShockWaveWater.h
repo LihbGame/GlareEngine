@@ -6,15 +6,14 @@ public:
 	ShockWaveWater(ID3D12Device* device, UINT width, UINT height, bool IsMsaa);
 	~ShockWaveWater();
 
+	ID3D12Resource* ReflectionSRV()const;
+	ID3D12Resource* SingleReflectionSRV()const;
+	ID3D12Resource* SingleRefractionSRV()const;
+	ID3D12Resource* FoamSRV()const;
 
-
-	ID3D12Resource* ReflectionSRV();
-	ID3D12Resource* SingleReflectionSRV();
-	ID3D12Resource* SingleRefractionSRV();
-	ID3D12Resource* FoamSRV();
-
-	ID3D12Resource* ReflectionRTV();
-	ID3D12Resource* ReflectionDepthMapDSV();
+	ID3D12Resource* ReflectionRTV()const;
+	ID3D12Resource* ReflectionDepthMapDSV()const;
+	D3D12_CPU_DESCRIPTOR_HANDLE ReflectionDescriptor()const;
 
 	void BuildDescriptors(
 		CD3DX12_CPU_DESCRIPTOR_HANDLE RefractionSRVDescriptor,

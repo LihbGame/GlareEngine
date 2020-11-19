@@ -49,6 +49,8 @@ public:
 	DirectX::XMMATRIX GetView()const;
 	DirectX::XMMATRIX GetProj()const;
 
+	void SetView(XMMATRIX view);
+
 	DirectX::XMFLOAT4X4 GetView4x4f()const;
 	DirectX::XMFLOAT4X4 GetProj4x4f()const;
 

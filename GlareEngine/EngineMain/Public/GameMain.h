@@ -149,11 +149,13 @@ private:
 	//Load model
 	void LoadModel();
 
-
-
 	//waves
 	float GetHillsHeight(float x, float z)const;
 	XMFLOAT3 GetHillsNormal(float x, float z)const;
+
+	//ShockWaveWater
+	void DrawWaterReflectionMap();
+
 
 private:
 

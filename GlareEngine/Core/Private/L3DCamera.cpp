@@ -165,6 +165,10 @@ XMMATRIX Camera::GetProj()const
 	return XMLoadFloat4x4(&mProj);
 }
 
+void Camera::SetView(XMMATRIX view)
+{
+	XMStoreFloat4x4(&mView, view);
+}
 
 XMFLOAT4X4 Camera::GetView4x4f()const
 {

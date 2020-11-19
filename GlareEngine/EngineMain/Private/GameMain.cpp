@@ -182,10 +182,8 @@ void GameApp::Draw(const GameTimer& gt)
 
 	//root descriptors
 	{
-		
-
-	// Bind all the materials used in this scene.  For structured buffers, we can bypass the heap and 
-	// set as a root descriptor.
+		// Bind all the materials used in this scene.  For structured buffers, we can bypass the heap and 
+		// set as a root descriptor.
 		auto matBuffer = mCurrFrameResource->MaterialBuffer->Resource();
 		mCommandList->SetGraphicsRootShaderResourceView(4, matBuffer->GetGPUVirtualAddress());
 		// Bind the sky cube map.  For our demos, we just use one "world" cube map representing the environment
@@ -205,7 +203,7 @@ void GameApp::Draw(const GameTimer& gt)
 
 
 
-	//draw shadow
+	//Draw shadow
 	DrawSceneToShadowMap();
 
 
@@ -220,8 +218,6 @@ void GameApp::Draw(const GameTimer& gt)
 			D3D12_RESOURCE_STATE_RESOLVE_SOURCE,
 			D3D12_RESOURCE_STATE_RENDER_TARGET);
 		mCommandList->ResourceBarrier(1, &barrier);
-
-
 
 		auto rtvDescriptor = m_msaaRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 		auto dsvDescriptor = mDsvHeap->GetCPUDescriptorHandleForHeapStart();
@@ -1456,6 +1452,55 @@ XMFLOAT3 GameApp::GetHillsNormal(float x, float z)const
 	XMStoreFloat3(&n, unitNormal);
 
 	return n;
+}
+
+void GameApp::DrawWaterReflectionMap()
+{
+
+	mCommandList->RSSetViewports(1, &mScreenViewport);
+	mCommandList->RSSetScissorRects(1, &mScissorRect);
+
+	// Apply reflection on WorldViewProj matrix
+	XMMATRIX View = mCamera.GetView();
+	XMMATRIX Proj = mCamera.GetProj();
+	mCamera.SetView(XMMatrixScaling(1.0f, -1.0f, 1.0f) * View);
+
+
+
+	if (m4xMsaaState)//MSAA
+	{
+		D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			mShockWaveWater->ReflectionRTV(),
+			D3D12_RESOURCE_STATE_RESOLVE_SOURCE,
+			D3D12_RESOURCE_STATE_RENDER_TARGET);
+		mCommandList->ResourceBarrier(1, &barrier);
+
+		auto RTVDescriptor = mShockWaveWater->ReflectionDescriptor();
+		auto DSVDescriptor = mDsvHeap->GetCPUDescriptorHandleForHeapStart();
+
+		mCommandList->OMSetRenderTargets(1, &RTVDescriptor, false, &DSVDescriptor);
+
+		mCommandList->ClearRenderTargetView(RTVDescriptor, Colors::Black, 0, nullptr);
+		mCommandList->ClearDepthStencilView(DSVDescriptor, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	}
+	else
+	{
+		//not do anythings
+	}
+
+	//Draw Render Items (Opaque)
+	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Opaque).Get());
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
+
+	//Draw Instanse 
+	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::SkinAnime).Get());
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
+
+	//Draw Sky box
+	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Sky).Get());
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Sky]);
+
+
 }
 
 
