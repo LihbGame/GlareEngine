@@ -18,6 +18,8 @@ public:
 	void BuildDescriptors(
 		CD3DX12_CPU_DESCRIPTOR_HANDLE RefractionSRVDescriptor,
 		CD3DX12_CPU_DESCRIPTOR_HANDLE ReflectionRTVDescriptor);
+
+	void OnResize(UINT newWidth, UINT newHeight);
 private:
 	void BuildDescriptors();
 	void BuildResource();
@@ -39,6 +41,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> mDepthMapDSV;
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mReflectionRTVHeap;
+	
 	CD3DX12_CPU_DESCRIPTOR_HANDLE mRefractionSRVDescriptor;
+	CD3DX12_CPU_DESCRIPTOR_HANDLE mReflectionSRVDescriptor;
 };
 

@@ -416,19 +416,16 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case EVENT_SYSTEM_DESKTOPSWITCH:
 		if (mSwapChain)
 		{
-			if (mSwapChain)
+			if (mFullscreenState)
 			{
-				if (mFullscreenState)
-				{
-					mClientHeight = GetSystemMetrics(SM_CYSCREEN);
-					mClientWidth = GetSystemMetrics(SM_CXSCREEN);
-					OnResize();
-					mSwapChain->SetFullscreenState(true, NULL);
-				}
-				else
-				{
-					mSwapChain->SetFullscreenState(false, NULL);
-				}
+				mClientHeight = GetSystemMetrics(SM_CYSCREEN);
+				mClientWidth = GetSystemMetrics(SM_CXSCREEN);
+				OnResize();
+				mSwapChain->SetFullscreenState(true, NULL);
+			}
+			else
+			{
+				mSwapChain->SetFullscreenState(false, NULL);
 			}
 		}
 		return 0;

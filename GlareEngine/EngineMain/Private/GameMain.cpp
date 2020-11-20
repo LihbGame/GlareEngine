@@ -125,6 +125,11 @@ void GameApp::OnResize()
 	mCamera.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
 	//窗口调整大小重新计算视锥包围体。
 	BoundingFrustum::CreateFromMatrix(mCamFrustum, mCamera.GetProj());
+	//Shock Wave Water map resize
+	if (mShockWaveWater != nullptr)
+	{
+		mShockWaveWater->OnResize(mClientWidth, mClientHeight);
+	}
 }
 
 void GameApp::Update(const GameTimer& gt)
@@ -1464,8 +1469,8 @@ XMFLOAT3 GameApp::GetHillsNormal(float x, float z)const
 
 void GameApp::DrawWaterReflectionMap(const GameTimer& gt)
 {
-	mCommandList->RSSetViewports(1, &mScreenViewport);
-	mCommandList->RSSetScissorRects(1, &mScissorRect);
+	//mCommandList->RSSetViewports(1, &mScreenViewport);
+	//mCommandList->RSSetScissorRects(1, &mScissorRect);
 	// Apply reflection on WorldViewProj matrix
 	XMMATRIX View = mCamera.GetView();
 	XMMATRIX Proj = mCamera.GetProj();

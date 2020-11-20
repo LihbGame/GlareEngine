@@ -60,6 +60,30 @@ D3D12_CPU_DESCRIPTOR_HANDLE ShockWaveWater::ReflectionDescriptor() const
 
 void ShockWaveWater::BuildDescriptors(CD3DX12_CPU_DESCRIPTOR_HANDLE RefractionSRVDescriptor, CD3DX12_CPU_DESCRIPTOR_HANDLE ReflectionSRVDescriptor)
 {
+	// Save references to the descriptors. 
+	mRefractionSRVDescriptor = RefractionSRVDescriptor;
+	mReflectionSRVDescriptor = ReflectionSRVDescriptor;
+
+	//  Create the descriptors
+	BuildDescriptors();
+}
+
+void ShockWaveWater::OnResize(UINT newWidth, UINT newHeight)
+{
+	if ((mWidth != newWidth) || (mHeight != newHeight))
+	{
+		mWidth = newWidth;
+		mHeight = newHeight;
+
+		BuildResource();
+
+		// New resource, so we need new descriptors to that resource.
+		BuildDescriptors();
+	}
+}
+
+void ShockWaveWater::BuildDescriptors()
+{
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DMS;
@@ -76,11 +100,8 @@ void ShockWaveWater::BuildDescriptors(CD3DX12_CPU_DESCRIPTOR_HANDLE RefractionSR
 	srvDesc.Texture2D.MipLevels = 1;
 	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 	srvDesc.Texture2D.PlaneSlice = 0;
-	md3dDevice->CreateShaderResourceView(mReflectionRTV.Get(), &srvDesc, ReflectionSRVDescriptor);
-}
+	md3dDevice->CreateShaderResourceView(mReflectionRTV.Get(), &srvDesc, mReflectionSRVDescriptor);
 
-void ShockWaveWater::BuildDescriptors()
-{
 }
 
 void ShockWaveWater::BuildResource()
