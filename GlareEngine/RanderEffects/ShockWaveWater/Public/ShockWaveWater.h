@@ -14,7 +14,7 @@ public:
 	ID3D12Resource* ReflectionRTV()const;
 	ID3D12Resource* ReflectionDepthMapDSV()const;
 	D3D12_CPU_DESCRIPTOR_HANDLE ReflectionDescriptor()const;
-
+	D3D12_CPU_DESCRIPTOR_HANDLE RefractionDescriptor()const;
 	void BuildDescriptors(
 		CD3DX12_CPU_DESCRIPTOR_HANDLE RefractionSRVDescriptor,
 		CD3DX12_CPU_DESCRIPTOR_HANDLE ReflectionRTVDescriptor);

@@ -35,7 +35,7 @@ ID3D12Resource* ShockWaveWater::SingleReflectionSRV()const
 
 ID3D12Resource* ShockWaveWater::SingleRefractionSRV()const
 {
-	return nullptr;
+	return mSingleRefractionSRV.Get();
 }
 
 ID3D12Resource* ShockWaveWater::FoamSRV()const
@@ -58,6 +58,11 @@ D3D12_CPU_DESCRIPTOR_HANDLE ShockWaveWater::ReflectionDescriptor() const
 	return mReflectionRTVHeap->GetCPUDescriptorHandleForHeapStart();
 }
 
+D3D12_CPU_DESCRIPTOR_HANDLE ShockWaveWater::RefractionDescriptor() const
+{
+	return mRefractionSRVDescriptor;
+}
+
 void ShockWaveWater::BuildDescriptors(CD3DX12_CPU_DESCRIPTOR_HANDLE RefractionSRVDescriptor, CD3DX12_CPU_DESCRIPTOR_HANDLE ReflectionSRVDescriptor)
 {
 	// Save references to the descriptors. 
@@ -76,7 +81,6 @@ void ShockWaveWater::OnResize(UINT newWidth, UINT newHeight)
 		mHeight = newHeight;
 
 		BuildResource();
-
 		// New resource, so we need new descriptors to that resource.
 		BuildDescriptors();
 	}
@@ -102,6 +106,8 @@ void ShockWaveWater::BuildDescriptors()
 	srvDesc.Texture2D.PlaneSlice = 0;
 	md3dDevice->CreateShaderResourceView(mReflectionRTV.Get(), &srvDesc, mReflectionSRVDescriptor);
 
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	md3dDevice->CreateShaderResourceView(mSingleRefractionSRV.Get(), &srvDesc, mRefractionSRVDescriptor);
 }
 
 void ShockWaveWater::BuildResource()
@@ -159,7 +165,7 @@ void ShockWaveWater::BuildResource()
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
 			&RefractionMapDesc,
-			D3D12_RESOURCE_STATE_RESOLVE_SOURCE,
+			D3D12_RESOURCE_STATE_RESOLVE_DEST,
 			nullptr,
 			IID_PPV_ARGS(mSingleRefractionSRV.ReleaseAndGetAddressOf())
 		));

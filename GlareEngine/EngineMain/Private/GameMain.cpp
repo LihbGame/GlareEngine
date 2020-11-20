@@ -253,16 +253,21 @@ void GameApp::Draw(const GameTimer& gt)
 
 		//Draw Render Items (Opaque)
 		mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Opaque).Get());
+		PIXBeginEvent(mCommandList.Get(), 0, "Draw Main::RenderLayer::Opaque");
 		DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
-
+		PIXEndEvent(mCommandList.Get());
 		//Draw Instanse 
 		mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::SkinAnime).Get());
+		PIXBeginEvent(mCommandList.Get(), 0, "Draw Main::RenderLayer::InstanceSimpleItems");
 		DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
-
+		PIXEndEvent(mCommandList.Get());
 		//Draw Sky box
 		mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Sky).Get());
+		PIXBeginEvent(mCommandList.Get(), 0, "Draw Main::RenderLayer::Sky");
 		DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Sky]);
+		PIXEndEvent(mCommandList.Get());
 	}
+
 
 	D3D12_RESOURCE_BARRIER barriers[2] =
 	{
@@ -276,17 +281,15 @@ void GameApp::Draw(const GameTimer& gt)
 			D3D12_RESOURCE_STATE_RESOLVE_DEST)
 	};
 	mCommandList->ResourceBarrier(2, barriers);
+
 	//Draw Shock Wave Water
+	DrawWaterRefractionMap(gt);
 	DrawWaterReflectionMap(gt);
 	
-
-
 	if (m4xMsaaState)
 	{
-	
 		mCommandList->ResolveSubresource(CurrentBackBuffer(), 0, mShockWaveWater->ReflectionRTV(), 0, mBackBufferFormat);
 		//mCommandList->ResolveSubresource(CurrentBackBuffer(), 0, mMSAARenderTargetBuffer.Get(), 0, mBackBufferFormat);
-		
 	}
 	// Indicate a state transition on the resource usage.
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
@@ -294,7 +297,10 @@ void GameApp::Draw(const GameTimer& gt)
 
 	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), false, NULL);
 	//Draw UI
+	PIXBeginEvent(mCommandList.Get(), 0, "Draw UI");
 	mEngineUI->DrawUI(mCommandList.Get());
+	PIXEndEvent(mCommandList.Get());
+
     // Indicate a state transition on the resource usage.
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
@@ -1312,19 +1318,27 @@ void GameApp::BuildRenderItems()
 	}
 	//Sky Box
 	{
-		auto skyRitem = std::make_unique<RenderItem>();
-		XMStoreFloat4x4(&skyRitem->World, XMMatrixScaling(5000.0f, 5000.0f, 5000.0f));
-		skyRitem->TexTransform = MathHelper::Identity4x4();
-		skyRitem->ObjCBIndex = ObjCBIndex++;
-		skyRitem->Mat = mMaterials[L"Sky"].get();
-		skyRitem->Geo.push_back(mGeometries["Sky"].get());
-		skyRitem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-		skyRitem->IndexCount.push_back(skyRitem->Geo[0]->DrawArgs["Sphere"].IndexCount);
-		skyRitem->StartIndexLocation.push_back(skyRitem->Geo[0]->DrawArgs["Sphere"].StartIndexLocation);
-		skyRitem->BaseVertexLocation.push_back(skyRitem->Geo[0]->DrawArgs["Sphere"].BaseVertexLocation);
-		skyRitem->InstanceCount = 1;
-		mRitemLayer[(int)RenderLayer::Sky].push_back(skyRitem.get());
-		mAllRitems.push_back(std::move(skyRitem));
+		RenderItem skyRitem = {};
+		XMStoreFloat4x4(&skyRitem.World, XMMatrixScaling(5000.0f, 5000.0f, 5000.0f));
+		skyRitem.TexTransform = MathHelper::Identity4x4();
+		skyRitem.ObjCBIndex = ObjCBIndex++;
+		skyRitem.Mat = mMaterials[L"Sky"].get();
+		skyRitem.Geo.push_back(mGeometries["Sky"].get());
+		skyRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		skyRitem.IndexCount.push_back(skyRitem.Geo[0]->DrawArgs["Sphere"].IndexCount);
+		skyRitem.StartIndexLocation.push_back(skyRitem.Geo[0]->DrawArgs["Sphere"].StartIndexLocation);
+		skyRitem.BaseVertexLocation.push_back(skyRitem.Geo[0]->DrawArgs["Sphere"].BaseVertexLocation);
+		skyRitem.InstanceCount = 1;
+
+		RenderItem reflectionWaterskyRitem = skyRitem;
+		XMStoreFloat4x4(&reflectionWaterskyRitem.World, XMMatrixScaling(1.0f, -1.0f, 1.0f)*XMMatrixScaling(5000.0f, 5000.0f, 5000.0f));
+		
+		auto ReflectionWaterskyRitem = std::make_unique<RenderItem>(reflectionWaterskyRitem);
+		auto SkyRitem = std::make_unique<RenderItem>(skyRitem);
+		mRitemLayer[(int)RenderLayer::Sky].push_back(SkyRitem.get());
+		mReflectionWaterLayer[(int)RenderLayer::Sky].push_back(ReflectionWaterskyRitem.get());
+		mAllRitems.push_back(std::move(SkyRitem));
+		mAllRitems.push_back(std::move(ReflectionWaterskyRitem));
 	}
 
 
@@ -1469,13 +1483,6 @@ XMFLOAT3 GameApp::GetHillsNormal(float x, float z)const
 
 void GameApp::DrawWaterReflectionMap(const GameTimer& gt)
 {
-	//mCommandList->RSSetViewports(1, &mScreenViewport);
-	//mCommandList->RSSetScissorRects(1, &mScissorRect);
-	// Apply reflection on WorldViewProj matrix
-	XMMATRIX View = mCamera.GetView();
-	XMMATRIX Proj = mCamera.GetProj();
-	mCamera.SetView(XMMatrixScaling(1.0f, -1.0f, 1.0f) * View);
-	UpdateMainPassCB(gt);
 	if (m4xMsaaState)//MSAA
 	{
 		D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -1499,16 +1506,19 @@ void GameApp::DrawWaterReflectionMap(const GameTimer& gt)
 
 	//Draw Render Items (Opaque)
 	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Opaque).Get());
+	PIXBeginEvent(mCommandList.Get(), 0, "Draw Water::RenderLayer::Opaque");
 	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
-
+	PIXEndEvent(mCommandList.Get());
 	//Draw Instanse 
 	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::SkinAnime).Get());
+	PIXBeginEvent(mCommandList.Get(), 0, "Draw Water::RenderLayer::InstanceSimpleItems");
 	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
-
+	PIXEndEvent(mCommandList.Get());
 	//Draw Sky box
 	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Sky).Get());
-	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Sky]);
-
+	PIXBeginEvent(mCommandList.Get(), 0, "Draw Water::RenderLayer::Sky");
+	DrawRenderItems(mCommandList.Get(), mReflectionWaterLayer[(int)RenderLayer::Sky]);
+	PIXEndEvent(mCommandList.Get());
 	
 
 	D3D12_RESOURCE_BARRIER barriers[1] =
@@ -1519,10 +1529,12 @@ void GameApp::DrawWaterReflectionMap(const GameTimer& gt)
 			D3D12_RESOURCE_STATE_RESOLVE_SOURCE)
 	};
 	mCommandList->ResourceBarrier(1, barriers);
-	
-	mCommandList->ResolveSubresource(CurrentBackBuffer(), 0, mShockWaveWater->ReflectionRTV(), 0, mBackBufferFormat);
-	//RESET States
-	mCamera.SetView(View);
+}
+
+void GameApp::DrawWaterRefractionMap(const GameTimer& gt)
+{
+	mCommandList->ResolveSubresource(mShockWaveWater->SingleRefractionSRV(), 0, mMSAARenderTargetBuffer.Get(), 0, mBackBufferFormat);
+
 }
 
 
@@ -1746,9 +1758,14 @@ void GameApp::DrawSceneToShadowMap()
 
 	//Simple Instance  Shadow map
 	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::InstanceSimpleShadow_Opaque).Get());
+	PIXBeginEvent(mCommandList.Get(),0,"Draw Shadow::RenderLayer::InstanceSimpleItems");
 	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
-	
+	PIXEndEvent(mCommandList.Get());
+
+	PIXBeginEvent(mCommandList.Get(), 0, "Draw Shadow::RenderLayer::Opaque");
 	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
+	PIXEndEvent(mCommandList.Get());
+
 	// Change back to GENERIC_READ so we can read the texture in a shader.
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mShadowMap->Resource(),
 		D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_GENERIC_READ));

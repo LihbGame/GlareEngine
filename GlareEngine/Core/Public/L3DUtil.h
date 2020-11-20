@@ -24,7 +24,7 @@
 #include "DDSTextureLoader.h"
 #include "L3DMathHelper.h"
 #include "WICTextureLoader12.h"
-
+#include "pix3.h"
 using namespace DirectX;
 using namespace std;
 extern const int gNumFrameResources;

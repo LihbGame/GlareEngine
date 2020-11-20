@@ -155,7 +155,7 @@ private:
 
 	//ShockWaveWater
 	void DrawWaterReflectionMap(const GameTimer& gt);
-
+	void DrawWaterRefractionMap(const GameTimer& gt);
 
 private:
 
@@ -190,6 +190,7 @@ private:
 
 	// Render items divided by PSO.
 	std::vector<RenderItem*> mRitemLayer[(int)RenderLayer::Count];
+	std::vector<RenderItem*> mReflectionWaterLayer[(int)RenderLayer::Count];
 
 	std::unique_ptr<Waves> mWaves;
 
