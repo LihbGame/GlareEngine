@@ -229,7 +229,7 @@ void GameApp::Draw(const GameTimer& gt)
 
 		mCommandList->OMSetRenderTargets(1, &rtvDescriptor, false, &dsvDescriptor);
 
-		mCommandList->ClearRenderTargetView(rtvDescriptor, Colors::Black, 0, nullptr);
+		mCommandList->ClearRenderTargetView(rtvDescriptor, Colors::Transparent, 0, nullptr);
 		mCommandList->ClearDepthStencilView(dsvDescriptor, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 	}
@@ -1489,7 +1489,7 @@ void GameApp::DrawWaterReflectionMap(const GameTimer& gt)
 
 		mCommandList->OMSetRenderTargets(1, &RTVDescriptor, false, &DSVDescriptor);
 
-		mCommandList->ClearRenderTargetView(RTVDescriptor, Colors::Black, 0, nullptr);
+		mCommandList->ClearRenderTargetView(RTVDescriptor, Colors::Transparent, 0, nullptr);
 		mCommandList->ClearDepthStencilView(DSVDescriptor, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 	}
 	else

@@ -124,8 +124,12 @@ void ShockWaveWater::BuildResource()
 
 		D3D12_CLEAR_VALUE ReflectionClearValue = {};
 		ReflectionClearValue.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		ReflectionClearValue.Color[0] = { 0.0f };
+		ReflectionClearValue.Color[1] = { 0.0f };
+		ReflectionClearValue.Color[2] = { 0.0f };
+		ReflectionClearValue.Color[3] = { 0.0f };
 
-		ThrowIfFailed(md3dDevice->CreateCommittedResource(
+			ThrowIfFailed(md3dDevice->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
 			&MapDesc,
@@ -137,8 +141,29 @@ void ShockWaveWater::BuildResource()
 		mReflectionRTV->SetName(L"Reflection Render Target");
 #pragma endregion ReflectionMap
 	
+#pragma region RefractionMap
+
+		D3D12_RESOURCE_DESC RefractionMapDesc = CD3DX12_RESOURCE_DESC::Tex2D(
+			DXGI_FORMAT_R8G8B8A8_UNORM,
+			mWidth,
+			mHeight,
+			1, // This render target view has only one texture.
+			1, // Use a single mipmap level
+			1
+		);
 
 
+		RefractionMapDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+		ThrowIfFailed(md3dDevice->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&RefractionMapDesc,
+			D3D12_RESOURCE_STATE_RESOLVE_SOURCE,
+			nullptr,
+			IID_PPV_ARGS(mSingleRefractionSRV.ReleaseAndGetAddressOf())
+		));
+#pragma endregion RefractionMap
 
 
 

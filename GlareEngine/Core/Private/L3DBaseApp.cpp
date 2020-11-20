@@ -204,7 +204,10 @@ void D3DApp::OnResize()
 
 		D3D12_CLEAR_VALUE msaaOptimizedClearValue = {};
 		msaaOptimizedClearValue.Format = mBackBufferFormat;
-
+		msaaOptimizedClearValue.Color[0] = { 0.0f };
+		msaaOptimizedClearValue.Color[1] = { 0.0f };
+		msaaOptimizedClearValue.Color[2] = { 0.0f };
+		msaaOptimizedClearValue.Color[3] = { 0.0f };
 
 		ThrowIfFailed(md3dDevice->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
