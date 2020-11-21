@@ -31,10 +31,19 @@
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 using namespace DirectX::PackedVector;
+
+enum RenderItemType:int
+{
+	Normal=0,
+	Reflection
+};
+
 // 轻型结构存储参数以绘制形状,这将因应用程序而异。
 struct RenderItem
 {
 	RenderItem() = default;
+	//Render Item Type
+	RenderItemType ItemType= RenderItemType::Normal;
 
 	// 描述对象相对于世界空间的局部空间的形状的世界矩阵，该世界矩阵定义了对象在世界中的位置，方向和比例。
 	XMFLOAT4X4 World = MathHelper::Identity4x4();

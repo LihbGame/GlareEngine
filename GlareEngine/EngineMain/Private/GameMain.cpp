@@ -269,27 +269,26 @@ void GameApp::Draw(const GameTimer& gt)
 	}
 
 
-	D3D12_RESOURCE_BARRIER barriers[2] =
-	{
-		CD3DX12_RESOURCE_BARRIER::Transition(
-			mMSAARenderTargetBuffer.Get(),
-			D3D12_RESOURCE_STATE_RENDER_TARGET,
-			D3D12_RESOURCE_STATE_RESOLVE_SOURCE),
-		CD3DX12_RESOURCE_BARRIER::Transition(
-			CurrentBackBuffer(),
-			D3D12_RESOURCE_STATE_PRESENT,
-			D3D12_RESOURCE_STATE_RESOLVE_DEST)
-	};
-	mCommandList->ResourceBarrier(2, barriers);
-
 	//Draw Shock Wave Water
 	DrawWaterRefractionMap(gt);
 	DrawWaterReflectionMap(gt);
 	
 	if (m4xMsaaState)
 	{
-		mCommandList->ResolveSubresource(CurrentBackBuffer(), 0, mShockWaveWater->ReflectionRTV(), 0, mBackBufferFormat);
-		//mCommandList->ResolveSubresource(CurrentBackBuffer(), 0, mMSAARenderTargetBuffer.Get(), 0, mBackBufferFormat);
+		D3D12_RESOURCE_BARRIER barriers[2] =
+		{
+			CD3DX12_RESOURCE_BARRIER::Transition(
+				mMSAARenderTargetBuffer.Get(),
+				D3D12_RESOURCE_STATE_RENDER_TARGET,
+				D3D12_RESOURCE_STATE_RESOLVE_SOURCE),
+			CD3DX12_RESOURCE_BARRIER::Transition(
+				CurrentBackBuffer(),
+				D3D12_RESOURCE_STATE_PRESENT,
+				D3D12_RESOURCE_STATE_RESOLVE_DEST)
+		};
+		mCommandList->ResourceBarrier(2, barriers);
+		//mCommandList->ResolveSubresource(CurrentBackBuffer(), 0, mShockWaveWater->ReflectionRTV(), 0, mBackBufferFormat);
+		mCommandList->ResolveSubresource(CurrentBackBuffer(), 0, mMSAARenderTargetBuffer.Get(), 0, mBackBufferFormat);
 	}
 	// Indicate a state transition on the resource usage.
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
@@ -617,17 +616,22 @@ void GameApp::UpdateInstanceCBs(const GameTimer& gt)
 	XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
 
 	
-	for (auto& e : mRitemLayer[(int)RenderLayer::InstanceSimpleItems])
+	for (int index=0;index< mRitemLayer[(int)RenderLayer::InstanceSimpleItems].size();++index)
 	{
-		const auto& instanceData = e->Instances;
+		const auto& instanceData = mRitemLayer[(int)RenderLayer::InstanceSimpleItems][index]->Instances;
+		const auto& ReflectioninstanceData = mReflectionWaterLayer[(int)RenderLayer::InstanceSimpleItems][index]->Instances;
 		int visibleInstanceCount = 0;
+		
 		for (int matNum = 0; matNum < mModelLoder->GetModelTextureNames("Blue_Tree_02a").size(); ++matNum)
 		{
 			visibleInstanceCount = 0;
 			auto currInstanceBuffer = mCurrFrameResource->InstanceSimpleObjectCB[matNum].get();
+			auto ReflectioncurrInstanceBuffer = mCurrFrameResource->ReflectionInstanceSimpleObjectCB[matNum].get();
 			for (UINT i = 0; i < (UINT)instanceData.size(); ++i)
 			{
 				XMMATRIX world = XMLoadFloat4x4(&instanceData[i].World);
+				XMMATRIX ReflectionWorld = XMLoadFloat4x4(&ReflectioninstanceData[i].World);
+				
 				XMMATRIX texTransform = XMLoadFloat4x4(&instanceData[i].TexTransform);
 
 				XMMATRIX invWorld = XMMatrixInverse(&XMMatrixDeterminant(world), world);
@@ -640,22 +644,27 @@ void GameApp::UpdateInstanceCBs(const GameTimer& gt)
 				mCamFrustum.Transform(localSpaceFrustum, viewToLocal);
 
 				// 在局部空间中执行盒子/视锥相交测试。
-				if ((localSpaceFrustum.Contains(e->Bounds) != DirectX::DISJOINT) || (mFrustumCullingEnabled == false))
+				if ((localSpaceFrustum.Contains(mRitemLayer[(int)RenderLayer::InstanceSimpleItems][index]->Bounds) != DirectX::DISJOINT) || (mFrustumCullingEnabled == false))
 				{
 					InstanceConstants data;
 					XMStoreFloat4x4(&data.World, XMMatrixTranspose(world));
 					XMStoreFloat4x4(&data.TexTransform, XMMatrixTranspose(texTransform));
 					string matname = mModelLoder->GetModelTextureNames("Blue_Tree_02a")[matNum];
 					data.MaterialIndex = mMaterials[wstring(matname.begin(),matname.end())]->MatCBIndex;
-					// 将实例数据写入可见对象的结构化缓冲区。
+				
+					InstanceConstants Reflectiondata= data;
+					XMStoreFloat4x4(&Reflectiondata.World, XMMatrixTranspose(ReflectionWorld));
+					///将实例数据写入可见对象的结构化缓冲区。
+					//反射场景
+					ReflectioncurrInstanceBuffer->CopyData(visibleInstanceCount, Reflectiondata);
+					//正常场景
 					currInstanceBuffer->CopyData(visibleInstanceCount++, data);
 				}
-			}
+			}	
 		}
-		e->InstanceCount = visibleInstanceCount;
-
+		mRitemLayer[(int)RenderLayer::InstanceSimpleItems][index]->InstanceCount = visibleInstanceCount;
+		mReflectionWaterLayer[(int)RenderLayer::InstanceSimpleItems][index]->InstanceCount = visibleInstanceCount;
 	}
-	
 }
 
 void GameApp::UpdateMaterialCBs(const GameTimer& gt)
@@ -1301,20 +1310,32 @@ void GameApp::BuildRenderItems()
 	int ObjCBIndex = 0;
 	//Land 
 	{
-		auto LandRitem = std::make_unique<RenderItem>();
-		LandRitem->World = MathHelper::Identity4x4();
-		XMStoreFloat4x4(&LandRitem->World, XMMatrixScaling(1.0, 1.0, 1.0));
-		XMStoreFloat4x4(&LandRitem->TexTransform, XMMatrixScaling(5.0, 5.0, 5.0));
-		LandRitem->ObjCBIndex = ObjCBIndex++;
-		LandRitem->Mat = mMaterials[L"PBRharshbricks"].get();
-		LandRitem->Geo.push_back(mGeometries["landGeo"].get());
-		LandRitem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-		LandRitem->IndexCount.push_back(LandRitem->Geo[0]->DrawArgs["grid"].IndexCount);
-		LandRitem->StartIndexLocation.push_back(LandRitem->Geo[0]->DrawArgs["grid"].StartIndexLocation);
-		LandRitem->BaseVertexLocation.push_back(LandRitem->Geo[0]->DrawArgs["grid"].BaseVertexLocation);
-		LandRitem->InstanceCount = 1;
-		mRitemLayer[(int)RenderLayer::Opaque].push_back(LandRitem.get());
-		mAllRitems.push_back(std::move(LandRitem));
+		RenderItem LandRitem = {};
+		LandRitem.World = MathHelper::Identity4x4();
+		XMStoreFloat4x4(&LandRitem.World, XMMatrixScaling(1.0, 1.0, 1.0));
+		XMStoreFloat4x4(&LandRitem.TexTransform, XMMatrixScaling(5.0, 5.0, 5.0));
+		LandRitem.ObjCBIndex = ObjCBIndex++;
+		LandRitem.Mat = mMaterials[L"PBRharshbricks"].get();
+		LandRitem.Geo.push_back(mGeometries["landGeo"].get());
+		LandRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		LandRitem.IndexCount.push_back(LandRitem.Geo[0]->DrawArgs["grid"].IndexCount);
+		LandRitem.StartIndexLocation.push_back(LandRitem.Geo[0]->DrawArgs["grid"].StartIndexLocation);
+		LandRitem.BaseVertexLocation.push_back(LandRitem.Geo[0]->DrawArgs["grid"].BaseVertexLocation);
+		LandRitem.InstanceCount = 1;
+		
+#pragma region Reflection
+		RenderItem ReflectionLandRitem = LandRitem;
+		ReflectionLandRitem.ItemType = RenderItemType::Reflection;
+		XMStoreFloat4x4(&ReflectionLandRitem.World, XMMatrixScaling(1.0, -1.0, 1.0));
+		ReflectionLandRitem.ObjCBIndex = ObjCBIndex++;
+#pragma regionend
+
+		auto Land = std::make_unique<RenderItem>(LandRitem);
+		auto ReflectionLand = std::make_unique<RenderItem>(LandRitem);
+		mRitemLayer[(int)RenderLayer::Opaque].push_back(Land.get());
+		mReflectionWaterLayer[(int)RenderLayer::Opaque].push_back(ReflectionLand.get());
+		mAllRitems.push_back(std::move(Land));
+		mAllRitems.push_back(std::move(ReflectionLand));
 	}
 	//Sky Box
 	{
@@ -1330,9 +1351,13 @@ void GameApp::BuildRenderItems()
 		skyRitem.BaseVertexLocation.push_back(skyRitem.Geo[0]->DrawArgs["Sphere"].BaseVertexLocation);
 		skyRitem.InstanceCount = 1;
 
+#pragma region Reflection
 		RenderItem reflectionWaterskyRitem = skyRitem;
+		reflectionWaterskyRitem.ItemType = RenderItemType::Reflection;
 		XMStoreFloat4x4(&reflectionWaterskyRitem.World, XMMatrixScaling(1.0f, -1.0f, 1.0f)*XMMatrixScaling(5000.0f, 5000.0f, 5000.0f));
-		
+		reflectionWaterskyRitem.ObjCBIndex = ObjCBIndex++;
+#pragma regionend
+
 		auto ReflectionWaterskyRitem = std::make_unique<RenderItem>(reflectionWaterskyRitem);
 		auto SkyRitem = std::make_unique<RenderItem>(skyRitem);
 		mRitemLayer[(int)RenderLayer::Sky].push_back(SkyRitem.get());
@@ -1353,27 +1378,27 @@ void GameApp::BuildModelGeoInstanceItems()
 	lbox.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	lbox.Extents = XMFLOAT3(200.0f, 200.0f, 200.0f);
 
-	auto InstanceSphereRitem = std::make_unique<RenderItem>();
+	RenderItem InstanceModelRitem = {};
 	for (auto& e : mModelLoder->GetModelMesh("Blue_Tree_02a"))
 	{
-		InstanceSphereRitem->Geo.push_back(&e.mMeshGeo);
-		InstanceSphereRitem->IndexCount.push_back(e.mMeshGeo.DrawArgs["Model Mesh"].IndexCount);
-		InstanceSphereRitem->StartIndexLocation.push_back(e.mMeshGeo.DrawArgs["Model Mesh"].StartIndexLocation);
-		InstanceSphereRitem->BaseVertexLocation.push_back(e.mMeshGeo.DrawArgs["Model Mesh"].BaseVertexLocation);
+		InstanceModelRitem.Geo.push_back(&e.mMeshGeo);
+		InstanceModelRitem.IndexCount.push_back(e.mMeshGeo.DrawArgs["Model Mesh"].IndexCount);
+		InstanceModelRitem.StartIndexLocation.push_back(e.mMeshGeo.DrawArgs["Model Mesh"].StartIndexLocation);
+		InstanceModelRitem.BaseVertexLocation.push_back(e.mMeshGeo.DrawArgs["Model Mesh"].BaseVertexLocation);
 	}
 	
-	InstanceSphereRitem->World = MathHelper::Identity4x4();
-	InstanceSphereRitem->TexTransform = MathHelper::Identity4x4();
-	InstanceSphereRitem->ObjCBIndex = -1;//not important in instance item
-	InstanceSphereRitem->Mat = mMaterials[L"PBRBrass"].get();
-	InstanceSphereRitem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	InstanceSphereRitem->Bounds = lbox;
+	InstanceModelRitem.World = MathHelper::Identity4x4();
+	InstanceModelRitem.TexTransform = MathHelper::Identity4x4();
+	InstanceModelRitem.ObjCBIndex = -1;//not important in instance item
+	InstanceModelRitem.Mat = mMaterials[L"PBRBrass"].get();
+	InstanceModelRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	InstanceModelRitem.Bounds = lbox;
 	
 	// Generate instance data.
 	///Hard code
 	const int n =5;
-	InstanceSphereRitem->Instances.resize(n * n);
-	InstanceSphereRitem->InstanceCount = 0;//init count
+	InstanceModelRitem.Instances.resize(n * n);
+	InstanceModelRitem.InstanceCount = 0;//init count
 
 	float width = 25.0f;
 	float height = 25.0f;
@@ -1390,18 +1415,39 @@ void GameApp::BuildModelGeoInstanceItems()
 			{
 				int index =i * n + j;
 				// Position instanced along a 3D grid.
-				XMStoreFloat4x4(&InstanceSphereRitem->Instances[index].World, /*XMMatrixRotationX(MathHelper::Pi/2)**/XMMatrixRotationY(MathHelper::RandF()* MathHelper::Pi) * XMLoadFloat4x4(&XMFLOAT4X4(
+				XMStoreFloat4x4(&InstanceModelRitem.Instances[index].World, /*XMMatrixRotationX(MathHelper::Pi/2)**/XMMatrixRotationY(MathHelper::RandF()* MathHelper::Pi) * XMLoadFloat4x4(&XMFLOAT4X4(
 					0.04f, 0.0f, 0.0f, 0.0f,
 					0.0f, 0.04f, 0.0f, 0.0f,
 					0.0f, 0.0f, 0.04f, 0.0f,
 					x + j * dx, 0.0f, y + i * dy, 1.0f)));
 
-				InstanceSphereRitem->Instances[index].MaterialIndex = (UINT)(mMaterials.size() - 3);
-				InstanceSphereRitem->Instances[index].TexTransform= MathHelper::Identity4x4();
+				InstanceModelRitem.Instances[index].MaterialIndex = (UINT)(mMaterials.size() - 3);
+				InstanceModelRitem.Instances[index].TexTransform= MathHelper::Identity4x4();
 			}
 		}
-		mRitemLayer[(int)RenderLayer::InstanceSimpleItems].push_back(InstanceSphereRitem.get());
-		mAllRitems.push_back(std::move(InstanceSphereRitem));
+		//Reflection Instance Model items
+#pragma region Reflection
+			RenderItem ReflectionInstanceModelRitem = InstanceModelRitem;
+			ReflectionInstanceModelRitem.ItemType = RenderItemType::Reflection;
+			XMMATRIX WaterMAT;
+			for (int i = 0; i < n; ++i)
+			{
+				for (int j = 0; j < n; ++j)
+				{
+					int index = i * n + j;
+					WaterMAT = XMLoadFloat4x4(&ReflectionInstanceModelRitem.Instances[index].World);
+					XMStoreFloat4x4(&ReflectionInstanceModelRitem.Instances[index].World, XMMatrixScaling(1.0f, -1.0f, 1.0f) * WaterMAT);
+				}
+			}
+#pragma regionend
+
+		auto InstanceModel = std::make_unique<RenderItem>(InstanceModelRitem);
+		auto ReflectionInstanceModel = std::make_unique<RenderItem>(ReflectionInstanceModelRitem);
+		mRitemLayer[(int)RenderLayer::InstanceSimpleItems].push_back(InstanceModel.get());
+		mReflectionWaterLayer[(int)RenderLayer::InstanceSimpleItems].push_back(ReflectionInstanceModel.get());
+		
+		mAllRitems.push_back(std::move(InstanceModel));
+		mAllRitems.push_back(std::move(ReflectionInstanceModel));
 
 #pragma endregion
 }
@@ -1453,7 +1499,16 @@ void GameApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vec
 
 			// Set the instance buffer to use for this render-item.  For structured buffers, we can bypass 
 			// the heap and set as a root descriptor.
-			auto instanceBuffer = mCurrFrameResource->InstanceSimpleObjectCB[MeshNum]->Resource();
+			ID3D12Resource* instanceBuffer=nullptr;
+			if (ritems[i]->ItemType == RenderItemType::Normal)
+			{
+				instanceBuffer = mCurrFrameResource->InstanceSimpleObjectCB[MeshNum]->Resource();
+			}
+			else if(ritems[i]->ItemType == RenderItemType::Reflection)
+			{
+				instanceBuffer = mCurrFrameResource->ReflectionInstanceSimpleObjectCB[MeshNum]->Resource();
+			}
+			else {}
 			mCommandList->SetGraphicsRootShaderResourceView(3, instanceBuffer->GetGPUVirtualAddress());
 
 
@@ -1483,6 +1538,14 @@ XMFLOAT3 GameApp::GetHillsNormal(float x, float z)const
 
 void GameApp::DrawWaterReflectionMap(const GameTimer& gt)
 {
+	// Clear the back buffer and depth buffer.
+	//test Reflection sence no shaadow
+	{
+		mCommandList->ClearDepthStencilView(mShadowMap->Dsv(),
+			D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+		mCommandList->SetGraphicsRootDescriptorTable(6, mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+	}
+
 	if (m4xMsaaState)//MSAA
 	{
 		D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -1507,12 +1570,12 @@ void GameApp::DrawWaterReflectionMap(const GameTimer& gt)
 	//Draw Render Items (Opaque)
 	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Opaque).Get());
 	PIXBeginEvent(mCommandList.Get(), 0, "Draw Water::RenderLayer::Opaque");
-	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
+	DrawRenderItems(mCommandList.Get(), mReflectionWaterLayer[(int)RenderLayer::Opaque]);
 	PIXEndEvent(mCommandList.Get());
 	//Draw Instanse 
 	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::SkinAnime).Get());
 	PIXBeginEvent(mCommandList.Get(), 0, "Draw Water::RenderLayer::InstanceSimpleItems");
-	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
+	DrawRenderItems(mCommandList.Get(), mReflectionWaterLayer[(int)RenderLayer::InstanceSimpleItems]);
 	PIXEndEvent(mCommandList.Get());
 	//Draw Sky box
 	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Sky).Get());

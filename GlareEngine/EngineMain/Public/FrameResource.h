@@ -4,7 +4,7 @@
 #include "L3DMathHelper.h"
 #include "L3DUploadBuffer.h"
 #include "L3DVertex.h"
-
+#define InstanceCounts 25
 #define MAXSubMesh 10
 struct ObjectConstants
 {
@@ -101,7 +101,7 @@ public:
     std::unique_ptr<UploadBuffer<ObjectConstants>> SimpleObjectCB = nullptr;
     std::unique_ptr<UploadBuffer<SkinnedConstants>> SkinnedCB = nullptr;
     vector<std::unique_ptr<UploadBuffer<InstanceConstants>>> InstanceSimpleObjectCB ;
-
+    vector<std::unique_ptr<UploadBuffer<InstanceConstants>>> ReflectionInstanceSimpleObjectCB;
     // 在GPU处理完引用它的命令之前，我们无法更新动态顶点缓冲区。 
     //因此，每个框架都需要自己的框架。
     std::unique_ptr<UploadBuffer<PosNormalTexc>> WavesVB = nullptr;
