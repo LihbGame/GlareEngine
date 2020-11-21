@@ -277,6 +277,8 @@
     <FxCompile Include="Shaders\SimpleGeoInstanceShadowVS.hlsl" />
     <FxCompile Include="Shaders\SimpleGeoInstanceShadowPS.hlsl" />
     <FxCompile Include="Shaders\ComplexModelInstancePS.hlsl" />
+    <FxCompile Include="Shaders\WaterRefractionMaskVS.hlsl" />
+    <FxCompile Include="Shaders\WaterRefractionMaskPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini" />
