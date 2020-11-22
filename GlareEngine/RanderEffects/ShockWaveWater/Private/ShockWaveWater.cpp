@@ -1,13 +1,14 @@
 #include "ShockWaveWater.h"
 #include "L3DBaseApp.h"
-ShockWaveWater::ShockWaveWater(ID3D12Device* device, UINT width, UINT height,bool Is4xMsaa)
+ShockWaveWater::ShockWaveWater(ID3D12Device* device, UINT width, UINT height,bool Is4xMsaa, L3DTextureManage* TextureManage)
 	: mWidth(width),
 	mHeight(height),
 	mIs4xMsaa(Is4xMsaa),
 	md3dDevice(device),
 	mReflectionSRV(nullptr),
 	mReflectionRTV(nullptr),
-	mDepthMapDSV(nullptr)
+	mDepthMapDSV(nullptr),
+	mTextureManage(TextureManage)
 {
 	// Create the RTV heap.
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
@@ -15,6 +16,13 @@ ShockWaveWater::ShockWaveWater(ID3D12Device* device, UINT width, UINT height,boo
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mReflectionRTVHeap)))
+
+	// Create the DSV heap.
+	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc1 = {};
+	srvHeapDesc1.NumDescriptors = 1;
+	srvHeapDesc1.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+	srvHeapDesc1.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc1, IID_PPV_ARGS(&mReflectionDSVHeap)))
 
 	BuildResource();
 }
@@ -48,9 +56,9 @@ ID3D12Resource* ShockWaveWater::ReflectionRTV()const
 	return mReflectionRTV.Get();
 }
 
-ID3D12Resource* ShockWaveWater::ReflectionDepthMapDSV()const
+D3D12_CPU_DESCRIPTOR_HANDLE ShockWaveWater::ReflectionDepthMapDSVDescriptor()const
 {
-	return nullptr;
+	return mReflectionDSVHeap->GetCPUDescriptorHandleForHeapStart();
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE ShockWaveWater::ReflectionDescriptor() const
@@ -63,12 +71,18 @@ D3D12_CPU_DESCRIPTOR_HANDLE ShockWaveWater::RefractionDescriptor() const
 	return mRefractionSRVDescriptor;
 }
 
-void ShockWaveWater::BuildDescriptors(CD3DX12_CPU_DESCRIPTOR_HANDLE RefractionSRVDescriptor, CD3DX12_CPU_DESCRIPTOR_HANDLE ReflectionSRVDescriptor)
+void ShockWaveWater::BuildDescriptors(
+	CD3DX12_CPU_DESCRIPTOR_HANDLE RefractionSRVDescriptor, 
+	CD3DX12_CPU_DESCRIPTOR_HANDLE ReflectionSRVDescriptor,
+	CD3DX12_CPU_DESCRIPTOR_HANDLE WavesBumpDescriptor)
 {
 	// Save references to the descriptors. 
 	mRefractionSRVDescriptor = RefractionSRVDescriptor;
 	mReflectionSRVDescriptor = ReflectionSRVDescriptor;
+	mWavesBumpDescriptor = WavesBumpDescriptor;
+	
 
+	LoadTexture();
 	//  Create the descriptors
 	BuildDescriptors();
 }
@@ -95,6 +109,8 @@ void ShockWaveWater::BuildDescriptors()
 	md3dDevice->CreateRenderTargetView(
 		mReflectionRTV.Get(), &rtvDesc,
 		mReflectionRTVHeap->GetCPUDescriptorHandleForHeapStart());
+
+	md3dDevice->CreateDepthStencilView(mDepthMapDSV.Get(), nullptr, mReflectionDSVHeap->GetCPUDescriptorHandleForHeapStart());
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -145,6 +161,29 @@ void ShockWaveWater::BuildResource()
 		));
 
 		mReflectionRTV->SetName(L"Reflection Render Target");
+
+		D3D12_RESOURCE_DESC MapDescDsv = CD3DX12_RESOURCE_DESC::Tex2D(
+			DXGI_FORMAT_D24_UNORM_S8_UINT,
+			mWidth,
+			mHeight,
+			1, // This render target view has only one texture.
+			1, // Use a single mipmap level
+			sampleCount
+		);
+		MapDescDsv.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+		D3D12_CLEAR_VALUE optClear;
+		optClear.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		optClear.DepthStencil.Depth = 1.0f;
+		optClear.DepthStencil.Stencil = 0;
+		ThrowIfFailed(md3dDevice->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&MapDescDsv,
+			D3D12_RESOURCE_STATE_COMMON,
+			&optClear,
+			IID_PPV_ARGS(mDepthMapDSV.GetAddressOf())));
+
+
 #pragma endregion ReflectionMap
 	
 #pragma region RefractionMap
@@ -174,4 +213,17 @@ void ShockWaveWater::BuildResource()
 
 
 
+}
+
+void ShockWaveWater::LoadTexture()
+{
+	auto WaterNormalTex = mTextureManage->GetTexture(L"Water\\WavesBump")->Resource;
+	D3D12_SHADER_RESOURCE_VIEW_DESC WaterNormalDesc = {};
+	WaterNormalDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	WaterNormalDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	WaterNormalDesc.TextureCube.MostDetailedMip = 0;
+	WaterNormalDesc.TextureCube.MipLevels = WaterNormalTex->GetDesc().MipLevels;
+	WaterNormalDesc.TextureCube.ResourceMinLODClamp = 0.0f;
+	WaterNormalDesc.Format = WaterNormalTex->GetDesc().Format;
+	md3dDevice->CreateShaderResourceView(WaterNormalTex.Get(), &WaterNormalDesc, mWavesBumpDescriptor);
 }

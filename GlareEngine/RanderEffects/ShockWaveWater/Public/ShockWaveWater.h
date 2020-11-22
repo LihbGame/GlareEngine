@@ -1,9 +1,10 @@
 #pragma once
 #include "L3DUtil.h"
+#include "L3DTextureManage.h"
 class ShockWaveWater
 {
 public:
-	ShockWaveWater(ID3D12Device* device, UINT width, UINT height, bool IsMsaa);
+	ShockWaveWater(ID3D12Device* device, UINT width, UINT height, bool IsMsaa, L3DTextureManage* TextureManage);
 	~ShockWaveWater();
 
 	ID3D12Resource* ReflectionSRV()const;
@@ -12,23 +13,26 @@ public:
 	ID3D12Resource* FoamSRV()const;
 
 	ID3D12Resource* ReflectionRTV()const;
-	ID3D12Resource* ReflectionDepthMapDSV()const;
+	D3D12_CPU_DESCRIPTOR_HANDLE ReflectionDepthMapDSVDescriptor()const;
 	D3D12_CPU_DESCRIPTOR_HANDLE ReflectionDescriptor()const;
 	D3D12_CPU_DESCRIPTOR_HANDLE RefractionDescriptor()const;
 	void BuildDescriptors(
 		CD3DX12_CPU_DESCRIPTOR_HANDLE RefractionSRVDescriptor,
-		CD3DX12_CPU_DESCRIPTOR_HANDLE ReflectionRTVDescriptor);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE ReflectionRTVDescriptor,
+		CD3DX12_CPU_DESCRIPTOR_HANDLE WavesBumpDescriptor);
 
 	void OnResize(UINT newWidth, UINT newHeight);
+
 private:
 	void BuildDescriptors();
 	void BuildResource();
+	void LoadTexture();
 private:
 	ShockWaveWater(const ShockWaveWater& rhs);
 	ShockWaveWater& operator=(const ShockWaveWater& rhs);
 private:
 	ID3D12Device* md3dDevice = nullptr;
-
+	L3DTextureManage* mTextureManage = nullptr;
 	UINT mWidth;
 	UINT mHeight;
 	bool mIs4xMsaa;
@@ -41,8 +45,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> mDepthMapDSV;
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mReflectionRTVHeap;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mReflectionDSVHeap;
 	
 	CD3DX12_CPU_DESCRIPTOR_HANDLE mRefractionSRVDescriptor;
 	CD3DX12_CPU_DESCRIPTOR_HANDLE mReflectionSRVDescriptor;
+	CD3DX12_CPU_DESCRIPTOR_HANDLE mWavesBumpDescriptor;
 };
 

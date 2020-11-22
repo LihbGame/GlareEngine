@@ -142,6 +142,8 @@
     <ClInclude Include="Animation\Animations.h" />
     <ClInclude Include="Animation\OzzAnimePlayBack.h" />
     <ClInclude Include="RanderEffects\ShockWaveWater\Public\ShockWaveWater.h" />
+    <ClInclude Include="ShaderSource\Public\WaterRefractionMaskShader.h" />
+    <ClInclude Include="ShaderSource\Public\ShockWaveWaterShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Private\DDSTextureLoader.cpp">
@@ -255,6 +257,12 @@
     <ClCompile Include="RanderEffects\ShockWaveWater\Private\ShockWaveWater.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
+    <ClCompile Include="ShaderSource\Private\WaterRefractionMaskShader.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSource\Private\ShockWaveWaterShader.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -279,6 +287,8 @@
     <FxCompile Include="Shaders\ComplexModelInstancePS.hlsl" />
     <FxCompile Include="Shaders\WaterRefractionMaskVS.hlsl" />
     <FxCompile Include="Shaders\WaterRefractionMaskPS.hlsl" />
+    <FxCompile Include="Shaders\ShockWaveWaterVS.hlsl" />
+    <FxCompile Include="Shaders\ShockWaveWaterPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini" />

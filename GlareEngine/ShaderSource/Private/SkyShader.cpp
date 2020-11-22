@@ -1,5 +1,4 @@
 #include "SkyShader.h"
-#include "L3DInputLayout.h"
 SkyShader::SkyShader(wstring VSShaderPath, wstring PSShaderPath, wstring GSShaderPath, const D3D_SHADER_MACRO* defines)
 	:BaseShader(VSShaderPath, PSShaderPath, GSShaderPath, defines)
 {

@@ -190,12 +190,14 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="ShaderSource\Public\BaseShader.h" />
     <ClInclude Include="ShaderSource\Public\ComplexStaticModelInstanceShader.h" />
+    <ClInclude Include="ShaderSource\Public\ShockWaveWaterShader.h" />
     <ClInclude Include="ShaderSource\Public\SimpleGeometryInstanceShader.h" />
     <ClInclude Include="ShaderSource\Public\GerstnerWaveShader.h" />
     <ClInclude Include="ShaderSource\Public\SkinAnimeShader.h" />
     <ClInclude Include="ShaderSource\Public\SkyShader.h" />
     <ClInclude Include="ShaderSource\Public\SimpleGeometryShadowMapShader.h" />
     <ClInclude Include="RanderEffects\Water\Public\Waves.h" />
+    <ClInclude Include="ShaderSource\Public\WaterRefractionMaskShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animation\Animations.cpp" />
@@ -229,12 +231,14 @@
     <ClCompile Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.cpp" />
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp" />
     <ClCompile Include="ShaderSource\Private\ComplexStaticModelInstanceShader.cpp" />
+    <ClCompile Include="ShaderSource\Private\ShockWaveWaterShader.cpp" />
     <ClCompile Include="ShaderSource\Private\SimpleGeometryInstanceShader.cpp" />
     <ClCompile Include="ShaderSource\Private\GerstnerWaveShader.cpp" />
     <ClCompile Include="ShaderSource\Private\SkinAnimeShader.cpp" />
     <ClCompile Include="ShaderSource\Private\SkyShader.cpp" />
     <ClCompile Include="ShaderSource\Private\SimpleGeometryShadowMapShader.cpp" />
     <ClCompile Include="RanderEffects\Water\Private\Waves.cpp" />
+    <ClCompile Include="ShaderSource\Private\WaterRefractionMaskShader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GlareEngine.rc" />
@@ -271,6 +275,23 @@
     <FxCompile Include="Shaders\DefaultVS.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\ShockWaveWaterPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
+      <FileType>Document</FileType>
+    </FxCompile>
+    <FxCompile Include="Shaders\ShockWaveWaterVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shaders\SimpleGeoInstancePS.hlsl">

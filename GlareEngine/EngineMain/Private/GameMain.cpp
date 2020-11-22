@@ -68,16 +68,16 @@ bool GameApp::Initialize()
 
 	// 获取此堆类型中描述符的增量大小。 这是特定于硬件的，因此我们必须查询此信息。
 	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	//texture manage
+	mTextureManage = std::make_unique<L3DTextureManage>(md3dDevice.Get(), mCommandList.Get());
 	//pso init
 	mPSOs = std::make_unique<PSO>();
 	//wave :not use
 	mWaves = std::make_unique<Waves>(256,256, 4.0f, 0.03f, 8.0f, 0.2f);
 	//ShockWaveWater
-	mShockWaveWater = std::make_unique<ShockWaveWater>(md3dDevice.Get(), mClientWidth, mClientHeight,m4xMsaaState);
+	mShockWaveWater = std::make_unique<ShockWaveWater>(md3dDevice.Get(), mClientWidth, mClientHeight,m4xMsaaState, mTextureManage.get());
 	//camera
 	mCamera.LookAt(XMFLOAT3(20.0f, 20.0f, 20.0f), XMFLOAT3(0.0f,0.0f,0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f));
-	//texture manage
-	mTextureManage= std::make_unique<L3DTextureManage>(md3dDevice.Get(),mCommandList.Get());
 	//sky
 	mSky= std::make_unique<Sky>(md3dDevice.Get(), mCommandList.Get(),5.0f,20,20);
 	//shadow map
@@ -270,8 +270,7 @@ void GameApp::Draw(const GameTimer& gt)
 
 
 	//Draw Shock Wave Water
-	DrawWaterRefractionMap(gt);
-	DrawWaterReflectionMap(gt);
+	DrawShockWaveWater(gt);
 	
 	if (m4xMsaaState)
 	{
@@ -296,9 +295,9 @@ void GameApp::Draw(const GameTimer& gt)
 
 	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), false, NULL);
 	//Draw UI
-	PIXBeginEvent(mCommandList.Get(), 0, "Draw UI");
+	/*PIXBeginEvent(mCommandList.Get(), 0, "Draw UI");
 	mEngineUI->DrawUI(mCommandList.Get());
-	PIXEndEvent(mCommandList.Get());
+	PIXEndEvent(mCommandList.Get());*/
 
     // Indicate a state transition on the resource usage.
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
@@ -330,7 +329,7 @@ void GameApp::CreateDescriptorHeaps()
 	int SRVIndex = 0;
 	UINT PBRTextureNum = (UINT)(mPBRTextureName.size() * 6);
 	UINT ModelTextureNum = (UINT)mModelLoder->GetAllModelTextures().size() * 6;
-	UINT ShockWaveWater = 2;
+	UINT ShockWaveWater = 3;
 	//
 	// Create the SRV heap.
 	//
@@ -389,13 +388,18 @@ void GameApp::CreateDescriptorHeaps()
 
 	//ShockWaveWater
 	{
+		CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor1(mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 		CD3DX12_CPU_DESCRIPTOR_HANDLE RefractionSRVDescriptor = hDescriptor;
 		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 		CD3DX12_CPU_DESCRIPTOR_HANDLE ReflectionRTVDescriptor = hDescriptor;
-		
-		mShockWaveWater->BuildDescriptors(RefractionSRVDescriptor,
-			ReflectionRTVDescriptor);
-		SRVIndex += 2;
+		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE WavesBumpDescriptor = hDescriptor;
+		mShockWaveWater->BuildDescriptors(
+			RefractionSRVDescriptor,
+			ReflectionRTVDescriptor,
+			WavesBumpDescriptor
+			);
+		SRVIndex += 3;
 		// next descriptor
 		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	}
@@ -852,7 +856,8 @@ void GameApp::BuildShadersAndInputLayout()
 	mShaders["InstanceSimpleGeoShadowMap"]= new SimpleGeometryShadowMapShader(L"Shaders\\SimpleGeoInstanceShadowVS.hlsl", L"Shaders\\SimpleGeoInstanceShadowPS.hlsl", L"", alphaTestDefines);
 	mShaders["StaticComplexModelInstance"] = new ComplexStaticModelInstanceShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\ComplexModelInstancePS.hlsl", L"", alphaTestDefines);
 	mShaders["SkinAnime"]= new SkinAnimeShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\ComplexModelInstancePS.hlsl", L"",SkinAnimeDefines);
-
+	mShaders["WaterRefractionMask"] = new WaterRefractionMaskShader(L"Shaders\\WaterRefractionMaskVS.hlsl", L"Shaders\\WaterRefractionMaskPS.hlsl", L"");
+	mShaders["ShockWaveWater"] = new ShockWaveWaterShader(L"Shaders\\ShockWaveWaterVS.hlsl", L"Shaders\\ShockWaveWaterPS.hlsl", L"");
 }
 
 void GameApp::BuildSimpleGeometry()
@@ -979,10 +984,8 @@ void GameApp::BuildWavesGeometryBuffers()
 void GameApp::BuildPSOs()
 {
 	
-
-	//
 	// PSO for opaque objects.
-	//
+#pragma region PSO_for_opaque_objects
 	std::vector<D3D12_INPUT_ELEMENT_DESC> Input = mShaders["GerstnerWave"]->GetInputLayout();
 	DXGI_FORMAT RTVFormats[8];
 	RTVFormats[0] = mBackBufferFormat;//only one rtv
@@ -1011,11 +1014,11 @@ void GameApp::BuildPSOs()
 		0,
 		{0},
 		{});
+#pragma endregion 
 
 
-	//
 	// PSO for sky.
-	//
+#pragma region PSO_for_sky
 	Input = mShaders["Sky"]->GetInputLayout();
 	D3D12_RASTERIZER_DESC RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
@@ -1046,11 +1049,11 @@ void GameApp::BuildPSOs()
 		0,
 		{},
 		{});
+#pragma endregion
 
 
-	//
 	// PSO for Instance .
-	//
+#pragma region PSO_for_Instance
 	Input = mShaders["Instance"]->GetInputLayout();
 	mPSOs->BuildPSO(md3dDevice.Get(),
 		PSOName::Instance,
@@ -1077,11 +1080,11 @@ void GameApp::BuildPSOs()
 		0,
 		{},
 		{});
+#pragma endregion
 
 
-	//
 	// PSO for Instance  shadow.
-	//
+#pragma region PSO_for_Instance_shadow
 	D3D12_RASTERIZER_DESC ShadowRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	ShadowRasterizerState.DepthBias = 25000;
 	ShadowRasterizerState.DepthBiasClamp = 0.0f;
@@ -1113,12 +1116,11 @@ void GameApp::BuildPSOs()
 		0,
 		{},
 		{});
+#pragma endregion
 
 
-
-	//
 	// PSO for Complex Model Instance .
-	//
+#pragma region PSO_for_Complex_Model_Instance
 	RTVFormats[0] = mBackBufferFormat;//only one rtv
 	Input = mShaders["StaticComplexModelInstance"]->GetInputLayout();
 	mPSOs->BuildPSO(md3dDevice.Get(),
@@ -1146,11 +1148,11 @@ void GameApp::BuildPSOs()
 		0,
 		{},
 		{});
+#pragma endregion
 
 
-	//
 	// PSO for skin anime .
-	//
+#pragma region PSO_for_skin_anime
 	RTVFormats[0] = mBackBufferFormat;//only one rtv
 	Input = mShaders["SkinAnime"]->GetInputLayout();
 	mPSOs->BuildPSO(md3dDevice.Get(),
@@ -1178,7 +1180,74 @@ void GameApp::BuildPSOs()
 		0,
 		{},
 		{});
+#pragma endregion
 
+
+	// PSO for Water Refraction Mask.
+#pragma region PSO_for_Water_Refraction_Mask
+	Input = mShaders["WaterRefractionMask"]->GetInputLayout();
+	D3D12_BLEND_DESC BlendDesc = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALPHA;
+	BlendDesc.RenderTarget[0].SrcBlendAlpha= D3D12_BLEND_SRC_ALPHA;
+	DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	mPSOs->BuildPSO(md3dDevice.Get(),
+		PSOName::WaterRefractionMask,
+		mRootSignature.Get(),
+		{ reinterpret_cast<BYTE*>(mShaders["WaterRefractionMask"]->GetVSShader()->GetBufferPointer()),
+			mShaders["WaterRefractionMask"]->GetVSShader()->GetBufferSize() },
+		{ reinterpret_cast<BYTE*>(mShaders["WaterRefractionMask"]->GetPSShader()->GetBufferPointer()),
+		mShaders["WaterRefractionMask"]->GetPSShader()->GetBufferSize() },
+		{},
+		{},
+		{},
+		{},
+		BlendDesc,
+		UINT_MAX,
+		CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
+		DepthStencilState,
+		{ Input.data(), (UINT)Input.size() },
+		{},
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+		1,
+		RTVFormats,
+		mDepthStencilFormat,
+		{ UINT(m4xMsaaState ? 4 : 1) ,UINT(0) },
+		0,
+		{},
+		{});
+#pragma endregion
+
+
+	// PSO for Shock Wave Water.
+#pragma region Shock Wave Water
+	Input = mShaders["ShockWaveWater"]->GetInputLayout();
+	mPSOs->BuildPSO(md3dDevice.Get(),
+		PSOName::ShockWaveWater,
+		mRootSignature.Get(),
+		{ reinterpret_cast<BYTE*>(mShaders["ShockWaveWater"]->GetVSShader()->GetBufferPointer()),
+			mShaders["ShockWaveWater"]->GetVSShader()->GetBufferSize() },
+		{ reinterpret_cast<BYTE*>(mShaders["ShockWaveWater"]->GetPSShader()->GetBufferPointer()),
+		mShaders["ShockWaveWater"]->GetPSShader()->GetBufferSize() },
+		{},
+		{},
+		{},
+		{},
+		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
+		UINT_MAX,
+		CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
+		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
+		{ Input.data(), (UINT)Input.size() },
+		{},
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+		1,
+		RTVFormats,
+		mDepthStencilFormat,
+		{ UINT(m4xMsaaState ? 4 : 1) ,UINT(0) },
+		0,
+		{},
+		{});
+#pragma endregion
 }
 
 void GameApp::BuildFrameResources()
@@ -1312,7 +1381,7 @@ void GameApp::BuildRenderItems()
 	{
 		RenderItem LandRitem = {};
 		LandRitem.World = MathHelper::Identity4x4();
-		XMStoreFloat4x4(&LandRitem.World, XMMatrixScaling(1.0, 1.0, 1.0));
+		XMStoreFloat4x4(&LandRitem.World,XMMatrixTranslation(0.0f,1.0f,0.0f)* XMMatrixScaling(1.0, 1.0, 1.0));
 		XMStoreFloat4x4(&LandRitem.TexTransform, XMMatrixScaling(5.0, 5.0, 5.0));
 		LandRitem.ObjCBIndex = ObjCBIndex++;
 		LandRitem.Mat = mMaterials[L"PBRharshbricks"].get();
@@ -1328,7 +1397,7 @@ void GameApp::BuildRenderItems()
 		ReflectionLandRitem.ItemType = RenderItemType::Reflection;
 		XMStoreFloat4x4(&ReflectionLandRitem.World, XMMatrixScaling(1.0, -1.0, 1.0));
 		ReflectionLandRitem.ObjCBIndex = ObjCBIndex++;
-#pragma regionend
+#pragma endregion
 
 		auto Land = std::make_unique<RenderItem>(LandRitem);
 		auto ReflectionLand = std::make_unique<RenderItem>(LandRitem);
@@ -1337,6 +1406,27 @@ void GameApp::BuildRenderItems()
 		mAllRitems.push_back(std::move(Land));
 		mAllRitems.push_back(std::move(ReflectionLand));
 	}
+	//Shock Wave Water
+	{
+		RenderItem ShockWaveWaterRitem = {};
+		ShockWaveWaterRitem.World = MathHelper::Identity4x4();
+		XMStoreFloat4x4(&ShockWaveWaterRitem.World, XMMatrixScaling(10.0, 10.0, 10.0));
+		XMStoreFloat4x4(&ShockWaveWaterRitem.TexTransform, XMMatrixScaling(5.0, 5.0, 5.0));
+		ShockWaveWaterRitem.ObjCBIndex = ObjCBIndex++;
+		ShockWaveWaterRitem.Mat = mMaterials[L"PBRharshbricks"].get();
+		ShockWaveWaterRitem.Geo.push_back(mGeometries["landGeo"].get());
+		ShockWaveWaterRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		ShockWaveWaterRitem.IndexCount.push_back(ShockWaveWaterRitem.Geo[0]->DrawArgs["grid"].IndexCount);
+		ShockWaveWaterRitem.StartIndexLocation.push_back(ShockWaveWaterRitem.Geo[0]->DrawArgs["grid"].StartIndexLocation);
+		ShockWaveWaterRitem.BaseVertexLocation.push_back(ShockWaveWaterRitem.Geo[0]->DrawArgs["grid"].BaseVertexLocation);
+		ShockWaveWaterRitem.InstanceCount = 1;
+		auto ShockWaveWater = std::make_unique<RenderItem>(ShockWaveWaterRitem);
+		mRitemLayer[(int)RenderLayer::ShockWaveWater].push_back(ShockWaveWater.get());
+		mAllRitems.push_back(std::move(ShockWaveWater));
+	}
+
+
+
 	//Sky Box
 	{
 		RenderItem skyRitem = {};
@@ -1356,7 +1446,7 @@ void GameApp::BuildRenderItems()
 		reflectionWaterskyRitem.ItemType = RenderItemType::Reflection;
 		XMStoreFloat4x4(&reflectionWaterskyRitem.World, XMMatrixScaling(1.0f, -1.0f, 1.0f)*XMMatrixScaling(5000.0f, 5000.0f, 5000.0f));
 		reflectionWaterskyRitem.ObjCBIndex = ObjCBIndex++;
-#pragma regionend
+#pragma endregion
 
 		auto ReflectionWaterskyRitem = std::make_unique<RenderItem>(reflectionWaterskyRitem);
 		auto SkyRitem = std::make_unique<RenderItem>(skyRitem);
@@ -1439,7 +1529,7 @@ void GameApp::BuildModelGeoInstanceItems()
 					XMStoreFloat4x4(&ReflectionInstanceModelRitem.Instances[index].World, XMMatrixScaling(1.0f, -1.0f, 1.0f) * WaterMAT);
 				}
 			}
-#pragma regionend
+#pragma endregion
 
 		auto InstanceModel = std::make_unique<RenderItem>(InstanceModelRitem);
 		auto ReflectionInstanceModel = std::make_unique<RenderItem>(ReflectionInstanceModelRitem);
@@ -1536,10 +1626,48 @@ XMFLOAT3 GameApp::GetHillsNormal(float x, float z)const
 	return n;
 }
 
+void GameApp::DrawShockWaveWater(const GameTimer& gt)
+{
+	DrawWaterReflectionMap(gt);
+
+	//reset render target
+	auto rtvDescriptor = m_msaaRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	auto dsvDescriptor = mDsvHeap->GetCPUDescriptorHandleForHeapStart();
+	mCommandList->OMSetRenderTargets(1, &rtvDescriptor, false, &dsvDescriptor);
+	D3D12_RESOURCE_BARRIER barriers1[1] =
+	{
+		CD3DX12_RESOURCE_BARRIER::Transition(
+			mMSAARenderTargetBuffer.Get(),
+			D3D12_RESOURCE_STATE_RESOLVE_SOURCE,
+			D3D12_RESOURCE_STATE_RENDER_TARGET)
+	};
+	mCommandList->ResourceBarrier(1, barriers1);
+	DrawWaterRefractionMap(gt);
+	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::ShockWaveWater).Get());
+	mCommandList->OMSetRenderTargets(1, &rtvDescriptor, false, &dsvDescriptor);
+	D3D12_RESOURCE_BARRIER barriers[1] =
+	{
+		CD3DX12_RESOURCE_BARRIER::Transition(
+			mMSAARenderTargetBuffer.Get(),
+			D3D12_RESOURCE_STATE_RESOLVE_SOURCE,
+			D3D12_RESOURCE_STATE_RENDER_TARGET)
+	};
+	mCommandList->ResourceBarrier(1, barriers);
+
+
+	//Draw Shock Wave Water
+	
+	PIXBeginEvent(mCommandList.Get(), 0, "Draw Water::RenderLayer::ShockWaveWater");
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::ShockWaveWater]);
+	PIXEndEvent(mCommandList.Get());
+}
+
 void GameApp::DrawWaterReflectionMap(const GameTimer& gt)
 {
+
+	
 	// Clear the back buffer and depth buffer.
-	//test Reflection sence no shaadow
+	//test Reflection sence no shadow
 	{
 		mCommandList->ClearDepthStencilView(mShadowMap->Dsv(),
 			D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
@@ -1555,7 +1683,7 @@ void GameApp::DrawWaterReflectionMap(const GameTimer& gt)
 		mCommandList->ResourceBarrier(1, &barrier);
 
 		auto RTVDescriptor = mShockWaveWater->ReflectionDescriptor();
-		auto DSVDescriptor = mDsvHeap->GetCPUDescriptorHandleForHeapStart();
+		auto DSVDescriptor = mShockWaveWater->ReflectionDepthMapDSVDescriptor();
 
 		mCommandList->OMSetRenderTargets(1, &RTVDescriptor, false, &DSVDescriptor);
 
@@ -1596,8 +1724,22 @@ void GameApp::DrawWaterReflectionMap(const GameTimer& gt)
 
 void GameApp::DrawWaterRefractionMap(const GameTimer& gt)
 {
-	mCommandList->ResolveSubresource(mShockWaveWater->SingleRefractionSRV(), 0, mMSAARenderTargetBuffer.Get(), 0, mBackBufferFormat);
+	//Draw Shock Wave Water
+	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::WaterRefractionMask).Get());
+	PIXBeginEvent(mCommandList.Get(), 0, "Draw Main::RenderLayer::WaterRefractionMask");
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::ShockWaveWater]);
+	PIXEndEvent(mCommandList.Get());
 
+	D3D12_RESOURCE_BARRIER barriers[1] =
+	{
+		CD3DX12_RESOURCE_BARRIER::Transition(
+			mMSAARenderTargetBuffer.Get(),
+			D3D12_RESOURCE_STATE_RENDER_TARGET,
+			D3D12_RESOURCE_STATE_RESOLVE_SOURCE)
+	};
+	mCommandList->ResourceBarrier(1, barriers);
+
+	mCommandList->ResolveSubresource(mShockWaveWater->SingleRefractionSRV(), 0, mMSAARenderTargetBuffer.Get(), 0, mBackBufferFormat);
 }
 
 

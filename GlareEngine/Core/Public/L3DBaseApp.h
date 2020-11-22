@@ -139,5 +139,7 @@ enum class PSOName : int
 	Sky,
 	StaticComplexModelInstance,
 	SkinAnime,
+	WaterRefractionMask,
+	ShockWaveWater,
 	Count
 };

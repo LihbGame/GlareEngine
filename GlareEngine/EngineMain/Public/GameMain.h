@@ -16,6 +16,8 @@
 #include "SimpleGeometryShadowMapShader.h"
 #include "ComplexStaticModelInstanceShader.h"
 #include "SkinAnimeShader.h"
+#include "WaterRefractionMaskShader.h"
+#include "ShockWaveWaterShader.h"
 
 #include "PSOManager.h"
 #include "L3DCamera.h"
@@ -81,6 +83,7 @@ enum class RenderLayer : int
 	Opaque = 0,
 	InstanceSimpleItems,
 	Sky,
+	ShockWaveWater,
 	Count
 };
 
@@ -163,6 +166,7 @@ private:
 	XMFLOAT3 GetHillsNormal(float x, float z)const;
 
 	//ShockWaveWater
+	void DrawShockWaveWater(const GameTimer& gt);
 	void DrawWaterReflectionMap(const GameTimer& gt);
 	void DrawWaterRefractionMap(const GameTimer& gt);
 
