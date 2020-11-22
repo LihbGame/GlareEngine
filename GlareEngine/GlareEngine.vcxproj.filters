@@ -109,7 +109,6 @@
     <ClInclude Include="EngineEditor\imstb_rectpack.h" />
     <ClInclude Include="EngineEditor\imstb_textedit.h" />
     <ClInclude Include="EngineEditor\imstb_truetype.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="ShaderSource\Public\SimpleGeometryInstanceShader.h" />
     <ClInclude Include="PSO\Public\PSOManager.h">
       <Filter>PSO\Public</Filter>
@@ -144,6 +143,7 @@
     <ClInclude Include="RanderEffects\ShockWaveWater\Public\ShockWaveWater.h" />
     <ClInclude Include="ShaderSource\Public\WaterRefractionMaskShader.h" />
     <ClInclude Include="ShaderSource\Public\ShockWaveWaterShader.h" />
+    <ClInclude Include="EngineMain\Public\resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Private\DDSTextureLoader.cpp">

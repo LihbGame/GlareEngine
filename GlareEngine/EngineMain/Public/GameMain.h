@@ -250,6 +250,7 @@ private:
 	//ShockWaveWater
 	std::unique_ptr<ShockWaveWater> mShockWaveWater;
 
+	static bool RedrawShadowMap;
 
 	//play back anime 
 	//std::unordered_map<std::string, AnimePlayback> AnimationPlayback;

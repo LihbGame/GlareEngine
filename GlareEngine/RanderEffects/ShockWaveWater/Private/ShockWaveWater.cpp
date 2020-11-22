@@ -222,7 +222,7 @@ void ShockWaveWater::BuildResource()
 
 void ShockWaveWater::LoadTexture()
 {
-	auto WaterNormalTex = mTextureManage->GetTexture(L"Water\\WavesBump")->Resource;
+	auto WaterNormalTex = mTextureManage->GetTexture(L"Water\\242-normal")->Resource;
 	D3D12_SHADER_RESOURCE_VIEW_DESC WaterNormalDesc = {};
 	WaterNormalDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	WaterNormalDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;

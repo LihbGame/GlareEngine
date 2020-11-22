@@ -9,6 +9,8 @@
 
 const int gNumFrameResources = 3;
 
+bool GameApp::RedrawShadowMap = true;
+
 //[System::STAThreadAttribute]
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 	PSTR cmdLine, int showCmd)
@@ -205,7 +207,23 @@ void GameApp::Draw(const GameTimer& gt)
 	}
 
 	//Draw shadow
-	DrawSceneToShadowMap();
+	if (mEngineUI->IsShowShadow())
+	{
+		if (GameApp::RedrawShadowMap)
+		{
+			DrawSceneToShadowMap();
+			GameApp::RedrawShadowMap = false;
+		}
+	}
+	else
+	{
+		if (!GameApp::RedrawShadowMap)
+		{
+			mCommandList->ClearDepthStencilView(mShadowMap->Dsv(),
+				D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+			GameApp::RedrawShadowMap = true;
+		}
+	}
 
 	//放在绘制阴影的后面
 	mCommandList->RSSetViewports(1, &mScreenViewport);
@@ -247,24 +265,36 @@ void GameApp::Draw(const GameTimer& gt)
 
 
 		//Draw Render Items (Opaque)
-		mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Opaque).Get());
-		PIXBeginEvent(mCommandList.Get(), 0, "Draw Main::RenderLayer::Opaque");
-		DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
-		PIXEndEvent(mCommandList.Get());
+		if (mEngineUI->IsShowLand())
+		{
+			mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Opaque).Get());
+			PIXBeginEvent(mCommandList.Get(), 0, "Draw Main::RenderLayer::Opaque");
+			DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
+			PIXEndEvent(mCommandList.Get());
+		}
 		//Draw Instanse 
-		mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::SkinAnime).Get());
-		PIXBeginEvent(mCommandList.Get(), 0, "Draw Main::RenderLayer::InstanceSimpleItems");
-		DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
-		PIXEndEvent(mCommandList.Get());
+		if (mEngineUI->IsShowModel())
+		{
+			mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::SkinAnime).Get());
+			PIXBeginEvent(mCommandList.Get(), 0, "Draw Main::RenderLayer::InstanceSimpleItems");
+			DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
+			PIXEndEvent(mCommandList.Get());
+		}
 		//Draw Sky box
-		mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Sky).Get());
-		PIXBeginEvent(mCommandList.Get(), 0, "Draw Main::RenderLayer::Sky");
-		DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Sky]);
-		PIXEndEvent(mCommandList.Get());
+		if (mEngineUI->IsShowSky())
+		{
+			mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Sky).Get());
+			PIXBeginEvent(mCommandList.Get(), 0, "Draw Main::RenderLayer::Sky");
+			DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Sky]);
+			PIXEndEvent(mCommandList.Get());
+		}
 	}
 
 	//Draw Shock Wave Water
-	DrawShockWaveWater(gt);
+	if (mEngineUI->IsShowWater())
+	{
+		DrawShockWaveWater(gt);
+	}
 
 	if (m4xMsaaState)
 	{
@@ -868,7 +898,7 @@ void GameApp::BuildSimpleGeometry()
 void GameApp::BuildLandGeometry()
 {
 	GeometryGenerator geoGen;
-	GeometryGenerator::MeshData grid = geoGen.CreateGrid(100.0f, 100.0f, 100, 100);
+	GeometryGenerator::MeshData grid = geoGen.CreateGrid(100.0f, 100.0f, 2, 2);
 
 	//
 	// Extract the vertex elements we are interested and apply the height function to
@@ -1405,7 +1435,7 @@ void GameApp::BuildRenderItems()
 	{
 		RenderItem ShockWaveWaterRitem = {};
 		ShockWaveWaterRitem.World = MathHelper::Identity4x4();
-		XMStoreFloat4x4(&ShockWaveWaterRitem.World, XMMatrixScaling(10.0, 10.0, 10.0));
+		XMStoreFloat4x4(&ShockWaveWaterRitem.World, XMMatrixScaling(5.0, 5.0, 5.0));
 		XMStoreFloat4x4(&ShockWaveWaterRitem.TexTransform, XMMatrixScaling(5.0, 5.0, 5.0));
 		ShockWaveWaterRitem.ObjCBIndex = ObjCBIndex++;
 		ShockWaveWaterRitem.Mat = mMaterials[L"PBRharshbricks"].get();
@@ -1655,7 +1685,7 @@ void GameApp::DrawWaterReflectionMap(const GameTimer& gt)
 	{
 		mCommandList->ClearDepthStencilView(mShadowMap->Dsv(),
 			D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-		mCommandList->SetGraphicsRootDescriptorTable(6, mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+		GameApp::RedrawShadowMap = true;
 	}
 
 	if (m4xMsaaState)//MSAA
@@ -1926,8 +1956,6 @@ void GameApp::DrawSceneToShadowMap()
 {
 	mCommandList->RSSetViewports(1, &mShadowMap->Viewport());
 	mCommandList->RSSetScissorRects(1, &mShadowMap->ScissorRect());
-
-
 
 	UINT passCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(PassConstants));
 

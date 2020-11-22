@@ -187,7 +187,7 @@
     <ClInclude Include="RanderEffects\Shadow\Public\ShadowMap.h" />
     <ClInclude Include="RanderEffects\ShockWaveWater\Public\ShockWaveWater.h" />
     <ClInclude Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.h" />
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="EngineMain\Public\resource.h" />
     <ClInclude Include="ShaderSource\Public\BaseShader.h" />
     <ClInclude Include="ShaderSource\Public\ComplexStaticModelInstanceShader.h" />
     <ClInclude Include="ShaderSource\Public\ShockWaveWaterShader.h" />

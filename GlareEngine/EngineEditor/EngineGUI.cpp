@@ -95,14 +95,14 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 			ImGui::Checkbox("Another Window", &show_another_window);
 
 			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-			if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-				counter++;
-			ImGui::SameLine();
-			ImGui::Text("counter = %d", counter);
-
-			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::Text("Show Sence");
+			ImGui::Checkbox("Shadow", &show_shadow);
+			ImGui::Checkbox("Model", &show_model);
+			ImGui::Checkbox("Sky", &show_sky);
+			ImGui::Checkbox("Land", &show_land);
+			ImGui::Checkbox("Water", &show_water);
+			//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			ImGui::End();
 		}
 
