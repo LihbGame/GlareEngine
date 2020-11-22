@@ -295,9 +295,9 @@ void GameApp::Draw(const GameTimer& gt)
 
 	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), false, NULL);
 	//Draw UI
-	/*PIXBeginEvent(mCommandList.Get(), 0, "Draw UI");
-	mEngineUI->DrawUI(mCommandList.Get());
-	PIXEndEvent(mCommandList.Get());*/
+	PIXBeginEvent(mCommandList.Get(), 0, "Draw UI");
+	//mEngineUI->DrawUI(mCommandList.Get());
+	PIXEndEvent(mCommandList.Get());
 
     // Indicate a state transition on the resource usage.
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
