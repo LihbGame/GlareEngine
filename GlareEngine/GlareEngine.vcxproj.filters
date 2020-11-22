@@ -274,6 +274,9 @@
     <Image Include="Textures\ICONS\gameicon.ico">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="Textures\ICONS\Arrow.cur">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\SkyPS.hlsl" />

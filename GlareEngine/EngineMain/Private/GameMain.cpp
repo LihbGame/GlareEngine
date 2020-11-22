@@ -168,14 +168,12 @@ void GameApp::Draw(const GameTimer& gt)
 {
 	auto cmdListAlloc = mCurrFrameResource->CmdListAlloc;
 
-	// Reuse the memory associated with command recording.
-	// We can only reset when the associated command lists have finished execution on the GPU.
+	//重新使用与命令记录关联的内存。
+	//只有关联的命令列表在GPU上完成执行后，我们才能重置。
 	ThrowIfFailed(cmdListAlloc->Reset());
-
-	// 通过ExecuteCommandList将命令列表添加到命令队列后，可以将其重置。
+	//通过ExecuteCommandList将命令列表添加到命令队列后，可以将其重置。
 	//重用命令列表将重用内存。
 	ThrowIfFailed(mCommandList->Reset(cmdListAlloc.Get(), mPSOs.get()->GetPSO(PSOName::Opaque).Get()));
-
 
 	{
 		//SET SRV Descriptor heap
@@ -206,11 +204,8 @@ void GameApp::Draw(const GameTimer& gt)
 		mCommandList->SetGraphicsRootDescriptorTable(6, mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	}
 
-
-
 	//Draw shadow
 	DrawSceneToShadowMap();
-
 
 	//放在绘制阴影的后面
 	mCommandList->RSSetViewports(1, &mScreenViewport);
@@ -244,7 +239,7 @@ void GameApp::Draw(const GameTimer& gt)
 		// Specify the buffers we are going to render to.
 		mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 	}
-
+	//Draw Main
 	{
 		//Set Graphics Root CBV in slot 2
 		auto passCB = mCurrFrameResource->PassCB->Resource();
@@ -268,10 +263,9 @@ void GameApp::Draw(const GameTimer& gt)
 		PIXEndEvent(mCommandList.Get());
 	}
 
-
 	//Draw Shock Wave Water
 	DrawShockWaveWater(gt);
-	
+
 	if (m4xMsaaState)
 	{
 		D3D12_RESOURCE_BARRIER barriers[2] =
@@ -286,17 +280,18 @@ void GameApp::Draw(const GameTimer& gt)
 				D3D12_RESOURCE_STATE_RESOLVE_DEST)
 		};
 		mCommandList->ResourceBarrier(2, barriers);
-		//mCommandList->ResolveSubresource(CurrentBackBuffer(), 0, mShockWaveWater->ReflectionRTV(), 0, mBackBufferFormat);
 		mCommandList->ResolveSubresource(CurrentBackBuffer(), 0, mMSAARenderTargetBuffer.Get(), 0, mBackBufferFormat);
 	}
+
 	// Indicate a state transition on the resource usage.
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_RESOLVE_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
+
 	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), false, NULL);
 	//Draw UI
 	PIXBeginEvent(mCommandList.Get(), 0, "Draw UI");
-	//mEngineUI->DrawUI(mCommandList.Get());
+	mEngineUI->DrawUI(mCommandList.Get());
 	PIXEndEvent(mCommandList.Get());
 
     // Indicate a state transition on the resource usage.
@@ -1630,21 +1625,12 @@ void GameApp::DrawShockWaveWater(const GameTimer& gt)
 {
 	DrawWaterReflectionMap(gt);
 
-	//reset render target
-	auto rtvDescriptor = m_msaaRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	auto dsvDescriptor = mDsvHeap->GetCPUDescriptorHandleForHeapStart();
-	mCommandList->OMSetRenderTargets(1, &rtvDescriptor, false, &dsvDescriptor);
-	D3D12_RESOURCE_BARRIER barriers1[1] =
-	{
-		CD3DX12_RESOURCE_BARRIER::Transition(
-			mMSAARenderTargetBuffer.Get(),
-			D3D12_RESOURCE_STATE_RESOLVE_SOURCE,
-			D3D12_RESOURCE_STATE_RENDER_TARGET)
-	};
-	mCommandList->ResourceBarrier(1, barriers1);
 	DrawWaterRefractionMap(gt);
+
+
 	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::ShockWaveWater).Get());
-	mCommandList->OMSetRenderTargets(1, &rtvDescriptor, false, &dsvDescriptor);
+	mCommandList->OMSetRenderTargets(1, &m_msaaRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart()
+		, false, &mDsvHeap->GetCPUDescriptorHandleForHeapStart());
 	D3D12_RESOURCE_BARRIER barriers[1] =
 	{
 		CD3DX12_RESOURCE_BARRIER::Transition(
@@ -1654,9 +1640,7 @@ void GameApp::DrawShockWaveWater(const GameTimer& gt)
 	};
 	mCommandList->ResourceBarrier(1, barriers);
 
-
 	//Draw Shock Wave Water
-	
 	PIXBeginEvent(mCommandList.Get(), 0, "Draw Water::RenderLayer::ShockWaveWater");
 	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::ShockWaveWater]);
 	PIXEndEvent(mCommandList.Get());
@@ -1725,6 +1709,10 @@ void GameApp::DrawWaterReflectionMap(const GameTimer& gt)
 
 void GameApp::DrawWaterRefractionMap(const GameTimer& gt)
 {
+	auto rtvDescriptor = m_msaaRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	auto dsvDescriptor = mDsvHeap->GetCPUDescriptorHandleForHeapStart();
+	mCommandList->OMSetRenderTargets(1, &rtvDescriptor, false, &dsvDescriptor);
+
 	//Draw Shock Wave Water
 	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::WaterRefractionMask).Get());
 	PIXBeginEvent(mCommandList.Get(), 0, "Draw Main::RenderLayer::WaterRefractionMask");
@@ -1825,7 +1813,7 @@ void GameApp::LoadModel()
 	mModelLoder->LoadModel("TraumaGuard/TraumaGuard.fbx");
 
 	//AnimationPlayback["TraumaGuard@ActiveIdleLoop"].OnInitialize();
-	mModelLoder->LoadAnimation("TraumaGuard/TraumaGuard@ActiveIdleLoop.fbx");
+	//mModelLoder->LoadAnimation("TraumaGuard/TraumaGuard@ActiveIdleLoop.fbx");
 	
 }					
 
@@ -1939,9 +1927,7 @@ void GameApp::DrawSceneToShadowMap()
 	mCommandList->RSSetViewports(1, &mShadowMap->Viewport());
 	mCommandList->RSSetScissorRects(1, &mShadowMap->ScissorRect());
 
-	// Change to DEPTH_WRITE.
-	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mShadowMap->Resource(),
-		D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_DEPTH_WRITE));
+
 
 	UINT passCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(PassConstants));
 
@@ -1972,7 +1958,5 @@ void GameApp::DrawSceneToShadowMap()
 	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
 	PIXEndEvent(mCommandList.Get());
 
-	// Change back to GENERIC_READ so we can read the texture in a shader.
-	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mShadowMap->Resource(),
-		D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_GENERIC_READ));
+	
 }

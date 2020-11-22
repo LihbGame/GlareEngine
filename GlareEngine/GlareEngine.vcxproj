@@ -363,6 +363,7 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
       <FileType>Document</FileType>
     </FxCompile>
+    <Image Include="Textures\ICONS\Arrow.cur" />
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini" />

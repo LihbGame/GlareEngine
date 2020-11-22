@@ -91,8 +91,7 @@ int D3DApp::Run()
 				Update(mTimer);
 				if (timepase > 0.00006f)
 				{
-					//CalculateFrameStats();
-
+					CalculateFrameStats();
 					Draw(mTimer);
 					timepase = 0.0f;
 				}
@@ -158,6 +157,20 @@ void D3DApp::OnResize()
 	assert(md3dDevice);
 	assert(mSwapChain);
     assert(mDirectCmdListAlloc);
+
+
+	//更新视口转换以覆盖客户端区域。
+	mScreenViewport.TopLeftX = 0;// mClientWidth * 1.0f / 6.0f;
+	mScreenViewport.TopLeftY = 0;// MainMenuBarHeight;
+	mScreenViewport.Width = mClientWidth;// static_cast<float>(mClientWidth * 2.0f / 3.0f);
+	mScreenViewport.Height = mClientHeight;// static_cast<float>(mClientHeight * 0.75f - MainMenuBarHeight);
+	mScreenViewport.MinDepth = 0.0f;
+	mScreenViewport.MaxDepth = 1.0f;
+	mScissorRect = { 0, 0, mClientWidth, mClientHeight };
+
+
+
+
 
 	// Flush before changing any resources.
 	FlushCommandQueue();
@@ -270,16 +283,6 @@ void D3DApp::OnResize()
 
 	// Wait until resize is complete.
 	FlushCommandQueue();
-
-	//更新视口转换以覆盖客户端区域。
-	mScreenViewport.TopLeftX = 0;// mClientWidth * 1.0f / 6.0f;
-	mScreenViewport.TopLeftY = 0;// MainMenuBarHeight;
-	mScreenViewport.Width = mClientWidth;// static_cast<float>(mClientWidth * 2.0f / 3.0f);
-	mScreenViewport.Height = mClientHeight;// static_cast<float>(mClientHeight * 0.75f - MainMenuBarHeight);
-	mScreenViewport.MinDepth = 0.0f;
-	mScreenViewport.MaxDepth = 1.0f;
-
-    mScissorRect = { 0, 0, mClientWidth, mClientHeight };
 }
 
 
@@ -290,8 +293,10 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam);
-
-
+	if (msg==WM_SETCURSOR) {
+		SetCursor(LoadCursor(mhAppInst, MAKEINTRESOURCE(IDC_CURSOR1)));
+	}
+	
 	switch( msg )
 	{
 	// 激活或取消激活窗口时发送WM_ACTIVATE。
@@ -474,7 +479,7 @@ bool D3DApp::InitMainWindow()
 	wc.cbWndExtra    = 0;
 	wc.hInstance     = mhAppInst;
 	wc.hIcon         = LoadIcon(mhAppInst, MAKEINTRESOURCE(IDI_ICON1));
-	wc.hCursor       = LoadCursor(0, IDC_ARROW);
+	wc.hCursor       = LoadCursor(mhAppInst, MAKEINTRESOURCE(IDC_CURSOR1));
 	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wc.lpszMenuName  = NULL;
 	wc.lpszClassName = L"MainWnd";
@@ -485,7 +490,7 @@ bool D3DApp::InitMainWindow()
 		MessageBox(0, L"RegisterClass Failed.", 0, 0);
 		return false;
 	}
-
+	
 
 
 	// Compute window rectangle dimensions based on requested client area dimensions.

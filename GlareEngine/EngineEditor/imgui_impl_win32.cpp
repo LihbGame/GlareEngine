@@ -118,7 +118,7 @@ static bool ImGui_ImplWin32_UpdateMouseCursor()
     if (imgui_cursor == ImGuiMouseCursor_None || io.MouseDrawCursor)
     {
         // Hide OS mouse cursor if imgui is drawing it or if it wants no cursor
-        ::SetCursor(NULL);
+         ::SetCursor(NULL);
     }
     else
     {
@@ -136,7 +136,7 @@ static bool ImGui_ImplWin32_UpdateMouseCursor()
         case ImGuiMouseCursor_Hand:         win32_cursor = IDC_HAND; break;
         case ImGuiMouseCursor_NotAllowed:   win32_cursor = IDC_NO; break;
         }
-        ::SetCursor(::LoadCursor(NULL, win32_cursor));
+        //::SetCursor(::LoadCursor(NULL, win32_cursor));
     }
     return true;
 }

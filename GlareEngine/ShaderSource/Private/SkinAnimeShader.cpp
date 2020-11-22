@@ -1,5 +1,4 @@
 #include "SkinAnimeShader.h"
-#include "L3DInputLayout.h"
 SkinAnimeShader::SkinAnimeShader(wstring VSShaderPath, wstring PSShaderPath, wstring GSShaderPath, _In_reads_opt_(_Inexpressible_(defines->Name != NULL)) const D3D_SHADER_MACRO* defines)
 	:BaseShader(VSShaderPath, PSShaderPath, GSShaderPath, defines)
 {

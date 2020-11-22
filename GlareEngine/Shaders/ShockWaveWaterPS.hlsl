@@ -1,5 +1,6 @@
 #include "Common.hlsli"
 
+
 struct VertexOut
 {
     float4 PosH    : SV_POSITION;
