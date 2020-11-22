@@ -1720,6 +1720,7 @@ void GameApp::DrawWaterReflectionMap(const GameTimer& gt)
 			D3D12_RESOURCE_STATE_RESOLVE_SOURCE)
 	};
 	mCommandList->ResourceBarrier(1, barriers);
+	mCommandList->ResolveSubresource(mShockWaveWater->SingleReflectionSRV(), 0, mShockWaveWater->ReflectionRTV(), 0, mBackBufferFormat);
 }
 
 void GameApp::DrawWaterRefractionMap(const GameTimer& gt)

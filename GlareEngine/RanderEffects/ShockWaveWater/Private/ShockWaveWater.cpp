@@ -38,7 +38,7 @@ ID3D12Resource* ShockWaveWater::ReflectionSRV()const
 
 ID3D12Resource* ShockWaveWater::SingleReflectionSRV()const
 {
-	return nullptr;
+	return mSingleReflectionSRV.Get();
 }
 
 ID3D12Resource* ShockWaveWater::SingleRefractionSRV()const
@@ -115,14 +115,12 @@ void ShockWaveWater::BuildDescriptors()
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DMS;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MostDetailedMip = 0;
 	srvDesc.Texture2D.MipLevels = 1;
 	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 	srvDesc.Texture2D.PlaneSlice = 0;
-	md3dDevice->CreateShaderResourceView(mReflectionRTV.Get(), &srvDesc, mReflectionSRVDescriptor);
-
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	md3dDevice->CreateShaderResourceView(mSingleReflectionSRV.Get(), &srvDesc, mReflectionSRVDescriptor);
 	md3dDevice->CreateShaderResourceView(mSingleRefractionSRV.Get(), &srvDesc, mRefractionSRVDescriptor);
 }
 
@@ -210,7 +208,14 @@ void ShockWaveWater::BuildResource()
 		));
 #pragma endregion RefractionMap
 
-
+		ThrowIfFailed(md3dDevice->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&RefractionMapDesc,
+			D3D12_RESOURCE_STATE_RESOLVE_DEST,
+			nullptr,
+			IID_PPV_ARGS(mSingleReflectionSRV.ReleaseAndGetAddressOf())
+		));
 
 
 }
