@@ -84,7 +84,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>.\GlareEngine\RanderEffects\Terrain\Public;.\RanderEffects\ShockWaveWater\Public;.\Dependences\include;.\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\EngineMain\Public;.\Core\Public;$(IncludePath)</IncludePath>
+    <IncludePath>.\RanderEffects\Terrain\Public;.\RanderEffects\ShockWaveWater\Public;.\Dependences\include;.\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\EngineMain\Public;.\Core\Public;$(IncludePath)</IncludePath>
     <LibraryPath>.\Dependences\lib\ozz\debug;.\Dependences\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -188,7 +188,7 @@
     <ClInclude Include="RanderEffects\ShockWaveWater\Public\ShockWaveWater.h" />
     <ClInclude Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.h" />
     <ClInclude Include="EngineMain\Public\resource.h" />
-    <ClInclude Include="RanderEffects\Terrain\Public\HeightmapTerrain.h" />
+    <None Include="RanderEffects\Terrain\Public\HeightmapTerrain.h" />
     <ClInclude Include="ShaderSource\Public\BaseShader.h" />
     <ClInclude Include="ShaderSource\Public\ComplexStaticModelInstanceShader.h" />
     <ClInclude Include="ShaderSource\Public\ShockWaveWaterShader.h" />
@@ -199,6 +199,7 @@
     <ClInclude Include="ShaderSource\Public\SimpleGeometryShadowMapShader.h" />
     <ClInclude Include="RanderEffects\Water\Public\Waves.h" />
     <ClInclude Include="ShaderSource\Public\WaterRefractionMaskShader.h" />
+    <None Include="Shaders\TerrainConstBuffer.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animation\Animations.cpp" />
@@ -230,7 +231,7 @@
     <ClCompile Include="RanderEffects\Shadow\Private\ShadowMap.cpp" />
     <ClCompile Include="RanderEffects\ShockWaveWater\Private\ShockWaveWater.cpp" />
     <ClCompile Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.cpp" />
-    <ClCompile Include="RanderEffects\Terrain\Private\HeightmapTerrain.cpp" />
+    <None Include="RanderEffects\Terrain\Private\HeightmapTerrain.cpp" />
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp" />
     <ClCompile Include="ShaderSource\Private\ComplexStaticModelInstanceShader.cpp" />
     <ClCompile Include="ShaderSource\Private\ShockWaveWaterShader.cpp" />

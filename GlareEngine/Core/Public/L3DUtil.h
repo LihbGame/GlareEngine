@@ -20,11 +20,14 @@
 #include <sstream>
 #include <cassert>
 #include <map>
+
 #include "d3dx12.h"
 #include "DDSTextureLoader.h"
-#include "L3DMathHelper.h"
 #include "WICTextureLoader12.h"
 #include "pix3.h"
+#include "L3DMathHelper.h"
+#include "L3DGameTimer.h"
+
 using namespace DirectX;
 using namespace std;
 extern const int gNumFrameResources;
