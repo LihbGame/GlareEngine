@@ -144,6 +144,7 @@
     <ClInclude Include="ShaderSource\Public\WaterRefractionMaskShader.h" />
     <ClInclude Include="ShaderSource\Public\ShockWaveWaterShader.h" />
     <ClInclude Include="EngineMain\Public\resource.h" />
+    <ClInclude Include="RanderEffects\Terrain\Public\HeightmapTerrain.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Private\DDSTextureLoader.cpp">
@@ -261,6 +262,9 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="ShaderSource\Private\ShockWaveWaterShader.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="RanderEffects\Terrain\Private\HeightmapTerrain.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>

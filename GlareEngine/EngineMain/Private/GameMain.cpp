@@ -1710,21 +1710,29 @@ void GameApp::DrawWaterReflectionMap(const GameTimer& gt)
 	}
 
 	//Draw Render Items (Opaque)
-	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Opaque).Get());
-	PIXBeginEvent(mCommandList.Get(), 0, "Draw Water::RenderLayer::Opaque");
-	DrawRenderItems(mCommandList.Get(), mReflectionWaterLayer[(int)RenderLayer::Opaque]);
-	PIXEndEvent(mCommandList.Get());
+	if (mEngineUI->IsShowLand())
+	{
+		mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Opaque).Get());
+		PIXBeginEvent(mCommandList.Get(), 0, "Draw Water::RenderLayer::Opaque");
+		DrawRenderItems(mCommandList.Get(), mReflectionWaterLayer[(int)RenderLayer::Opaque]);
+		PIXEndEvent(mCommandList.Get());
+	}
 	//Draw Instanse 
-	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::SkinAnime).Get());
-	PIXBeginEvent(mCommandList.Get(), 0, "Draw Water::RenderLayer::InstanceSimpleItems");
-	DrawRenderItems(mCommandList.Get(), mReflectionWaterLayer[(int)RenderLayer::InstanceSimpleItems]);
-	PIXEndEvent(mCommandList.Get());
+	if (mEngineUI->IsShowModel())
+	{
+		mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::SkinAnime).Get());
+		PIXBeginEvent(mCommandList.Get(), 0, "Draw Water::RenderLayer::InstanceSimpleItems");
+		DrawRenderItems(mCommandList.Get(), mReflectionWaterLayer[(int)RenderLayer::InstanceSimpleItems]);
+		PIXEndEvent(mCommandList.Get());
+	}
 	//Draw Sky box
-	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Sky).Get());
-	PIXBeginEvent(mCommandList.Get(), 0, "Draw Water::RenderLayer::Sky");
-	DrawRenderItems(mCommandList.Get(), mReflectionWaterLayer[(int)RenderLayer::Sky]);
-	PIXEndEvent(mCommandList.Get());
-	
+	if (mEngineUI->IsShowSky())
+	{
+		mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Sky).Get());
+		PIXBeginEvent(mCommandList.Get(), 0, "Draw Water::RenderLayer::Sky");
+		DrawRenderItems(mCommandList.Get(), mReflectionWaterLayer[(int)RenderLayer::Sky]);
+		PIXEndEvent(mCommandList.Get());
+	}
 
 	D3D12_RESOURCE_BARRIER barriers[1] =
 	{
