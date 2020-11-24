@@ -579,7 +579,8 @@ bool D3DApp::InitDirect3D()
 	CreateCommandObjects();				//创建命令对象
 	CreateSwapChain();					//创建交换链
     CreateRtvAndDsvDescriptorHeaps();   
-
+	//禁止alt+enter全屏
+	mdxgiFactory->MakeWindowAssociation(mhMainWnd, DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
 	return true;
 }
 
