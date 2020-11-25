@@ -309,24 +309,27 @@ void GameApp::Draw(const GameTimer& gt)
 				D3D12_RESOURCE_STATE_PRESENT,
 				D3D12_RESOURCE_STATE_RESOLVE_DEST)
 		};
+		
+	//Draw UI
+	PIXBeginEvent(mCommandList.Get(), 0, "Draw UI");
+	mEngineUI->DrawUI(mCommandList.Get());
+	PIXEndEvent(mCommandList.Get());
+		
 		mCommandList->ResourceBarrier(2, barriers);
 		mCommandList->ResolveSubresource(CurrentBackBuffer(), 0, mMSAARenderTargetBuffer.Get(), 0, mBackBufferFormat);
 	}
 
 	// Indicate a state transition on the resource usage.
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
-		D3D12_RESOURCE_STATE_RESOLVE_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET));
+		D3D12_RESOURCE_STATE_RESOLVE_DEST, D3D12_RESOURCE_STATE_PRESENT));
 
 
-	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), false, NULL);
-	//Draw UI
-	PIXBeginEvent(mCommandList.Get(), 0, "Draw UI");
-	mEngineUI->DrawUI(mCommandList.Get());
-	PIXEndEvent(mCommandList.Get());
+	///mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), false, NULL);
+
 
     // Indicate a state transition on the resource usage.
-	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
-		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+	//mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+		//D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
 
 	// Done recording commands.
