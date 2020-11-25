@@ -27,7 +27,6 @@
 #include "pix3.h"
 #include "L3DMathHelper.h"
 #include "L3DGameTimer.h"
-
 using namespace DirectX;
 using namespace std;
 extern const int gNumFrameResources;

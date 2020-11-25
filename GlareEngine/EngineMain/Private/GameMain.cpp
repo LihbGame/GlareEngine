@@ -1370,11 +1370,10 @@ void GameApp::BuildAllMaterials()
 #pragma endregion
 
 
-	//Sky Material
-	{
+#pragma region Sky Material
 		mSky->BuildSkyMaterials(MatCBIndex++);
 		mMaterials[L"Sky"] = std::move(mSky->GetSkyMaterial());
-	}
+#pragma endregion
 }
 
 

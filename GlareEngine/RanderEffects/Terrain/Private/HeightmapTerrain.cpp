@@ -44,6 +44,47 @@ void HeightmapTerrain::Update(float dt)
 {
 }
 
-void HeightmapTerrain::LoadHeightmap()
+void HeightmapTerrain::LoadHeightmapAsset()
+{
+
+
+
+
+
+
+
+}
+
+void HeightmapTerrain::Smooth()
+{
+}
+
+bool HeightmapTerrain::InBounds(int i, int j)
+{
+	return false;
+}
+
+float HeightmapTerrain::Average(int i, int j)
+{
+	return 0.0f;
+}
+
+void HeightmapTerrain::CalcAllPatchBoundsY()
+{
+}
+
+void HeightmapTerrain::CalcPatchBoundsY(UINT i, UINT j)
+{
+}
+
+void HeightmapTerrain::BuildQuadPatchVB(ID3D12Device* device)
+{
+}
+
+void HeightmapTerrain::BuildQuadPatchIB(ID3D12Device* device)
+{
+}
+
+void HeightmapTerrain::BuildHeightmapSRV(ID3D12Device* device)
 {
 }

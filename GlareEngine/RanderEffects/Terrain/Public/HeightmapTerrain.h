@@ -1,5 +1,6 @@
 #pragma once
 #include "L3DUtil.h"
+#include "L3DCamera.h"
 class HeightmapTerrain
 {
 public:
@@ -35,18 +36,18 @@ public:
 	void Draw(ID3D11DeviceContext* dc, const Camera& cam,bool isReflection);
 	void Update(float dt);
 
-	ID3D11ShaderResourceView* GetHeightMapSRV() { return mHeightMapSRV; }
+	ID3D12Resource* GetHeightMapSRV() { return mHeightMapSRV.Get(); }
 
 private:
-	void LoadHeightmap();
+	void LoadHeightmapAsset();
 	void Smooth();
 	bool InBounds(int i, int j);
 	float Average(int i, int j);
 	void CalcAllPatchBoundsY();
 	void CalcPatchBoundsY(UINT i, UINT j);
-	void BuildQuadPatchVB(ID3D11Device* device);
-	void BuildQuadPatchIB(ID3D11Device* device);
-	void BuildHeightmapSRV(ID3D11Device* device);
+	void BuildQuadPatchVB(ID3D12Device* device);
+	void BuildQuadPatchIB(ID3D12Device* device);
+	void BuildHeightmapSRV(ID3D12Device* device);
 
 private:
 
@@ -58,10 +59,10 @@ private:
 	ID3D11Buffer* mQuadPatchVB;
 	ID3D11Buffer* mQuadPatchIB;
 
-	ID3D11ShaderResourceView* mLayerMapArraySRV;
-	ID3D11ShaderResourceView* mBlendMapSRV;
-	ID3D11ShaderResourceView* mHeightMapSRV;
-	ID3D11ShaderResourceView* mGrassMapSRV;
+	Microsoft::WRL::ComPtr<ID3D12Resource> mLayerMapArraySRV;
+	Microsoft::WRL::ComPtr<ID3D12Resource> mBlendMapSRV;
+	Microsoft::WRL::ComPtr<ID3D12Resource> mHeightMapSRV;
+	Microsoft::WRL::ComPtr<ID3D12Resource> mGrassMapSRV;
 
 	InitInfo mInfo;
 
