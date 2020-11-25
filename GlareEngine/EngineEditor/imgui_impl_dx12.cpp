@@ -470,7 +470,7 @@ bool    ImGui_ImplDX12_CreateDeviceObjects()
     psoDesc.SampleMask = UINT_MAX;
     psoDesc.NumRenderTargets = 1;
     psoDesc.RTVFormats[0] = g_RTVFormat;
-    psoDesc.SampleDesc.Count = 1;
+    psoDesc.SampleDesc.Count = 4;
     psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
     // Create the vertex shader
