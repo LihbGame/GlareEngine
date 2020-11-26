@@ -477,7 +477,7 @@ bool D3DApp::InitMainWindow()
 	wc.lpfnWndProc   = MainWndProc; 
 	wc.cbClsExtra    = 0;
 	wc.cbWndExtra    = 0;
-	wc.hInstance     = mhAppInst;
+	wc.hInstance = GetInstanceModule(NULL);// mhAppInst;
 	wc.hIcon         = LoadIcon(mhAppInst, MAKEINTRESOURCE(IDI_ICON1));
 	wc.hCursor       = LoadCursor(mhAppInst, MAKEINTRESOURCE(IDC_CURSOR1));
 	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
