@@ -562,9 +562,9 @@ void GameApp::OnMouseMove(WPARAM btnState, int x, int y)
 
 	if ((btnState & MK_LBUTTON) != 0)
 	{
-		if (x >= mScreenViewport.TopLeftX && y >= mScreenViewport.TopLeftY
-			&& y <= (mScreenViewport.TopLeftY + mScreenViewport.Height)
-			&& x <= (mScreenViewport.TopLeftX + mScreenViewport.Width))
+		if (x >= mScissorRect.left && y >= mScissorRect.top
+			&& y <= (mScissorRect.top+ (mScissorRect.bottom- mScissorRect.top))
+			&& x <= (mScissorRect .left+ (mScissorRect.right- mScissorRect.left)))
 		{
 			float dx = XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
 			float dy = XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));

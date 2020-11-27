@@ -6,7 +6,7 @@
 #include <imgui_internal.h>
 #include <L3DUtil.h>
 
-#define MainMenuBarHeight  22.0f
+#define MainMenuBarHeight  19.0f
 
 class EngineGUI
 {
