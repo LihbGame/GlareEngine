@@ -1,7 +1,34 @@
 #include "HeightmapTerrain.h"
 
-HeightmapTerrain::HeightmapTerrain()
+HeightmapTerrain::HeightmapTerrain(
+	ID3D12Device* device, 
+	ID3D12GraphicsCommandList* dc, 
+	InitInfo& initInfo,
+	ID3D12Resource* RandomTexSRV)
 {
+	XMStoreFloat4x4(&mWorld, XMMatrixIdentity());
+
+	mInfo = initInfo;
+
+	// Divide height map into patches such that each patch has CellsPerPatch.
+	mNumPatchVertRows = ((mInfo.HeightmapHeight - 1) / CellsPerPatch) + 1;
+	mNumPatchVertCols = ((mInfo.HeightmapWidth - 1) / CellsPerPatch) + 1;
+
+	mNumPatchVertices = mNumPatchVertRows * mNumPatchVertCols;
+	mNumPatchQuadFaces = (mNumPatchVertRows - 1) * (mNumPatchVertCols - 1);
+
+	//Load textures
+	LoadHeightmapAsset();
+	//Smooth Height map
+	Smooth();
+	CalcAllPatchBoundsY();
+
+
+	BuildQuadPatchVB(device);
+	BuildQuadPatchIB(device);
+	BuildHeightmapSRV(device);
+
+
 }
 
 HeightmapTerrain::~HeightmapTerrain()
@@ -32,7 +59,7 @@ void HeightmapTerrain::SetWorld(CXMMATRIX M)
 {
 }
 
-void HeightmapTerrain::Init(ID3D11Device* device, ID3D11DeviceContext* dc, const InitInfo& initInfo, ID3D11ShaderResourceView* RandomTexSRV)
+void HeightmapTerrain::Init()
 {
 }
 
@@ -46,13 +73,22 @@ void HeightmapTerrain::Update(float dt)
 
 void HeightmapTerrain::LoadHeightmapAsset()
 {
+	vector<string> AllTerrainTextureNames;
 
+	for (int i = 0; i < 5; ++i)
+	{
+		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "Deffuse");
+		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "AO");
+		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "Metallic");
+		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "Normal");
+		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "Roughness");
+		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "Height");
+	}
 
-
-
-
-
-
+	for (auto e:AllTerrainTextureNames)
+	{
+		TerrainTextures[e].push_back(pTextureManage->GetTexture(wstring(e.begin(), e.end())).get());
+	}
 }
 
 void HeightmapTerrain::Smooth()

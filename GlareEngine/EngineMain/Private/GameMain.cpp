@@ -1771,6 +1771,24 @@ void GameApp::DrawWaterRefractionMap(const GameTimer& gt)
 	mCommandList->ResolveSubresource(mShockWaveWater->SingleRefractionSRV(), 0, mMSAARenderTargetBuffer.Get(), 0, mBackBufferFormat);
 }
 
+HeightmapTerrain::InitInfo GameApp::HeightmapTerrainInit()
+{
+	HeightmapTerrain::InitInfo TerrainInfo;
+	TerrainInfo.HeightMapFilename = "Textures/terrain.raw";
+	TerrainInfo.LayerMapFilename[0] = "Textures/grass.dds";
+	TerrainInfo.LayerMapFilename[1] = "Textures/darkdirt.dds";
+	TerrainInfo.LayerMapFilename[2] = "Textures/stone.dds";
+	TerrainInfo.LayerMapFilename[3] = "Textures/lightdirt.dds";
+	TerrainInfo.LayerMapFilename[4] = "Textures/snow.dds";
+	TerrainInfo.BlendMapFilename = "Textures/blend.dds";
+	TerrainInfo.HeightScale = 80.0f;
+	TerrainInfo.HeightmapWidth = 2049;
+	TerrainInfo.HeightmapHeight = 2049;
+	TerrainInfo.CellSpacing = 1.0f;
+
+	return TerrainInfo;
+}
+
 
 //Samplers
 std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> GameApp::GetStaticSamplers()

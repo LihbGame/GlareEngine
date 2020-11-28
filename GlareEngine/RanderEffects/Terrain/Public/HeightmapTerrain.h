@@ -1,18 +1,15 @@
 #pragma once
 #include "L3DUtil.h"
 #include "L3DCamera.h"
+#include "L3DTextureManage.h"
 class HeightmapTerrain
 {
 public:
 	struct InitInfo
 	{
-		std::wstring HeightMapFilename;
-		std::wstring LayerMapFilename0;
-		std::wstring LayerMapFilename1;
-		std::wstring LayerMapFilename2;
-		std::wstring LayerMapFilename3;
-		std::wstring LayerMapFilename4;
-		std::wstring BlendMapFilename;
+		string HeightMapFilename;
+		string LayerMapFilename[5];
+		string BlendMapFilename;
 		float HeightScale;
 		UINT HeightmapWidth;
 		UINT HeightmapHeight;
@@ -20,7 +17,7 @@ public:
 	};
 
 public:
-	HeightmapTerrain();
+	HeightmapTerrain(ID3D12Device* device, ID3D12GraphicsCommandList* dc, InitInfo& initInfo, ID3D12Resource* RandomTexSRV);
 	~HeightmapTerrain();
 
 
@@ -31,9 +28,9 @@ public:
 	XMMATRIX GetWorld()const;
 	void SetWorld(CXMMATRIX M);
 
-	void Init(ID3D11Device* device, ID3D11DeviceContext* dc, const InitInfo& initInfo, ID3D11ShaderResourceView* RandomTexSRV);
+	void Init();
 
-	void Draw(ID3D11DeviceContext* dc, const Camera& cam,bool isReflection);
+	void Draw(ID3D11DeviceContext* dc, const Camera& cam, bool isReflection);
 	void Update(float dt);
 
 	ID3D12Resource* GetHeightMapSRV() { return mHeightMapSRV.Get(); }
@@ -51,13 +48,15 @@ private:
 
 private:
 
-	// Divide heightmap into patches such that each patch has CellsPerPatch cells
+	L3DTextureManage* pTextureManage = nullptr;
+
+	// Divide height map into patches such that each patch has CellsPerPatch cells
 	// and CellsPerPatch+1 vertices.  Use 64 so that if we tessellate all the way 
-	// to 64, we use all the data from the heightmap.  
+	// to 64, we use all the data from the height map.  
 	static const int CellsPerPatch = 64;
 
-	ID3D11Buffer* mQuadPatchVB;
-	ID3D11Buffer* mQuadPatchIB;
+	ID3D11Buffer* mQuadPatchVB = nullptr;
+	ID3D11Buffer* mQuadPatchIB = nullptr;
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> mLayerMapArraySRV;
 	Microsoft::WRL::ComPtr<ID3D12Resource> mBlendMapSRV;
@@ -66,18 +65,19 @@ private:
 
 	InitInfo mInfo;
 
-	UINT mNumPatchVertices;
-	UINT mNumPatchQuadFaces;
+	UINT mNumPatchVertices = 0;
+	UINT mNumPatchQuadFaces = 0;
 
-	UINT mNumPatchVertRows;
-	UINT mNumPatchVertCols;
+	UINT mNumPatchVertRows = 0;
+	UINT mNumPatchVertCols = 0;
 
 	XMFLOAT4X4 mWorld;
 
-	Material mMat;
-
 	std::vector<XMFLOAT2> mPatchBoundsY;
 	std::vector<float> mHeightmap;
+
+	//All Textures
+	unordered_map<string, vector<Texture*>> TerrainTextures;
 
 	//grass
 	//Grass mGrass;

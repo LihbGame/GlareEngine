@@ -28,6 +28,7 @@
 #include "ModelLoader.h"
 #include "SimpleGeoInstance.h"
 #include "ShockWaveWater.h"
+#include "HeightmapTerrain.h"
 //#include "OzzAnimePlayBack.h"
 
 using Microsoft::WRL::ComPtr;
@@ -169,6 +170,9 @@ private:
 	void DrawShockWaveWater(const GameTimer& gt);
 	void DrawWaterReflectionMap(const GameTimer& gt);
 	void DrawWaterRefractionMap(const GameTimer& gt);
+
+	//Height map terrain
+	HeightmapTerrain::InitInfo HeightmapTerrainInit();
 
 private:
 
