@@ -6,3 +6,7 @@
 /GlareEngine/Debug/
 /GlareEngine/x64/
 /GlareEngine/Textures/HDRSky/
+/GlareEngine/EngineEditor/NoesisUIEditor/Data/.vs/
+/GlareEngine/EngineEditor/NoesisUIEditor/Data/bin/
+/GlareEngine/EngineEditor/NoesisUIEditor/Data/obj/
+/GlareEngine/EngineEditor/NoesisUIEditor/Data/packages/
