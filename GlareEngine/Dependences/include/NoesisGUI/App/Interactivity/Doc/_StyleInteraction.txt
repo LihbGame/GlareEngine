@@ -1,0 +1,93 @@
+.. -*- mode: rst; encoding: utf-8 -*-
+
+.. meta::
+   :description: Allows setting a collection of *Interactivity* behaviors and triggers in a Style, so they are applied to all instances of the styled control.
+
+======================
+StyleInteraction Class
+======================
+---------------------------------------------------------------------------
+namespace `NoesisApp <Gui.Core._ClassHierarchy.html#noesisapp-namespace>`__
+---------------------------------------------------------------------------
+
+Allows setting a collection of *Interactivity* behaviors and triggers in a `Style <Gui.Core._Style.html>`_, so they are applied to all instances of the styled control. 
+
+.. code-block:: xml 
+
+   <Grid
+     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+     xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
+     xmlns:noesis="clr-namespace:NoesisGUIExtensions">
+     <Grid.Resources>
+       <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+         <Setter Property="noesis:StyleInteraction.Triggers">
+           <Setter.Value>
+             <noesis:StyleTriggerCollection>
+               <i:EventTrigger EventName="Click">
+                 <ei:PlaySoundAction Source="Sounds/ButtonClick.wav" />
+               </i:EventTrigger>
+             </noesis:StyleTriggerCollection>
+           </Setter.Value>
+         </Setter>
+       </Style>
+     </Grid.Resources>
+     ...
+   </Grid>
+
+
+
+Inheritance Hierarchy
+=====================
+
+.. |bullet| unicode:: U+2022 .. Circular Bullet
+.. |INDEX| image:: icon_index.png
+   :align: middle
+
+|  |bullet| *StyleInteraction*
+
+
+|INDEX| `Class Hierarchy Index <Gui.Core._ClassHierarchy.html>`__
+
+
+Methods
+=======
+
+StyleInteraction has no methods
+
+
+Properties
+==========
+
+.. |DP| image:: icon_dp.png
+   :align: middle
+.. |RO| image:: icon_ro.png
+   :align: middle
+.. |DP_RO| image:: icon_dp-ro.png
+   :align: middle
+.. |None| image:: icon_none.png
+   :align: middle
+.. |DP_| image:: icon_dp_.png
+   :align: middle
+.. |RO_| image:: icon_ro_.png
+   :align: middle
+.. |nbsp| unicode:: 0xA0
+   :trim:
+
+StyleInteraction has no properties
+
+
+Events
+======
+
+
+.. |R| image:: ev_r-icon.png
+   :align: middle
+.. |N| image:: ev_nr-icon.png
+   :align: middle
+.. |D| image:: ev_d-icon.png
+   :align: middle
+
+StyleInteraction has no events
+

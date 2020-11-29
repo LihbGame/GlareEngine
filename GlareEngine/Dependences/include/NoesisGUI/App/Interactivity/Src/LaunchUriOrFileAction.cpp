@@ -1,0 +1,70 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// NoesisGUI - http://www.noesisengine.com
+// Copyright (c) 2013 Noesis Technologies S.L. All Rights Reserved.
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+#include <NsApp/LaunchUriOrFileAction.h>
+#include <NsGui/DependencyData.h>
+#include <NsGui/IntegrationAPI.h>
+#include <NsCore/TypeId.h>
+#include <NsCore/ReflectionImplement.h>
+
+
+using namespace NoesisApp;
+using namespace Noesis;
+using namespace NoesisApp;
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+LaunchUriOrFileAction::LaunchUriOrFileAction()
+{
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+LaunchUriOrFileAction::~LaunchUriOrFileAction()
+{
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+const char* LaunchUriOrFileAction::GetPath() const
+{
+    return GetValue<NsString>(PathProperty).c_str();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void LaunchUriOrFileAction::SetPath(const char* path)
+{
+    SetValue<NsString>(PathProperty, path);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+Ptr<Freezable> LaunchUriOrFileAction::CreateInstanceCore() const
+{
+    return *new LaunchUriOrFileAction();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void LaunchUriOrFileAction::Invoke(Noesis::BaseComponent*)
+{
+    const char* path = GetPath();
+    DependencyObject* associatedObject = GetAssociatedObject();
+    if (associatedObject != 0 && !String::IsNullOrEmpty(path))
+    {
+        GUI::OpenUrl(path);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+NS_BEGIN_COLD_REGION
+
+NS_IMPLEMENT_REFLECTION(LaunchUriOrFileAction)
+{
+    NsMeta<TypeId>("NoesisApp.LaunchUriOrFileAction");
+
+    DependencyData* data = NsMeta<DependencyData>(TypeOf<SelfClass>());
+    data->RegisterProperty<NsString>(PathProperty, "Path", PropertyMetadata::Create(NsString()));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+const DependencyProperty* LaunchUriOrFileAction::PathProperty;

@@ -1,0 +1,90 @@
+.. -*- mode: rst; encoding: utf-8 -*-
+
+.. meta::
+   :description: Represents a collection of IAttachedObject with a shared *AssociatedObject* and provides change notifications to its contents when that *AssociatedObject* changes.
+
+==========================
+AttachableCollection Class
+==========================
+---------------------------------------------------------------------------
+namespace `NoesisApp <Gui.Core._ClassHierarchy.html#noesisapp-namespace>`__
+---------------------------------------------------------------------------
+
+Represents a collection of IAttachedObject with a shared *AssociatedObject* and provides change notifications to its contents when that *AssociatedObject* changes. 
+
+
+
+Inheritance Hierarchy
+=====================
+
+.. |bullet| unicode:: U+2022 .. Circular Bullet
+.. |INDEX| image:: icon_index.png
+   :align: middle
+
+|  |bullet| `FreezableCollection <Gui.Core._FreezableCollection.html>`__
+|   |bullet| *AttachableCollection*
+|    |bullet| `BehaviorCollection <App.Interactivity._BehaviorCollection.html>`__
+|    |bullet| `TriggerActionCollection <App.Interactivity._TriggerActionCollection.html>`__
+|    |bullet| `TriggerCollection <App.Interactivity._TriggerCollection.html>`__
+
+
+|INDEX| `Class Hierarchy Index <Gui.Core._ClassHierarchy.html>`__
+
+
+Methods
+=======
+
+From `FreezableCollection <Gui.Core._FreezableCollection.html>`__
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. table::
+  :widths: 25 75
+  :width: 100%
+
+  ================================================== ================================================================================================================================================================
+  Name                                               Description                                                                                                                                                     
+  ================================================== ================================================================================================================================================================
+  *Add*                                              Adds an item to the collection. Returns The position into which the new element was inserted, or -1 to indicate that the item was not inserted into the collection 
+  *Contains*                                         Determines whether the collection contains a specific value                                                                                                     
+  *Get*                                              Gets the element at the specified index                                                                                                                         
+  *IndexOf*                                          Determines the index of a specific item in the collection. Returns -1 if not found                                                                              
+  *Insert*                                           Inserts an item to the collection at the specified index                                                                                                        
+  *Remove*                                           Removes the first occurrence of a specific object from the collection. Returns true if item was removed, false to indicate that the item was not found in the collection 
+  *Set*                                              Sets the element at the specified index                                                                                                                         
+  ================================================== ================================================================================================================================================================
+
+
+
+Properties
+==========
+
+.. |DP| image:: icon_dp.png
+   :align: middle
+.. |RO| image:: icon_ro.png
+   :align: middle
+.. |DP_RO| image:: icon_dp-ro.png
+   :align: middle
+.. |None| image:: icon_none.png
+   :align: middle
+.. |DP_| image:: icon_dp_.png
+   :align: middle
+.. |RO_| image:: icon_ro_.png
+   :align: middle
+.. |nbsp| unicode:: 0xA0
+   :trim:
+
+AttachableCollection has no properties
+
+
+Events
+======
+
+
+.. |R| image:: ev_r-icon.png
+   :align: middle
+.. |N| image:: ev_nr-icon.png
+   :align: middle
+.. |D| image:: ev_d-icon.png
+   :align: middle
+
+AttachableCollection has no events
+

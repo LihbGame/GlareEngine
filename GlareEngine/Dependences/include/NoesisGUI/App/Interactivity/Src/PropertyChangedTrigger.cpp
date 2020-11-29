@@ -1,0 +1,109 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// NoesisGUI - http://www.noesisengine.com
+// Copyright (c) 2013 Noesis Technologies S.L. All Rights Reserved.
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+#include <NsApp/PropertyChangedTrigger.h>
+#include <NsGui/Binding.h>
+#include <NsGui/UIElementData.h>
+#include <NsCore/ReflectionImplement.h>
+#include <NsCore/TypeId.h>
+
+
+using namespace Noesis;
+using namespace NoesisApp;
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+PropertyChangedTrigger::PropertyChangedTrigger(): mAllFlags(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+PropertyChangedTrigger::~PropertyChangedTrigger()
+{
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+BaseComponent* PropertyChangedTrigger::GetBinding() const
+{
+    return GetValue<Ptr<BaseComponent>>(BindingProperty);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void PropertyChangedTrigger::SetBinding(BaseComponent* value)
+{
+    SetValue<Ptr<BaseComponent>>(BindingProperty, value);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+Ptr<PropertyChangedTrigger> PropertyChangedTrigger::Clone() const
+{
+    return StaticPtrCast<PropertyChangedTrigger>(Freezable::Clone());
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+Ptr<PropertyChangedTrigger> PropertyChangedTrigger::CloneCurrentValue() const
+{
+    return StaticPtrCast<PropertyChangedTrigger>(Freezable::CloneCurrentValue());
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void PropertyChangedTrigger::EvaluateTriggerChange()
+{
+    if (mFlags.initCompleted)
+    {
+        EvaluateBindingChange();
+    }
+    else
+    {
+        mFlags.evaluateRequired = true;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void PropertyChangedTrigger::EvaluateBindingChange()
+{
+    InvokeActions(0);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+Ptr<Freezable> PropertyChangedTrigger::CreateInstanceCore() const
+{
+    return *new PropertyChangedTrigger();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void PropertyChangedTrigger::OnPostInit()
+{
+    mFlags.initCompleted = true;
+
+    if (mFlags.evaluateRequired)
+    {
+        EvaluateBindingChange();
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void PropertyChangedTrigger::OnBindingChanged(DependencyObject* d,
+    const DependencyPropertyChangedEventArgs&)
+{
+    PropertyChangedTrigger* trigger = (PropertyChangedTrigger*)d;
+    trigger->EvaluateTriggerChange();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+NS_BEGIN_COLD_REGION
+
+NS_IMPLEMENT_REFLECTION(PropertyChangedTrigger)
+{
+    NsMeta<TypeId>("NoesisApp.PropertyChangedTrigger");
+
+    DependencyData* data = NsMeta<DependencyData>(TypeOf<SelfClass>());
+    data->RegisterProperty<Ptr<BaseComponent>>(BindingProperty, "Binding",
+        PropertyMetadata::Create(Ptr<BaseComponent>(), PropertyChangedCallback(OnBindingChanged)));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+const DependencyProperty* PropertyChangedTrigger::BindingProperty;

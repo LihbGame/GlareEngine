@@ -1,0 +1,105 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// NoesisGUI - http://www.noesisengine.com
+// Copyright (c) 2013 Noesis Technologies S.L. All Rights Reserved.
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+#include <NsApp/BehaviorCollection.h>
+#include <NsCore/TypeId.h>
+
+
+using namespace Noesis;
+using namespace NoesisApp;
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+BehaviorCollection::BehaviorCollection()
+{
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+BehaviorCollection::~BehaviorCollection()
+{
+    if (GetAssociatedObject() != 0)
+    {
+        int numBehaviors = Count();
+        for (int i = 0; i < numBehaviors; ++i)
+        {
+            Get(i)->Detach();
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+Ptr<BehaviorCollection> BehaviorCollection::Clone() const
+{
+    return StaticPtrCast<BehaviorCollection>(Freezable::Clone());
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+Ptr<BehaviorCollection> BehaviorCollection::CloneCurrentValue() const
+{
+    return StaticPtrCast<BehaviorCollection>(Freezable::CloneCurrentValue());
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+Ptr<Freezable> BehaviorCollection::CreateInstanceCore() const
+{
+    return *new BehaviorCollection();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+bool BehaviorCollection::FreezeCore(bool)
+{
+    return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void BehaviorCollection::OnAttached()
+{
+    DependencyObject* associatedObject = GetAssociatedObject();
+
+    int numBehaviors = Count();
+    for (int i = 0; i < numBehaviors; ++i)
+    {
+        Get(i)->Attach(associatedObject);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void BehaviorCollection::OnDetaching()
+{
+    int numBehaviors = Count();
+    for (int i = 0; i < numBehaviors; ++i)
+    {
+        Get(i)->Detach();
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void BehaviorCollection::ItemAdded(Behavior* item)
+{
+    DependencyObject* associatedObject = GetAssociatedObject();
+    if (associatedObject != 0)
+    {
+        item->Attach(associatedObject);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void BehaviorCollection::ItemRemoved(Behavior* item)
+{
+    DependencyObject* associatedObject = GetAssociatedObject();
+    if (associatedObject != 0)
+    {
+        item->Detach();
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+NS_BEGIN_COLD_REGION
+
+NS_IMPLEMENT_REFLECTION(BehaviorCollection)
+{
+    NsMeta<TypeId>("NoesisApp.BehaviorCollection");
+}
