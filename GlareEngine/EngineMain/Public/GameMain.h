@@ -256,6 +256,10 @@ private:
 
 	static bool RedrawShadowMap;
 
+	//Terrain
+	std::unique_ptr<HeightmapTerrain> mHeightMapTerrain;
+
+
 	//play back anime 
 	//std::unordered_map<std::string, AnimePlayback> AnimationPlayback;
 };

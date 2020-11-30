@@ -17,7 +17,7 @@ public:
 	};
 
 public:
-	HeightmapTerrain(ID3D12Device* device, ID3D12GraphicsCommandList* dc, InitInfo& initInfo, ID3D12Resource* RandomTexSRV);
+	HeightmapTerrain(ID3D12Device* device, ID3D12GraphicsCommandList* dc, L3DTextureManage* TextureManage, InitInfo initInfo, ID3D12Resource* RandomTexSRV);
 	~HeightmapTerrain();
 
 
@@ -49,6 +49,9 @@ private:
 private:
 
 	L3DTextureManage* pTextureManage = nullptr;
+
+	ID3D12Device* mDevice = nullptr;
+	ID3D12GraphicsCommandList* mCommandList = nullptr;
 
 	// Divide height map into patches such that each patch has CellsPerPatch cells
 	// and CellsPerPatch+1 vertices.  Use 64 so that if we tessellate all the way 

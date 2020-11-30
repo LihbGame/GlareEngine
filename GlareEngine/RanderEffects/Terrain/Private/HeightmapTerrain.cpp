@@ -2,13 +2,16 @@
 
 HeightmapTerrain::HeightmapTerrain(
 	ID3D12Device* device, 
-	ID3D12GraphicsCommandList* dc, 
-	InitInfo& initInfo,
+	ID3D12GraphicsCommandList* CommandList,
+	L3DTextureManage* TextureManage,
+	InitInfo initInfo,
 	ID3D12Resource* RandomTexSRV)
+	:mDevice(device),
+	mCommandList(CommandList),
+	mInfo(initInfo),
+	pTextureManage(TextureManage)
 {
 	XMStoreFloat4x4(&mWorld, XMMatrixIdentity());
-
-	mInfo = initInfo;
 
 	// Divide height map into patches such that each patch has CellsPerPatch.
 	mNumPatchVertRows = ((mInfo.HeightmapHeight - 1) / CellsPerPatch) + 1;
@@ -74,15 +77,14 @@ void HeightmapTerrain::Update(float dt)
 void HeightmapTerrain::LoadHeightmapAsset()
 {
 	vector<string> AllTerrainTextureNames;
-
 	for (int i = 0; i < 5; ++i)
 	{
-		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "Deffuse");
-		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "AO");
-		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "Metallic");
-		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "Normal");
-		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "Roughness");
-		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "Height");
+		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "_albedo");
+		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "_ao");
+		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "_metallic");
+		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "_normal");
+		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "_roughness");
+		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "_height");
 	}
 
 	for (auto e:AllTerrainTextureNames)

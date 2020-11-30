@@ -88,8 +88,9 @@ bool GameApp::Initialize()
 	mSimpleGeoInstance = std::make_unique<SimpleGeoInstance>(mCommandList.Get(), md3dDevice.Get());
 	//init model loader
 	mModelLoder = std::make_unique<ModelLoader>(mhMainWnd, md3dDevice.Get(), mCommandList.Get(), mTextureManage.get());
-
-
+	//init HeightMap Terrain
+	mHeightMapTerrain = std::make_unique<HeightmapTerrain>(md3dDevice.Get(), mCommandList.Get(), mTextureManage.get(),HeightmapTerrainInit(),nullptr);
+	
 	{
 		LoadModel();
 		BuildAllMaterials();
@@ -1774,13 +1775,13 @@ void GameApp::DrawWaterRefractionMap(const GameTimer& gt)
 HeightmapTerrain::InitInfo GameApp::HeightmapTerrainInit()
 {
 	HeightmapTerrain::InitInfo TerrainInfo;
-	TerrainInfo.HeightMapFilename = "Textures/terrain.raw";
-	TerrainInfo.LayerMapFilename[0] = "Textures/grass.dds";
-	TerrainInfo.LayerMapFilename[1] = "Textures/darkdirt.dds";
-	TerrainInfo.LayerMapFilename[2] = "Textures/stone.dds";
-	TerrainInfo.LayerMapFilename[3] = "Textures/lightdirt.dds";
-	TerrainInfo.LayerMapFilename[4] = "Textures/snow.dds";
-	TerrainInfo.BlendMapFilename = "Textures/blend.dds";
+	TerrainInfo.HeightMapFilename = "Terrain/terrain.raw";
+	TerrainInfo.LayerMapFilename[0] = "Terrain/grass";
+	TerrainInfo.LayerMapFilename[1] = "Terrain/darkdirt";
+	TerrainInfo.LayerMapFilename[2] = "Terrain/stone";
+	TerrainInfo.LayerMapFilename[3] = "Terrain/lightdirt";
+	TerrainInfo.LayerMapFilename[4] = "Terrain/snow";
+	TerrainInfo.BlendMapFilename = "Terrain/blend.dds";
 	TerrainInfo.HeightScale = 80.0f;
 	TerrainInfo.HeightmapWidth = 2049;
 	TerrainInfo.HeightmapHeight = 2049;
