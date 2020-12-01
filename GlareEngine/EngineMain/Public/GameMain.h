@@ -244,21 +244,26 @@ private:
 	bool mFrustumCullingEnabled = true;
 	BoundingFrustum mCamFrustum;
 	std::unique_ptr<SimpleGeoInstance> mSimpleGeoInstance;
+
 	//shadow map 
 	std::unique_ptr<ShadowMap> mShadowMap;
+	int mShadowMapIndex = 0;
+	static bool RedrawShadowMap;
+
 	//Model Loader
 	std::unique_ptr<ModelLoader> mModelLoder;
-	
+
+	//animation transform
 	std::vector<XMFLOAT4X4> transforms;
 
 	//ShockWaveWater
 	std::unique_ptr<ShockWaveWater> mShockWaveWater;
-
-	static bool RedrawShadowMap;
+	int mWaterReflectionMapIndex = 0;
+	int mWaterRefractionMapIndex = 0;
+	int mWaterDumpWaveIndex = 0;
 
 	//Terrain
 	std::unique_ptr<HeightmapTerrain> mHeightMapTerrain;
-
 
 	//play back anime 
 	//std::unordered_map<std::string, AnimePlayback> AnimationPlayback;

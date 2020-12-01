@@ -410,27 +410,30 @@ void GameApp::CreateDescriptorHeaps()
 		auto dsvCpuStart = mDsvHeap->GetCPUDescriptorHandleForHeapStart();
 		mShadowMap->BuildDescriptors(hDescriptor,
 			CD3DX12_CPU_DESCRIPTOR_HANDLE(dsvCpuStart, 1, mDsvDescriptorSize));//把shadow map的DSV存放在DSV堆中的第二个位置
-		SRVIndex++;
+		mShadowMapIndex = SRVIndex++;
 		// next descriptor
 		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	}
 
 	//ShockWaveWater
 	{
-		CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor1(mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 		CD3DX12_CPU_DESCRIPTOR_HANDLE RefractionSRVDescriptor = hDescriptor;
 		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
+		mWaterRefractionMapIndex = SRVIndex++;
+
 		CD3DX12_CPU_DESCRIPTOR_HANDLE ReflectionRTVDescriptor = hDescriptor;
 		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
+		mWaterReflectionMapIndex = SRVIndex++;
+
 		CD3DX12_CPU_DESCRIPTOR_HANDLE WavesBumpDescriptor = hDescriptor;
+		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
+		mWaterDumpWaveIndex = SRVIndex++;
+
 		mShockWaveWater->BuildDescriptors(
 			RefractionSRVDescriptor,
 			ReflectionRTVDescriptor,
 			WavesBumpDescriptor
 			);
-		SRVIndex += 3;
-		// next descriptor
-		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	}
 
 	mSRVSize = SRVIndex;
@@ -777,6 +780,11 @@ void GameApp::UpdateMainPassCB(const GameTimer& gt)
 	mMainPassCB.Lights[2].FalloffStart = 1.0f;
 	mMainPassCB.Lights[2].FalloffEnd = 50.0f;
 	mMainPassCB.Lights[2].Position = { 20,20,20 };
+
+	mMainPassCB.ShadowMapIndex = mShadowMapIndex;
+	mMainPassCB.WaterDumpWaveIndex = mWaterDumpWaveIndex;
+	mMainPassCB.WaterReflectionMapIndex = mWaterReflectionMapIndex;
+	mMainPassCB.WaterRefractionMapIndex = mWaterRefractionMapIndex;
 
 	auto currPassCB = mCurrFrameResource->PassCB.get();
 	currPassCB->CopyData(0, mMainPassCB);//index 0 main pass
@@ -1775,13 +1783,13 @@ void GameApp::DrawWaterRefractionMap(const GameTimer& gt)
 HeightmapTerrain::InitInfo GameApp::HeightmapTerrainInit()
 {
 	HeightmapTerrain::InitInfo TerrainInfo;
-	TerrainInfo.HeightMapFilename = "Terrain/terrain.raw";
+	TerrainInfo.HeightMapFilename = "Textures/Terrain/terrain.raw";
 	TerrainInfo.LayerMapFilename[0] = "Terrain/grass";
 	TerrainInfo.LayerMapFilename[1] = "Terrain/darkdirt";
 	TerrainInfo.LayerMapFilename[2] = "Terrain/stone";
 	TerrainInfo.LayerMapFilename[3] = "Terrain/lightdirt";
 	TerrainInfo.LayerMapFilename[4] = "Terrain/snow";
-	TerrainInfo.BlendMapFilename = "Terrain/blend.dds";
+	TerrainInfo.BlendMapFilename = "Terrain/blend";
 	TerrainInfo.HeightScale = 80.0f;
 	TerrainInfo.HeightmapWidth = 2049;
 	TerrainInfo.HeightmapHeight = 2049;

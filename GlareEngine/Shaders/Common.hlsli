@@ -96,6 +96,12 @@ cbuffer cbPass : register(b1)
      //索引[NUM_DIR_LIGHTS + NUM_POINT_LIGHTS，NUM_DIR_LIGHTS + NUM_POINT_LIGHT + NUM_SPOT_LIGHTS）
      //是聚光灯，每个对象最多可使用MaxLights。
     Light gLights[MaxLights];
+
+   int     gShadowMapIndex;
+   int     gWaterReflectionMapIndex;
+   int     gWaterRefractionMapIndex;
+   int     gWaterDumpWaveIndex;
+
 };
 
 
@@ -216,7 +222,7 @@ float CalcShadowFactor(float4 shadowPosH)
     [unroll]
     for (int i = 0; i < 9; ++i)
     {
-        percentLit += gSRVMap[48].SampleCmpLevelZero(gsamShadow,
+        percentLit += gSRVMap[gShadowMapIndex].SampleCmpLevelZero(gsamShadow,
             shadowPosH.xy + offsets[i], depth).r;
     }
 

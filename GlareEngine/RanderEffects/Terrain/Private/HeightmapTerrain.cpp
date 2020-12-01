@@ -178,10 +178,42 @@ float HeightmapTerrain::Average(int i, int j)
 
 void HeightmapTerrain::CalcAllPatchBoundsY()
 {
+	mPatchBoundsY.resize(mNumPatchQuadFaces);
+
+	// For each patch
+	for (UINT i = 0; i < mNumPatchVertRows - 1; ++i)
+	{
+		for (UINT j = 0; j < mNumPatchVertCols - 1; ++j)
+		{
+			CalcPatchBoundsY(i, j);
+		}
+	}
 }
 
 void HeightmapTerrain::CalcPatchBoundsY(UINT i, UINT j)
 {
+	// Scan the height map values this patch covers and compute the min/max height.
+
+	UINT x0 = j * CellsPerPatch;
+	UINT x1 = (j + 1) * CellsPerPatch;
+
+	UINT y0 = i * CellsPerPatch;
+	UINT y1 = (i + 1) * CellsPerPatch;
+
+	float minY = +MathHelper::Infinity;
+	float maxY = -MathHelper::Infinity;
+	for (UINT y = y0; y <= y1; ++y)
+	{
+		for (UINT x = x0; x <= x1; ++x)
+		{
+			UINT k = y * mInfo.HeightmapWidth + x;
+			minY = MathHelper::Min(minY, mHeightmap[k]);
+			maxY = MathHelper::Max(maxY, mHeightmap[k]);
+		}
+	}
+
+	UINT patchID = i * (mNumPatchVertCols - 1) + j;
+	mPatchBoundsY[patchID] = XMFLOAT2(minY, maxY);
 }
 
 void HeightmapTerrain::BuildQuadPatchVB(ID3D12Device* device)

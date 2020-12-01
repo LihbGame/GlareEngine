@@ -26,11 +26,11 @@ float4 PS(VertexOut pin) : SV_Target
 {
     float3 vEye = normalize(pin.Eye);
 
-    // Get bump layers gSRVMap[51] WavesBump
-    float3 vBumpTexA = gSRVMap[51].Sample(gsamLinearWrap, pin.Wave0.xy).xyz;
-    float3 vBumpTexB = gSRVMap[51].Sample(gsamLinearWrap, pin.Wave1.xy).xyz;
-    float3 vBumpTexC = gSRVMap[51].Sample(gsamLinearWrap, pin.Wave2.xy).xyz;
-    float3 vBumpTexD = gSRVMap[51].Sample(gsamLinearWrap, pin.Wave3.xy).xyz;
+    // Get bump layers WavesBump
+    float3 vBumpTexA = gSRVMap[gWaterDumpWaveIndex].Sample(gsamLinearWrap, pin.Wave0.xy).xyz;
+    float3 vBumpTexB = gSRVMap[gWaterDumpWaveIndex].Sample(gsamLinearWrap, pin.Wave1.xy).xyz;
+    float3 vBumpTexC = gSRVMap[gWaterDumpWaveIndex].Sample(gsamLinearWrap, pin.Wave2.xy).xyz;
+    float3 vBumpTexD = gSRVMap[gWaterDumpWaveIndex].Sample(gsamLinearWrap, pin.Wave3.xy).xyz;
 
     // Average bump layers
     float3 vBumpTex = normalize(2.0 * (vBumpTexA.xyz + vBumpTexB.xyz + vBumpTexC.xyz + vBumpTexD.xyz) - 4.0);
@@ -42,9 +42,9 @@ float4 PS(VertexOut pin) : SV_Target
 
     // Compute projected coordinates gSRVMap[50]:∑¥…‰Œ∆¿Ì  gSRVMap[49]£∫’€…‰Œ∆¿Ì
     float2 vProj = (pin.ScreenPos.xy / pin.ScreenPos.w);
-    float4 vReflection = gSRVMap[50].Sample(gsamLinearWrap, vProj.xy + vReflBump.xy);
-    float4 vRefrA = gSRVMap[49].Sample(gsamLinearWrap, vProj.xy + vRefrBump.xy);
-    float4 vRefrB = gSRVMap[49].Sample(gsamLinearWrap, vProj.xy);
+    float4 vReflection = gSRVMap[gWaterReflectionMapIndex].Sample(gsamLinearWrap, vProj.xy + vReflBump.xy);
+    float4 vRefrA = gSRVMap[gWaterRefractionMapIndex].Sample(gsamLinearWrap, vProj.xy + vRefrBump.xy);
+    float4 vRefrB = gSRVMap[gWaterRefractionMapIndex].Sample(gsamLinearWrap, vProj.xy);
 
     // Mask occluders from refraction map
     float4 vRefraction = vRefrB * vRefrA.w + vRefrA * (1 - vRefrA.w);
