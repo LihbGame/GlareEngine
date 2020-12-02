@@ -2,6 +2,8 @@
 #include "L3DGeometryGenerator.h"
 #include "L3DVertex.h"
 
+using namespace DirectX::PackedVector;
+
 HeightmapTerrain::HeightmapTerrain(
 	ID3D12Device* device, 
 	ID3D12GraphicsCommandList* CommandList,
@@ -316,12 +318,29 @@ void HeightmapTerrain::BuildQuadPatchGeometry()
 	mGeometries= std::move(geo);
 }
 
-void HeightmapTerrain::BuildHeightmapSRV(CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor)
+void HeightmapTerrain::BuildHeightmapSRV(CD3DX12_CPU_DESCRIPTOR_HANDLE BlendMapDescriptor, CD3DX12_CPU_DESCRIPTOR_HANDLE HeightMapDescriptor)
 {
+	//blend map
+	auto BlendMapTex = pTextureManage->GetTexture(wstring(mInfo.BlendMapFilename.begin(), mInfo.BlendMapFilename.end()))->Resource;
+	D3D12_SHADER_RESOURCE_VIEW_DESC BlendMapDesc = {};
+	BlendMapDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	BlendMapDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	BlendMapDesc.TextureCube.MostDetailedMip = 0;
+	BlendMapDesc.TextureCube.MipLevels = BlendMapTex->GetDesc().MipLevels;
+	BlendMapDesc.TextureCube.ResourceMinLODClamp = 0.0f;
+	BlendMapDesc.Format = BlendMapTex->GetDesc().Format;
+	mDevice->CreateShaderResourceView(BlendMapTex.Get(), &BlendMapDesc, BlendMapDescriptor);
 
+	//height map
+	// HALF is defined in xnamath.h, for storing 16-bit float.
+	std::vector<HALF> hmap(mHeightmap.size());
+	std::transform(mHeightmap.begin(), mHeightmap.end(), hmap.begin(), XMConvertFloatToHalf);
 
-
-
-
-
+	mHeightMapSRV = L3DUtil::CreateDefaultBuffer(mDevice,
+		mCommandList, hmap.data(), sizeof(HALF) * hmap.size(), mHeightMapUploader);
+	
+	D3D12_SHADER_RESOURCE_VIEW_DESC HeightMapDesc = BlendMapDesc;
+	HeightMapDesc.TextureCube.MipLevels = -1;
+	HeightMapDesc.Format = DXGI_FORMAT_R16_FLOAT;
+	mDevice->CreateShaderResourceView(mHeightMapSRV.Get(), &HeightMapDesc, HeightMapDescriptor);
 }

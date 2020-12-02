@@ -264,7 +264,8 @@ private:
 
 	//Terrain
 	std::unique_ptr<HeightmapTerrain> mHeightMapTerrain;
-
+	int mBlendMapIndex = 0;
+	int mHeightMapIndex = 0;
 	//play back anime 
 	//std::unordered_map<std::string, AnimePlayback> AnimationPlayback;
 };

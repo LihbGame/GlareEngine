@@ -2,6 +2,7 @@
 #include "L3DUtil.h"
 #include "L3DCamera.h"
 #include "L3DTextureManage.h"
+
 class HeightmapTerrain
 {
 public:
@@ -33,6 +34,13 @@ public:
 
 	ID3D12Resource* GetHeightMapSRV() { return mHeightMapSRV.Get(); }
 
+	unordered_map<string, vector<Texture*>>& GetAllTerrainTextures()
+	{
+		return TerrainTextures;
+	}
+
+	void BuildHeightmapSRV(CD3DX12_CPU_DESCRIPTOR_HANDLE BlendMapDescriptor,
+		CD3DX12_CPU_DESCRIPTOR_HANDLE HeightMapDescriptor);
 private:
 	void LoadHeightmapAsset();
 	void Smooth();
@@ -41,8 +49,6 @@ private:
 	void CalcAllPatchBoundsY();
 	void CalcPatchBoundsY(UINT i, UINT j);
 	void BuildQuadPatchGeometry();
-	void BuildHeightmapSRV(CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor);
-
 private:
 
 	L3DTextureManage* pTextureManage = nullptr;
@@ -57,6 +63,7 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> mBlendMapSRV;
 	Microsoft::WRL::ComPtr<ID3D12Resource> mHeightMapSRV;
+	Microsoft::WRL::ComPtr<ID3D12Resource> mHeightMapUploader;
 	Microsoft::WRL::ComPtr<ID3D12Resource> mGrassMapSRV;
 
 	InitInfo mInfo;
