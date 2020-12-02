@@ -813,7 +813,7 @@ void GameApp::UpdateWaves(const GameTimer& gt)
 	auto currWavesVB = mCurrFrameResource->WavesVB.get();
 	for (int i = 0; i < mWaves->VertexCount(); ++i)
 	{
-		PosNormalTexc v;
+		L3DVertice::PosNormalTexc v;
 
 		v.Pos = mWaves->Position(i);
 		v.Normal = mWaves->Normal(i);
@@ -918,7 +918,7 @@ void GameApp::BuildLandGeometry()
 	// sandy looking beaches, grassy low hills, and snow mountain peaks.
 	//
 
-	std::vector<PosNormalTangentTexc> vertices(grid.Vertices.size());
+	std::vector<L3DVertice::PosNormalTangentTexc> vertices(grid.Vertices.size());
 	for (size_t i = 0; i < grid.Vertices.size(); ++i)
 	{
 		vertices[i].Pos = grid.Vertices[i].Position;
@@ -927,7 +927,7 @@ void GameApp::BuildLandGeometry()
 		vertices[i].Texc = grid.Vertices[i].TexC;
 	}
 
-	const UINT vbByteSize = (UINT)vertices.size() * sizeof(PosNormalTangentTexc);
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(L3DVertice::PosNormalTangentTexc);
 
 	std::vector<std::uint16_t> indices = grid.GetIndices16();
 	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
@@ -947,7 +947,7 @@ void GameApp::BuildLandGeometry()
 	geo->IndexBufferGPU = L3DUtil::CreateDefaultBuffer(md3dDevice.Get(),
 		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
 
-	geo->VertexByteStride = sizeof(PosNormalTangentTexc);
+	geo->VertexByteStride = sizeof(L3DVertice::PosNormalTangentTexc);
 	geo->VertexBufferByteSize = vbByteSize;
 	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
 	geo->IndexBufferByteSize = ibByteSize;
@@ -987,7 +987,7 @@ void GameApp::BuildWavesGeometryBuffers()
 		}
 	}
 
-	UINT vbByteSize = mWaves->VertexCount() * sizeof(PosNormalTexc);
+	UINT vbByteSize = mWaves->VertexCount() * sizeof(L3DVertice::PosNormalTexc);
 	UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
 
 	auto geo = std::make_unique<MeshGeometry>();
@@ -1003,7 +1003,7 @@ void GameApp::BuildWavesGeometryBuffers()
 	geo->IndexBufferGPU = L3DUtil::CreateDefaultBuffer(md3dDevice.Get(),
 		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
 
-	geo->VertexByteStride = sizeof(PosNormalTexc);
+	geo->VertexByteStride = sizeof(L3DVertice::PosNormalTexc);
 	geo->VertexBufferByteSize = vbByteSize;
 	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
 	geo->IndexBufferByteSize = ibByteSize;

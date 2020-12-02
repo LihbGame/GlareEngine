@@ -1,4 +1,6 @@
 #include "HeightmapTerrain.h"
+#include "L3DGeometryGenerator.h"
+#include "L3DVertex.h"
 
 HeightmapTerrain::HeightmapTerrain(
 	ID3D12Device* device, 
@@ -24,14 +26,10 @@ HeightmapTerrain::HeightmapTerrain(
 	LoadHeightmapAsset();
 	//Smooth Height map
 	Smooth();
+	//bounds box
 	CalcAllPatchBoundsY();
-
-
-	BuildQuadPatchVB(device);
-	BuildQuadPatchIB(device);
-	BuildHeightmapSRV(device);
-
-
+	//Geometry VB & IB
+	BuildQuadPatchGeometry();
 }
 
 HeightmapTerrain::~HeightmapTerrain()
@@ -40,12 +38,14 @@ HeightmapTerrain::~HeightmapTerrain()
 
 float HeightmapTerrain::GetWidth() const
 {
-	return 0.0f;
+	// Total terrain width.
+	return (mInfo.HeightmapWidth - 1) * mInfo.CellSpacing;
 }
 
 float HeightmapTerrain::GetDepth() const
 {
-	return 0.0f;
+	// Total terrain depth.
+	return (mInfo.HeightmapHeight - 1) * mInfo.CellSpacing;
 }
 
 float HeightmapTerrain::GetHeight(float x, float z) const
@@ -55,15 +55,12 @@ float HeightmapTerrain::GetHeight(float x, float z) const
 
 XMMATRIX HeightmapTerrain::GetWorld() const
 {
-	return XMMATRIX();
+	return XMLoadFloat4x4(&mWorld);
 }
 
 void HeightmapTerrain::SetWorld(CXMMATRIX M)
 {
-}
-
-void HeightmapTerrain::Init()
-{
+	XMStoreFloat4x4(&mWorld, M);
 }
 
 void HeightmapTerrain::Draw(ID3D11DeviceContext* dc, const Camera& cam, bool isReflection)
@@ -216,14 +213,115 @@ void HeightmapTerrain::CalcPatchBoundsY(UINT i, UINT j)
 	mPatchBoundsY[patchID] = XMFLOAT2(minY, maxY);
 }
 
-void HeightmapTerrain::BuildQuadPatchVB(ID3D12Device* device)
+void HeightmapTerrain::BuildQuadPatchGeometry()
 {
+//Vertices
+#pragma region Vertices data
+	std::vector<L3DVertice::Terrain> patchVertices(mNumPatchVertRows * mNumPatchVertCols);
+
+	float halfWidth = 0.5f * GetWidth();
+	float halfDepth = 0.5f * GetDepth();
+
+	float patchWidth = GetWidth() / (mNumPatchVertCols - 1);
+	float patchDepth = GetDepth() / (mNumPatchVertRows - 1);
+	float du = 1.0f / (mNumPatchVertCols - 1);
+	float dv = 1.0f / (mNumPatchVertRows - 1);
+
+	for (UINT i = 0; i < mNumPatchVertRows; ++i)
+	{
+		float z = halfDepth - i * patchDepth;
+		for (UINT j = 0; j < mNumPatchVertCols; ++j)
+		{
+			float x = -halfWidth + j * patchWidth;
+
+			patchVertices[i * mNumPatchVertCols + j].Pos = XMFLOAT3(x, 0.0f, z);
+
+			// Stretch texture over grid.
+			patchVertices[i * mNumPatchVertCols + j].Tex.x = j * du;
+			patchVertices[i * mNumPatchVertCols + j].Tex.y = i * dv;
+		}
+	}
+
+	// Store axis-aligned bounding box y-bounds in upper-left patch corner.
+	for (UINT i = 0; i < mNumPatchVertRows - 1; ++i)
+	{
+		for (UINT j = 0; j < mNumPatchVertCols - 1; ++j)
+		{
+			UINT patchID = i * (mNumPatchVertCols - 1) + j;
+			patchVertices[i * mNumPatchVertCols + j].BoundsY = mPatchBoundsY[patchID];
+		}
+	}
+
+	std::vector<L3DVertice::Terrain> vertices(patchVertices.size());
+	for (size_t i = 0; i < patchVertices.size(); ++i)
+	{
+		vertices[i].Pos = patchVertices[i].Pos;
+		vertices[i].Tex = patchVertices[i].Tex;
+	}
+
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(L3DVertice::Terrain);
+#pragma endregion
+
+//Indices
+#pragma region Indices data
+	std::vector<USHORT> indices(mNumPatchQuadFaces * 4); // 4 indices per quad face
+	// Iterate over each quad and compute indices.
+	int k = 0;
+	for (UINT i = 0; i < mNumPatchVertRows - 1; ++i)
+	{
+		for (UINT j = 0; j < mNumPatchVertCols - 1; ++j)
+		{
+			// Top row of 2x2 quad patch
+			indices[k] = i * mNumPatchVertCols + j;
+			indices[k + 1] = i * mNumPatchVertCols + j + 1;
+
+			// Bottom row of 2x2 quad patch
+			indices[k + 2] = (i + 1) * mNumPatchVertCols + j;
+			indices[k + 3] = (i + 1) * mNumPatchVertCols + j + 1;
+
+			k += 4; // next quad
+		}
+	}
+	UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
+#pragma endregion
+
+
+	auto geo = std::make_unique<MeshGeometry>();
+	geo->Name = "TerrainGeo";
+
+	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
+	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
+
+	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
+	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
+
+	geo->VertexBufferGPU = L3DUtil::CreateDefaultBuffer(mDevice,
+		mCommandList, vertices.data(), vbByteSize, geo->VertexBufferUploader);
+
+	geo->IndexBufferGPU = L3DUtil::CreateDefaultBuffer(mDevice,
+		mCommandList, indices.data(), ibByteSize, geo->IndexBufferUploader);
+
+	geo->VertexByteStride = sizeof(L3DVertice::Terrain);
+	geo->VertexBufferByteSize = vbByteSize;
+	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
+	geo->IndexBufferByteSize = ibByteSize;
+
+	SubmeshGeometry submesh;
+	submesh.IndexCount = (UINT)indices.size();
+	submesh.StartIndexLocation = 0;
+	submesh.BaseVertexLocation = 0;
+
+	geo->DrawArgs["HeightMapTerrain"] = submesh;
+
+	mGeometries= std::move(geo);
 }
 
-void HeightmapTerrain::BuildQuadPatchIB(ID3D12Device* device)
+void HeightmapTerrain::BuildHeightmapSRV(CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor)
 {
-}
 
-void HeightmapTerrain::BuildHeightmapSRV(ID3D12Device* device)
-{
+
+
+
+
+
 }

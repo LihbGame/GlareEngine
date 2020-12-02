@@ -108,7 +108,7 @@ public:
     vector<std::unique_ptr<UploadBuffer<InstanceConstants>>> ReflectionInstanceSimpleObjectCB;
     // 在GPU处理完引用它的命令之前，我们无法更新动态顶点缓冲区。 
     //因此，每个框架都需要自己的框架。
-    std::unique_ptr<UploadBuffer<PosNormalTexc>> WavesVB = nullptr;
+    std::unique_ptr<UploadBuffer<L3DVertice::PosNormalTexc>> WavesVB = nullptr;
 
     //围栏值，以将命令标记到该围栏点。 
     //这使我们可以检查GPU是否仍在使用这些帧资源。 

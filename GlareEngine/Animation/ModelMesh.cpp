@@ -1,7 +1,7 @@
 #include "ModelMesh.h"
 
 
-ModelMesh::ModelMesh(ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList, vector<PosNormalTangentTexc> vertices, vector<UINT> indices, vector<Texture> textures)
+ModelMesh::ModelMesh(ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList, vector<L3DVertice::PosNormalTangentTexc> vertices, vector<UINT> indices, vector<Texture> textures)
 {
     this->vertices = vertices;
     this->indices = indices;
@@ -23,7 +23,7 @@ ModelMesh::~ModelMesh()
 // Initializes all the buffer objects/arrays
 void ModelMesh::SetupMesh()
 {
-    const UINT vbByteSize = (UINT)vertices.size() * sizeof(PosNormalTangentTexc);
+    const UINT vbByteSize = (UINT)vertices.size() * sizeof(L3DVertice::PosNormalTangentTexc);
     const UINT ibByteSize = (UINT)indices.size() * sizeof(UINT);
 
     mMeshGeo.Name = "Model Mesh";
@@ -43,7 +43,7 @@ void ModelMesh::SetupMesh()
         pCommandList, indices.data(), ibByteSize, mMeshGeo.IndexBufferUploader);
 
 
-    mMeshGeo.VertexByteStride = sizeof(PosNormalTangentTexc);
+    mMeshGeo.VertexByteStride = sizeof(L3DVertice::PosNormalTangentTexc);
     mMeshGeo.VertexBufferByteSize = vbByteSize;
     mMeshGeo.IndexFormat = DXGI_FORMAT_R32_UINT;
     mMeshGeo.IndexBufferByteSize = ibByteSize;

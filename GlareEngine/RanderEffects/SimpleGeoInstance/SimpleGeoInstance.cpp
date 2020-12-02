@@ -66,7 +66,7 @@ void SimpleGeoInstance::BuildSimpleGeometryMesh(SimpleGeometry GeoType)
     }
 
 
-    std::vector<PosNormalTangentTexc> vertices(SimpleGeoMesh.Vertices.size());
+    std::vector<L3DVertice::PosNormalTangentTexc> vertices(SimpleGeoMesh.Vertices.size());
     for (size_t i = 0; i < SimpleGeoMesh.Vertices.size(); ++i)
     {
         vertices[i].Pos = SimpleGeoMesh.Vertices[i].Position;
@@ -74,7 +74,7 @@ void SimpleGeoInstance::BuildSimpleGeometryMesh(SimpleGeometry GeoType)
         vertices[i].Tangent = SimpleGeoMesh.Vertices[i].TangentU;
         vertices[i].Texc = SimpleGeoMesh.Vertices[i].TexC;
     }
-    const UINT vbByteSize = (UINT)vertices.size() * sizeof(PosNormalTangentTexc);
+    const UINT vbByteSize = (UINT)vertices.size() * sizeof(L3DVertice::PosNormalTangentTexc);
     std::vector<std::uint16_t> indices = SimpleGeoMesh.GetIndices16();
     const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
 
@@ -100,7 +100,7 @@ void SimpleGeoInstance::BuildSimpleGeometryMesh(SimpleGeometry GeoType)
     mSimpleMesh->IndexBufferGPU = L3DUtil::CreateDefaultBuffer(pd3dDevice,
         pCommandList, indices.data(), ibByteSize, mSimpleMesh->IndexBufferUploader);
 
-    mSimpleMesh->VertexByteStride = sizeof(PosNormalTangentTexc);
+    mSimpleMesh->VertexByteStride = sizeof(L3DVertice::PosNormalTangentTexc);
     mSimpleMesh->VertexBufferByteSize = vbByteSize;
     mSimpleMesh->IndexFormat = DXGI_FORMAT_R16_UINT;
     mSimpleMesh->IndexBufferByteSize = ibByteSize;

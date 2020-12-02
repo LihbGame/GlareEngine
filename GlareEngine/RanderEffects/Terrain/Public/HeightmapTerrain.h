@@ -28,8 +28,6 @@ public:
 	XMMATRIX GetWorld()const;
 	void SetWorld(CXMMATRIX M);
 
-	void Init();
-
 	void Draw(ID3D11DeviceContext* dc, const Camera& cam, bool isReflection);
 	void Update(float dt);
 
@@ -42,9 +40,8 @@ private:
 	float Average(int i, int j);
 	void CalcAllPatchBoundsY();
 	void CalcPatchBoundsY(UINT i, UINT j);
-	void BuildQuadPatchVB(ID3D12Device* device);
-	void BuildQuadPatchIB(ID3D12Device* device);
-	void BuildHeightmapSRV(ID3D12Device* device);
+	void BuildQuadPatchGeometry();
+	void BuildHeightmapSRV(CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor);
 
 private:
 
@@ -58,10 +55,6 @@ private:
 	// to 64, we use all the data from the height map.  
 	static const int CellsPerPatch = 64;
 
-	ID3D11Buffer* mQuadPatchVB = nullptr;
-	ID3D11Buffer* mQuadPatchIB = nullptr;
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> mLayerMapArraySRV;
 	Microsoft::WRL::ComPtr<ID3D12Resource> mBlendMapSRV;
 	Microsoft::WRL::ComPtr<ID3D12Resource> mHeightMapSRV;
 	Microsoft::WRL::ComPtr<ID3D12Resource> mGrassMapSRV;
@@ -81,6 +74,8 @@ private:
 
 	//All Textures
 	unordered_map<string, vector<Texture*>> TerrainTextures;
+
+	std::unique_ptr<MeshGeometry> mGeometries;
 
 	//grass
 	//Grass mGrass;
