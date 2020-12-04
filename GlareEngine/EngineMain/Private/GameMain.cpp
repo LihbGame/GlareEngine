@@ -1446,7 +1446,7 @@ void GameApp::BuildRenderItems()
 		XMStoreFloat4x4(&LandRitem.World,XMMatrixTranslation(0.0f,1.0f,0.0f)* XMMatrixScaling(1.0, 1.0, 1.0));
 		XMStoreFloat4x4(&LandRitem.TexTransform, XMMatrixScaling(5.0, 5.0, 5.0));
 		LandRitem.ObjCBIndex = ObjCBIndex++;
-		LandRitem.Mat = mMaterials[L"PBRharshbricks"].get();
+		LandRitem.Mat = mMaterials[L"PBRBrass"].get();
 		LandRitem.Geo.push_back(mGeometries["landGeo"].get());
 		LandRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 		LandRitem.IndexCount.push_back(LandRitem.Geo[0]->DrawArgs["grid"].IndexCount);
