@@ -359,6 +359,7 @@ void GameApp::CreateDescriptorHeaps()
 	UINT PBRTextureNum = (UINT)(mPBRTextureName.size() * 6);
 	UINT ModelTextureNum = (UINT)mModelLoder->GetAllModelTextures().size() * 6;
 	UINT ShockWaveWater = 3;
+	UINT HeightMapTerrain = 32;
 	//
 	// Create the SRV heap.
 	//
@@ -367,7 +368,7 @@ void GameApp::CreateDescriptorHeaps()
 	//sky+shadow map=2
 	//model PBR texture
 	//ShockWaveWater map
-	srvHeapDesc.NumDescriptors = PBRTextureNum+ ModelTextureNum+ ShockWaveWater+2;
+	srvHeapDesc.NumDescriptors = PBRTextureNum+ ModelTextureNum+ ShockWaveWater+ HeightMapTerrain +2;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mSrvDescriptorHeap)));
@@ -455,7 +456,7 @@ void GameApp::CreateDescriptorHeaps()
 	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	mBlendMapIndex = SRVIndex++;
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE HeightMapDescriptor = hDescriptor;
+	CD3DX12_CPU_DESCRIPTOR_HANDLE HeightMapDescriptor(mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	mHeightMapIndex = SRVIndex++;
 
@@ -1400,9 +1401,26 @@ void GameApp::BuildAllMaterials()
 			XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 			XMFLOAT3(0.1f, 0.1f, 0.1f),
 			MatTransform,
-			true);
+			MaterialType::ModelPBRMat);
 	}
 #pragma endregion
+
+
+#pragma region Height Map Terrain Material
+	MatTransform = MathHelper::Identity4x4();
+	for (auto e : mHeightMapTerrain->GetAllTerrainTextures())
+	{
+		BuildMaterials(
+			wstring(e.first.begin(), e.first.end()),
+			MatCBIndex++,
+			0.09f,
+			XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+			XMFLOAT3(0.1f, 0.1f, 0.1f),
+			MatTransform,
+			MaterialType::HeightMapTerrainPBRMat);
+	}
+#pragma endregion
+
 
 
 #pragma region Sky Material
@@ -1419,7 +1437,7 @@ void GameApp::BuildMaterials(
 	XMFLOAT4 DiffuseAlbedo, 
 	XMFLOAT3 FresnelR0,
 	XMFLOAT4X4 MatTransform,
-	bool isModelTexture)
+	MaterialType MatType)
 {
 	auto  Mat = std::make_unique<Material>();
 	Mat->Name = name;
@@ -1430,8 +1448,15 @@ void GameApp::BuildMaterials(
 	Mat->height_scale = Height_Scale;
 	mMaterials[name] = std::move(Mat);
 
-	if(!isModelTexture)
-	mPBRTextureName.push_back(name);
+
+	switch (MatType)
+	{
+	case MaterialType::NormalPBRMat:
+		mPBRTextureName.push_back(name);
+		break;
+	default:
+		break;
+	}
 }
 
 
@@ -1444,7 +1469,7 @@ void GameApp::BuildRenderItems()
 		RenderItem LandRitem = {};
 		LandRitem.World = MathHelper::Identity4x4();
 		XMStoreFloat4x4(&LandRitem.World,XMMatrixTranslation(0.0f,1.0f,0.0f)* XMMatrixScaling(1.0, 1.0, 1.0));
-		XMStoreFloat4x4(&LandRitem.TexTransform, XMMatrixScaling(5.0, 5.0, 5.0));
+		XMStoreFloat4x4(&LandRitem.TexTransform, XMMatrixScaling(1.0, 1.0, 1.0));
 		LandRitem.ObjCBIndex = ObjCBIndex++;
 		LandRitem.Mat = mMaterials[L"PBRBrass"].get();
 		LandRitem.Geo.push_back(mGeometries["landGeo"].get());

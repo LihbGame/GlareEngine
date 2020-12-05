@@ -61,10 +61,8 @@ private:
 	// to 64, we use all the data from the height map.  
 	static const int CellsPerPatch = 64;
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> mBlendMapSRV;
 	Microsoft::WRL::ComPtr<ID3D12Resource> mHeightMapSRV;
 	Microsoft::WRL::ComPtr<ID3D12Resource> mHeightMapUploader;
-	Microsoft::WRL::ComPtr<ID3D12Resource> mGrassMapSRV;
 
 	InitInfo mInfo;
 

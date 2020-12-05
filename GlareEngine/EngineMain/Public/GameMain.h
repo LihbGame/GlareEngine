@@ -88,6 +88,16 @@ enum class RenderLayer : int
 	Count
 };
 
+enum class MaterialType : int
+{
+	NormalPBRMat = 0,
+    HeightMapTerrainPBRMat,
+	ModelPBRMat,
+	Count
+};
+
+
+
 //APPLICATION
 class GameApp : public D3DApp
 {
@@ -145,7 +155,7 @@ private:
 	void BuildFrameResources();
 	//创建材质信息
 	void BuildAllMaterials();
-	void BuildMaterials(wstring name, int MatCBIndex, float Height_Scale, XMFLOAT4 DiffuseAlbedo, XMFLOAT3 FresnelR0,XMFLOAT4X4 MatTransform,bool isModelTexture=false);
+	void BuildMaterials(wstring name, int MatCBIndex, float Height_Scale, XMFLOAT4 DiffuseAlbedo, XMFLOAT3 FresnelR0,XMFLOAT4X4 MatTransform, MaterialType MatType= MaterialType::NormalPBRMat);
 	
 	
 	//创建渲染项

@@ -86,9 +86,9 @@ void HeightmapTerrain::LoadHeightmapAsset()
 		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "_height");
 	}
 
-	for (auto e:AllTerrainTextureNames)
+	for (int i=0;i<AllTerrainTextureNames.size();++i)
 	{
-		TerrainTextures[e].push_back(pTextureManage->GetTexture(wstring(e.begin(), e.end())).get());
+		TerrainTextures[mInfo.LayerMapFilename[i/6]].push_back(pTextureManage->GetTexture(wstring(AllTerrainTextureNames[i].begin(), AllTerrainTextureNames[i].end())).get());
 	}
 
 
@@ -325,22 +325,21 @@ void HeightmapTerrain::BuildHeightmapSRV(CD3DX12_CPU_DESCRIPTOR_HANDLE BlendMapD
 	D3D12_SHADER_RESOURCE_VIEW_DESC BlendMapDesc = {};
 	BlendMapDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	BlendMapDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	BlendMapDesc.TextureCube.MostDetailedMip = 0;
-	BlendMapDesc.TextureCube.MipLevels = BlendMapTex->GetDesc().MipLevels;
-	BlendMapDesc.TextureCube.ResourceMinLODClamp = 0.0f;
+	BlendMapDesc.Texture2D.MostDetailedMip = 0;
+	BlendMapDesc.Texture2D.MipLevels = BlendMapTex->GetDesc().MipLevels;
+	BlendMapDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 	BlendMapDesc.Format = BlendMapTex->GetDesc().Format;
 	mDevice->CreateShaderResourceView(BlendMapTex.Get(), &BlendMapDesc, BlendMapDescriptor);
 
 	//height map
-	// HALF is defined in xnamath.h, for storing 16-bit float.
-	std::vector<HALF> hmap(mHeightmap.size());
-	std::transform(mHeightmap.begin(), mHeightmap.end(), hmap.begin(), XMConvertFloatToHalf);
-
-	mHeightMapSRV = L3DUtil::CreateDefaultBuffer(mDevice,
-		mCommandList, hmap.data(), sizeof(HALF) * hmap.size(), mHeightMapUploader);
+	vector<HALF> HalfHeightMapData;
+	HalfHeightMapData.resize(mHeightmap.size());
+	std::transform(mHeightmap.begin(), mHeightmap.end(), HalfHeightMapData.begin(), XMConvertFloatToHalf);
+	mHeightMapSRV = L3DUtil::CreateDefault2DTexture(mDevice,
+		mCommandList, HalfHeightMapData.data(), sizeof(HALF) * mHeightmap.size(), DXGI_FORMAT_R16_FLOAT, mInfo.HeightmapWidth, mInfo.HeightmapHeight, mHeightMapUploader);
 	
 	D3D12_SHADER_RESOURCE_VIEW_DESC HeightMapDesc = BlendMapDesc;
-	HeightMapDesc.TextureCube.MipLevels = -1;
+	HeightMapDesc.Texture2D.MipLevels = -1;
 	HeightMapDesc.Format = DXGI_FORMAT_R16_FLOAT;
 	mDevice->CreateShaderResourceView(mHeightMapSRV.Get(), &HeightMapDesc, HeightMapDescriptor);
 }
