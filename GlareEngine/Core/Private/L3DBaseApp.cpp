@@ -504,7 +504,7 @@ bool D3DApp::InitMainWindow()
 
 
 	mhMainWnd = CreateWindow(L"MainWnd", mMainWndCaption.c_str(), 
-		WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, mhAppInst, 0);
+		WS_OVERLAPPEDWINDOW|WS_EX_TOPMOST, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, mhAppInst, 0);
 	if( !mhMainWnd )
 	{
 		MessageBox(0, L"CreateWindow Failed.", 0, 0);

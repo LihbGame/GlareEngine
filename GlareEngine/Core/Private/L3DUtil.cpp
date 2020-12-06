@@ -119,7 +119,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> L3DUtil::CreateDefault2DTexture(
 	// Describe the data we want to copy into the default buffer.
 	D3D12_SUBRESOURCE_DATA subResourceData = {};
 	subResourceData.pData = initData;
-	subResourceData.RowPitch = width*2;
+	subResourceData.RowPitch = byteSize/height;
 	subResourceData.SlicePitch = byteSize;
 
 	// Schedule to copy the data to the default buffer resource.  At a high level, the helper function UpdateSubresources

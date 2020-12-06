@@ -324,15 +324,6 @@ void GameApp::Draw(const GameTimer& gt)
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_RESOLVE_DEST, D3D12_RESOURCE_STATE_PRESENT));
 
-
-	///mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), false, NULL);
-
-
-    // Indicate a state transition on the resource usage.
-	//mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
-		//D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
-
-
 	// Done recording commands.
 	ThrowIfFailed(mCommandList->Close());
 
@@ -1413,7 +1404,7 @@ void GameApp::BuildAllMaterials()
 		BuildMaterials(
 			wstring(e.first.begin(), e.first.end()),
 			MatCBIndex++,
-			0.09f,
+			0.02f,
 			XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 			XMFLOAT3(0.1f, 0.1f, 0.1f),
 			MatTransform,
@@ -1469,9 +1460,9 @@ void GameApp::BuildRenderItems()
 		RenderItem LandRitem = {};
 		LandRitem.World = MathHelper::Identity4x4();
 		XMStoreFloat4x4(&LandRitem.World,XMMatrixTranslation(0.0f,1.0f,0.0f)* XMMatrixScaling(1.0, 1.0, 1.0));
-		XMStoreFloat4x4(&LandRitem.TexTransform, XMMatrixScaling(1.0, 1.0, 1.0));
+		XMStoreFloat4x4(&LandRitem.TexTransform, XMMatrixScaling(2.0, 2.0, 2.0));
 		LandRitem.ObjCBIndex = ObjCBIndex++;
-		LandRitem.Mat = mMaterials[L"PBRBrass"].get();
+		LandRitem.Mat = mMaterials[L"Terrain/grass"].get();
 		LandRitem.Geo.push_back(mGeometries["landGeo"].get());
 		LandRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 		LandRitem.IndexCount.push_back(LandRitem.Geo[0]->DrawArgs["grid"].IndexCount);
