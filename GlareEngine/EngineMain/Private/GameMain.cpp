@@ -907,13 +907,21 @@ void GameApp::BuildShadersAndInputLayout()
 	};
 
 	mShaders["GerstnerWave"] = new GerstnerWaveShader(L"Shaders\\DefaultVS.hlsl", L"Shaders\\DefaultPS.hlsl");
+	
 	mShaders["Sky"] = new SkyShader(L"Shaders\\SkyVS.hlsl", L"Shaders\\SkyPS.hlsl");
+	
 	mShaders["Instance"] = new SimpleGeometryInstanceShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\SimpleGeoInstancePS.hlsl");
+	
 	mShaders["InstanceSimpleGeoShadowMap"]= new SimpleGeometryShadowMapShader(L"Shaders\\SimpleGeoInstanceShadowVS.hlsl", L"Shaders\\SimpleGeoInstanceShadowPS.hlsl", L"", L"", L"", alphaTestDefines);
+	
 	mShaders["StaticComplexModelInstance"] = new ComplexStaticModelInstanceShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\ComplexModelInstancePS.hlsl", L"", L"", L"", alphaTestDefines);
+	
 	mShaders["SkinAnime"]= new SkinAnimeShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\ComplexModelInstancePS.hlsl", L"", L"", L"", SkinAnimeDefines);
+	
 	mShaders["WaterRefractionMask"] = new WaterRefractionMaskShader(L"Shaders\\WaterRefractionMaskVS.hlsl", L"Shaders\\WaterRefractionMaskPS.hlsl");
+	
 	mShaders["ShockWaveWater"] = new ShockWaveWaterShader(L"Shaders\\ShockWaveWaterVS.hlsl", L"Shaders\\ShockWaveWaterPS.hlsl");
+	
 	mShaders["HeightMapTerrain"] = new HeightMapTerrainShader(L"Shaders\\HeightMapTerrainVS.hlsl", L"Shaders\\HeightMapTerrainPS.hlsl", L"Shaders\\HeightMapTerrainHS.hlsl", L"Shaders\\HeightMapTerrainDS.hlsl");
 
 }
