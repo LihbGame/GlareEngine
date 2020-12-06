@@ -83,6 +83,31 @@ struct PassConstants
 };
 
 
+struct TerrainConstants
+{
+	// When distance is minimum, the tessellation is maximum.
+	// When distance is maximum, the tessellation is minimum.
+	float gMinDist;
+	float gMaxDist;
+
+	// Exponents for power of 2 tessellation.  The tessellation
+	// range is [2^(gMinTess), 2^(gMaxTess)].  Since the maximum
+	// tessellation is 64, this means gMaxTess can be at most 6
+	// since 2^6 = 64.
+	float gMinTess;
+	float gMaxTess;
+
+	float gTexelCellSpaceU;
+	float gTexelCellSpaceV;
+	float gWorldCellSpace;
+	bool isReflection;
+
+    DirectX::XMFLOAT4 gWorldFrustumPlanes[6];
+
+};
+
+
+
 //存储CPU为框架构建命令列表所需的资源。
 struct FrameResource
 {
@@ -104,8 +129,11 @@ public:
     std::unique_ptr<UploadBuffer<MaterialData>> MaterialBuffer = nullptr;
     std::unique_ptr<UploadBuffer<ObjectConstants>> SimpleObjectCB = nullptr;
     std::unique_ptr<UploadBuffer<SkinnedConstants>> SkinnedCB = nullptr;
+    std::unique_ptr<UploadBuffer<TerrainConstants>> TerrainCB = nullptr;
+    
     vector<std::unique_ptr<UploadBuffer<InstanceConstants>>> InstanceSimpleObjectCB ;
     vector<std::unique_ptr<UploadBuffer<InstanceConstants>>> ReflectionInstanceSimpleObjectCB;
+    
     // 在GPU处理完引用它的命令之前，我们无法更新动态顶点缓冲区。 
     //因此，每个框架都需要自己的框架。
     std::unique_ptr<UploadBuffer<L3DVertice::PosNormalTexc>> WavesVB = nullptr;

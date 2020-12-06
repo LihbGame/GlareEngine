@@ -137,50 +137,54 @@ void ShadowMap::UpdateShadowTransform(const GameTimer& gt)
 	//need light manager but we not have it now .now we just let shadow to manage it.
 	//we well add it when we coding sence manager.
 	//mLightRotationAngle += 0.01f * gt.DeltaTime();
-
-	XMMATRIX R = XMMatrixRotationY(mLightRotationAngle);
-	for (int i = 0; i < 3; ++i)
+	if (IsShadowTransformed)
 	{
-		XMVECTOR lightDir = XMLoadFloat3(&mBaseLightDirections[i]);
-		lightDir = XMVector3TransformNormal(lightDir, R);
-		XMStoreFloat3(&mRotatedLightDirections[i], lightDir);
+		XMMATRIX R = XMMatrixRotationY(mLightRotationAngle);
+		for (int i = 0; i < 3; ++i)
+		{
+			XMVECTOR lightDir = XMLoadFloat3(&mBaseLightDirections[i]);
+			lightDir = XMVector3TransformNormal(lightDir, R);
+			XMStoreFloat3(&mRotatedLightDirections[i], lightDir);
+		}
+
+		// Only the first "main" light casts a shadow.
+		BoundingSphere TempBoundingSphere = this->mSceneBounds;
+		XMVECTOR lightDir = XMLoadFloat3(&this->mRotatedLightDirections[0]);
+		XMVECTOR lightPos = -2.0f * this->mSceneBounds.Radius * lightDir;
+		XMVECTOR targetPos = XMLoadFloat3(&this->mSceneBounds.Center);
+		XMVECTOR lightUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+		XMMATRIX lightView = XMMatrixLookAtLH(lightPos, targetPos, lightUp);
+
+		XMStoreFloat3(&this->mLightPosW, lightPos);
+
+		// Transform bounding sphere to light space.
+		XMFLOAT3 sphereCenterLS;
+		XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(targetPos, lightView));
+
+		// Ortho frustum in light space encloses scene.
+		float l = sphereCenterLS.x - this->mSceneBounds.Radius;
+		float b = sphereCenterLS.y - this->mSceneBounds.Radius;
+		float n = sphereCenterLS.z - this->mSceneBounds.Radius;
+		float r = sphereCenterLS.x + this->mSceneBounds.Radius;
+		float t = sphereCenterLS.y + this->mSceneBounds.Radius;
+		float f = sphereCenterLS.z + this->mSceneBounds.Radius;
+
+		this->mLightNearZ = n;
+		this->mLightFarZ = f;
+		XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);
+
+		// Transform NDC space [-1,+1]^2 to texture space [0,1]^2
+		XMMATRIX T(
+			0.5f, 0.0f, 0.0f, 0.0f,
+			0.0f, -0.5f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			0.5f, 0.5f, 0.0f, 1.0f);
+
+		XMMATRIX S = lightView * lightProj * T;
+		XMStoreFloat4x4(&this->mLightView, lightView);
+		XMStoreFloat4x4(&this->mLightProj, lightProj);
+		XMStoreFloat4x4(&this->mShadowTransform, S);
+
+		IsShadowTransformed = false;
 	}
-
-	// Only the first "main" light casts a shadow.
-	BoundingSphere TempBoundingSphere = this->mSceneBounds;
-	XMVECTOR lightDir = XMLoadFloat3(&this->mRotatedLightDirections[0]);
-	XMVECTOR lightPos = -2.0f * this->mSceneBounds.Radius * lightDir;
-	XMVECTOR targetPos = XMLoadFloat3(&this->mSceneBounds.Center);
-	XMVECTOR lightUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	XMMATRIX lightView = XMMatrixLookAtLH(lightPos, targetPos, lightUp);
-
-	XMStoreFloat3(&this->mLightPosW, lightPos);
-
-	// Transform bounding sphere to light space.
-	XMFLOAT3 sphereCenterLS;
-	XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(targetPos, lightView));
-
-	// Ortho frustum in light space encloses scene.
-	float l = sphereCenterLS.x - this->mSceneBounds.Radius;
-	float b = sphereCenterLS.y - this->mSceneBounds.Radius;
-	float n = sphereCenterLS.z - this->mSceneBounds.Radius;
-	float r = sphereCenterLS.x + this->mSceneBounds.Radius;
-	float t = sphereCenterLS.y + this->mSceneBounds.Radius;
-	float f = sphereCenterLS.z + this->mSceneBounds.Radius;
-
-	this->mLightNearZ = n;
-	this->mLightFarZ = f;
-	XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);
-
-	// Transform NDC space [-1,+1]^2 to texture space [0,1]^2
-	XMMATRIX T(
-		0.5f, 0.0f, 0.0f, 0.0f,
-		0.0f, -0.5f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.5f, 0.5f, 0.0f, 1.0f);
-
-	XMMATRIX S = lightView * lightProj * T;
-	XMStoreFloat4x4(&this->mLightView, lightView);
-	XMStoreFloat4x4(&this->mLightProj, lightProj);
-	XMStoreFloat4x4(&this->mShadowTransform, S);
 }

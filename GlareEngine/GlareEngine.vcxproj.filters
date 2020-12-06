@@ -145,6 +145,7 @@
     <ClInclude Include="ShaderSource\Public\ShockWaveWaterShader.h" />
     <ClInclude Include="EngineMain\Public\resource.h" />
     <ClInclude Include="RanderEffects\Terrain\Public\HeightmapTerrain.h" />
+    <ClInclude Include="ShaderSource\Public\HeightMapTerrainShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Private\DDSTextureLoader.cpp">
@@ -267,6 +268,9 @@
     <ClCompile Include="RanderEffects\Terrain\Private\HeightmapTerrain.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
+    <ClCompile Include="ShaderSource\Private\HeightMapTerrainShader.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -296,6 +300,10 @@
     <FxCompile Include="Shaders\WaterRefractionMaskPS.hlsl" />
     <FxCompile Include="Shaders\ShockWaveWaterVS.hlsl" />
     <FxCompile Include="Shaders\ShockWaveWaterPS.hlsl" />
+    <FxCompile Include="Shaders\HeightMapTerrainVS.hlsl" />
+    <FxCompile Include="Shaders\HeightMapTerrainPS.hlsl" />
+    <FxCompile Include="Shaders\HeightMapTerrainHS.hlsl" />
+    <FxCompile Include="Shaders\HeightMapTerrainDS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini" />

@@ -45,6 +45,8 @@ private:
 	CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuDsv;
 	//shadow map ”√”⁄DSV∫ÕSRV
 	Microsoft::WRL::ComPtr<ID3D12Resource> mShadowMap = nullptr;
+
+	bool IsShadowTransformed = true;
 public:
 	void UpdateShadowTransform(const GameTimer& gt);
 

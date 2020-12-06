@@ -141,5 +141,6 @@ enum class PSOName : int
 	SkinAnime,
 	WaterRefractionMask,
 	ShockWaveWater,
+	HeightMapTerrain,
 	Count
 };

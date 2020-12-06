@@ -18,6 +18,7 @@
 #include "SkinAnimeShader.h"
 #include "WaterRefractionMaskShader.h"
 #include "ShockWaveWaterShader.h"
+#include "HeightMapTerrainShader.h"
 
 #include "PSOManager.h"
 #include "L3DCamera.h"
@@ -85,6 +86,7 @@ enum class RenderLayer : int
 	InstanceSimpleItems,
 	Sky,
 	ShockWaveWater,
+	HeightMapTerrain,
 	Count
 };
 
@@ -134,6 +136,8 @@ private:
 	void UpdateWaves(const GameTimer& gt);
 
 	void UpdateShadowPassCB(const GameTimer& gt);
+
+	void UpdateTerrainPassCB(const GameTimer& gt);
 
 	void UpdateAnimation(const GameTimer& gt);
 
@@ -223,6 +227,7 @@ private:
 
 	PassConstants mMainPassCB;  // index 0 of pass cbuffer.
 	PassConstants mShadowPassCB;// index 1 of pass cbuffer.
+	TerrainConstants mTerrainPassCB;
 
 	XMFLOAT3 mEyePos = { 0.0f, 0.0f, 0.0f };
 	XMFLOAT4X4 mView = MathHelper::Identity4x4();

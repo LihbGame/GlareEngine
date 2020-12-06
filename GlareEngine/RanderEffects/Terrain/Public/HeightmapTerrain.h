@@ -26,6 +26,9 @@ public:
 	float GetDepth()const;
 	float GetHeight(float x, float z)const;
 
+	MeshGeometry* GetMeshGeometry()const;
+
+
 	XMMATRIX GetWorld()const;
 	void SetWorld(CXMMATRIX M);
 

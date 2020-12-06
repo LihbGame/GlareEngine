@@ -799,6 +799,7 @@ void GameApp::UpdateMainPassCB(const GameTimer& gt)
 	mMainPassCB.Lights[2].FalloffEnd = 50.0f;
 	mMainPassCB.Lights[2].Position = { 20,20,20 };
 
+	//SRV Index
 	mMainPassCB.ShadowMapIndex = mShadowMapIndex;
 	mMainPassCB.WaterDumpWaveIndex = mWaterDumpWaveIndex;
 	mMainPassCB.WaterReflectionMapIndex = mWaterReflectionMapIndex;
@@ -905,14 +906,16 @@ void GameApp::BuildShadersAndInputLayout()
 		NULL, NULL
 	};
 
-	mShaders["GerstnerWave"] = new GerstnerWaveShader(L"Shaders\\DefaultVS.hlsl", L"Shaders\\DefaultPS.hlsl", L"");
-	mShaders["Sky"] = new SkyShader(L"Shaders\\SkyVS.hlsl", L"Shaders\\SkyPS.hlsl", L"");
-	mShaders["Instance"] = new SimpleGeometryInstanceShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\SimpleGeoInstancePS.hlsl", L"");
-	mShaders["InstanceSimpleGeoShadowMap"]= new SimpleGeometryShadowMapShader(L"Shaders\\SimpleGeoInstanceShadowVS.hlsl", L"Shaders\\SimpleGeoInstanceShadowPS.hlsl", L"", alphaTestDefines);
-	mShaders["StaticComplexModelInstance"] = new ComplexStaticModelInstanceShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\ComplexModelInstancePS.hlsl", L"", alphaTestDefines);
-	mShaders["SkinAnime"]= new SkinAnimeShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\ComplexModelInstancePS.hlsl", L"",SkinAnimeDefines);
-	mShaders["WaterRefractionMask"] = new WaterRefractionMaskShader(L"Shaders\\WaterRefractionMaskVS.hlsl", L"Shaders\\WaterRefractionMaskPS.hlsl", L"");
-	mShaders["ShockWaveWater"] = new ShockWaveWaterShader(L"Shaders\\ShockWaveWaterVS.hlsl", L"Shaders\\ShockWaveWaterPS.hlsl", L"");
+	mShaders["GerstnerWave"] = new GerstnerWaveShader(L"Shaders\\DefaultVS.hlsl", L"Shaders\\DefaultPS.hlsl");
+	mShaders["Sky"] = new SkyShader(L"Shaders\\SkyVS.hlsl", L"Shaders\\SkyPS.hlsl");
+	mShaders["Instance"] = new SimpleGeometryInstanceShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\SimpleGeoInstancePS.hlsl");
+	mShaders["InstanceSimpleGeoShadowMap"]= new SimpleGeometryShadowMapShader(L"Shaders\\SimpleGeoInstanceShadowVS.hlsl", L"Shaders\\SimpleGeoInstanceShadowPS.hlsl", L"", L"", L"", alphaTestDefines);
+	mShaders["StaticComplexModelInstance"] = new ComplexStaticModelInstanceShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\ComplexModelInstancePS.hlsl", L"", L"", L"", alphaTestDefines);
+	mShaders["SkinAnime"]= new SkinAnimeShader(L"Shaders\\SimpleGeoInstanceVS.hlsl", L"Shaders\\ComplexModelInstancePS.hlsl", L"", L"", L"", SkinAnimeDefines);
+	mShaders["WaterRefractionMask"] = new WaterRefractionMaskShader(L"Shaders\\WaterRefractionMaskVS.hlsl", L"Shaders\\WaterRefractionMaskPS.hlsl");
+	mShaders["ShockWaveWater"] = new ShockWaveWaterShader(L"Shaders\\ShockWaveWaterVS.hlsl", L"Shaders\\ShockWaveWaterPS.hlsl");
+	mShaders["HeightMapTerrain"] = new HeightMapTerrainShader(L"Shaders\\HeightMapTerrainVS.hlsl", L"Shaders\\HeightMapTerrainPS.hlsl", L"Shaders\\HeightMapTerrainHS.hlsl", L"Shaders\\HeightMapTerrainDS.hlsl");
+
 }
 
 void GameApp::BuildSimpleGeometry()
@@ -1455,6 +1458,8 @@ void GameApp::BuildRenderItems()
 {
 	//index
 	int ObjCBIndex = 0;
+
+
 	//Land 
 	{
 		RenderItem LandRitem = {};
@@ -1484,6 +1489,39 @@ void GameApp::BuildRenderItems()
 		mAllRitems.push_back(std::move(Land));
 		mAllRitems.push_back(std::move(ReflectionLand));
 	}
+
+
+	//Height map terrain
+	{
+		RenderItem TerrainRitem = {};
+		TerrainRitem.World = MathHelper::Identity4x4();
+		XMStoreFloat4x4(&TerrainRitem.World, XMMatrixTranslation(0.0f, 1.0f, 0.0f) * XMMatrixScaling(1.0, 1.0, 1.0));
+		XMStoreFloat4x4(&TerrainRitem.TexTransform, XMMatrixScaling(2.0, 2.0, 2.0));
+		TerrainRitem.ObjCBIndex = ObjCBIndex++;
+		TerrainRitem.Mat = mMaterials[L"Terrain/grass"].get();
+		TerrainRitem.Geo.push_back(mHeightMapTerrain->GetMeshGeometry());
+		TerrainRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST;
+		TerrainRitem.IndexCount.push_back(TerrainRitem.Geo[0]->DrawArgs["grid"].IndexCount);
+		TerrainRitem.StartIndexLocation.push_back(TerrainRitem.Geo[0]->DrawArgs["grid"].StartIndexLocation);
+		TerrainRitem.BaseVertexLocation.push_back(TerrainRitem.Geo[0]->DrawArgs["grid"].BaseVertexLocation);
+		TerrainRitem.InstanceCount = 1;
+
+#pragma region Reflection
+		RenderItem ReflectionTerrainRitem = TerrainRitem;
+		ReflectionTerrainRitem.ItemType = RenderItemType::Reflection;
+		XMStoreFloat4x4(&ReflectionTerrainRitem.World, XMMatrixScaling(1.0, -1.0, 1.0));
+		ReflectionTerrainRitem.ObjCBIndex = ObjCBIndex++;
+#pragma endregion
+
+		auto Terrain = std::make_unique<RenderItem>(TerrainRitem);
+		auto ReflectionTerrain = std::make_unique<RenderItem>(TerrainRitem);
+		mRitemLayer[(int)RenderLayer::HeightMapTerrain].push_back(Terrain.get());
+		mReflectionWaterLayer[(int)RenderLayer::HeightMapTerrain].push_back(ReflectionTerrain.get());
+		mAllRitems.push_back(std::move(Terrain));
+		mAllRitems.push_back(std::move(ReflectionTerrain));
+	}
+
+
 	//Shock Wave Water
 	{
 		RenderItem ShockWaveWaterRitem = {};
@@ -1502,7 +1540,6 @@ void GameApp::BuildRenderItems()
 		mRitemLayer[(int)RenderLayer::ShockWaveWater].push_back(ShockWaveWater.get());
 		mAllRitems.push_back(std::move(ShockWaveWater));
 	}
-
 
 
 	//Sky Box
@@ -1988,6 +2025,16 @@ void GameApp::UpdateShadowPassCB(const GameTimer& gt)
 
 	auto currPassCB = mCurrFrameResource->PassCB.get();
 	currPassCB->CopyData(1, mShadowPassCB);
+}
+
+void GameApp::UpdateTerrainPassCB(const GameTimer& gt)
+{
+
+
+
+
+
+
 }
 
 void GameApp::UpdateAnimation(const GameTimer& gt)

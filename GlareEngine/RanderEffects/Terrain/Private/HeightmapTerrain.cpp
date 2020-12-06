@@ -55,6 +55,11 @@ float HeightmapTerrain::GetHeight(float x, float z) const
 	return 0.0f;
 }
 
+MeshGeometry* HeightmapTerrain::GetMeshGeometry() const
+{
+	return mGeometries.get();
+}
+
 XMMATRIX HeightmapTerrain::GetWorld() const
 {
 	return XMLoadFloat4x4(&mWorld);

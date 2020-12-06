@@ -1,6 +1,6 @@
 #include "WaterRefractionMaskShader.h"
-WaterRefractionMaskShader::WaterRefractionMaskShader(wstring VSShaderPath, wstring PSShaderPath, wstring GSShaderPath, const D3D_SHADER_MACRO* defines)
-	:BaseShader(VSShaderPath, PSShaderPath, GSShaderPath, defines)
+WaterRefractionMaskShader::WaterRefractionMaskShader(wstring VSShaderPath, wstring PSShaderPath, wstring HSShaderPath, wstring DSShaderPath, wstring GSShaderPath, const D3D_SHADER_MACRO* defines)
+	:BaseShader(VSShaderPath, PSShaderPath, HSShaderPath, DSShaderPath, GSShaderPath, defines)
 {
 }
 

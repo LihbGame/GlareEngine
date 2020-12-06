@@ -1,8 +1,10 @@
 #include "BaseShader.h"
-BaseShader::BaseShader(wstring VSShaderPath, wstring PSShaderPath, wstring GSShaderPath, _In_reads_opt_(_Inexpressible_(defines->Name != NULL)) const D3D_SHADER_MACRO* defines):
+BaseShader::BaseShader(wstring VSShaderPath, wstring PSShaderPath, wstring HSShaderPath , wstring DSShaderPath , wstring GSShaderPath, _In_reads_opt_(_Inexpressible_(defines->Name != NULL)) const D3D_SHADER_MACRO* defines):
 mVSShaderPath(VSShaderPath),
 mPSShaderPath(PSShaderPath),
-mGSShaderPath(GSShaderPath)
+mGSShaderPath(GSShaderPath),
+mHSShaderPath(HSShaderPath),
+mDSShaderPath(DSShaderPath)
 { 
     //vs shader
     if (mVSShaderPath != L"")
@@ -17,6 +19,14 @@ mGSShaderPath(GSShaderPath)
     {
         mGSShaders = L3DUtil::CompileShader(mGSShaderPath, defines, "GS", "gs_5_1");
     }
+	if (mHSShaderPath != L"")
+	{
+		mHSShaders = L3DUtil::CompileShader(mHSShaderPath, defines, "HS", "hs_5_1");
+	}
+	if (mDSShaderPath != L"")
+	{
+		mDSShaders = L3DUtil::CompileShader(mDSShaderPath, defines, "DS", "ds_5_1");
+	}
 }
 
 BaseShader::~BaseShader()
@@ -39,6 +49,16 @@ ComPtr<ID3DBlob> BaseShader::GetPSShader()
 ComPtr<ID3DBlob> BaseShader::GetGSShader()
 {
     return mGSShaders;
+}
+
+ComPtr<ID3DBlob> BaseShader::GetHSShader()
+{
+    return mHSShaders;
+}
+
+ComPtr<ID3DBlob> BaseShader::GetDSShader()
+{
+    return mDSShaders;
 }
 
 
