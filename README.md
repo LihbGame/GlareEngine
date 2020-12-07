@@ -3,6 +3,6 @@ Glare Rendering Engine  use DirectX12
 
 
 Windowed Test mode
-![demo](ScreenShot/screenshot2.png)
+![demo](ScreenShot/screenshot3.png)
  FullScreen Test mode
 ![demo](ScreenShot/screenshot4.png)
