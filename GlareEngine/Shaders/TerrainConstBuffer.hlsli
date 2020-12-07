@@ -12,4 +12,7 @@ cbuffer TerrainCBPass : register(b2)
 	bool isReflection;
 
 	float4 gWorldFrustumPlanes[6];
+
+	int mHeightMapIndex;
+	int mBlendMapIndex;
 };

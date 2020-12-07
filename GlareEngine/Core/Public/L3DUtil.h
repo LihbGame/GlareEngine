@@ -300,6 +300,12 @@ struct Texture
 	Microsoft::WRL::ComPtr<ID3D12Resource> UploadHeap = nullptr;
 };
 
+
+
+// Order: left, right, bottom, top, near, far.
+void ExtractFrustumPlanes(XMFLOAT4 planes[6], CXMMATRIX M);
+
+
 #ifndef ThrowIfFailed
 #define ThrowIfFailed(x)                                              \
 {                                                                     \

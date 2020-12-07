@@ -113,13 +113,13 @@ public:
 
 private:
 	virtual void OnResize()override;
-	virtual void Update(const GameTimer& gt)override;
-	virtual void Draw(const GameTimer& gt)override;
 	virtual void CreateRtvAndDsvDescriptorHeaps()override;
-
+	virtual void Update(const GameTimer& gt)override;
 	virtual void OnMouseDown(WPARAM btnState, int x, int y)override;
 	virtual void OnMouseUp(WPARAM btnState, int x, int y)override;
 	virtual void OnMouseMove(WPARAM btnState, int x, int y)override;
+	//Draw all things
+	virtual void Draw(const GameTimer& gt)override;
 
 	void OnKeyboardInput(const GameTimer& gt);
 
@@ -141,7 +141,7 @@ private:
 
 	void UpdateAnimation(const GameTimer& gt);
 
-	void DrawSceneToShadowMap();
+
 
 	//创建根签名
 	void BuildRootSignature();
@@ -160,13 +160,10 @@ private:
 	//创建材质信息
 	void BuildAllMaterials();
 	void BuildMaterials(wstring name, int MatCBIndex, float Height_Scale, XMFLOAT4 DiffuseAlbedo, XMFLOAT3 FresnelR0,XMFLOAT4X4 MatTransform, MaterialType MatType= MaterialType::NormalPBRMat);
-	
-	
 	//创建渲染项
 	void BuildRenderItems();
 	void BuildModelGeoInstanceItems();
-	//绘制渲染项
-	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
+	
 	//创建资源描述堆
 	void CreateDescriptorHeaps();
 	void CreatePBRSRVinDescriptorHeap(unordered_map<std::string, ID3D12Resource*> TexResource,int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor,wstring MaterialName);
@@ -180,10 +177,18 @@ private:
 	float GetHillsHeight(float x, float z)const;
 	XMFLOAT3 GetHillsNormal(float x, float z)const;
 
-	//ShockWaveWater
+
+	//绘制渲染项
+	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
+	//Draw Scene To ShadowMap
+	void DrawSceneToShadowMap();
+	//Draw Shock Wave Water
 	void DrawShockWaveWater(const GameTimer& gt);
 	void DrawWaterReflectionMap(const GameTimer& gt);
 	void DrawWaterRefractionMap(const GameTimer& gt);
+	//Draw Height map terrain
+	void DrawHeightMapTerrain(const GameTimer& gr);
+
 
 	//Height map terrain
 	HeightmapTerrain::InitInfo HeightmapTerrainInit();

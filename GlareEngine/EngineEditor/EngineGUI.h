@@ -23,6 +23,7 @@ public:
 	bool IsShowWater() { return show_water; }
 	bool IsShowLand() { return show_land; }
 	bool IsShowSky() { return show_sky; }
+	bool IsShowTerrain() { return show_HeightMapTerrain; }
 private:
 	bool show_demo_window = true;
 	bool show_another_window = true;
@@ -32,7 +33,7 @@ private:
 	bool show_water = true;
 	bool show_land = true;
 	bool show_sky = true;
-
+	bool show_HeightMapTerrain = true;
 
 	ID3D12DescriptorHeap* mGUISrvDescriptorHeap = nullptr;
 

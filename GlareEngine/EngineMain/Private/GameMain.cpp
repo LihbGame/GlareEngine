@@ -161,6 +161,7 @@ void GameApp::Update(const GameTimer& gt)
 	mShadowMap->UpdateShadowTransform(gt);
 	UpdateMainPassCB(gt);
 	UpdateShadowPassCB(gt);
+	UpdateTerrainPassCB(gt);
 
 	//UpdateAnimation(gt);
 	//UpdateWaves(gt);
@@ -293,8 +294,21 @@ void GameApp::Draw(const GameTimer& gt)
 	//Draw Shock Wave Water
 	if (mEngineUI->IsShowWater())
 	{
+		//Draw Shock Wave Water
+		PIXBeginEvent(mCommandList.Get(), 0, "Draw Shock Wave Water");
 		DrawShockWaveWater(gt);
+		PIXEndEvent(mCommandList.Get());
 	}
+
+	//Draw Height Map Terrain
+	if (mEngineUI->IsShowTerrain())
+	{
+		//Draw Height Map Terrain
+		PIXBeginEvent(mCommandList.Get(), 0, "Draw Height Map Terrain");
+		DrawHeightMapTerrain(gt);
+		PIXEndEvent(mCommandList.Get());
+	}
+
 
 	if (m4xMsaaState)
 	{
@@ -315,8 +329,8 @@ void GameApp::Draw(const GameTimer& gt)
 	mEngineUI->DrawUI(mCommandList.Get());
 	PIXEndEvent(mCommandList.Get());
 		
-		mCommandList->ResourceBarrier(2, barriers);
-		mCommandList->ResolveSubresource(CurrentBackBuffer(), 0, mMSAARenderTargetBuffer.Get(), 0, mBackBufferFormat);
+	mCommandList->ResourceBarrier(2, barriers);
+	mCommandList->ResolveSubresource(CurrentBackBuffer(), 0, mMSAARenderTargetBuffer.Get(), 0, mBackBufferFormat);
 	}
 
 	// Indicate a state transition on the resource usage.
@@ -1539,10 +1553,10 @@ void GameApp::BuildRenderItems()
 		TerrainRitem.ObjCBIndex = ObjCBIndex++;
 		TerrainRitem.Mat = mMaterials[L"Terrain/grass"].get();
 		TerrainRitem.Geo.push_back(mHeightMapTerrain->GetMeshGeometry());
-		TerrainRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST;
-		TerrainRitem.IndexCount.push_back(TerrainRitem.Geo[0]->DrawArgs["grid"].IndexCount);
-		TerrainRitem.StartIndexLocation.push_back(TerrainRitem.Geo[0]->DrawArgs["grid"].StartIndexLocation);
-		TerrainRitem.BaseVertexLocation.push_back(TerrainRitem.Geo[0]->DrawArgs["grid"].BaseVertexLocation);
+		TerrainRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;// D3D11_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST;
+		TerrainRitem.IndexCount.push_back(TerrainRitem.Geo[0]->DrawArgs["HeightMapTerrain"].IndexCount);
+		TerrainRitem.StartIndexLocation.push_back(TerrainRitem.Geo[0]->DrawArgs["HeightMapTerrain"].StartIndexLocation);
+		TerrainRitem.BaseVertexLocation.push_back(TerrainRitem.Geo[0]->DrawArgs["HeightMapTerrain"].BaseVertexLocation);
 		TerrainRitem.InstanceCount = 1;
 
 #pragma region Reflection
@@ -1807,8 +1821,6 @@ void GameApp::DrawShockWaveWater(const GameTimer& gt)
 
 void GameApp::DrawWaterReflectionMap(const GameTimer& gt)
 {
-
-	
 	// Clear the back buffer and depth buffer.
 	//test Reflection sence no shadow
 	{
@@ -1896,6 +1908,14 @@ void GameApp::DrawWaterRefractionMap(const GameTimer& gt)
 	mCommandList->ResourceBarrier(1, barriers);
 
 	mCommandList->ResolveSubresource(mShockWaveWater->SingleRefractionSRV(), 0, mMSAARenderTargetBuffer.Get(), 0, mBackBufferFormat);
+}
+
+void GameApp::DrawHeightMapTerrain(const GameTimer& gr)
+{
+	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::HeightMapTerrain).Get());
+	PIXBeginEvent(mCommandList.Get(), 0, "Draw Height Map Terrain");
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::HeightMapTerrain]);
+	PIXEndEvent(mCommandList.Get());
 }
 
 HeightmapTerrain::InitInfo GameApp::HeightmapTerrainInit()
@@ -2068,12 +2088,28 @@ void GameApp::UpdateShadowPassCB(const GameTimer& gt)
 
 void GameApp::UpdateTerrainPassCB(const GameTimer& gt)
 {
+	XMMATRIX viewProj = mCamera.GetView() * mCamera.GetProj();
 
+	XMFLOAT4 worldPlanes[6];
+	ExtractFrustumPlanes(worldPlanes, viewProj);
 
+	TerrainConstants  TerrainConstant;
+	mHeightMapTerrain->GetTerrainConstant(TerrainConstant);
 
+	for (int i = 0; i < 6; ++i)
+	{
+		TerrainConstant.gWorldFrustumPlanes[i] = worldPlanes[i];
+	}
 
-
-
+	TerrainConstant.isReflection = false;
+	TerrainConstant.gBlendMapIndex = mBlendMapIndex;
+	TerrainConstant.gHeightMapIndex = mHeightMapIndex;
+	
+	auto currPassCB = mCurrFrameResource->TerrainCB.get();
+	currPassCB->CopyData(0, TerrainConstant);
+	//地形的水面反射
+	TerrainConstant.isReflection = true;
+	currPassCB->CopyData(1, TerrainConstant);
 }
 
 void GameApp::UpdateAnimation(const GameTimer& gt)

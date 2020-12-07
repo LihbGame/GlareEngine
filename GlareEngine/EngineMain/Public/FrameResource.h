@@ -104,6 +104,8 @@ struct TerrainConstants
 
     DirectX::XMFLOAT4 gWorldFrustumPlanes[6];
 
+    int gHeightMapIndex = 0;
+    int gBlendMapIndex = 0;
 };
 
 

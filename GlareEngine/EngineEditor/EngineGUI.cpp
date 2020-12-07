@@ -102,6 +102,7 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 			ImGui::Checkbox("Sky", &show_sky);
 			ImGui::Checkbox("Land", &show_land);
 			ImGui::Checkbox("Water", &show_water);
+			ImGui::Checkbox("HeightMapTerrain", &show_HeightMapTerrain);
 			//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			ImGui::End();
 		}

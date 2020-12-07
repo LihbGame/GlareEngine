@@ -10,7 +10,7 @@ FrameResource::FrameResource(ID3D12Device* device, UINT passCount, UINT Instance
     SimpleObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(device, objectCount, true);
     SkinnedCB = std::make_unique<UploadBuffer<SkinnedConstants>>(device, skinnedObjectCount, true);
    //one Terrain Constants
-    TerrainCB= std::make_unique<UploadBuffer<TerrainConstants>>(device, 1, true);
+    TerrainCB= std::make_unique<UploadBuffer<TerrainConstants>>(device, 2, true);
     
     for (int i = 0; i < InstanceModelSubMeshNum; ++i)
     {

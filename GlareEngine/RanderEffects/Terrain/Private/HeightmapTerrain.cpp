@@ -70,9 +70,6 @@ void HeightmapTerrain::SetWorld(CXMMATRIX M)
 	XMStoreFloat4x4(&mWorld, M);
 }
 
-void HeightmapTerrain::Draw(ID3D11DeviceContext* dc, const Camera& cam, bool isReflection)
-{
-}
 
 void HeightmapTerrain::Update(float dt)
 {
@@ -347,4 +344,16 @@ void HeightmapTerrain::BuildHeightmapSRV(CD3DX12_CPU_DESCRIPTOR_HANDLE BlendMapD
 	HeightMapDesc.Texture2D.MipLevels = -1;
 	HeightMapDesc.Format = DXGI_FORMAT_R16_FLOAT;
 	mDevice->CreateShaderResourceView(mHeightMapSRV.Get(), &HeightMapDesc, HeightMapDescriptor);
+}
+
+void HeightmapTerrain::GetTerrainConstant(TerrainConstants& TerrainConstant)
+{
+	TerrainConstant.gMinDist = 200.0f;
+	TerrainConstant.gMaxDist = 1000.0f;
+	TerrainConstant.gMinTess = 0.0f;
+	TerrainConstant.gMaxTess = 0.0f;
+
+	TerrainConstant.gTexelCellSpaceU = 1.0f / mInfo.HeightmapWidth;
+	TerrainConstant.gTexelCellSpaceV = 1.0f / mInfo.HeightmapHeight;
+	TerrainConstant.gWorldCellSpace = mInfo.CellSpacing;
 }

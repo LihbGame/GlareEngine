@@ -2,7 +2,7 @@
 #include "L3DUtil.h"
 #include "L3DCamera.h"
 #include "L3DTextureManage.h"
-
+#include "FrameResource.h"
 class HeightmapTerrain
 {
 public:
@@ -32,7 +32,6 @@ public:
 	XMMATRIX GetWorld()const;
 	void SetWorld(CXMMATRIX M);
 
-	void Draw(ID3D11DeviceContext* dc, const Camera& cam, bool isReflection);
 	void Update(float dt);
 
 	ID3D12Resource* GetHeightMapSRV() { return mHeightMapSRV.Get(); }
@@ -44,6 +43,8 @@ public:
 
 	void BuildHeightmapSRV(CD3DX12_CPU_DESCRIPTOR_HANDLE BlendMapDescriptor,
 		CD3DX12_CPU_DESCRIPTOR_HANDLE HeightMapDescriptor);
+
+	void GetTerrainConstant(TerrainConstants& TerrainConstant);
 private:
 	void LoadHeightmapAsset();
 	void Smooth();
