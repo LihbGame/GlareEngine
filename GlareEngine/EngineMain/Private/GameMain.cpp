@@ -4,7 +4,6 @@
 #pragma comment(lib, "D3D12.lib")
 
 
-
 #define ShadowMapSize 2048
 
 const int gNumFrameResources = 3;
@@ -1314,6 +1313,38 @@ void GameApp::BuildPSOs()
 		{},
 		{});
 #pragma endregion
+
+#pragma region Height Map Terrain
+	Input = mShaders["HeightMapTerrain"]->GetInputLayout();
+	mPSOs->BuildPSO(md3dDevice.Get(),
+		PSOName::HeightMapTerrain,
+		mRootSignature.Get(),
+		{ reinterpret_cast<BYTE*>(mShaders["HeightMapTerrain"]->GetVSShader()->GetBufferPointer()),
+			mShaders["HeightMapTerrain"]->GetVSShader()->GetBufferSize() },
+		{ reinterpret_cast<BYTE*>(mShaders["HeightMapTerrain"]->GetPSShader()->GetBufferPointer()),
+		mShaders["HeightMapTerrain"]->GetPSShader()->GetBufferSize() },
+		{ /*reinterpret_cast<BYTE*>(mShaders["HeightMapTerrain"]->GetDSShader()->GetBufferPointer()),
+		mShaders["HeightMapTerrain"]->GetDSShader()->GetBufferSize() */},
+		{ /*reinterpret_cast<BYTE*>(mShaders["HeightMapTerrain"]->GetHSShader()->GetBufferPointer()),
+		mShaders["HeightMapTerrain"]->GetHSShader()->GetBufferSize() */},
+		{},
+		{},
+		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
+		UINT_MAX,
+		CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
+		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
+		{ Input.data(), (UINT)Input.size() },
+		{},
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+		1,
+		RTVFormats,
+		mDepthStencilFormat,
+		{ UINT(m4xMsaaState ? 4 : 1) ,UINT(0) },
+		0,
+		{},
+		{});
+#pragma endregion
+
 }
 
 void GameApp::BuildFrameResources()
