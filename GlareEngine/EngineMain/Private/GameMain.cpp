@@ -37,8 +37,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 GameApp::GameApp(HINSTANCE hInstance)
 	: D3DApp(hInstance)
 {
-	mEngineUI = make_unique<EngineGUI>();
 	transforms.resize(96);
+
+	mObjCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
+	mSkinnedCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(SkinnedConstants));
+	mTerrainCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(TerrainConstants));
 }
 
 GameApp::~GameApp()
@@ -67,6 +70,8 @@ bool GameApp::Initialize()
 	// 将命令列表重置为准备初始化命令。
 	ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
 
+	//init UI
+	mEngineUI = make_unique<EngineGUI>();
 	// 获取此堆类型中描述符的增量大小。 这是特定于硬件的，因此我们必须查询此信息。
 	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	//texture manage
@@ -74,7 +79,7 @@ bool GameApp::Initialize()
 	//pso init
 	mPSOs = std::make_unique<PSO>();
 	//wave :not use
-	mWaves = std::make_unique<Waves>(256,256, 4.0f, 0.03f, 8.0f, 0.2f);
+	mWaves = std::make_unique<Waves>(256, 256, 4.0f, 0.03f, 8.0f, 0.2f);
 	//ShockWaveWater
 	mShockWaveWater = std::make_unique<ShockWaveWater>(md3dDevice.Get(), mClientWidth, mClientHeight,m4xMsaaState, mTextureManage.get());
 	//camera
@@ -304,9 +309,7 @@ void GameApp::Draw(const GameTimer& gt)
 	if (mEngineUI->IsShowTerrain())
 	{
 		//Draw Height Map Terrain
-		PIXBeginEvent(mCommandList.Get(), 0, "Draw Height Map Terrain");
 		DrawHeightMapTerrain(gt);
-		PIXEndEvent(mCommandList.Get());
 	}
 
 
@@ -1712,10 +1715,6 @@ void GameApp::BuildModelGeoInstanceItems()
 
 void GameApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems)
 {
-	//sizeof ObjectConstants 
-	UINT objCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
-	UINT skinnedCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(SkinnedConstants));
-
 	auto objectCB = mCurrFrameResource->SimpleObjectCB->Resource();
 	auto skinnedCB = mCurrFrameResource->SkinnedCB->Resource();
 
@@ -1727,7 +1726,7 @@ void GameApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vec
 		D3D12_GPU_VIRTUAL_ADDRESS objCBAddress;
 		if (ri->ObjCBIndex >= 0)
 		{
-			objCBAddress = objectCB->GetGPUVirtualAddress() + ri->ObjCBIndex * objCBByteSize;
+			objCBAddress = objectCB->GetGPUVirtualAddress() + ri->ObjCBIndex * mObjCBByteSize;
 		}
 		else//instance draw call
 		{
@@ -1866,6 +1865,11 @@ void GameApp::DrawWaterReflectionMap(const GameTimer& gt)
 		DrawRenderItems(mCommandList.Get(), mReflectionWaterLayer[(int)RenderLayer::InstanceSimpleItems]);
 		PIXEndEvent(mCommandList.Get());
 	}
+	//Draw Height Map Terrain
+	if (mEngineUI->IsShowTerrain())
+	{
+		DrawHeightMapTerrain(gt, true);
+	}
 	//Draw Sky box
 	if (mEngineUI->IsShowSky())
 	{
@@ -1910,12 +1914,28 @@ void GameApp::DrawWaterRefractionMap(const GameTimer& gt)
 	mCommandList->ResolveSubresource(mShockWaveWater->SingleRefractionSRV(), 0, mMSAARenderTargetBuffer.Get(), 0, mBackBufferFormat);
 }
 
-void GameApp::DrawHeightMapTerrain(const GameTimer& gr)
+void GameApp::DrawHeightMapTerrain(const GameTimer& gr,bool IsReflection)
 {
+	auto TerrainCB = mCurrFrameResource->TerrainCB->Resource();
 	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::HeightMapTerrain).Get());
-	PIXBeginEvent(mCommandList.Get(), 0, "Draw Height Map Terrain");
-	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::HeightMapTerrain]);
-	PIXEndEvent(mCommandList.Get());
+	if (IsReflection)
+	{
+		D3D12_GPU_VIRTUAL_ADDRESS TerrainCBAddress = TerrainCB->GetGPUVirtualAddress() + mTerrainCBByteSize;
+		mCommandList->SetGraphicsRootConstantBufferView(2, TerrainCBAddress);
+
+		PIXBeginEvent(mCommandList.Get(), 0, "Draw Reflection Height Map Terrain");
+		DrawRenderItems(mCommandList.Get(), mReflectionWaterLayer[(int)RenderLayer::HeightMapTerrain]);
+		PIXEndEvent(mCommandList.Get());
+	}
+	else
+	{
+		D3D12_GPU_VIRTUAL_ADDRESS TerrainCBAddress = TerrainCB->GetGPUVirtualAddress();
+		mCommandList->SetGraphicsRootConstantBufferView(2, TerrainCBAddress);
+
+		PIXBeginEvent(mCommandList.Get(), 0, "Draw Height Map Terrain");
+		DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::HeightMapTerrain]);
+		PIXEndEvent(mCommandList.Get());
+	}
 }
 
 HeightmapTerrain::InitInfo GameApp::HeightmapTerrainInit()

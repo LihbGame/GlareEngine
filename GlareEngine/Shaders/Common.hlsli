@@ -104,11 +104,12 @@ cbuffer cbPass : register(b1)
 
 };
 
-
+#ifdef SKINNED
 cbuffer cbSkinned : register(b2)
 {
    float4x4 gBoneTransforms[96];
 };
+#endif
 
 //---------------------------------------------------------------------------------------
 // Transforms a normal map sample to model space.
@@ -228,3 +229,4 @@ float CalcShadowFactor(float4 shadowPosH)
 
     return percentLit / 9.0f;
 }
+

@@ -73,6 +73,8 @@ void HeightmapTerrain::SetWorld(CXMMATRIX M)
 
 void HeightmapTerrain::Update(float dt)
 {
+
+
 }
 
 void HeightmapTerrain::LoadHeightmapAsset()

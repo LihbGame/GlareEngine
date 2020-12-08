@@ -187,7 +187,7 @@ private:
 	void DrawWaterReflectionMap(const GameTimer& gt);
 	void DrawWaterRefractionMap(const GameTimer& gt);
 	//Draw Height map terrain
-	void DrawHeightMapTerrain(const GameTimer& gr);
+	void DrawHeightMapTerrain(const GameTimer& gr,bool IsReflection=false);
 
 
 	//Height map terrain
@@ -288,4 +288,9 @@ private:
 	int mHeightMapIndex = 0;
 	//play back anime 
 	//std::unordered_map<std::string, AnimePlayback> AnimationPlayback;
+
+	//sizeof ObjectConstants 
+	UINT mObjCBByteSize;
+	UINT mSkinnedCBByteSize;
+	UINT mTerrainCBByteSize;
 };
