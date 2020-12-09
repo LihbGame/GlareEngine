@@ -1,4 +1,7 @@
-float4 PS() : SV_TARGET
+#include "Common.hlsli"
+#include "TerrainConstBuffer.hlsli"
+float4 PS(DomainOut DomainIn) : SV_TARGET
 {
-	return float4(1.0f, 1.0f, 1.0f, 1.0f);
+	float4 diffuseAlbedo = gSRVMap[33].Sample(gsamAnisotropicWrap, DomainIn.TiledTex);
+	return diffuseAlbedo;
 }

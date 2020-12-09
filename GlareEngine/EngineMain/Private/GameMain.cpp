@@ -296,6 +296,14 @@ void GameApp::Draw(const GameTimer& gt)
 		}
 	}
 
+	//Draw Height Map Terrain
+	if (mEngineUI->IsShowTerrain())
+	{
+		//Draw Height Map Terrain
+		DrawHeightMapTerrain(gt);
+	}
+
+
 	//Draw Shock Wave Water
 	if (mEngineUI->IsShowWater())
 	{
@@ -305,12 +313,7 @@ void GameApp::Draw(const GameTimer& gt)
 		PIXEndEvent(mCommandList.Get());
 	}
 
-	//Draw Height Map Terrain
-	if (mEngineUI->IsShowTerrain())
-	{
-		//Draw Height Map Terrain
-		DrawHeightMapTerrain(gt);
-	}
+	
 
 
 	if (m4xMsaaState)
@@ -463,7 +466,7 @@ void GameApp::CreateDescriptorHeaps()
 	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	mBlendMapIndex = SRVIndex++;
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE HeightMapDescriptor(mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	CD3DX12_CPU_DESCRIPTOR_HANDLE HeightMapDescriptor = hDescriptor;
 	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	mHeightMapIndex = SRVIndex++;
 
@@ -1333,6 +1336,8 @@ void GameApp::BuildPSOs()
 
 #pragma region Height Map Terrain
 	Input = mShaders["HeightMapTerrain"]->GetInputLayout();
+	D3D12_RASTERIZER_DESC HeightMapTerrainRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	//HeightMapTerrainRasterizerState.FillMode = D3D12_FILL_MODE_s;
 	mPSOs->BuildPSO(md3dDevice.Get(),
 		PSOName::HeightMapTerrain,
 		mRootSignature.Get(),
@@ -1340,19 +1345,19 @@ void GameApp::BuildPSOs()
 			mShaders["HeightMapTerrain"]->GetVSShader()->GetBufferSize() },
 		{ reinterpret_cast<BYTE*>(mShaders["HeightMapTerrain"]->GetPSShader()->GetBufferPointer()),
 		mShaders["HeightMapTerrain"]->GetPSShader()->GetBufferSize() },
-		{ /*reinterpret_cast<BYTE*>(mShaders["HeightMapTerrain"]->GetDSShader()->GetBufferPointer()),
-		mShaders["HeightMapTerrain"]->GetDSShader()->GetBufferSize() */},
-		{ /*reinterpret_cast<BYTE*>(mShaders["HeightMapTerrain"]->GetHSShader()->GetBufferPointer()),
-		mShaders["HeightMapTerrain"]->GetHSShader()->GetBufferSize() */},
+		{ reinterpret_cast<BYTE*>(mShaders["HeightMapTerrain"]->GetDSShader()->GetBufferPointer()),
+		mShaders["HeightMapTerrain"]->GetDSShader()->GetBufferSize() },
+		{ reinterpret_cast<BYTE*>(mShaders["HeightMapTerrain"]->GetHSShader()->GetBufferPointer()),
+		mShaders["HeightMapTerrain"]->GetHSShader()->GetBufferSize() },
 		{},
 		{},
 		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
 		UINT_MAX,
-		CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
+		HeightMapTerrainRasterizerState,
 		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
 		{ Input.data(), (UINT)Input.size() },
 		{},
-		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH,
 		1,
 		RTVFormats,
 		mDepthStencilFormat,
@@ -1551,12 +1556,12 @@ void GameApp::BuildRenderItems()
 	{
 		RenderItem TerrainRitem = {};
 		TerrainRitem.World = MathHelper::Identity4x4();
-		XMStoreFloat4x4(&TerrainRitem.World, XMMatrixTranslation(0.0f, 1.0f, 0.0f) * XMMatrixScaling(1.0, 1.0, 1.0));
+		XMStoreFloat4x4(&TerrainRitem.World, XMMatrixTranslation(0.0f, -10.0f, 0.0f) * XMMatrixScaling(1.0, 1.0, 1.0));
 		XMStoreFloat4x4(&TerrainRitem.TexTransform, XMMatrixScaling(2.0, 2.0, 2.0));
 		TerrainRitem.ObjCBIndex = ObjCBIndex++;
 		TerrainRitem.Mat = mMaterials[L"Terrain/grass"].get();
 		TerrainRitem.Geo.push_back(mHeightMapTerrain->GetMeshGeometry());
-		TerrainRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;// D3D11_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST;
+		TerrainRitem.PrimitiveType =  D3D11_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST;
 		TerrainRitem.IndexCount.push_back(TerrainRitem.Geo[0]->DrawArgs["HeightMapTerrain"].IndexCount);
 		TerrainRitem.StartIndexLocation.push_back(TerrainRitem.Geo[0]->DrawArgs["HeightMapTerrain"].StartIndexLocation);
 		TerrainRitem.BaseVertexLocation.push_back(TerrainRitem.Geo[0]->DrawArgs["HeightMapTerrain"].BaseVertexLocation);

@@ -100,7 +100,7 @@ struct TerrainConstants
 	float gTexelCellSpaceU;
 	float gTexelCellSpaceV;
 	float gWorldCellSpace;
-	bool isReflection;
+	int isReflection;
 
     DirectX::XMFLOAT4 gWorldFrustumPlanes[6];
 

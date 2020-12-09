@@ -28,8 +28,8 @@ struct VertexIn
 struct VertexOut
 {
 	float3 PosW     : POSITION;
-	float2 Tex      : TEXCOORD0;
-	float2 BoundsY  : TEXCOORD1;
+	float2 Tex      : TEXCOORD;
+	float2 BoundsY  : BoundY;
 };
 
 
@@ -42,8 +42,15 @@ struct PatchTess
 struct HullOut
 {
 	float3 PosW     : POSITION;
-	float2 Tex      : TEXCOORD0;
+	float2 Tex      : TEXCOORD;
 };
 
 
-
+struct DomainOut
+{
+	float4 PosH     : SV_POSITION;
+	float3 PosW     : POSITION;
+	float2 Tex      : TEXCOORD0;
+	float2 TiledTex : TEXCOORD1;
+	float ClipValue : SV_ClipDistance0;//²Ã¼ôÖµ¹Ø¼ü×Ö
+};

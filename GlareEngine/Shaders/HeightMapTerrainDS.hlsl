@@ -3,14 +3,6 @@
 
 #define gTexScale float2(5.0f,5.0f)
 
-struct DomainOut
-{
-	float4 PosH     : SV_POSITION;
-	float3 PosW     : POSITION;
-	float2 Tex      : TEXCOORD0;
-	float2 TiledTex : TEXCOORD1;
-	float ClipValue : SV_ClipDistance0;//裁剪值关键字
-};
 
 // 细分器创建的每个顶点都会调用域着色器。 就像细分后的顶点着色器一样。
 [domain("quad")]
@@ -34,13 +26,16 @@ DomainOut DS(PatchTess patchTess,
 	// Tile layer textures over terrain.
 	dout.TiledTex = dout.Tex * gTexScale;
 
+	//dout.PosW = mul(float4(dout.PosW, 1.0f),gWorld).xyz;
+
 	// Displacement mapping
-	dout.PosW.y = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, dout.Tex, 0).r;
+	dout.PosW.y =  gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, dout.Tex, 0).x-40.0f;
 	//在世界空间，对于乘以裁剪面小于零的进行裁剪，裁剪不满足条件的几何体部分
 	if (isReflection)
 	{
 		float3 ClipPlane = float3(0.0f, 1.0f, 0.0f);
 		dout.ClipValue = dot(dout.PosW, ClipPlane);
+		dout.PosW.y = -dout.PosW.y;
 	}
 	else
 	{
