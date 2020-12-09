@@ -1,35 +1,57 @@
-struct DS_OUTPUT
+#include "TerrainConstBuffer.hlsli"
+#include "Common.hlsli"
+
+#define gTexScale float2(5.0f,5.0f)
+
+struct DomainOut
 {
-	float4 vPosition  : SV_POSITION;
-	// TODO:  更改/添加其他资料
+	float4 PosH     : SV_POSITION;
+	float3 PosW     : POSITION;
+	float2 Tex      : TEXCOORD0;
+	float2 TiledTex : TEXCOORD1;
+	float ClipValue : SV_ClipDistance0;//裁剪值关键字
 };
 
-// 输出控制点
-struct HS_CONTROL_POINT_OUTPUT
+// 细分器创建的每个顶点都会调用域着色器。 就像细分后的顶点着色器一样。
+[domain("quad")]
+DomainOut DS(PatchTess patchTess,
+	float2 uv : SV_DomainLocation,
+	const OutputPatch<HullOut, 4> quad)
 {
-	float3 vPosition : WORLDPOS; 
-};
+	DomainOut dout;
 
-// 输出修补程序常量数据。
-struct HS_CONSTANT_DATA_OUTPUT
-{
-	float EdgeTessFactor[3]			: SV_TessFactor; // 例如，对于四象限域，将为 [4]
-	float InsideTessFactor			: SV_InsideTessFactor; // 例如，对于四象限域，将为 Inside[2]
-	// TODO:  更改/添加其他资料
-};
+	// Bilinear interpolation.
+	dout.PosW = lerp(
+		lerp(quad[0].PosW, quad[1].PosW, uv.x),
+		lerp(quad[2].PosW, quad[3].PosW, uv.x),
+		uv.y);
 
-#define NUM_CONTROL_POINTS 3
+	dout.Tex = lerp(
+		lerp(quad[0].Tex, quad[1].Tex, uv.x),
+		lerp(quad[2].Tex, quad[3].Tex, uv.x),
+		uv.y);
 
-[domain("tri")]
-DS_OUTPUT DS(
-	HS_CONSTANT_DATA_OUTPUT input,
-	float3 domain : SV_DomainLocation,
-	const OutputPatch<HS_CONTROL_POINT_OUTPUT, NUM_CONTROL_POINTS> patch)
-{
-	DS_OUTPUT Output;
+	// Tile layer textures over terrain.
+	dout.TiledTex = dout.Tex * gTexScale;
 
-	Output.vPosition = float4(
-		patch[0].vPosition*domain.x+patch[1].vPosition*domain.y+patch[2].vPosition*domain.z,1);
+	// Displacement mapping
+	dout.PosW.y = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, dout.Tex, 0).r;
+	//在世界空间，对于乘以裁剪面小于零的进行裁剪，裁剪不满足条件的几何体部分
+	if (isReflection)
+	{
+		float3 ClipPlane = float3(0.0f, 1.0f, 0.0f);
+		dout.ClipValue = dot(dout.PosW, ClipPlane);
+	}
+	else
+	{
+		dout.ClipValue = 1.0f;
+	}
+	// NOTE:我们尝试使用有限差分来计算着色器中的法线，
+	//但顶点会连续不断地分数移动，甚至会随着法线的变化而产生明显的闪光效果。
+	//因此，我们将计算移至像素着色器。
 
-	return Output;
+	// Project to homogeneous clip space.
+	dout.PosH = mul(float4(dout.PosW, 1.0f), gViewProj);
+
+	return dout;
 }

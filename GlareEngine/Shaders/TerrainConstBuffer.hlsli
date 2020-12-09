@@ -33,5 +33,17 @@ struct VertexOut
 };
 
 
+struct PatchTess
+{
+	float EdgeTess[4]   : SV_TessFactor;
+	float InsideTess[2] : SV_InsideTessFactor;
+};
+
+struct HullOut
+{
+	float3 PosW     : POSITION;
+	float2 Tex      : TEXCOORD0;
+};
+
 
 

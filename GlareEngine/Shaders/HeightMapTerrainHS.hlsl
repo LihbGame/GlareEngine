@@ -44,15 +44,6 @@ bool AABBOutsideFrustumTest(float3 center, float3 extents, float4 frustumPlanes[
 	return false;
 }
 
-
-
-
-struct PatchTess
-{
-	float EdgeTess[4]   : SV_TessFactor;
-	float InsideTess[2] : SV_InsideTessFactor;
-};
-
 PatchTess ConstantHS(InputPatch<VertexOut, 4> patch, uint patchID : SV_PrimitiveID)
 {
 	PatchTess pt;
@@ -109,11 +100,7 @@ PatchTess ConstantHS(InputPatch<VertexOut, 4> patch, uint patchID : SV_Primitive
 	}
 }
 
-struct HullOut
-{
-	float3 PosW     : POSITION;
-	float2 Tex      : TEXCOORD0;
-};
+
 
 [domain("quad")]
 [partitioning("fractional_even")]
