@@ -44,13 +44,7 @@ VertexOut VS(VertexIn vin)
     vout.PosH = mul(float4(vin.Pos, 1.0f), gWorldViewProj);
     float tans = fmod(gTotalTime, 100) * 0.01;
     float2 fTranslation = float2(tans, 0);
-    float2 vTexCoords = PosW.xz * 0.005;
-
-    // Output bump layers texture coordinates    
-    //float fSinTranslation = sin(fTranslation * 100) * 0.005;//<-0.005f,+0.005f>
-    //float2 vTranslation0 = fTranslation + fSinTranslation;
-    //float2 vTranslation1 = fTranslation - fSinTranslation;
-    //float2 vTranslation2 = fTranslation;
+    float2 vTexCoords = PosW.xz * 0.01;
 
     // Scale texture coordinates to get mix of low/high frequency details
     vout.Wave0.xy = vTexCoords.xy + fTranslation * 2.0;

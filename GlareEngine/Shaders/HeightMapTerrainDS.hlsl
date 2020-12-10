@@ -26,19 +26,20 @@ DomainOut DS(PatchTess patchTess,
 	// Tile layer textures over terrain.
 	dout.TiledTex = dout.Tex * gTexScale;
 
-	//dout.PosW = mul(float4(dout.PosW, 1.0f),gWorld).xyz;
+	dout.PosW = mul(float4(dout.PosW, 1.0f),gWorld).xyz;
 
 	// Displacement mapping
-	dout.PosW.y =  gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, dout.Tex, 0).x-40.0f;
+	float height =  gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, dout.Tex, 0).x;
 	//在世界空间，对于乘以裁剪面小于零的进行裁剪，裁剪不满足条件的几何体部分
 	if (isReflection)
 	{
-		float3 ClipPlane = float3(0.0f, 1.0f, 0.0f);
+		dout.PosW.y -= height;
+		float3 ClipPlane = float3(0.0f, -1.0f, 0.0f);
 		dout.ClipValue = dot(dout.PosW, ClipPlane);
-		dout.PosW.y = -dout.PosW.y;
 	}
 	else
 	{
+		dout.PosW.y += height;
 		dout.ClipValue = 1.0f;
 	}
 	// NOTE:我们尝试使用有限差分来计算着色器中的法线，

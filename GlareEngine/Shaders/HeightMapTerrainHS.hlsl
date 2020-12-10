@@ -16,11 +16,10 @@ float CalcTessFactor(float3 p)
 // 如果框完全位于平面的后面(负半空间),则返回true。
 bool AABBBehindPlaneTest(float3 center, float3 extents, float4 plane)
 {
-	float3 n = abs(plane.xyz);
+	//float3 n = abs(plane.xyz);
 
 	//这始终是正的。
-	float r = dot(extents, n)+35;
-
+	float r =length(extents);
 	//从中心点到平面的正负距离。
 	float s = dot(float4(center, 1.0f), plane);
 
