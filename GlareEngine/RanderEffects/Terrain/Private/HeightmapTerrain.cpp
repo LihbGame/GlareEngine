@@ -52,7 +52,41 @@ float HeightmapTerrain::GetDepth() const
 
 float HeightmapTerrain::GetHeight(float x, float z) const
 {
-	return 0.0f;
+	// Transform from terrain local space to "cell" space.
+	float c = (x + 0.5f * GetWidth()) / mInfo.CellSpacing;
+	float d = (z - 0.5f * GetDepth()) / -mInfo.CellSpacing;
+
+	// Get the row and column we are in.
+	int row = (int)floorf(d);
+	int col = (int)floorf(c);
+
+	// Grab the heights of the cell we are in.
+	// A*--*B
+	//  | /|
+	//  |/ |
+	// C*--*D
+	float A = mHeightmap[row * mInfo.HeightmapWidth + col];
+	float B = mHeightmap[row * mInfo.HeightmapWidth + col + 1];
+	float C = mHeightmap[(row + 1) * mInfo.HeightmapWidth + col];
+	float D = mHeightmap[(row + 1) * mInfo.HeightmapWidth + col + 1];
+
+	// Where we are relative to the cell.
+	float s = c - (float)col;
+	float t = d - (float)row;
+
+	// If upper triangle ABC.
+	if (s + t <= 1.0f)
+	{
+		float uy = B - A;
+		float vy = C - A;
+		return A + s * uy + t * vy;
+	}
+	else // lower triangle DCB.
+	{
+		float uy = C - D;
+		float vy = B - D;
+		return D + (1.0f - s) * uy + (1.0f - t) * vy;
+	}
 }
 
 MeshGeometry* HeightmapTerrain::GetMeshGeometry() const
@@ -350,8 +384,8 @@ void HeightmapTerrain::BuildHeightmapSRV(CD3DX12_CPU_DESCRIPTOR_HANDLE BlendMapD
 
 void HeightmapTerrain::GetTerrainConstant(TerrainConstants& TerrainConstant)
 {
-	TerrainConstant.gMinDist = 200.0f;
-	TerrainConstant.gMaxDist = 1000.0f;
+	TerrainConstant.gMinDist = 500.0f;
+	TerrainConstant.gMaxDist = 2000.0f;
 	TerrainConstant.gMinTess = 0.0f;
 	TerrainConstant.gMaxTess = 6.0f;
 

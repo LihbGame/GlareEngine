@@ -24,17 +24,18 @@ public:
 	bool IsShowLand() { return show_land; }
 	bool IsShowSky() { return show_sky; }
 	bool IsShowTerrain() { return show_HeightMapTerrain; }
+	float GetCameraModeSpeed() { return CameraMoveSpeed; }
 private:
 	bool show_demo_window = true;
 	bool show_another_window = true;
 
-	bool show_shadow = true;
-	bool show_model = true;
+	bool show_shadow = false;
+	bool show_model = false;
 	bool show_water = true;
-	bool show_land = true;
+	bool show_land = false;
 	bool show_sky = true;
 	bool show_HeightMapTerrain = true;
-
+	float CameraMoveSpeed = 50.0f;
 	ID3D12DescriptorHeap* mGUISrvDescriptorHeap = nullptr;
 
 	ImGuiContext *g=nullptr;

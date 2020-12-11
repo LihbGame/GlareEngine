@@ -1,7 +1,7 @@
 #include "TerrainConstBuffer.hlsli"
 #include "Common.hlsli"
 
-#define gTexScale float2(5.0f,5.0f)
+#define gTexScale float2(10.0f,10.0f)
 
 
 // 细分器创建的每个顶点都会调用域着色器。 就像细分后的顶点着色器一样。

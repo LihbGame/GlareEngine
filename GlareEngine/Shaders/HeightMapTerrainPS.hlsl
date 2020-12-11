@@ -34,13 +34,61 @@ float4 PS(DomainOut pin) : SV_TARGET
 
 	// Sample layers in texture array.
 	MaterialData Mat = gMaterialData[gMaterialIndex];
-	uint  SrvIndex = Mat.DiffuseMapIndex;
+	float3 ModeSpacetoEye = WorldSpaceToTBN(toEye, normalW, tangent);
+
+	uint  DiffuseMapSrvIndex = Mat.DiffuseMapIndex;
+	uint  HeightMapSrvIndex = Mat.HeightMapIndex;
+	uint  AOMapSrvIndex = Mat.AOMapIndex;
+	uint  MetallicMapSrvIndex = Mat.MetallicMapIndex;
+	uint  NormalMapSrvIndex = Mat.NormalMapIndex;
+	uint  RoughnessMapSrvIndex = Mat.RoughnessMapIndex;
+
 	float4 c[5];
-	for (int i = 0; i < 5; ++i)
+	for (int i = 0; i < 3; ++i)
 	{
-		c[i] = gSRVMap[SrvIndex].Sample(gsamLinearWrap, pin.TiledTex);
-		SrvIndex += 6;
+		if (!isReflection)
+		{
+			//ÊÓ²îÓ³Éä
+			float2 UV = ParallaxMapping(HeightMapSrvIndex, pin.TiledTex, ModeSpacetoEye, Mat.height_scale);
+
+			float4 diffuseAlbedo = gSRVMap[DiffuseMapSrvIndex].Sample(gsamAnisotropicWrap, UV);
+			float Roughness = gSRVMap[RoughnessMapSrvIndex].Sample(gsamLinearWrap, UV).x;
+			float Metallic = gSRVMap[MetallicMapSrvIndex].Sample(gsamLinearWrap, UV).x;
+			float AO = gSRVMap[AOMapSrvIndex].Sample(gsamLinearWrap, UV).x;
+
+			// Indirect lighting.
+			float4 ambient = gAmbientLight * diffuseAlbedo * AO;
+
+			//Sample normal
+			float3 normalMapSample = gSRVMap[NormalMapSrvIndex].Sample(gsamLinearWrap, UV).xyz;
+			//tansform normal
+			float3 bumpedNormalW = NormalSampleToModelSpace(normalMapSample, normalW, tangent);
+			bumpedNormalW = normalize(bumpedNormalW);
+
+			Material mat = { diffuseAlbedo, Mat.FresnelR0, Roughness,Metallic,AO };
+
+			// Only the first light casts a shadow.
+			float3 shadowFactor = float3(1.0f, 1.0f, 1.0f);
+			//shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
+			float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
+				bumpedNormalW, toEye, shadowFactor);
+
+			c[i] = ambient * shadowFactor[0] + directLight;
+
+		}
+		else
+		{
+			float4 diffuseAlbedo = gSRVMap[DiffuseMapSrvIndex].Sample(gsamLinearWrap, pin.TiledTex);
+			c[i] = diffuseAlbedo;
+		}
+		DiffuseMapSrvIndex += 6;
+		HeightMapSrvIndex += 6;
+		AOMapSrvIndex += 6;
+		MetallicMapSrvIndex += 6;
+		NormalMapSrvIndex += 6;
+		RoughnessMapSrvIndex += 6;
 	}
+
 
 	// Sample the blend map.
 	float4 t = gSRVMap[mBlendMapIndex].Sample(gsamLinearWrap, pin.Tex);
@@ -49,8 +97,8 @@ float4 PS(DomainOut pin) : SV_TARGET
 	float4 texColor = c[0];
 	texColor = lerp(texColor, c[1], t.r);
 	texColor = lerp(texColor, c[2], t.g);
-	texColor = lerp(texColor, c[3], t.b);
-	texColor = lerp(texColor, c[4], t.a);
+	//texColor = lerp(texColor, c[3], t.b);
+	//texColor = lerp(texColor, c[4], t.a);
 
 	return texColor;
 }

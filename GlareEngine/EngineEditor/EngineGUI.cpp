@@ -82,7 +82,6 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 		}
 		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
 		{
-			static float f = 0.0f;
 			static int counter = 0;
 
 			ImGui::SetNextWindowPos(ImVec2(0.0f, MainMenuBarHeight));
@@ -94,7 +93,9 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
 			ImGui::Checkbox("Another Window", &show_another_window);
 
-			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+			
+			ImGui::Text("Camera Move Speed");
+			ImGui::SliderFloat("", &CameraMoveSpeed, 0.0f, 100.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 
 			ImGui::Text("Show Sence");
 			ImGui::Checkbox("Shadow", &show_shadow);

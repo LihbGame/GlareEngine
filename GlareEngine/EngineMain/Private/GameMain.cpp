@@ -129,7 +129,7 @@ void GameApp::OnResize()
 	D3DApp::OnResize();
 
 	//窗口调整大小，因此更新宽高比并重新计算投影矩阵;
-	mCamera.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+	mCamera.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 5000.0f);
 	//窗口调整大小重新计算视锥包围体。
 	BoundingFrustum::CreateFromMatrix(mCamFrustum, mCamera.GetProj());
 	//Shock Wave Water map resize
@@ -615,25 +615,31 @@ void GameApp::OnMouseMove(WPARAM btnState, int x, int y)
 			mLastMousePos.y = y;
 		}
 	}
-
+	
 }
 
 void GameApp::OnKeyboardInput(const GameTimer& gt)
 {
-
+	float CameraModeSpeed = mEngineUI->GetCameraModeSpeed();
 	float DeltaTime = gt.DeltaTime();
 	if (GetAsyncKeyState('W') & 0x8000)
-		mCamera.Walk(10.0f * DeltaTime);
+		mCamera.Walk(CameraModeSpeed * DeltaTime);
 
 	if (GetAsyncKeyState('S') & 0x8000)
-		mCamera.Walk(-10.0f * DeltaTime);
+		mCamera.Walk(-CameraModeSpeed * DeltaTime);
 
 	if (GetAsyncKeyState('A') & 0x8000)
-		mCamera.Strafe(-10.0f * DeltaTime);
+		mCamera.Strafe(-CameraModeSpeed * DeltaTime);
 
 	if (GetAsyncKeyState('D') & 0x8000)
-		mCamera.Strafe(10.0f * DeltaTime);
+		mCamera.Strafe(CameraModeSpeed * DeltaTime);
 
+	XMFLOAT3  CameraPosition = mCamera.GetPosition3f();
+	float y = mHeightMapTerrain->GetHeight(CameraPosition.x, CameraPosition.z)+2.0f;
+	if (CameraPosition.y <= y)
+	{
+		mCamera.SetPosition(XMFLOAT3(CameraPosition.x, y, CameraPosition.z));
+	}
 
 	mCamera.UpdateViewMatrix();
 }
@@ -1336,10 +1342,38 @@ void GameApp::BuildPSOs()
 
 #pragma region Height Map Terrain
 	Input = mShaders["HeightMapTerrain"]->GetInputLayout();
-	D3D12_RASTERIZER_DESC HeightMapTerrainRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	HeightMapTerrainRasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 	mPSOs->BuildPSO(md3dDevice.Get(),
 		PSOName::HeightMapTerrain,
+		mRootSignature.Get(),
+		{ reinterpret_cast<BYTE*>(mShaders["HeightMapTerrain"]->GetVSShader()->GetBufferPointer()),
+			mShaders["HeightMapTerrain"]->GetVSShader()->GetBufferSize() },
+		{ reinterpret_cast<BYTE*>(mShaders["HeightMapTerrain"]->GetPSShader()->GetBufferPointer()),
+		mShaders["HeightMapTerrain"]->GetPSShader()->GetBufferSize() },
+		{ reinterpret_cast<BYTE*>(mShaders["HeightMapTerrain"]->GetDSShader()->GetBufferPointer()),
+		mShaders["HeightMapTerrain"]->GetDSShader()->GetBufferSize() },
+		{ reinterpret_cast<BYTE*>(mShaders["HeightMapTerrain"]->GetHSShader()->GetBufferPointer()),
+		mShaders["HeightMapTerrain"]->GetHSShader()->GetBufferSize() },
+		{},
+		{},
+		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
+		UINT_MAX,
+		CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
+		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
+		{ Input.data(), (UINT)Input.size() },
+		{},
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH,
+		1,
+		RTVFormats,
+		mDepthStencilFormat,
+		{ UINT(m4xMsaaState ? 4 : 1) ,UINT(0) },
+		0,
+		{},
+		{});
+
+	D3D12_RASTERIZER_DESC HeightMapTerrainRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	HeightMapTerrainRasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
+	mPSOs->BuildPSO(md3dDevice.Get(),
+		PSOName::HeightMapTerrainRefraction,
 		mRootSignature.Get(),
 		{ reinterpret_cast<BYTE*>(mShaders["HeightMapTerrain"]->GetVSShader()->GetBufferPointer()),
 			mShaders["HeightMapTerrain"]->GetVSShader()->GetBufferSize() },
@@ -1922,9 +1956,10 @@ void GameApp::DrawWaterRefractionMap(const GameTimer& gt)
 void GameApp::DrawHeightMapTerrain(const GameTimer& gr,bool IsReflection)
 {
 	auto TerrainCB = mCurrFrameResource->TerrainCB->Resource();
-	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::HeightMapTerrain).Get());
+	
 	if (IsReflection)
 	{
+		mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::HeightMapTerrainRefraction).Get());
 		D3D12_GPU_VIRTUAL_ADDRESS TerrainCBAddress = TerrainCB->GetGPUVirtualAddress() + mTerrainCBByteSize;
 		mCommandList->SetGraphicsRootConstantBufferView(2, TerrainCBAddress);
 
@@ -1934,6 +1969,7 @@ void GameApp::DrawHeightMapTerrain(const GameTimer& gr,bool IsReflection)
 	}
 	else
 	{
+		mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::HeightMapTerrain).Get());
 		D3D12_GPU_VIRTUAL_ADDRESS TerrainCBAddress = TerrainCB->GetGPUVirtualAddress();
 		mCommandList->SetGraphicsRootConstantBufferView(2, TerrainCBAddress);
 
@@ -1953,7 +1989,7 @@ HeightmapTerrain::InitInfo GameApp::HeightmapTerrainInit()
 	TerrainInfo.LayerMapFilename[3] = "Terrain/lightdirt";
 	TerrainInfo.LayerMapFilename[4] = "Terrain/snow";
 	TerrainInfo.BlendMapFilename = "Terrain/blend";
-	TerrainInfo.HeightScale = 40.0f;
+	TerrainInfo.HeightScale = 200.0f;
 	TerrainInfo.HeightmapWidth = 2049;
 	TerrainInfo.HeightmapHeight = 2049;
 	TerrainInfo.CellSpacing = 1.0f;
