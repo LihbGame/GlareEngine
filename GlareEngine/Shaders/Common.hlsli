@@ -102,6 +102,10 @@ cbuffer cbPass : register(b1)
    int     gWaterRefractionMapIndex;
    int     gWaterDumpWaveIndex;
 
+   float4 gFogColor;
+   float  gFogStart;
+   float  gFogRange;
+   int gFogEnabled;
 };
 
 #ifdef SKINNED

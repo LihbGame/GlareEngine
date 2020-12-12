@@ -23,8 +23,11 @@ public:
 	bool IsShowWater() { return show_water; }
 	bool IsShowLand() { return show_land; }
 	bool IsShowSky() { return show_sky; }
+	bool IsShowFog() { return FogEnabled; }
 	bool IsShowTerrain() { return show_HeightMapTerrain; }
 	float GetCameraModeSpeed() { return CameraMoveSpeed; }
+	float GetFogStart() { return FogStart; }
+	float GetFogRange() { return FogRange; }
 private:
 	bool show_demo_window = true;
 	bool show_another_window = true;
@@ -36,6 +39,10 @@ private:
 	bool show_sky = true;
 	bool show_HeightMapTerrain = true;
 	float CameraMoveSpeed = 50.0f;
+	bool  FogEnabled = false;
+	float FogStart = 300.0f;
+	float FogRange = 600.0f;
+
 	ID3D12DescriptorHeap* mGUISrvDescriptorHeap = nullptr;
 
 	ImGuiContext *g=nullptr;

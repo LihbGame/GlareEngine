@@ -829,6 +829,11 @@ void GameApp::UpdateMainPassCB(const GameTimer& gt)
 	mMainPassCB.WaterDumpWaveIndex = mWaterDumpWaveIndex;
 	mMainPassCB.WaterReflectionMapIndex = mWaterReflectionMapIndex;
 	mMainPassCB.WaterRefractionMapIndex = mWaterRefractionMapIndex;
+	//Fog
+	mMainPassCB.FogStart =mEngineUI->GetFogStart();
+	mMainPassCB.FogRange = mEngineUI->GetFogRange();
+	mMainPassCB.FogColor= { 1.0f, 1.0f, 1.0f,1.0f };
+	mMainPassCB.FogEnabled =(int)mEngineUI->IsShowFog();
 
 	auto currPassCB = mCurrFrameResource->PassCB.get();
 	currPassCB->CopyData(0, mMainPassCB);//index 0 main pass

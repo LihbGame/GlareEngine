@@ -13,6 +13,7 @@ struct VertexOut
     float2 Wave3      : TEXCOORD4;
     float4 ScreenPos  : TEXCOORD5;
     float2 HeighTex  : TEXCOORD6;
+    float3 PosW        : TEXCOORD7;
 };
 
 
@@ -68,7 +69,7 @@ float4 PS(VertexOut pin) : SV_Target
     half Heigh = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, pin.HeighTex.xy,0).r;
 
     float3 Foam = float3(0.0f, 0.0f, 0.0f);
-    float time = abs(cos(gTotalTime/4));
+    float time = abs(cos(gTotalTime/3));
     if (Heigh >= time+2.025f && Heigh <= time + 3.552f)
     {
         Foam.rgb = float3(1.0f, 1.0f, 1.0f);// gFoamMap.Sample(samLinear, pin.HeighTex.xy).rgb;
@@ -81,5 +82,17 @@ float4 PS(VertexOut pin) : SV_Target
     }
 
     // final water = reflection_color * fresnel + water_color
-    return float4(cReflect + waterColor + Foam, 1.0f);
+    float4 texColor = float4(cReflect + waterColor + Foam, 1.0f);
+
+    //
+    // Fogging
+    //
+    if (gFogEnabled)
+    {
+    float fogLerp = saturate((length(gEyePosW - pin.PosW) - gFogStart) / gFogRange);
+    // Blend the fog color and the lit color.
+    texColor.rgb = lerp(texColor.rgb, gFogColor.rgb, fogLerp);
+    }
+
+    return texColor;
 }

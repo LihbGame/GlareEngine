@@ -18,6 +18,7 @@ struct VertexOut
     float2 Wave3      : TEXCOORD4;
     float4 ScreenPos  : TEXCOORD5;
     float2 HeighTex  : TEXCOORD6;
+    float3 PosW        : TEXCOORD7;
 };
 
 
@@ -38,10 +39,10 @@ VertexOut VS(VertexIn vin)
 
     float3 PosW = vin.Pos;
 
-    float4x4 gWorldViewProj= mul(gWorld, gViewProj);
+    vout.PosW = mul(float4(vin.Pos, 1.0f), gWorld).rgb;
 
     // Transform to homogeneous clip space.
-    vout.PosH = mul(float4(vin.Pos, 1.0f), gWorldViewProj);
+    vout.PosH = mul(float4(vout.PosW, 1.0f), gViewProj);
     float tans = fmod(gTotalTime, 100) * 0.01;
     float2 fTranslation = float2(tans, 0);
     float2 vTexCoords = PosW.xz * 0.005;
@@ -55,7 +56,7 @@ VertexOut VS(VertexIn vin)
     vout.HeighTex = vin.TexCoord0;
 
     // perspective corrected projection
-    float4 vHPos = mul(float4(vin.Pos, 1.0f), gWorldViewProj);
+    float4 vHPos = vout.PosH;
     vout.Wave0.zw = vHPos.w;
 
     vHPos.y = -vHPos.y;

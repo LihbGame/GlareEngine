@@ -80,6 +80,12 @@ struct PassConstants
     UINT     WaterReflectionMapIndex = 0;
     UINT     WaterRefractionMapIndex = 0;
     UINT     WaterDumpWaveIndex = 0;
+
+
+    DirectX::XMFLOAT4 FogColor;
+	float  FogStart;
+	float  FogRange;
+    int   FogEnabled;
 };
 
 

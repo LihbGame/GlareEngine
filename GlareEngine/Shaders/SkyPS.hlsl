@@ -12,16 +12,24 @@ struct VertexOut
 
 float4 PS(VertexOut pin) : SV_Target
 {
-	float4 litColor= gCubeMap.Sample(gsamLinearWrap, pin.PosL);
+	//
+	// Fogging
+	//
+	if (gFogEnabled)
+	{
+	 return gFogColor;
+	}
 
-	// Reinhard色调映射
-	//litColor.rgb = litColor.rgb / (litColor.rgb + float3(1.0f, 1.0f, 1.0f));
+		float4 litColor = gCubeMap.Sample(gsamLinearWrap, pin.PosL);
 
-	// 曝光色调映射
-	litColor.rgb = float3(1.0f,1.0f,1.0f) - exp(-litColor.rgb * exposure);
-	//Gamma
-	float3 gamma = float(1.0 / 2.2);
-	litColor.rgb = pow(litColor.rgb, gamma);
-	
-	return litColor;
+		// Reinhard色调映射
+		//litColor.rgb = litColor.rgb / (litColor.rgb + float3(1.0f, 1.0f, 1.0f));
+
+		// 曝光色调映射
+		litColor.rgb = float3(1.0f,1.0f,1.0f) - exp(-litColor.rgb * exposure);
+		//Gamma
+		float3 gamma = float(1.0 / 2.2);
+		litColor.rgb = pow(litColor.rgb, gamma);
+
+		return litColor;
 }

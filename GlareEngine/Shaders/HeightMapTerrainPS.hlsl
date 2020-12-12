@@ -20,12 +20,12 @@ float4 PS(DomainOut pin) : SV_TARGET
 	float2 rightTex = pin.Tex + float2(gTexelCellSpaceU, 0.0f);
 	float2 bottomTex = pin.Tex + float2(0.0f, gTexelCellSpaceV);
 	float2 topTex = pin.Tex + float2(0.0f, -gTexelCellSpaceV);
-	
+
 	float leftY = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, leftTex, 0).r;
 	float rightY = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, rightTex, 0).r;
 	float bottomY = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, bottomTex, 0).r;
 	float topY = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, topTex, 0).r;
-	
+
 	float3 tangent = normalize(float3(2.0f * gWorldCellSpace, rightY - leftY, 0.0f));
 	float3 bitan = normalize(float3(0.0f, bottomY - topY, -2.0f * gWorldCellSpace));
 	float3 normalW = cross(tangent, bitan);
@@ -110,6 +110,18 @@ float4 PS(DomainOut pin) : SV_TARGET
 	texColor = lerp(texColor, c[2], t.g);
 	//texColor = lerp(texColor, c[3], t.b);
 	//texColor = lerp(texColor, c[4], t.a);
+
+
+	//
+	// Fogging
+	//
+	if (gFogEnabled)
+	{
+		float fogLerp = saturate((distToEye - gFogStart) / gFogRange);
+		// Blend the fog color and the lit color.
+		texColor.rgb = lerp(texColor.rgb, gFogColor.rgb, fogLerp);
+	}
+
 
 	return texColor;
 }
