@@ -55,7 +55,7 @@ float4 PS(DomainOut pin) : SV_TARGET
 	uint  RoughnessMapSrvIndex = Mat.RoughnessMapIndex;
 
 	float4 c[5];
-	for (int i = 0; i < 3; ++i)
+	for (int i = 0; i < 5; ++i)
 	{
 		if (!isReflection)
 		{
@@ -106,10 +106,10 @@ float4 PS(DomainOut pin) : SV_TARGET
 
 	// Blend the layers on top of each other.
 	float4 texColor = c[0];
-	//texColor = lerp(texColor, c[1], t.r);
+	texColor = lerp(texColor, c[1], t.r);
 	texColor = lerp(texColor, c[2], t.g);
-	//texColor = lerp(texColor, c[3], t.b);
-	//texColor = lerp(texColor, c[4], t.a);
+	texColor = lerp(texColor, c[3], t.b);
+	texColor = lerp(texColor, c[4], t.a);
 
 
 	//
