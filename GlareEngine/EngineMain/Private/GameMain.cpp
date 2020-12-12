@@ -83,7 +83,7 @@ bool GameApp::Initialize()
 	//ShockWaveWater
 	mShockWaveWater = std::make_unique<ShockWaveWater>(md3dDevice.Get(), mClientWidth, mClientHeight,m4xMsaaState, mTextureManage.get());
 	//camera
-	mCamera.LookAt(XMFLOAT3(20.0f, 20.0f, 20.0f), XMFLOAT3(0.0f,0.0f,0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f));
+	mCamera.LookAt(XMFLOAT3(20.0f, 100.0f, 20.0f), XMFLOAT3(0.0f,0.0f,0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f));
 	//sky
 	mSky= std::make_unique<Sky>(md3dDevice.Get(), mCommandList.Get(),5.0f,20,20);
 	//shadow map
@@ -964,7 +964,7 @@ void GameApp::BuildSimpleGeometry()
 void GameApp::BuildLandGeometry()
 {
 	GeometryGenerator geoGen;
-	GeometryGenerator::MeshData grid = geoGen.CreateGrid(100.0f, 100.0f, 2, 2);
+	GeometryGenerator::MeshData grid = geoGen.CreateGrid(2048.0f, 2048.0f, 20, 20);
 
 	//
 	// Extract the vertex elements we are interested and apply the height function to
@@ -1342,6 +1342,8 @@ void GameApp::BuildPSOs()
 
 #pragma region Height Map Terrain
 	Input = mShaders["HeightMapTerrain"]->GetInputLayout();
+	D3D12_RASTERIZER_DESC HeightMapRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	//HeightMapRasterizerState.FillMode=D3D12_FILL_MODE_WIREFRAME;
 	mPSOs->BuildPSO(md3dDevice.Get(),
 		PSOName::HeightMapTerrain,
 		mRootSignature.Get(),
@@ -1357,7 +1359,7 @@ void GameApp::BuildPSOs()
 		{},
 		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
 		UINT_MAX,
-		CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
+		HeightMapRasterizerState,
 		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
 		{ Input.data(), (UINT)Input.size() },
 		{},
@@ -1590,7 +1592,7 @@ void GameApp::BuildRenderItems()
 	{
 		RenderItem TerrainRitem = {};
 		TerrainRitem.World = MathHelper::Identity4x4();
-		XMStoreFloat4x4(&TerrainRitem.World, XMMatrixTranslation(0.0f, -10.0f, 0.0f) * XMMatrixScaling(1.0, 1.0, 1.0));
+		XMStoreFloat4x4(&TerrainRitem.World, XMMatrixTranslation(0.0f, -15.0f, 0.0f) * XMMatrixScaling(1.0, 1.0, 1.0));
 		XMStoreFloat4x4(&TerrainRitem.TexTransform, XMMatrixScaling(2.0, 2.0, 2.0));
 		TerrainRitem.ObjCBIndex = ObjCBIndex++;
 		TerrainRitem.Mat = mMaterials[L"Terrain/grass"].get();
@@ -1604,7 +1606,7 @@ void GameApp::BuildRenderItems()
 #pragma region Reflection
 		RenderItem ReflectionTerrainRitem = TerrainRitem;
 		ReflectionTerrainRitem.ItemType = RenderItemType::Reflection;
-		XMStoreFloat4x4(&ReflectionTerrainRitem.World, XMMatrixTranslation(0.0f, -10.0f, 0.0f)*XMMatrixScaling(1.0, -1.0, 1.0));
+		XMStoreFloat4x4(&ReflectionTerrainRitem.World, XMMatrixTranslation(0.0f, -15.0f, 0.0f)*XMMatrixScaling(1.0, -1.0, 1.0));
 		ReflectionTerrainRitem.ObjCBIndex = ObjCBIndex++;
 #pragma endregion
 
@@ -1621,8 +1623,8 @@ void GameApp::BuildRenderItems()
 	{
 		RenderItem ShockWaveWaterRitem = {};
 		ShockWaveWaterRitem.World = MathHelper::Identity4x4();
-		XMStoreFloat4x4(&ShockWaveWaterRitem.World, XMMatrixScaling(20.0, 20.0, 20.0));
-		XMStoreFloat4x4(&ShockWaveWaterRitem.TexTransform, XMMatrixScaling(5.0, 5.0, 5.0));
+		XMStoreFloat4x4(&ShockWaveWaterRitem.World, XMMatrixScaling(1.0f, 1.0f, 1.0f));
+		XMStoreFloat4x4(&ShockWaveWaterRitem.TexTransform, XMMatrixScaling(5.0f, 5.0f, 5.0f));
 		ShockWaveWaterRitem.ObjCBIndex = ObjCBIndex++;
 		ShockWaveWaterRitem.Mat = mMaterials[L"PBRharshbricks"].get();
 		ShockWaveWaterRitem.Geo.push_back(mGeometries["landGeo"].get());

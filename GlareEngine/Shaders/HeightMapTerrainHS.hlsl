@@ -1,7 +1,24 @@
 #include "TerrainConstBuffer.hlsli"
 #include "Common.hlsli"
 
+struct VertexOut
+{
+	float3 PosW     : POSITION;
+	float2 Tex      : TEXCOORD;
+	float2 BoundsY  : BoundY;
+};
 
+struct PatchTess
+{
+	float EdgeTess[4]   : SV_TessFactor;
+	float InsideTess[2] : SV_InsideTessFactor;
+};
+
+struct HullOut
+{
+	float3 PosW     : POSITION;
+	float2 Tex      : TEXCOORD;
+};
 
 //Height map terrain functions
 float CalcTessFactor(float3 p)
@@ -17,9 +34,8 @@ float CalcTessFactor(float3 p)
 bool AABBBehindPlaneTest(float3 center, float3 extents, float4 plane)
 {
 	//float3 n = abs(plane.xyz);
-
 	//这始终是正的。
-	float r =length(extents)+5.0f;
+	float r =length(extents)+10.0f;
 	//从中心点到平面的正负距离。
 	float s = dot(float4(center, 1.0f), plane);
 

@@ -1,6 +1,8 @@
 #include "Common.hlsli"
+#include "TerrainConstBuffer.hlsli"
 
-
+#define FoamMax 10.0f
+ 
 struct VertexOut
 {
     float4 PosH    : SV_POSITION;
@@ -63,22 +65,21 @@ float4 PS(VertexOut pin) : SV_Target
     float3 cReflect = fresnel * vReflection.xyz;
 
     //Foam and heigh to water
-    //float Heigh = gHeighMap.Sample(gsamLinearWrap, pin.HeighTex.xy).r;
+    half Heigh = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, pin.HeighTex.xy,0).r;
 
-    //float4 Foam = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    // float time = abs(sin(gTotalTime));
-    //if (-Heigh >= time && -Heigh <= time + gFoamMax)
-    //{
-       // Foam.rgb = gFoamMap.Sample(samLinear, pin.HeighTex.xy).rgb;
-        //float timewave = time * (-Heigh / (time + gFoamMax));
-        //Foam *= (1 - timewave) * 0.2f;
-    //}
-    /*if (-Heigh < time)
+    float3 Foam = float3(0.0f, 0.0f, 0.0f);
+    float time = abs(cos(gTotalTime/4));
+    if (Heigh >= time+2.025f && Heigh <= time + 3.552f)
     {
-        clip(-1.0f);
-    }*/
-
+        Foam.rgb = float3(1.0f, 1.0f, 1.0f);// gFoamMap.Sample(samLinear, pin.HeighTex.xy).rgb;
+        float timewave = time*Heigh;
+        Foam *= time * 0.3f;
+    }
+    if (Heigh > time+3.552f)
+    {
+      clip(-1.0f);
+    }
 
     // final water = reflection_color * fresnel + water_color
-    return float4(cReflect + waterColor/* + Foam*/, 1.0f);
+    return float4(cReflect + waterColor + Foam, 1.0f);
 }

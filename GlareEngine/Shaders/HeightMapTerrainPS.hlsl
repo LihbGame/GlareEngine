@@ -1,5 +1,16 @@
 #include "Common.hlsli"
 #include "TerrainConstBuffer.hlsli"
+
+struct DomainOut
+{
+	float4 PosH     : SV_POSITION;
+	float3 PosW     : POSITION;
+	float2 Tex      : TEXCOORD0;
+	float2 TiledTex : TEXCOORD1;
+	float ClipValue : SV_ClipDistance0;//²Ã¼ôÖµ¹Ø¼ü×Ö
+};
+
+
 float4 PS(DomainOut pin) : SV_TARGET
 {
 	//

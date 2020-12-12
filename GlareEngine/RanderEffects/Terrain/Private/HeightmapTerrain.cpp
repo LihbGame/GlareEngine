@@ -377,17 +377,18 @@ void HeightmapTerrain::BuildHeightmapSRV(CD3DX12_CPU_DESCRIPTOR_HANDLE BlendMapD
 		mCommandList, HalfHeightMapData.data(), sizeof(HALF) * mHeightmap.size(), DXGI_FORMAT_R16_FLOAT, mInfo.HeightmapWidth, mInfo.HeightmapHeight, mHeightMapUploader);
 	
 	D3D12_SHADER_RESOURCE_VIEW_DESC HeightMapDesc = BlendMapDesc;
-	HeightMapDesc.Texture2D.MipLevels = 1;
+	HeightMapDesc.Texture2D.MipLevels = -1;
+	HeightMapDesc.Texture2D.MostDetailedMip = 0;
 	HeightMapDesc.Format = DXGI_FORMAT_R16_FLOAT;
 	mDevice->CreateShaderResourceView(mHeightMapSRV.Get(), &HeightMapDesc, HeightMapDescriptor);
 }
 
 void HeightmapTerrain::GetTerrainConstant(TerrainConstants& TerrainConstant)
 {
-	TerrainConstant.gMinDist = 500.0f;
+	TerrainConstant.gMinDist = 200.0f;
 	TerrainConstant.gMaxDist = 2000.0f;
 	TerrainConstant.gMinTess = 0.0f;
-	TerrainConstant.gMaxTess = 6.0f;
+	TerrainConstant.gMaxTess = 4.0f;
 
 	TerrainConstant.gTexelCellSpaceU = 1.0f / mInfo.HeightmapWidth;
 	TerrainConstant.gTexelCellSpaceV = 1.0f / mInfo.HeightmapHeight;

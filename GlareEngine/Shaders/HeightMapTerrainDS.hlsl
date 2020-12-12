@@ -1,8 +1,28 @@
 #include "TerrainConstBuffer.hlsli"
 #include "Common.hlsli"
 
-#define gTexScale float2(10.0f,10.0f)
+#define gTexScale float2(5.0f,5.0f)
 
+struct DomainOut
+{
+	float4 PosH     : SV_POSITION;
+	float3 PosW     : POSITION;
+	float2 Tex      : TEXCOORD0;
+	float2 TiledTex : TEXCOORD1;
+	float ClipValue : SV_ClipDistance0;//裁剪值关键字
+};
+
+struct PatchTess
+{
+	float EdgeTess[4]   : SV_TessFactor;
+	float InsideTess[2] : SV_InsideTessFactor;
+};
+
+struct HullOut
+{
+	float3 PosW     : POSITION;
+	float2 Tex      : TEXCOORD;
+};
 
 // 细分器创建的每个顶点都会调用域着色器。 就像细分后的顶点着色器一样。
 [domain("quad")]
@@ -29,7 +49,7 @@ DomainOut DS(PatchTess patchTess,
 	dout.PosW = mul(float4(dout.PosW, 1.0f),gWorld).xyz;
 
 	// Displacement mapping
-	float height =  gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, dout.Tex, 0).x;
+	float height =  gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, dout.Tex, 0).r;
 	//在世界空间，对于乘以裁剪面小于零的进行裁剪，裁剪不满足条件的几何体部分
 	if (isReflection)
 	{

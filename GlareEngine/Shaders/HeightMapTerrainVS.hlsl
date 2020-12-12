@@ -1,6 +1,19 @@
 #include "Common.hlsli"
 #include "TerrainConstBuffer.hlsli"
 
+struct VertexIn
+{
+	float3 PosL     : POSITION;
+	float2 Tex      : TEXCOORD;
+	float2 BoundsY  : BoundY;
+};
+
+struct VertexOut
+{
+	float3 PosW     : POSITION;
+	float2 Tex      : TEXCOORD;
+	float2 BoundsY  : BoundY;
+};
 
 
 VertexOut VS(VertexIn vin)
