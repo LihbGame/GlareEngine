@@ -26,6 +26,7 @@ public:
 
 	void OnResize(UINT newWidth, UINT newHeight);
 
+	void SetSceneBoundCenter(XMFLOAT3 center) { mSceneBounds.Center = center; }
 private:
 	void BuildDescriptors();
 	void BuildResource();

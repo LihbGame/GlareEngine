@@ -14,7 +14,7 @@ ShadowMap::ShadowMap(ID3D12Device* device, UINT width, UINT height)
 //网格是“最宽的对象”，宽度为20，深度为30.0f，以世界空间原点为中心; 
 //通常，您需要遍历每个世界空间顶点位置并计算边界球体;
 	mSceneBounds.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	mSceneBounds.Radius = 50.0f;
+	mSceneBounds.Radius = 1000.0f;
 
 	BuildResource();
 }

@@ -149,7 +149,7 @@ void HeightmapTerrain::LoadHeightmapAsset()
 	mHeightmap.resize(mInfo.HeightmapHeight * mInfo.HeightmapWidth, 0);
 	for (UINT i = 0; i < mInfo.HeightmapHeight * mInfo.HeightmapWidth; ++i)
 	{
-		mHeightmap[i] = (in[i] / 255.0f) * mInfo.HeightScale;
+		mHeightmap[i] = (in[i] / 255.0f) * mInfo.HeightScale-10.0f;
 	}
 
 }

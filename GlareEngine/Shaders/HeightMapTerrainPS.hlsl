@@ -4,7 +4,8 @@
 struct DomainOut
 {
 	float4 PosH     : SV_POSITION;
-	float3 PosW     : POSITION;
+	float3 PosW     : POSITION0;
+	float4 ShadowPosH : POSITION1;
 	float2 Tex      : TEXCOORD0;
 	float2 TiledTex : TEXCOORD1;
 	float ClipValue : SV_ClipDistance0;//²Ã¼ôÖµ¹Ø¼ü×Ö
@@ -80,7 +81,7 @@ float4 PS(DomainOut pin) : SV_TARGET
 
 			// Only the first light casts a shadow.
 			float3 shadowFactor = float3(1.0f, 1.0f, 1.0f);
-			//shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
+			shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
 			float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
 				bumpedNormalW, toEye, shadowFactor);
 
@@ -106,10 +107,10 @@ float4 PS(DomainOut pin) : SV_TARGET
 
 	// Blend the layers on top of each other.
 	float4 texColor = c[0];
-	texColor = lerp(texColor, c[1], t.r);
+	//texColor = lerp(texColor, c[1], t.r);
 	texColor = lerp(texColor, c[2], t.g);
 	texColor = lerp(texColor, c[3], t.b);
-	texColor = lerp(texColor, c[4], t.a);
+	//texColor = lerp(texColor, c[4], t.a);
 
 
 	//

@@ -58,10 +58,10 @@ float4 PS(VertexOut pin) : SV_Target
     float fresnel = Fresnel(NdotL, 0.02, 5.0);
 
     // Use distance to lerp between refraction and deep water color
-    float fDistScale = saturate(10.0 / pin.Wave0.w);
-    float3 WaterDeepColor = (vRefraction.xyz * fDistScale + (1 - fDistScale) * float3(0, 0.1, 0.125));
+    float fDistScale = saturate(30.0 / pin.Wave0.w);
+    float3 WaterDeepColor = (vRefraction.xyz * fDistScale + (1 - fDistScale) * float3(0.125, 0.0, 0.125));
     // Lerp between water color and deep water color
-    float3 WaterColor = float3(0, 0.1, 0.15);
+    float3 WaterColor = float3(0.15, 0.0, 0.15);
     float3 waterColor = (WaterColor * facing + WaterDeepColor * (1.0 - facing));
     float3 cReflect = fresnel * vReflection.xyz;
 
@@ -70,19 +70,20 @@ float4 PS(VertexOut pin) : SV_Target
 
     float3 Foam = float3(0.0f, 0.0f, 0.0f);
     float time = abs(cos(gTotalTime/3));
-    if (Heigh >= time+2.025f && Heigh <= time + 3.552f)
+    if (-Heigh >= time && -Heigh <= time + 1.0f)
     {
         Foam.rgb = float3(1.0f, 1.0f, 1.0f);// gFoamMap.Sample(samLinear, pin.HeighTex.xy).rgb;
-        float timewave = time*Heigh;
-        Foam *= time * 0.3f;
+        //float timewave = time*Heigh;
+        Foam *= (1-time) * 0.3f;
     }
-    if (Heigh > time+3.552f)
+    if (-Heigh < time||Heigh>time + 1.0f)
     {
       clip(-1.0f);
     }
 
     // final water = reflection_color * fresnel + water_color
     float4 texColor = float4(cReflect + waterColor + Foam, 1.0f);
+
 
     //
     // Fogging

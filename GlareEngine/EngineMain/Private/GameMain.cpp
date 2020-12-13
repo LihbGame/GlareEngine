@@ -162,7 +162,6 @@ void GameApp::Update(const GameTimer& gt)
 	UpdateObjectCBs(gt);
 	UpdateInstanceCBs(gt);
 	UpdateMaterialCBs(gt);
-	
 	mShadowMap->UpdateShadowTransform(gt);
 	UpdateMainPassCB(gt);
 	UpdateShadowPassCB(gt);
@@ -634,13 +633,12 @@ void GameApp::OnKeyboardInput(const GameTimer& gt)
 	if (GetAsyncKeyState('D') & 0x8000)
 		mCamera.Strafe(CameraModeSpeed * DeltaTime);
 
-	XMFLOAT3  CameraPosition = mCamera.GetPosition3f();
-	float y = mHeightMapTerrain->GetHeight(CameraPosition.x, CameraPosition.z)+2.0f;
-	if (CameraPosition.y <= y)
+	XMFLOAT3 camPos = mCamera.GetPosition3f();
+	float y = mHeightMapTerrain->GetHeight(camPos.x, camPos.z)+2.0f;
+	if (camPos.y <= y)
 	{
-		mCamera.SetPosition(XMFLOAT3(CameraPosition.x, y, CameraPosition.z));
+		mCamera.SetPosition(camPos.x, y, camPos.z);
 	}
-
 	mCamera.UpdateViewMatrix();
 }
 
@@ -969,7 +967,7 @@ void GameApp::BuildSimpleGeometry()
 void GameApp::BuildLandGeometry()
 {
 	GeometryGenerator geoGen;
-	GeometryGenerator::MeshData grid = geoGen.CreateGrid(2048.0f, 2048.0f, 20, 20);
+	GeometryGenerator::MeshData grid = geoGen.CreateGrid(200.0f, 200.0f, 2, 2);
 
 	//
 	// Extract the vertex elements we are interested and apply the height function to
@@ -1182,7 +1180,7 @@ void GameApp::BuildPSOs()
 	// PSO for Instance  shadow.
 #pragma region PSO_for_Instance_shadow
 	D3D12_RASTERIZER_DESC ShadowRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	ShadowRasterizerState.DepthBias = 25000;
+	ShadowRasterizerState.DepthBias = 250000;
 	ShadowRasterizerState.DepthBiasClamp = 0.0f;
 	ShadowRasterizerState.SlopeScaledDepthBias = 1.0f;
 	RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
@@ -1597,8 +1595,8 @@ void GameApp::BuildRenderItems()
 	{
 		RenderItem TerrainRitem = {};
 		TerrainRitem.World = MathHelper::Identity4x4();
-		XMStoreFloat4x4(&TerrainRitem.World, XMMatrixTranslation(0.0f, -15.0f, 0.0f) * XMMatrixScaling(1.0, 1.0, 1.0));
-		XMStoreFloat4x4(&TerrainRitem.TexTransform, XMMatrixScaling(2.0, 2.0, 2.0));
+		XMStoreFloat4x4(&TerrainRitem.World, XMMatrixTranslation(0.0f, 0.0f, 0.0f) * XMMatrixScaling(1.0, 1.0, 1.0));
+		XMStoreFloat4x4(&TerrainRitem.TexTransform, XMMatrixScaling(1.0, 1.0, 1.0));
 		TerrainRitem.ObjCBIndex = ObjCBIndex++;
 		TerrainRitem.Mat = mMaterials[L"Terrain/grass"].get();
 		TerrainRitem.Geo.push_back(mHeightMapTerrain->GetMeshGeometry());
@@ -1611,7 +1609,7 @@ void GameApp::BuildRenderItems()
 #pragma region Reflection
 		RenderItem ReflectionTerrainRitem = TerrainRitem;
 		ReflectionTerrainRitem.ItemType = RenderItemType::Reflection;
-		XMStoreFloat4x4(&ReflectionTerrainRitem.World, XMMatrixTranslation(0.0f, -15.0f, 0.0f)*XMMatrixScaling(1.0, -1.0, 1.0));
+		XMStoreFloat4x4(&ReflectionTerrainRitem.World, XMMatrixTranslation(0.0f, 0.0f, 0.0f)*XMMatrixScaling(1.0, -1.0, 1.0));
 		ReflectionTerrainRitem.ObjCBIndex = ObjCBIndex++;
 #pragma endregion
 
@@ -1628,7 +1626,7 @@ void GameApp::BuildRenderItems()
 	{
 		RenderItem ShockWaveWaterRitem = {};
 		ShockWaveWaterRitem.World = MathHelper::Identity4x4();
-		XMStoreFloat4x4(&ShockWaveWaterRitem.World, XMMatrixScaling(1.0f, 1.0f, 1.0f));
+		XMStoreFloat4x4(&ShockWaveWaterRitem.World, XMMatrixScaling(10.24f, 1.0f, 10.24f));
 		XMStoreFloat4x4(&ShockWaveWaterRitem.TexTransform, XMMatrixScaling(5.0f, 5.0f, 5.0f));
 		ShockWaveWaterRitem.ObjCBIndex = ObjCBIndex++;
 		ShockWaveWaterRitem.Mat = mMaterials[L"PBRharshbricks"].get();
@@ -1707,11 +1705,11 @@ void GameApp::BuildModelGeoInstanceItems()
 	InstanceModelRitem.Instances.resize(n * n);
 	InstanceModelRitem.InstanceCount = 0;//init count
 
-	float width = 25.0f;
-	float height = 25.0f;
+	float width = 50.0f;
+	float height = 50.0f;
 
-	float x = -0.5f * width;
-	float y = -0.5f * height;
+	float x = -0.5f * width-200;
+	float y = -0.5f * height-200;
 
 	float dx = width / (n - 1);
 	float dy = height / (n - 1);
@@ -1723,10 +1721,10 @@ void GameApp::BuildModelGeoInstanceItems()
 				int index =i * n + j;
 				// Position instanced along a 3D grid.
 				XMStoreFloat4x4(&InstanceModelRitem.Instances[index].World, /*XMMatrixRotationX(MathHelper::Pi/2)**/XMMatrixRotationY(MathHelper::RandF()* MathHelper::Pi) * XMLoadFloat4x4(&XMFLOAT4X4(
-					0.04f, 0.0f, 0.0f, 0.0f,
-					0.0f, 0.04f, 0.0f, 0.0f,
-					0.0f, 0.0f, 0.04f, 0.0f,
-					x + j * dx, 0.0f, y + i * dy, 1.0f)));
+					0.1f, 0.0f, 0.0f, 0.0f,
+					0.0f, 0.1f, 0.0f, 0.0f,
+					0.0f, 0.0f, 0.1f, 0.0f,
+					x + j * dx, mHeightMapTerrain->GetHeight(x + j * dx, y + i * dy), y + i * dy, 1.0f)));
 
 				InstanceModelRitem.Instances[index].MaterialIndex = (UINT)(mMaterials.size() - 3);
 				InstanceModelRitem.Instances[index].TexTransform= MathHelper::Identity4x4();
@@ -1743,7 +1741,7 @@ void GameApp::BuildModelGeoInstanceItems()
 				{
 					int index = i * n + j;
 					WaterMAT = XMLoadFloat4x4(&ReflectionInstanceModelRitem.Instances[index].World);
-					XMStoreFloat4x4(&ReflectionInstanceModelRitem.Instances[index].World, XMMatrixScaling(1.0f, -1.0f, 1.0f) * WaterMAT);
+					XMStoreFloat4x4(&ReflectionInstanceModelRitem.Instances[index].World, WaterMAT * XMMatrixScaling(1.0f, -1.0f, 1.0f));
 				}
 			}
 #pragma endregion
