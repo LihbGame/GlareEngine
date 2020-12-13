@@ -303,7 +303,6 @@
     <FxCompile Include="Shaders\HeightMapTerrainVS.hlsl" />
     <FxCompile Include="Shaders\HeightMapTerrainPS.hlsl" />
     <FxCompile Include="Shaders\HeightMapTerrainHS.hlsl" />
-    <FxCompile Include="Shaders\HeightMapTerrainDS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini" />
@@ -314,6 +313,11 @@
     <None Include="Dependences\lib\assimp-vc142-mtd.pdb" />
     <None Include="packages.config" />
     <None Include="Shaders\TerrainConstBuffer.hlsli" />
+    <None Include="Shaders\HeightMapTerrainDS.hlsl" />
+    <None Include="RanderEffects\Terrain\Public\Grass.h" />
+    <None Include="RanderEffects\Terrain\Private\Grass.cpp">
+      <Filter>MainSource</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GlareEngine.rc">

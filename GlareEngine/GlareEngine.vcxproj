@@ -182,6 +182,7 @@
     <ClInclude Include="EngineMain\Public\framework.h" />
     <ClInclude Include="EngineMain\Public\GameMain.h" />
     <ClInclude Include="EngineMain\Public\targetver.h" />
+    <None Include="RanderEffects\Terrain\Public\Grass.h" />
     <ClInclude Include="PSO\Public\PSOManager.h" />
     <ClInclude Include="RanderEffects\HDRSky\Public\Sky.h" />
     <ClInclude Include="RanderEffects\Shadow\Public\ShadowMap.h" />
@@ -227,6 +228,7 @@
     <ClCompile Include="EngineMain\Private\FrameResource.cpp" />
     <ClCompile Include="EngineMain\Private\GameMain.cpp" />
     <ClCompile Include="Animation\ModelLoader.cpp" />
+    <None Include="RanderEffects\Terrain\Private\Grass.cpp" />
     <ClCompile Include="PSO\Private\PSOManager.cpp" />
     <ClCompile Include="RanderEffects\HDRSky\Private\Sky.cpp" />
     <ClCompile Include="RanderEffects\Shadow\Private\ShadowMap.cpp" />
@@ -282,7 +284,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
     </FxCompile>
-    <FxCompile Include="Shaders\HeightMapTerrainDS.hlsl">
+    <None Include="Shaders\HeightMapTerrainDS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Domain</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Domain</ShaderType>
@@ -292,7 +294,8 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Domain</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">DS</EntryPointName>
-    </FxCompile>
+      <FileType>Document</FileType>
+    </None>
     <FxCompile Include="Shaders\HeightMapTerrainHS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Hull</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>

@@ -59,9 +59,9 @@ float4 PS(VertexOut pin) : SV_Target
 
     // Use distance to lerp between refraction and deep water color
     float fDistScale = saturate(30.0 / pin.Wave0.w);
-    float3 WaterDeepColor = (vRefraction.xyz * fDistScale + (1 - fDistScale) * float3(0.125, 0.0, 0.125));
+    float3 WaterDeepColor = (vRefraction.xyz * fDistScale + (1 - fDistScale) * float3(0.0025, 0.1, 0.125));
     // Lerp between water color and deep water color
-    float3 WaterColor = float3(0.15, 0.0, 0.15);
+    float3 WaterColor = float3(0.005, 0.1, 0.15);
     float3 waterColor = (WaterColor * facing + WaterDeepColor * (1.0 - facing));
     float3 cReflect = fresnel * vReflection.xyz;
 
