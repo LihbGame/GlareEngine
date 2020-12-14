@@ -33,9 +33,10 @@ float CalcTessFactor(float3 p)
 // 如果框完全位于平面的后面(负半空间),则返回true。
 bool AABBBehindPlaneTest(float3 center, float3 extents, float4 plane)
 {
-	//float3 n = abs(plane.xyz);
-	//这始终是正的。
-	float r =length(extents)+10.0f;
+	float3 n = abs(plane.xyz);
+
+	// This is always positive.
+	float r = dot(extents, n);
 	//从中心点到平面的正负距离。
 	float s = dot(float4(center, 1.0f), plane);
 
@@ -68,9 +69,18 @@ PatchTess ConstantHS(InputPatch<VertexOut, 4> patch, uint patchID : SV_Primitive
 	//
 
 	// We store the patch BoundsY in the first control point.
-	float minY = patch[0].BoundsY.x;
-	float maxY = patch[0].BoundsY.y;
-
+	float minY;
+	float maxY;
+	if (!isReflection)
+	{
+		 minY = patch[0].BoundsY.x;
+		 maxY = patch[0].BoundsY.y;
+	}
+	else
+	{
+		maxY = -patch[0].BoundsY.x;
+		minY = -patch[0].BoundsY.y;
+	}
 	// Build axis-aligned bounding box.  patch[2] is lower-left corner
 	// and patch[1] is upper-right corner.
 	float3 vMin = float3(patch[2].PosW.x, minY, patch[2].PosW.z);

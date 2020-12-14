@@ -297,6 +297,7 @@ void HeightmapTerrain::BuildQuadPatchGeometry()
 	{
 		vertices[i].Pos = patchVertices[i].Pos;
 		vertices[i].Tex = patchVertices[i].Tex;
+		vertices[i].BoundsY = patchVertices[i].BoundsY;
 	}
 
 	const UINT vbByteSize = (UINT)vertices.size() * sizeof(L3DVertice::Terrain);

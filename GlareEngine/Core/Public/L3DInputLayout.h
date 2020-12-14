@@ -9,5 +9,6 @@ public:
 	static std::vector<D3D12_INPUT_ELEMENT_DESC> InstancePosNormalTangentTexc;
 	static std::vector<D3D12_INPUT_ELEMENT_DESC> SkinAnimeVertex;
 	static std::vector<D3D12_INPUT_ELEMENT_DESC> HeightMapTerrain;
+	static std::vector<D3D12_INPUT_ELEMENT_DESC> Grass;
 };
 

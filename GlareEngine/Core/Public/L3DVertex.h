@@ -32,4 +32,11 @@ public:
 		DirectX::XMFLOAT2 BoundsY;
 	};
 
+
+	struct Grass
+	{
+		DirectX::XMFLOAT3 Pos;
+		DirectX::XMFLOAT2 BoundsY;
+	};
+
 };

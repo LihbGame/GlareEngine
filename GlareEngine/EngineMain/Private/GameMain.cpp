@@ -94,7 +94,11 @@ bool GameApp::Initialize()
 	mModelLoder = std::make_unique<ModelLoader>(mhMainWnd, md3dDevice.Get(), mCommandList.Get(), mTextureManage.get());
 	//init HeightMap Terrain
 	mHeightMapTerrain = std::make_unique<HeightmapTerrain>(md3dDevice.Get(), mCommandList.Get(), mTextureManage.get(),HeightmapTerrainInit(),nullptr);
-	
+	//init Grass 
+
+
+
+
 	{
 		LoadModel();
 		BuildAllMaterials();
@@ -1994,7 +1998,7 @@ HeightmapTerrain::InitInfo GameApp::HeightmapTerrainInit()
 	TerrainInfo.LayerMapFilename[3] = "Terrain/lightdirt";
 	TerrainInfo.LayerMapFilename[4] = "Terrain/snow";
 	TerrainInfo.BlendMapFilename = "Terrain/blend";
-	TerrainInfo.HeightScale = 80.0f;
+	TerrainInfo.HeightScale = 120.0f;
 	TerrainInfo.HeightmapWidth = 2049;
 	TerrainInfo.HeightmapHeight = 2049;
 	TerrainInfo.CellSpacing = 1.0f;
