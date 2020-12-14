@@ -188,7 +188,8 @@ private:
 	void DrawWaterRefractionMap(const GameTimer& gt);
 	//Draw Height map terrain
 	void DrawHeightMapTerrain(const GameTimer& gr,bool IsReflection=false);
-
+	//Draw Grass
+	void DrawGrass(const GameTimer& gr, bool IsReflection = false);
 
 	//Height map terrain
 	HeightmapTerrain::InitInfo HeightmapTerrainInit();

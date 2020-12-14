@@ -3,6 +3,9 @@
 #include "L3DCamera.h"
 #include "L3DTextureManage.h"
 #include "FrameResource.h"
+
+class Grass;
+
 class HeightmapTerrain
 {
 public:
@@ -45,6 +48,8 @@ public:
 		CD3DX12_CPU_DESCRIPTOR_HANDLE HeightMapDescriptor);
 
 	void GetTerrainConstant(TerrainConstants& TerrainConstant);
+
+	Grass* GetGrass() { return mGrass.get(); };
 private:
 	void LoadHeightmapAsset();
 	void Smooth();
@@ -87,5 +92,5 @@ private:
 	std::unique_ptr<MeshGeometry> mGeometries;
 
 	//grass
-	//Grass mGrass;
+	std::unique_ptr<Grass> mGrass;
 };

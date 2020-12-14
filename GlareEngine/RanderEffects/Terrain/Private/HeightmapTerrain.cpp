@@ -1,7 +1,7 @@
 #include "HeightmapTerrain.h"
 #include "L3DGeometryGenerator.h"
 #include "L3DVertex.h"
-
+#include "Grass.h"
 using namespace DirectX::PackedVector;
 
 HeightmapTerrain::HeightmapTerrain(
@@ -32,6 +32,13 @@ HeightmapTerrain::HeightmapTerrain(
 	CalcAllPatchBoundsY();
 	//Geometry VB & IB
 	BuildQuadPatchGeometry();
+
+	//init Grass
+	mGrass = std::make_unique<Grass>(device, CommandList, TextureManage, 
+		this->GetWidth(), this->GetDepth(), 
+		mNumPatchVertRows, mNumPatchVertCols, 
+		mPatchBoundsY);
+
 }
 
 HeightmapTerrain::~HeightmapTerrain()

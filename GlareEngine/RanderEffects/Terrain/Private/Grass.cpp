@@ -1,14 +1,23 @@
 #include "Grass.h"
 #include "L3DVertex.h"
-Grass::Grass(ID3D12Device* device, float GrassWidth, float GrassDepth, int VertRows, int VertCols, std::vector<XMFLOAT2>& PatchBoundsY)
+#include "L3DTextureManage.h"
+
+Grass::Grass(ID3D12Device* device, 
+	ID3D12GraphicsCommandList* CommandList,
+	L3DTextureManage* TextureManage,
+	float GrassWidth, float GrassDepth, 
+	int VertRows, int VertCols, 
+	std::vector<XMFLOAT2>& PatchBoundsY)
 :mDevice(device),
 mNumVertRows(VertRows),
 mNumVertCols(VertCols),
 mGrassWidth(GrassWidth),
 mGrassDepth(GrassDepth),
-mPatchBoundsY(PatchBoundsY)
+mPatchBoundsY(PatchBoundsY),
+mCommandList(CommandList),
+mTextureManage(TextureManage)
 {
-
+	BuildGrassVB();
 }
 
 Grass::~Grass()
@@ -51,8 +60,28 @@ void Grass::BuildGrassVB()
 	for (size_t i = 0; i < patchVertices.size(); ++i)
 	{
 		vertices[i].Pos = patchVertices[i].Pos;
-		vertices[i].Tex = patchVertices[i].Tex;
+		vertices[i].BoundsY = patchVertices[i].BoundsY;
 	}
 
-	const UINT vbByteSize = (UINT)vertices.size() * sizeof(L3DVertice::Terrain);
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(L3DVertice::Grass);
+
+	auto geo = std::make_unique<MeshGeometry>();
+	geo->Name = "GrassGeo";
+
+	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
+	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
+
+
+	geo->VertexBufferGPU = L3DUtil::CreateDefaultBuffer(mDevice,
+		mCommandList, vertices.data(), vbByteSize, geo->VertexBufferUploader);
+	geo->VertexByteStride = sizeof(L3DVertice::Grass);
+	geo->VertexBufferByteSize = vbByteSize;
+
+
+	SubmeshGeometry submesh;
+	submesh.VertexCount = (UINT)vertices.size();
+
+	geo->DrawArgs["Grass"] = submesh;
+
+	mGeometries = std::move(geo);
 }

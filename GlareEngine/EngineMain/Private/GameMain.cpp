@@ -94,10 +94,6 @@ bool GameApp::Initialize()
 	mModelLoder = std::make_unique<ModelLoader>(mhMainWnd, md3dDevice.Get(), mCommandList.Get(), mTextureManage.get());
 	//init HeightMap Terrain
 	mHeightMapTerrain = std::make_unique<HeightmapTerrain>(md3dDevice.Get(), mCommandList.Get(), mTextureManage.get(),HeightmapTerrainInit(),nullptr);
-	//init Grass 
-
-
-
 
 	{
 		LoadModel();
@@ -1986,6 +1982,15 @@ void GameApp::DrawHeightMapTerrain(const GameTimer& gr,bool IsReflection)
 		DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::HeightMapTerrain]);
 		PIXEndEvent(mCommandList.Get());
 	}
+}
+
+void GameApp::DrawGrass(const GameTimer& gr, bool IsReflection)
+{
+
+
+
+
+
 }
 
 HeightmapTerrain::InitInfo GameApp::HeightmapTerrainInit()
