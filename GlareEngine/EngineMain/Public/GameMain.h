@@ -19,6 +19,7 @@
 #include "WaterRefractionMaskShader.h"
 #include "ShockWaveWaterShader.h"
 #include "HeightMapTerrainShader.h"
+#include "GrassShader.h"
 
 #include "PSOManager.h"
 #include "L3DCamera.h"
@@ -87,6 +88,7 @@ enum class RenderLayer : int
 	Sky,
 	ShockWaveWater,
 	HeightMapTerrain,
+	Grass,
 	Count
 };
 
@@ -285,6 +287,7 @@ private:
 
 	//Terrain
 	std::unique_ptr<HeightmapTerrain> mHeightMapTerrain;
+	TerrainConstants  mTerrainConstant;
 	int mBlendMapIndex = 0;
 	int mHeightMapIndex = 0;
 	//play back anime 

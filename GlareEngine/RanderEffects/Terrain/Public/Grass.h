@@ -12,6 +12,12 @@ public:
 		std::vector<XMFLOAT2>& mPatchBoundsY);
 	~Grass();
 	void BuildGrassVB();
+
+	std::vector<XMFLOAT4>& GetPatchBoundsY() { return mBoundsY; };
+
+	std::vector<XMFLOAT4>& GetOffset() { return mOffset; };
+
+	MeshGeometry* GetMeshGeometry()const { return mGeometries.get(); };
 private:
 	ID3D11ShaderResourceView* mGrassTexSRV;
 	ID3D11ShaderResourceView* mGrassBlendTexSRV;
@@ -20,6 +26,8 @@ private:
 	ID3D12Device* mDevice;
 
 	std::vector<XMFLOAT2> mPatchBoundsY;
+	std::vector<XMFLOAT4> mBoundsY;
+	std::vector<XMFLOAT4> mOffset;
 	int mNumVertRows;
 	int mNumVertCols;
 	float mGrassWidth;

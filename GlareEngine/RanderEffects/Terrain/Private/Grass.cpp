@@ -26,44 +26,54 @@ Grass::~Grass()
 
 void Grass::BuildGrassVB()
 {
-	std::vector<L3DVertice::Grass> patchVertices(mNumVertRows * mNumVertCols);
+	int NumPacthRows = mNumVertRows - 1;
+	int NumPacthCols = mNumVertCols - 1;
 
+	mOffset.resize(NumPacthRows * NumPacthCols);
+	mBoundsY.resize(NumPacthRows * NumPacthCols);
 	float halfWidth = 0.5f * mGrassWidth;
 	float halfDepth = 0.5f * mGrassDepth;
 
-	float patchWidth = mGrassWidth / (mNumVertCols - 1);
-	float patchDepth = mGrassDepth / (mNumVertRows - 1);
-	float du = 1.0f / (mNumVertCols - 1);
-	float dv = 1.0f / (mNumVertRows - 1);
-
-	for (UINT i = 0; i < mNumVertRows; ++i)
+	float patchWidth = mGrassWidth / NumPacthCols;
+	float patchDepth = mGrassDepth / NumPacthRows;
+	
+	for (UINT i = 0; i < NumPacthRows; ++i)
 	{
 		float z = halfDepth - i * patchDepth;
-		for (UINT j = 0; j < mNumVertCols; ++j)
+		for (UINT j = 0; j < NumPacthCols; ++j)
 		{
 			float x = -halfWidth + j * patchWidth;
-			patchVertices[i * mNumVertCols + j].Pos = XMFLOAT3(x, 0.0f, z);
+			mOffset[i * NumPacthCols + j] = XMFLOAT4(x, 0.0f, z,0.0f);
+			mBoundsY[i * NumPacthCols + j]= XMFLOAT4(mPatchBoundsY[i * NumPacthCols + j].x, mPatchBoundsY[i * NumPacthCols + j].y, 0.0f, 0.0f);
 		}
 	}
 
-	// Store axis-aligned bounding box y-bounds in upper-left patch corner.
-	for (UINT i = 0; i < mNumVertRows - 1; ++i)
+	float Cell = mGrassWidth / NumPacthRows;
+	static const XMFLOAT3 gPacthVertice[4] =
 	{
-		for (UINT j = 0; j < mNumVertCols - 1; ++j)
-		{
-			UINT patchID = i * (mNumVertCols - 1) + j;
-			patchVertices[i * mNumVertCols + j].BoundsY = mPatchBoundsY[patchID];
-		}
+		XMFLOAT3(0.0f,0.0f,0.0f),
+		XMFLOAT3(Cell,0.0f,0.0f),
+		XMFLOAT3(0.0f,0.0f,-Cell),
+		XMFLOAT3(Cell,0.0f,-Cell)
+	};
+
+	std::vector<L3DVertice::Pos> vertices(4);
+	for (size_t i = 0; i < 4; ++i)
+	{
+		vertices[i].Pos = gPacthVertice[i];
 	}
 
-	std::vector<L3DVertice::Grass> vertices(patchVertices.size());
-	for (size_t i = 0; i < patchVertices.size(); ++i)
-	{
-		vertices[i].Pos = patchVertices[i].Pos;
-		vertices[i].BoundsY = patchVertices[i].BoundsY;
-	}
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(L3DVertice::Pos);
 
-	const UINT vbByteSize = (UINT)vertices.size() * sizeof(L3DVertice::Grass);
+	std::vector<USHORT> indices(4); // 4 indices per quad face
+	
+	indices[0] = 0;
+	indices[1] = 1;
+	indices[2] = 2;
+	indices[3] = 3;
+
+	UINT ibByteSize = (UINT)indices.size() * sizeof(USHORT);
+
 
 	auto geo = std::make_unique<MeshGeometry>();
 	geo->Name = "GrassGeo";
@@ -71,15 +81,26 @@ void Grass::BuildGrassVB()
 	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
 	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
 
+	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
+	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 
 	geo->VertexBufferGPU = L3DUtil::CreateDefaultBuffer(mDevice,
 		mCommandList, vertices.data(), vbByteSize, geo->VertexBufferUploader);
-	geo->VertexByteStride = sizeof(L3DVertice::Grass);
+	
+	geo->IndexBufferGPU = L3DUtil::CreateDefaultBuffer(mDevice,
+		mCommandList, indices.data(), ibByteSize, geo->IndexBufferUploader);
+	
+	
+	geo->VertexByteStride = sizeof(L3DVertice::Pos);
 	geo->VertexBufferByteSize = vbByteSize;
+	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
+	geo->IndexBufferByteSize = ibByteSize;
 
 
 	SubmeshGeometry submesh;
-	submesh.VertexCount = (UINT)vertices.size();
+	submesh.IndexCount = (UINT)indices.size();
+	submesh.StartIndexLocation = 0;
+	submesh.BaseVertexLocation = 0;
 
 	geo->DrawArgs["Grass"] = submesh;
 

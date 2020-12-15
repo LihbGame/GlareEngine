@@ -1,4 +1,5 @@
 ﻿#include "GameMain.h"
+#include "Grass.h"
 //lib
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
@@ -42,6 +43,7 @@ GameApp::GameApp(HINSTANCE hInstance)
 	mObjCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 	mSkinnedCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(SkinnedConstants));
 	mTerrainCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(TerrainConstants));
+
 }
 
 GameApp::~GameApp()
@@ -54,9 +56,6 @@ GameApp::~GameApp()
 		delete e.second;
 		e.second = nullptr;
 	}
-
-
-	
 }
 
 bool GameApp::Initialize()
@@ -108,6 +107,14 @@ bool GameApp::Initialize()
 		BuildModelGeoInstanceItems();
 		BuildFrameResources();
 		BuildPSOs();
+	}
+
+
+	//Pre compute Grass  Constant 
+	for (int i = 0; i < GrassPacthNum; ++i)
+	{
+		mTerrainConstant.gBoundY[i] = mHeightMapTerrain->GetGrass()->GetPatchBoundsY()[i];
+		mTerrainConstant.gOffsetPosition[i] = mHeightMapTerrain->GetGrass()->GetOffset()[i];
 	}
 
 	//init UI
@@ -302,6 +309,8 @@ void GameApp::Draw(const GameTimer& gt)
 		DrawHeightMapTerrain(gt);
 	}
 
+	//Draw Grass
+	DrawGrass(gt);
 
 	//Draw Shock Wave Water
 	if (mEngineUI->IsShowWater())
@@ -952,6 +961,7 @@ void GameApp::BuildShadersAndInputLayout()
 	
 	mShaders["HeightMapTerrain"] = new HeightMapTerrainShader(L"Shaders\\HeightMapTerrainVS.hlsl", L"Shaders\\HeightMapTerrainPS.hlsl", L"Shaders\\HeightMapTerrainHS.hlsl", L"Shaders\\HeightMapTerrainDS.hlsl");
 
+	mShaders["Grass"] = new GrassShader(L"Shaders\\GrassVS.hlsl", L"Shaders\\GrassPS.hlsl", L"Shaders\\GrassHS.hlsl", L"Shaders\\GrassDS.hlsl");
 }
 
 void GameApp::BuildSimpleGeometry()
@@ -1343,6 +1353,7 @@ void GameApp::BuildPSOs()
 		{});
 #pragma endregion
 
+	// PSO for Height Map Terrain.
 #pragma region Height Map Terrain
 	Input = mShaders["HeightMapTerrain"]->GetInputLayout();
 	D3D12_RASTERIZER_DESC HeightMapRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
@@ -1393,6 +1404,41 @@ void GameApp::BuildPSOs()
 		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
 		UINT_MAX,
 		HeightMapTerrainRasterizerState,
+		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
+		{ Input.data(), (UINT)Input.size() },
+		{},
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH,
+		1,
+		RTVFormats,
+		mDepthStencilFormat,
+		{ UINT(m4xMsaaState ? 4 : 1) ,UINT(0) },
+		0,
+		{},
+		{});
+#pragma endregion
+
+
+	// PSO for Grass.
+#pragma region PSO_for_Grass
+	Input = mShaders["Grass"]->GetInputLayout();
+	D3D12_RASTERIZER_DESC GrassRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	GrassRasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	mPSOs->BuildPSO(md3dDevice.Get(),
+		PSOName::Grass,
+		mRootSignature.Get(),
+		{ reinterpret_cast<BYTE*>(mShaders["Grass"]->GetVSShader()->GetBufferPointer()),
+			mShaders["Grass"]->GetVSShader()->GetBufferSize() },
+		{ reinterpret_cast<BYTE*>(mShaders["Grass"]->GetPSShader()->GetBufferPointer()),
+		mShaders["Grass"]->GetPSShader()->GetBufferSize() },
+		{ reinterpret_cast<BYTE*>(mShaders["Grass"]->GetDSShader()->GetBufferPointer()),
+		mShaders["Grass"]->GetDSShader()->GetBufferSize() },
+		{ reinterpret_cast<BYTE*>(mShaders["Grass"]->GetHSShader()->GetBufferPointer()),
+		mShaders["Grass"]->GetHSShader()->GetBufferSize() },
+		{},
+		{},
+		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
+		UINT_MAX,
+		GrassRasterizerState,
 		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
 		{ Input.data(), (UINT)Input.size() },
 		{},
@@ -1619,6 +1665,36 @@ void GameApp::BuildRenderItems()
 		mReflectionWaterLayer[(int)RenderLayer::HeightMapTerrain].push_back(ReflectionTerrain.get());
 		mAllRitems.push_back(std::move(Terrain));
 		mAllRitems.push_back(std::move(ReflectionTerrain));
+	}
+
+	//Grass
+	{
+		RenderItem GrassRitem = {};
+		GrassRitem.World = MathHelper::Identity4x4();
+		XMStoreFloat4x4(&GrassRitem.World, XMMatrixTranslation(0.0f, 0.0f, 0.0f) * XMMatrixScaling(1.0, 1.0, 1.0));
+		XMStoreFloat4x4(&GrassRitem.TexTransform, XMMatrixScaling(1.0, 1.0, 1.0));
+		GrassRitem.ObjCBIndex = ObjCBIndex++;
+		GrassRitem.Mat = mMaterials[L"Terrain/grass"].get();
+		GrassRitem.Geo.push_back(mHeightMapTerrain->GetGrass()->GetMeshGeometry());
+		GrassRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST;
+		GrassRitem.IndexCount.push_back(GrassRitem.Geo[0]->DrawArgs["Grass"].IndexCount);
+		GrassRitem.StartIndexLocation.push_back(GrassRitem.Geo[0]->DrawArgs["Grass"].StartIndexLocation);
+		GrassRitem.BaseVertexLocation.push_back(GrassRitem.Geo[0]->DrawArgs["Grass"].BaseVertexLocation);
+		GrassRitem.InstanceCount = GrassPacthNum;
+
+#pragma region Reflection
+		RenderItem ReflectionGrassRitem = GrassRitem;
+		ReflectionGrassRitem.ItemType = RenderItemType::Reflection;
+		XMStoreFloat4x4(&ReflectionGrassRitem.World, XMMatrixTranslation(0.0f, 0.0f, 0.0f) * XMMatrixScaling(1.0, -1.0, 1.0));
+		ReflectionGrassRitem.ObjCBIndex = ObjCBIndex++;
+#pragma endregion
+
+		auto Grass = std::make_unique<RenderItem>(GrassRitem);
+		auto ReflectionGrass = std::make_unique<RenderItem>(ReflectionGrassRitem);
+		mRitemLayer[(int)RenderLayer::Grass].push_back(Grass.get());
+		mReflectionWaterLayer[(int)RenderLayer::Grass].push_back(ReflectionGrass.get());
+		mAllRitems.push_back(std::move(Grass));
+		mAllRitems.push_back(std::move(ReflectionGrass));
 	}
 
 
@@ -1986,11 +2062,13 @@ void GameApp::DrawHeightMapTerrain(const GameTimer& gr,bool IsReflection)
 
 void GameApp::DrawGrass(const GameTimer& gr, bool IsReflection)
 {
-
-
-
-
-
+	auto TerrainCB = mCurrFrameResource->TerrainCB->Resource();
+	D3D12_GPU_VIRTUAL_ADDRESS TerrainCBAddress = TerrainCB->GetGPUVirtualAddress();
+	mCommandList->SetGraphicsRootConstantBufferView(2, TerrainCBAddress);
+	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Grass).Get());
+	PIXBeginEvent(mCommandList.Get(), 0, "Draw Grass");
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Grass]);
+	PIXEndEvent(mCommandList.Get());
 }
 
 HeightmapTerrain::InitInfo GameApp::HeightmapTerrainInit()
@@ -2168,23 +2246,23 @@ void GameApp::UpdateTerrainPassCB(const GameTimer& gt)
 	XMFLOAT4 worldPlanes[6];
 	ExtractFrustumPlanes(worldPlanes, viewProj);
 
-	TerrainConstants  TerrainConstant;
-	mHeightMapTerrain->GetTerrainConstant(TerrainConstant);
+	
+	mHeightMapTerrain->GetTerrainConstant(mTerrainConstant);
 
 	for (int i = 0; i < 6; ++i)
 	{
-		TerrainConstant.gWorldFrustumPlanes[i] = worldPlanes[i];
+		mTerrainConstant.gWorldFrustumPlanes[i] = worldPlanes[i];
 	}
 
-	TerrainConstant.isReflection = false;
-	TerrainConstant.gBlendMapIndex = mBlendMapIndex;
-	TerrainConstant.gHeightMapIndex = mHeightMapIndex;
-	
+	mTerrainConstant.isReflection = false;
+	mTerrainConstant.gBlendMapIndex = mBlendMapIndex;
+	mTerrainConstant.gHeightMapIndex = mHeightMapIndex;
+
 	auto currPassCB = mCurrFrameResource->TerrainCB.get();
-	currPassCB->CopyData(0, TerrainConstant);
+	currPassCB->CopyData(0, mTerrainConstant);
 	//地形的水面反射
-	TerrainConstant.isReflection = true;
-	currPassCB->CopyData(1, TerrainConstant);
+	mTerrainConstant.isReflection = true;
+	currPassCB->CopyData(1, mTerrainConstant);
 }
 
 void GameApp::UpdateAnimation(const GameTimer& gt)

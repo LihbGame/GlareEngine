@@ -143,5 +143,6 @@ enum class PSOName : int
 	ShockWaveWater,
 	HeightMapTerrain,
 	HeightMapTerrainRefraction,
+	Grass,
 	Count
 };

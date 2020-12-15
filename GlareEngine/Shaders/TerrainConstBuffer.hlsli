@@ -1,3 +1,5 @@
+#define PacthSize 32*32
+
 cbuffer TerrainCBPass : register(b2)
 {
 	float gMinDist;
@@ -13,6 +15,12 @@ cbuffer TerrainCBPass : register(b2)
 
 	float4 gWorldFrustumPlanes[6];
 
+
+	float4 gOffsetPosition[PacthSize];
+	float4 gBoundY[PacthSize];
+
 	int mHeightMapIndex;
 	int mBlendMapIndex;
+	int pad1;
+	int pad2;
 };

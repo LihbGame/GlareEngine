@@ -147,6 +147,7 @@
     <ClInclude Include="RanderEffects\Terrain\Public\HeightmapTerrain.h" />
     <ClInclude Include="ShaderSource\Public\HeightMapTerrainShader.h" />
     <ClInclude Include="RanderEffects\Terrain\Public\Grass.h" />
+    <ClInclude Include="ShaderSource\Public\GrassShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Private\DDSTextureLoader.cpp">
@@ -275,6 +276,9 @@
     <ClCompile Include="RanderEffects\Terrain\Private\Grass.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
+    <ClCompile Include="ShaderSource\Private\GrassShader.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -307,6 +311,10 @@
     <FxCompile Include="Shaders\HeightMapTerrainVS.hlsl" />
     <FxCompile Include="Shaders\HeightMapTerrainPS.hlsl" />
     <FxCompile Include="Shaders\HeightMapTerrainHS.hlsl" />
+    <FxCompile Include="Shaders\GrassVS.hlsl" />
+    <FxCompile Include="Shaders\GrassPS.hlsl" />
+    <FxCompile Include="Shaders\GrassHS.hlsl" />
+    <FxCompile Include="Shaders\GrassDS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini" />
