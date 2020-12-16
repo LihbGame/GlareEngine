@@ -77,6 +77,7 @@ struct RenderItem
 	// DrawIndexedInstanced parameters.
 	UINT InstanceCount;
 	std::vector<UINT> IndexCount;
+	std::vector<UINT> VertexCount;
 	std::vector<UINT> StartIndexLocation;
 	std::vector<int> BaseVertexLocation;
 };
@@ -181,7 +182,7 @@ private:
 
 
 	//ªÊ÷∆‰÷»æœÓ
-	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
+	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems, bool IsIndexInstanceDraw =true);
 	//Draw Scene To ShadowMap
 	void DrawSceneToShadowMap();
 	//Draw Shock Wave Water

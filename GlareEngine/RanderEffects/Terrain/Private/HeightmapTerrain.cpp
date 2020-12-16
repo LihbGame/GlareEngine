@@ -36,8 +36,7 @@ HeightmapTerrain::HeightmapTerrain(
 	//init Grass
 	mGrass = std::make_unique<Grass>(device, CommandList, TextureManage, 
 		this->GetWidth(), this->GetDepth(), 
-		mNumPatchVertRows, mNumPatchVertCols, 
-		mPatchBoundsY);
+		2000, 2000);
 
 }
 
@@ -401,7 +400,4 @@ void HeightmapTerrain::GetTerrainConstant(TerrainConstants& TerrainConstant)
 	TerrainConstant.gTexelCellSpaceU = 1.0f / mInfo.HeightmapWidth;
 	TerrainConstant.gTexelCellSpaceV = 1.0f / mInfo.HeightmapHeight;
 	TerrainConstant.gWorldCellSpace = mInfo.CellSpacing;
-
-	TerrainConstant.gMinGrassTess = 0.0f;
-	TerrainConstant.gMaxGrassTess = 8.0f;
 }

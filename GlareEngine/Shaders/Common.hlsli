@@ -46,7 +46,7 @@ struct InstanceData
 TextureCube gCubeMap : register(t0);
 //纹理数组，仅着色器模型5.1+支持。 与Texture2DArray不同，
 //此数组中的纹理可以具有不同的大小和格式，使其比纹理数组更灵活。
-Texture2D gSRVMap[84] : register(t1);
+Texture2D gSRVMap[90] : register(t1);
 //放入space1，因此纹理数组不会与这些资源重叠。
 //纹理数组将占用space0中的寄存器t0，t1，...，t3。
 StructuredBuffer<MaterialData> gMaterialData : register(t1, space1);
@@ -234,3 +234,33 @@ float CalcShadowFactor(float4 shadowPosH)
     return percentLit / 9.0f;
 }
 
+
+// 如果框完全位于平面的后面(负半空间),则返回true。
+bool AABBBehindPlaneTest(float3 center, float3 extents, float4 plane)
+{
+    float3 n = abs(plane.xyz);
+
+    // This is always positive.
+    float r = dot(extents, n);
+    //从中心点到平面的正负距离。
+    float s = dot(float4(center, 1.0f), plane);
+
+    //如果框的中心点在平面后面等于e或更大（在这种情况下s为负，
+    //因为它在平面后面），则框完全位于平面的负半空间中。
+    return (s + r) < 0.0f;
+}
+
+
+//如果该框完全位于平截头体之外，返回true。
+bool AABBOutsideFrustumTest(float3 center, float3 extents, float4 frustumPlanes[6])
+{
+    for (int i = 0; i < 6; ++i)
+    {
+        // 如果盒子完全位于任何一个视锥平面的后面，那么它就在视锥之外。
+        if (AABBBehindPlaneTest(center, extents, frustumPlanes[i]))
+        {
+            return true;
+        }
+    }
+    return false;
+}

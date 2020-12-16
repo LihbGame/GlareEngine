@@ -8,14 +8,9 @@ public:
 		ID3D12GraphicsCommandList* CommandList,
 		L3DTextureManage* TextureManage,
 		float GrassWidth, float GrassDepth, 
-		int VertRows, int VertCols, 
-		std::vector<XMFLOAT2>& mPatchBoundsY);
+		int VertRows, int VertCols);
 	~Grass();
 	void BuildGrassVB();
-
-	std::vector<XMFLOAT4>& GetPatchBoundsY() { return mBoundsY; };
-
-	std::vector<XMFLOAT4>& GetOffset() { return mOffset; };
 
 	MeshGeometry* GetMeshGeometry()const { return mGeometries.get(); };
 private:
@@ -25,9 +20,6 @@ private:
 
 	ID3D12Device* mDevice;
 
-	std::vector<XMFLOAT2> mPatchBoundsY;
-	std::vector<XMFLOAT4> mBoundsY;
-	std::vector<XMFLOAT4> mOffset;
 	int mNumVertRows;
 	int mNumVertCols;
 	float mGrassWidth;

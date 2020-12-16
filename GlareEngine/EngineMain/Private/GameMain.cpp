@@ -109,14 +109,6 @@ bool GameApp::Initialize()
 		BuildPSOs();
 	}
 
-
-	//Pre compute Grass  Constant 
-	for (int i = 0; i < GrassPacthNum; ++i)
-	{
-		mTerrainConstant.gBoundY[i] = mHeightMapTerrain->GetGrass()->GetPatchBoundsY()[i];
-		mTerrainConstant.gOffsetPosition[i] = mHeightMapTerrain->GetGrass()->GetOffset()[i];
-	}
-
 	//init UI
 	mEngineUI->InitGUI(mhMainWnd, md3dDevice.Get(), mGUISrvDescriptorHeap.Get());
 	
@@ -961,7 +953,7 @@ void GameApp::BuildShadersAndInputLayout()
 	
 	mShaders["HeightMapTerrain"] = new HeightMapTerrainShader(L"Shaders\\HeightMapTerrainVS.hlsl", L"Shaders\\HeightMapTerrainPS.hlsl", L"Shaders\\HeightMapTerrainHS.hlsl", L"Shaders\\HeightMapTerrainDS.hlsl");
 
-	mShaders["Grass"] = new GrassShader(L"Shaders\\GrassVS.hlsl", L"Shaders\\GrassPS.hlsl", L"Shaders\\GrassHS.hlsl", L"Shaders\\GrassDS.hlsl", L"Shaders\\GrassGS.hlsl");
+	mShaders["Grass"] = new GrassShader(L"Shaders\\GrassVS.hlsl", L"Shaders\\GrassPS.hlsl", L"", L"", L"Shaders\\GrassGS.hlsl");
 }
 
 void GameApp::BuildSimpleGeometry()
@@ -1422,7 +1414,7 @@ void GameApp::BuildPSOs()
 #pragma region PSO_for_Grass
 	Input = mShaders["Grass"]->GetInputLayout();
 	D3D12_RASTERIZER_DESC GrassRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	GrassRasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	//GrassRasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
 	mPSOs->BuildPSO(md3dDevice.Get(),
 		PSOName::Grass,
 		mRootSignature.Get(),
@@ -1430,10 +1422,8 @@ void GameApp::BuildPSOs()
 			mShaders["Grass"]->GetVSShader()->GetBufferSize() },
 		{ reinterpret_cast<BYTE*>(mShaders["Grass"]->GetPSShader()->GetBufferPointer()),
 		mShaders["Grass"]->GetPSShader()->GetBufferSize() },
-		{ reinterpret_cast<BYTE*>(mShaders["Grass"]->GetDSShader()->GetBufferPointer()),
-		mShaders["Grass"]->GetDSShader()->GetBufferSize() },
-		{ reinterpret_cast<BYTE*>(mShaders["Grass"]->GetHSShader()->GetBufferPointer()),
-		mShaders["Grass"]->GetHSShader()->GetBufferSize() },
+		{},
+		{},
 		{ reinterpret_cast<BYTE*>(mShaders["Grass"]->GetGSShader()->GetBufferPointer()),
 		mShaders["Grass"]->GetGSShader()->GetBufferSize() },
 		{},
@@ -1443,7 +1433,7 @@ void GameApp::BuildPSOs()
 		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
 		{ Input.data(), (UINT)Input.size() },
 		{},
-		D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH,
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT,
 		1,
 		RTVFormats,
 		mDepthStencilFormat,
@@ -1518,6 +1508,16 @@ void GameApp::BuildAllMaterials()
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 		XMFLOAT3(0.1f, 0.1f, 0.1f),
 		MatTransform);
+
+	//PBRGrass Material
+	BuildMaterials(
+		L"PBRGrass",
+		MatCBIndex++,
+		0.01f,
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		XMFLOAT3(0.1f, 0.1f, 0.1f),
+		MatTransform);
+
 
 	//PBRBrass Material
 	XMStoreFloat4x4(&MatTransform, XMMatrixScaling(0.1f, 0.1f, 0.1f));
@@ -1675,13 +1675,14 @@ void GameApp::BuildRenderItems()
 		XMStoreFloat4x4(&GrassRitem.World, XMMatrixTranslation(0.0f, 0.0f, 0.0f) * XMMatrixScaling(1.0, 1.0, 1.0));
 		XMStoreFloat4x4(&GrassRitem.TexTransform, XMMatrixScaling(1.0, 1.0, 1.0));
 		GrassRitem.ObjCBIndex = ObjCBIndex++;
-		GrassRitem.Mat = mMaterials[L"Terrain/grass"].get();
+		GrassRitem.Mat = mMaterials[L"PBRGrass"].get();
 		GrassRitem.Geo.push_back(mHeightMapTerrain->GetGrass()->GetMeshGeometry());
-		GrassRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST;
+		GrassRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
 		GrassRitem.IndexCount.push_back(GrassRitem.Geo[0]->DrawArgs["Grass"].IndexCount);
+		GrassRitem.VertexCount.push_back(GrassRitem.Geo[0]->DrawArgs["Grass"].VertexCount);
 		GrassRitem.StartIndexLocation.push_back(GrassRitem.Geo[0]->DrawArgs["Grass"].StartIndexLocation);
 		GrassRitem.BaseVertexLocation.push_back(GrassRitem.Geo[0]->DrawArgs["Grass"].BaseVertexLocation);
-		GrassRitem.InstanceCount = GrassPacthNum;
+		GrassRitem.InstanceCount = 1;
 
 #pragma region Reflection
 		RenderItem ReflectionGrassRitem = GrassRitem;
@@ -1834,7 +1835,7 @@ void GameApp::BuildModelGeoInstanceItems()
 #pragma endregion
 }
 
-void GameApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems)
+void GameApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems,bool IsIndexInstanceDraw)
 {
 	auto objectCB = mCurrFrameResource->SimpleObjectCB->Resource();
 	auto skinnedCB = mCurrFrameResource->SkinnedCB->Resource();
@@ -1856,7 +1857,7 @@ void GameApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vec
 		cmdList->SetGraphicsRootConstantBufferView(0, objCBAddress);
 
 
-		for (int MeshNum=0;MeshNum<ri->Geo.size();++MeshNum)
+		for (int MeshNum = 0; MeshNum < ri->Geo.size(); ++MeshNum)
 		{
 			if (ri->Geo.size() > 1)//test
 			{
@@ -1871,26 +1872,33 @@ void GameApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vec
 				cmdList->IASetVertexBuffers(0, 1, &ri->Geo[MeshNum]->VertexBufferView());
 
 			}
-			cmdList->IASetIndexBuffer(&ri->Geo[MeshNum]->IndexBufferView());
+			
 			cmdList->IASetPrimitiveTopology(ri->PrimitiveType);
 
 
 			// Set the instance buffer to use for this render-item.  For structured buffers, we can bypass 
 			// the heap and set as a root descriptor.
-			ID3D12Resource* instanceBuffer=nullptr;
+			ID3D12Resource* instanceBuffer = nullptr;
 			if (ritems[i]->ItemType == RenderItemType::Normal)
 			{
 				instanceBuffer = mCurrFrameResource->InstanceSimpleObjectCB[MeshNum]->Resource();
 			}
-			else if(ritems[i]->ItemType == RenderItemType::Reflection)
+			else if (ritems[i]->ItemType == RenderItemType::Reflection)
 			{
 				instanceBuffer = mCurrFrameResource->ReflectionInstanceSimpleObjectCB[MeshNum]->Resource();
 			}
 			else {}
 			mCommandList->SetGraphicsRootShaderResourceView(3, instanceBuffer->GetGPUVirtualAddress());
 
-
-			cmdList->DrawIndexedInstanced(ri->IndexCount[MeshNum], ri->InstanceCount, ri->StartIndexLocation[MeshNum], ri->BaseVertexLocation[MeshNum], 0);
+			if (IsIndexInstanceDraw)
+			{
+				cmdList->IASetIndexBuffer(&ri->Geo[MeshNum]->IndexBufferView());
+				cmdList->DrawIndexedInstanced(ri->IndexCount[MeshNum], ri->InstanceCount, ri->StartIndexLocation[MeshNum], ri->BaseVertexLocation[MeshNum], 0);
+			}
+			else
+			{
+				cmdList->DrawInstanced(ri->VertexCount[MeshNum], ri->InstanceCount, ri->BaseVertexLocation[MeshNum], 0);
+			}
 		}
 	}
 }
@@ -2067,8 +2075,11 @@ void GameApp::DrawGrass(const GameTimer& gr, bool IsReflection)
 	D3D12_GPU_VIRTUAL_ADDRESS TerrainCBAddress = TerrainCB->GetGPUVirtualAddress();
 	mCommandList->SetGraphicsRootConstantBufferView(2, TerrainCBAddress);
 	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Grass).Get());
+	
+	
+	
 	PIXBeginEvent(mCommandList.Get(), 0, "Draw Grass");
-	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Grass]);
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Grass],false);
 	PIXEndEvent(mCommandList.Get());
 }
 

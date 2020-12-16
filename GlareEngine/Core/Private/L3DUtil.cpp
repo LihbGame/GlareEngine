@@ -3,6 +3,8 @@
 #include <comdef.h>
 #include <fstream>
 
+#define RandomSize 1024
+
 using Microsoft::WRL::ComPtr;
 
 DxException::DxException(HRESULT hr, const std::wstring& functionName, const std::wstring& filename, int lineNumber) :
@@ -86,6 +88,74 @@ Microsoft::WRL::ComPtr<ID3D12Resource> L3DUtil::CreateDefaultBuffer(
 
     return defaultBuffer;
 }
+
+Microsoft::WRL::ComPtr<ID3D12Resource> L3DUtil::CreateRandomTexture1DSRV(ID3D12Device* device, 
+	ID3D12GraphicsCommandList* cmdList,
+	Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer)
+{
+	// 
+	// Create the random data.
+	//
+	XMFLOAT4 randomValues[RandomSize];
+
+	for (int i = 0; i < RandomSize; ++i)
+	{
+		randomValues[i].x = MathHelper::RandF(-1.0f, 1.0f);
+		randomValues[i].y = MathHelper::RandF(-1.0f, 1.0f);
+		randomValues[i].z = MathHelper::RandF(-1.0f, 1.0f);
+		randomValues[i].w = MathHelper::RandF(-1.0f, 1.0f);
+	}
+
+
+
+	ComPtr<ID3D12Resource> defaultBuffer;
+
+	// Create the actual default buffer resource.
+	ThrowIfFailed(device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Tex1D(DXGI_FORMAT_R32G32B32A32_FLOAT, RandomSize),
+		D3D12_RESOURCE_STATE_COMMON,
+		nullptr,
+		IID_PPV_ARGS(defaultBuffer.GetAddressOf())));
+
+	// In order to copy CPU memory data into our default buffer, we need to create
+	// an intermediate upload heap. 
+	ThrowIfFailed(device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(GetRequiredIntermediateSize(defaultBuffer.Get(), 0, 1)),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(uploadBuffer.GetAddressOf())));
+
+
+	// Describe the data we want to copy into the default buffer.
+	D3D12_SUBRESOURCE_DATA initData;
+	initData.pData = randomValues;
+	initData.RowPitch = RandomSize * sizeof(XMFLOAT4);
+	initData.SlicePitch = 0;
+
+
+	// Schedule to copy the data to the default buffer resource.  At a high level, the helper function UpdateSubresources
+	// will copy the CPU memory into the intermediate upload heap.  Then, using ID3D12CommandList::CopySubresourceRegion,
+	// the intermediate upload heap data will be copied to mBuffer.
+	cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(defaultBuffer.Get(),
+		D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST));
+	UpdateSubresources<1>(cmdList, defaultBuffer.Get(), uploadBuffer.Get(), 0, 0, 1, &initData);
+	cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(defaultBuffer.Get(),
+		D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+	// Note: uploadBuffer has to be kept alive after the above function calls because
+	// the command list has not been executed yet that performs the actual copy.
+	// The caller can Release the uploadBuffer after it knows the copy has been executed.
+
+
+	return defaultBuffer;
+}
+
+
+
 
 Microsoft::WRL::ComPtr<ID3D12Resource> L3DUtil::CreateDefault2DTexture(
     ID3D12Device* device, ID3D12GraphicsCommandList* cmdList, 

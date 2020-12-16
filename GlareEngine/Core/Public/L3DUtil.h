@@ -114,6 +114,12 @@ public:
 
     static Microsoft::WRL::ComPtr<ID3DBlob> LoadBinary(const std::wstring& filename);
 
+    static Microsoft::WRL::ComPtr<ID3D12Resource> CreateRandomTexture1DSRV(ID3D12Device* device, 
+        ID3D12GraphicsCommandList* cmdList,
+        Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer);
+
+
+
     static Microsoft::WRL::ComPtr<ID3D12Resource> CreateDefaultBuffer(
         ID3D12Device* device,
         ID3D12GraphicsCommandList* cmdList,
@@ -165,6 +171,7 @@ public:
 struct SubmeshGeometry
 {
 	UINT IndexCount = 0;
+    UINT VertexCount = 0;
 	UINT StartIndexLocation = 0;
 	INT BaseVertexLocation = 0;
 

@@ -10,5 +10,5 @@ GrassShader::~GrassShader()
 
 std::vector<D3D12_INPUT_ELEMENT_DESC> GrassShader::GetInputLayout()
 {
-	return L3DInputLayout::Pos;
+	return L3DInputLayout::Grass;
 }

@@ -1,25 +1,25 @@
 #include "TerrainConstBuffer.hlsli"
-
+#include "Common.hlsli"
 
 struct VertexIn
 {
 	float3 PosL    : POSITION;
+	float2 TexC    : TEXCOORD;
 };
 
 
 struct VertexOut
 {
 	float3 PosW    : POSITION;
-	float2 BoundY  : BoundY;
 };
 
-VertexOut VS(VertexIn vin, uint instanceID : SV_InstanceID)
+VertexOut VS(VertexIn vin)
 {
 	VertexOut vout;
 
-	vout.PosW = vin.PosL + gOffsetPosition[instanceID].xyz;
-	vout.PosW.y = 0.0f;
-	vout.BoundY = gBoundY[instanceID].xy;
+	vout.PosW = vin.PosL;
+
+	vout.PosW.y = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, vin.TexC, 0).r;
 
 	return vout;
 }

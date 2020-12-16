@@ -6,7 +6,6 @@
 #include "L3DVertex.h"
 #define InstanceCounts 25
 #define MAXSubMesh 10
-#define GrassPacthNum 1024
 
 struct ObjectConstants
 {
@@ -111,9 +110,6 @@ struct TerrainConstants
 	int isReflection;
 
     DirectX::XMFLOAT4 gWorldFrustumPlanes[6];
-
-	XMFLOAT4 gOffsetPosition[GrassPacthNum];
-    XMFLOAT4 gBoundY[GrassPacthNum];
 
 	int gHeightMapIndex = 0;
 	int gBlendMapIndex = 0;

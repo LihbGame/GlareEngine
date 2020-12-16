@@ -15,12 +15,6 @@ cbuffer TerrainCBPass : register(b2)
 
 	float4 gWorldFrustumPlanes[6];
 
-
-	float4 gOffsetPosition[PacthSize];
-	float4 gBoundY[PacthSize];
-
 	int mHeightMapIndex;
 	int mBlendMapIndex;
-	float gMinGrassTess;
-	float gMaxGrassTess;
 };

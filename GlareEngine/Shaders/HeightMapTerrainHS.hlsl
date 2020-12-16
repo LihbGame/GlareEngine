@@ -30,36 +30,6 @@ float CalcTessFactor(float3 p)
 	return pow(2, (lerp(gMaxTess, gMinTess, s)));
 }
 
-// 如果框完全位于平面的后面(负半空间),则返回true。
-bool AABBBehindPlaneTest(float3 center, float3 extents, float4 plane)
-{
-	float3 n = abs(plane.xyz);
-
-	// This is always positive.
-	float r = dot(extents, n);
-	//从中心点到平面的正负距离。
-	float s = dot(float4(center, 1.0f), plane);
-
-	//如果框的中心点在平面后面等于e或更大（在这种情况下s为负，
-	//因为它在平面后面），则框完全位于平面的负半空间中。
-	return (s + r) < 0.0f;
-}
-
-
-//如果该框完全位于平截头体之外，返回true。
-bool AABBOutsideFrustumTest(float3 center, float3 extents, float4 frustumPlanes[6])
-{
-	for (int i = 0; i < 6; ++i)
-	{
-		// 如果盒子完全位于任何一个视锥平面的后面，那么它就在视锥之外。
-		if (AABBBehindPlaneTest(center, extents, frustumPlanes[i]))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 PatchTess ConstantHS(InputPatch<VertexOut, 4> patch, uint patchID : SV_PrimitiveID)
 {
 	PatchTess pt;

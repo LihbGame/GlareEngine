@@ -313,8 +313,6 @@
     <FxCompile Include="Shaders\HeightMapTerrainHS.hlsl" />
     <FxCompile Include="Shaders\GrassVS.hlsl" />
     <FxCompile Include="Shaders\GrassPS.hlsl" />
-    <FxCompile Include="Shaders\GrassHS.hlsl" />
-    <FxCompile Include="Shaders\GrassDS.hlsl" />
     <FxCompile Include="Shaders\GrassGS.hlsl" />
   </ItemGroup>
   <ItemGroup>
