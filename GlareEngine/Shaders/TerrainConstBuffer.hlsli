@@ -21,6 +21,6 @@ cbuffer TerrainCBPass : register(b2)
 
 	int mHeightMapIndex;
 	int mBlendMapIndex;
-	int pad1;
-	int pad2;
+	float gMinGrassTess;
+	float gMaxGrassTess;
 };

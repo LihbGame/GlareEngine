@@ -26,7 +26,7 @@ float CalcTessFactor(float3 p)
 
 	float s = saturate((d - gMinDist) / (gMaxDist - gMinDist));
 
-	return pow(2, (lerp(gMaxTess, gMinTess, s)));
+	return pow(2, (lerp(gMaxGrassTess, gMinGrassTess, s)));
 }
 
 // 如果框完全位于平面的后面(负半空间),则返回true。

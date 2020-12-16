@@ -1,8 +1,8 @@
 #include "Common.hlsli"
+#include "TerrainConstBuffer.hlsli"
 struct DomainOut
 {
-	float4 PosH     : SV_POSITION;
-	float3 PosW     : POSITION0;
+	float3 PosW     : POSITION;
 };
 
 struct PatchTess
@@ -31,8 +31,14 @@ DomainOut DS(PatchTess patchTess,
 		lerp(quad[2].PosW, quad[3].PosW, uv.x),
 		uv.y);
 
+	float c = (dout.PosW.x + 0.5f * 2048.0f);
+	float d = -(dout.PosW.z - 0.5f * 2048.0f);
+	float2 UV = float2(c / 2048.0f, d / 2048.0f);
+
+	// Displacement mapping
+	dout.PosW.y = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, UV, 0).r;
 	// Project to homogeneous clip space.
-	dout.PosH = mul(float4(dout.PosW, 1.0f), gViewProj);
+	//dout.PosH = mul(float4(dout.PosW, 1.0f), gViewProj);
 
 	return dout;
 }

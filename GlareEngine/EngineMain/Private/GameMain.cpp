@@ -961,7 +961,7 @@ void GameApp::BuildShadersAndInputLayout()
 	
 	mShaders["HeightMapTerrain"] = new HeightMapTerrainShader(L"Shaders\\HeightMapTerrainVS.hlsl", L"Shaders\\HeightMapTerrainPS.hlsl", L"Shaders\\HeightMapTerrainHS.hlsl", L"Shaders\\HeightMapTerrainDS.hlsl");
 
-	mShaders["Grass"] = new GrassShader(L"Shaders\\GrassVS.hlsl", L"Shaders\\GrassPS.hlsl", L"Shaders\\GrassHS.hlsl", L"Shaders\\GrassDS.hlsl");
+	mShaders["Grass"] = new GrassShader(L"Shaders\\GrassVS.hlsl", L"Shaders\\GrassPS.hlsl", L"Shaders\\GrassHS.hlsl", L"Shaders\\GrassDS.hlsl", L"Shaders\\GrassGS.hlsl");
 }
 
 void GameApp::BuildSimpleGeometry()
@@ -1434,7 +1434,8 @@ void GameApp::BuildPSOs()
 		mShaders["Grass"]->GetDSShader()->GetBufferSize() },
 		{ reinterpret_cast<BYTE*>(mShaders["Grass"]->GetHSShader()->GetBufferPointer()),
 		mShaders["Grass"]->GetHSShader()->GetBufferSize() },
-		{},
+		{ reinterpret_cast<BYTE*>(mShaders["Grass"]->GetGSShader()->GetBufferPointer()),
+		mShaders["Grass"]->GetGSShader()->GetBufferSize() },
 		{},
 		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
 		UINT_MAX,
