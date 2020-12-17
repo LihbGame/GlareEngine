@@ -28,6 +28,7 @@ public:
 	float GetCameraModeSpeed() { return CameraMoveSpeed; }
 	float GetFogStart() { return FogStart; }
 	float GetFogRange() { return FogRange; }
+	bool IsShowGrass() { return show_Grass; }
 private:
 	bool show_demo_window = true;
 	bool show_another_window = true;
@@ -38,6 +39,7 @@ private:
 	bool show_land = false;
 	bool show_sky = true;
 	bool show_HeightMapTerrain = true;
+	bool show_Grass = true;
 	float CameraMoveSpeed = 50.0f;
 	bool  FogEnabled = false;
 	float FogStart = 300.0f;

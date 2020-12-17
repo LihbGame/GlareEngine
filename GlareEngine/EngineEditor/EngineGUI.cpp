@@ -104,6 +104,7 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 			ImGui::Checkbox("Land", &show_land);
 			ImGui::Checkbox("Water", &show_water);
 			ImGui::Checkbox("HeightMapTerrain", &show_HeightMapTerrain);
+			ImGui::Checkbox("Grass", &show_Grass);
 			ImGui::Checkbox("Fog", &FogEnabled);
 			ImGui::Text("Fog Start");
 			ImGui::SliderFloat(" ", &FogStart, 0.0f, 1000.0f);

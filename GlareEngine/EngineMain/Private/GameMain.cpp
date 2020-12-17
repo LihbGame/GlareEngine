@@ -302,7 +302,10 @@ void GameApp::Draw(const GameTimer& gt)
 	}
 
 	//Draw Grass
-	DrawGrass(gt);
+	if (mEngineUI->IsShowGrass())
+	{
+		DrawGrass(gt);
+	}
 
 	//Draw Shock Wave Water
 	if (mEngineUI->IsShowWater())

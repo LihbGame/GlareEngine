@@ -19,14 +19,17 @@ static	float2 gGrassTexC[12] =
 	float2(0.0f,0.2f),
 	float2(1.0f,0.2f),
 
-	float2(0.0f,0.001f),
-	float2(1.0f,0.001f)
+	float2(0.0f,0.003f),
+	float2(1.0f,0.003f)
 };
 
 
 struct GSOutput
 {
 	float4 pos : SV_POSITION;
+	float3 PosW    : POSITION;
+	float3 NormalW : NORMAL;
+	float3 TangentW:TANGENT;
 	float2 Tex  : TEXCOORD;
 };
 
@@ -65,13 +68,13 @@ void GS(
 		if (input[0].PosW.y >= -1.0f /*&& input[0].PosW.y <= 20.0f*/)
 		{
 
-			float time = 1;// gTotalTime / 10.0f;
+			float time = gTotalTime / 20.0f;
 
 
 			//float3 randomRGB = gRandomTex.SampleLevel(samRandom, UVoffset.x / UVoffset.y, 0).rgb;// sin(frac(PosW.x) + frac(PosW.z));
 			//float random = sin(randomRGB.r + randomRGB.b + randomRGB.g);
-			float random = 1;// sin(time);
-			float3 randomRGB = float3(1, 1, 1);// sin(input[i].PosW.x), cos(input[i].PosW.y), sin(input[i].PosW.z));
+			float random = sin(time);
+			float3 randomRGB = float3(sin(input[0].PosW.x), cos(input[0].PosW.y), sin(input[0].PosW.z));
 			//风的影响系数
 			float windCoEff = 0.0f;
 			float2 wind = float2(sin(randomRGB.r * time * 15), sin(randomRGB.g * time * 15));
@@ -103,8 +106,8 @@ void GS(
 
 
 			// Compute triangle strip vertices (quad) in world space.
-			float HalfWidth = 0.5f;
-			float PerHeight = HalfWidth * 2.0f;
+			float HalfWidth = 0.8f;
+			float PerHeight = HalfWidth * 3.0f;
 
 			float4 v[12];
 			float3 Height = PerHeight * up;
@@ -166,6 +169,9 @@ void GS(
 			{
 				// Project to homogeneous clip space.
 				element.pos = mul(v[J], gViewProj);
+				element.PosW = v[J].xyz;
+				element.NormalW = look;
+				element.TangentW = right;
 				element.Tex = gGrassTexC[J];
 				output.Append(element);
 			}
