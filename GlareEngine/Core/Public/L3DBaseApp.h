@@ -144,5 +144,6 @@ enum class PSOName : int
 	HeightMapTerrain,
 	HeightMapTerrainRefraction,
 	Grass,
+	GrassReflection,
 	Count
 };

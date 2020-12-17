@@ -1,5 +1,3 @@
-#define PacthSize 32*32
-
 cbuffer TerrainCBPass : register(b2)
 {
 	float gMinDist;

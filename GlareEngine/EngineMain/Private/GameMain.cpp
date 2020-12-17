@@ -1381,8 +1381,7 @@ void GameApp::BuildPSOs()
 		{},
 		{});
 
-	D3D12_RASTERIZER_DESC HeightMapTerrainRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	HeightMapTerrainRasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
+	HeightMapRasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
 	mPSOs->BuildPSO(md3dDevice.Get(),
 		PSOName::HeightMapTerrainRefraction,
 		mRootSignature.Get(),
@@ -1398,7 +1397,7 @@ void GameApp::BuildPSOs()
 		{},
 		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
 		UINT_MAX,
-		HeightMapTerrainRasterizerState,
+		HeightMapRasterizerState,
 		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
 		{ Input.data(), (UINT)Input.size() },
 		{},
@@ -1417,9 +1416,37 @@ void GameApp::BuildPSOs()
 #pragma region PSO_for_Grass
 	Input = mShaders["Grass"]->GetInputLayout();
 	D3D12_RASTERIZER_DESC GrassRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	//GrassRasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	GrassRasterizerState.CullMode = D3D12_CULL_MODE_BACK;
 	mPSOs->BuildPSO(md3dDevice.Get(),
 		PSOName::Grass,
+		mRootSignature.Get(),
+		{ reinterpret_cast<BYTE*>(mShaders["Grass"]->GetVSShader()->GetBufferPointer()),
+			mShaders["Grass"]->GetVSShader()->GetBufferSize() },
+		{ reinterpret_cast<BYTE*>(mShaders["Grass"]->GetPSShader()->GetBufferPointer()),
+		mShaders["Grass"]->GetPSShader()->GetBufferSize() },
+		{},
+		{},
+		{ reinterpret_cast<BYTE*>(mShaders["Grass"]->GetGSShader()->GetBufferPointer()),
+		mShaders["Grass"]->GetGSShader()->GetBufferSize() },
+		{},
+		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
+		UINT_MAX,
+		GrassRasterizerState,
+		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
+		{ Input.data(), (UINT)Input.size() },
+		{},
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT,
+		1,
+		RTVFormats,
+		mDepthStencilFormat,
+		{ UINT(m4xMsaaState ? 4 : 1) ,UINT(0) },
+		0,
+		{},
+		{});
+
+	GrassRasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
+	mPSOs->BuildPSO(md3dDevice.Get(),
+		PSOName::GrassReflection,
 		mRootSignature.Get(),
 		{ reinterpret_cast<BYTE*>(mShaders["Grass"]->GetVSShader()->GetBufferPointer()),
 			mShaders["Grass"]->GetVSShader()->GetBufferSize() },
@@ -1675,7 +1702,7 @@ void GameApp::BuildRenderItems()
 	{
 		RenderItem GrassRitem = {};
 		GrassRitem.World = MathHelper::Identity4x4();
-		XMStoreFloat4x4(&GrassRitem.World, XMMatrixTranslation(0.0f, 0.0f, 0.0f) * XMMatrixScaling(1.0, 1.0, 1.0));
+		XMStoreFloat4x4(&GrassRitem.World, XMMatrixScaling(1.0, 1.0, 1.0));
 		XMStoreFloat4x4(&GrassRitem.TexTransform, XMMatrixScaling(1.0, 1.0, 1.0));
 		GrassRitem.ObjCBIndex = ObjCBIndex++;
 		GrassRitem.Mat = mMaterials[L"PBRGrass"].get();
@@ -1690,7 +1717,7 @@ void GameApp::BuildRenderItems()
 #pragma region Reflection
 		RenderItem ReflectionGrassRitem = GrassRitem;
 		ReflectionGrassRitem.ItemType = RenderItemType::Reflection;
-		XMStoreFloat4x4(&ReflectionGrassRitem.World, XMMatrixTranslation(0.0f, 0.0f, 0.0f) * XMMatrixScaling(1.0, -1.0, 1.0));
+		XMStoreFloat4x4(&ReflectionGrassRitem.World, XMMatrixScaling(1.0, -1.0, 1.0));
 		ReflectionGrassRitem.ObjCBIndex = ObjCBIndex++;
 #pragma endregion
 
@@ -1891,6 +1918,7 @@ void GameApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vec
 				instanceBuffer = mCurrFrameResource->ReflectionInstanceSimpleObjectCB[MeshNum]->Resource();
 			}
 			else {}
+
 			mCommandList->SetGraphicsRootShaderResourceView(3, instanceBuffer->GetGPUVirtualAddress());
 
 			if (IsIndexInstanceDraw)
@@ -2002,6 +2030,13 @@ void GameApp::DrawWaterReflectionMap(const GameTimer& gt)
 	{
 		DrawHeightMapTerrain(gt, true);
 	}
+
+	//Draw Grass
+	if (mEngineUI->IsShowGrass())
+	{
+		DrawGrass(gt, true);
+	}
+
 	//Draw Sky box
 	if (mEngineUI->IsShowSky())
 	{
@@ -2075,15 +2110,25 @@ void GameApp::DrawHeightMapTerrain(const GameTimer& gr,bool IsReflection)
 void GameApp::DrawGrass(const GameTimer& gr, bool IsReflection)
 {
 	auto TerrainCB = mCurrFrameResource->TerrainCB->Resource();
-	D3D12_GPU_VIRTUAL_ADDRESS TerrainCBAddress = TerrainCB->GetGPUVirtualAddress();
-	mCommandList->SetGraphicsRootConstantBufferView(2, TerrainCBAddress);
-	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Grass).Get());
 	
-	
-	
-	PIXBeginEvent(mCommandList.Get(), 0, "Draw Grass");
-	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Grass],false);
-	PIXEndEvent(mCommandList.Get());
+	if (!IsReflection)
+	{
+		mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::Grass).Get());
+		D3D12_GPU_VIRTUAL_ADDRESS TerrainCBAddress = TerrainCB->GetGPUVirtualAddress();
+		mCommandList->SetGraphicsRootConstantBufferView(2, TerrainCBAddress);
+		PIXBeginEvent(mCommandList.Get(), 0, "Draw Grass");
+		DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Grass], false);
+		PIXEndEvent(mCommandList.Get());
+	}
+	else
+	{
+		mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::GrassReflection).Get());
+		D3D12_GPU_VIRTUAL_ADDRESS TerrainCBAddress = TerrainCB->GetGPUVirtualAddress() + mTerrainCBByteSize;
+		mCommandList->SetGraphicsRootConstantBufferView(2, TerrainCBAddress);
+		PIXBeginEvent(mCommandList.Get(), 0, "Draw Reflection Grass");
+		DrawRenderItems(mCommandList.Get(), mReflectionWaterLayer[(int)RenderLayer::Grass], false);
+		PIXEndEvent(mCommandList.Get());
+	}
 }
 
 HeightmapTerrain::InitInfo GameApp::HeightmapTerrainInit()
@@ -2096,7 +2141,7 @@ HeightmapTerrain::InitInfo GameApp::HeightmapTerrainInit()
 	TerrainInfo.LayerMapFilename[3] = "Terrain/lightdirt";
 	TerrainInfo.LayerMapFilename[4] = "Terrain/snow";
 	TerrainInfo.BlendMapFilename = "Terrain/blend";
-	TerrainInfo.HeightScale = 120.0f;
+	TerrainInfo.HeightScale = 60.0f;
 	TerrainInfo.HeightmapWidth = 2049;
 	TerrainInfo.HeightmapHeight = 2049;
 	TerrainInfo.CellSpacing = 1.0f;
