@@ -85,7 +85,7 @@ float4 PS(DomainOut pin) : SV_TARGET
 			float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
 				bumpedNormalW, toEye, shadowFactor);
 
-			c[i] = ambient * shadowFactor[0] + directLight;
+			c[i] = ambient * (shadowFactor[0]/2) + directLight;
 
 		}
 		else

@@ -1,11 +1,10 @@
 #include "Common.hlsli"
-
 struct GSOutput
 {
 	float4 pos : SV_POSITION;
 	float3 PosW    : POSITION;
-	float3 NormalW : NORMAL;
-	float3 TangentW:TANGENT;
+	//float3 NormalW : NORMAL;
+	//float3 TangentW:TANGENT;
 	float2 Tex  : TEXCOORD;
 };
 
@@ -42,6 +41,18 @@ float4 PS(GSOutput pin) : SV_TARGET
 
 	//float4 litColor = ambient * shadowFactor[0] + directLight;
 
+	//
+	// Fogging
+	//
+	float4 texColor = float4(0.0f, diffuseAlbedo.g, 0.0f, 0.0f);
+	if (gFogEnabled)
+	{
+		float distToEye = length(gEyePosW - pin.PosW);
+		float fogLerp = saturate((distToEye - gFogStart) / gFogRange);
+		// Blend the fog color and the lit color.
+		texColor.rgb = lerp(texColor.rgb, gFogColor.rgb, fogLerp);
+	}
+
 	clip(diffuseAlbedo.a - 0.1f);
-	return float4(0.0f,diffuseAlbedo.g, 0.0f, 0.0f);
+	return texColor;
 }

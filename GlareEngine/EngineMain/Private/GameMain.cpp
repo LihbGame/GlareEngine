@@ -5,7 +5,7 @@
 #pragma comment(lib, "D3D12.lib")
 
 
-#define ShadowMapSize 2048
+#define ShadowMapSize 4096
 
 const int gNumFrameResources = 3;
 
@@ -215,7 +215,7 @@ void GameApp::Draw(const GameTimer& gt)
 	{
 		if (GameApp::RedrawShadowMap)
 		{
-			DrawSceneToShadowMap();
+			DrawSceneToShadowMap(gt);
 			GameApp::RedrawShadowMap = false;
 		}
 	}
@@ -1203,7 +1203,7 @@ void GameApp::BuildPSOs()
 	// PSO for Instance  shadow.
 #pragma region PSO_for_Instance_shadow
 	D3D12_RASTERIZER_DESC ShadowRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	ShadowRasterizerState.DepthBias = 250000;
+	ShadowRasterizerState.DepthBias = 25000;
 	ShadowRasterizerState.DepthBiasClamp = 0.0f;
 	ShadowRasterizerState.SlopeScaledDepthBias = 1.0f;
 	RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
@@ -2385,7 +2385,7 @@ void GameApp::UpdateAnimation(const GameTimer& gt)
 }
 
 
-void GameApp::DrawSceneToShadowMap()
+void GameApp::DrawSceneToShadowMap(const GameTimer& gr)
 {
 	mCommandList->RSSetViewports(1, &mShadowMap->Viewport());
 	mCommandList->RSSetScissorRects(1, &mShadowMap->ScissorRect());
@@ -2419,5 +2419,8 @@ void GameApp::DrawSceneToShadowMap()
 	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
 	PIXEndEvent(mCommandList.Get());
 
-	
+	PIXBeginEvent(mCommandList.Get(), 0, "Draw Shadow::RenderLayer::Terrain");
+	DrawHeightMapTerrain(gr);
+	PIXEndEvent(mCommandList.Get());
+
 }

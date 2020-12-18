@@ -184,7 +184,7 @@ private:
 	//ªÊ÷∆‰÷»æœÓ
 	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems, bool IsIndexInstanceDraw =true);
 	//Draw Scene To ShadowMap
-	void DrawSceneToShadowMap();
+	void DrawSceneToShadowMap(const GameTimer& gr);
 	//Draw Shock Wave Water
 	void DrawShockWaveWater(const GameTimer& gt);
 	void DrawWaterReflectionMap(const GameTimer& gt);

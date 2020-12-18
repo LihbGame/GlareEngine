@@ -30,8 +30,8 @@ struct GSOutput
 {
 	float4 pos : SV_POSITION;
 	float3 PosW    : POSITION;
-	float3 NormalW : NORMAL;
-	float3 TangentW:TANGENT;
+	//float3 NormalW : NORMAL;
+	//float3 TangentW:TANGENT;
 	float2 Tex  : TEXCOORD;
 };
 
@@ -81,7 +81,7 @@ void GS(
 	}
 
 
-	if (input[0].PosW.y >= 0.0f/* && input[0].PosW.y <= 20.0f*/
+	if (input[0].PosW.y >= 0.0f /*&& input[0].PosW.y <= 20.0f*/
 		&& !isGrassClip)
 	{
 
@@ -188,8 +188,8 @@ void GS(
 			// Project to homogeneous clip space.
 			element.pos = mul(v[J], gViewProj);
 			element.PosW = v[J].xyz;
-			element.NormalW = look;
-			element.TangentW = right;
+			//element.NormalW = look;
+			//element.TangentW = right;
 			element.Tex = gGrassTexC[J];
 			output.Append(element);
 		}
