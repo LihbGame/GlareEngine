@@ -175,7 +175,7 @@ public:
     MeshGeometry mBoneGeo;
 
     map<string, int> m_bone_mapping; // maps a bone name and their index
-    int m_num_bones = 0;
+    UINT m_num_bones = 0;
     vector<BoneMatrix> m_bone_matrices;
 
     aiMatrix4x4 m_global_inverse_transform;

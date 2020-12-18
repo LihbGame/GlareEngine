@@ -3,9 +3,9 @@
 //lib
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
+#pragma comment(lib,"dxguid.lib")
 
-
-#define ShadowMapSize 4096
+#define ShadowMapSize 2048
 
 const int gNumFrameResources = 3;
 
@@ -1752,7 +1752,7 @@ void GameApp::BuildRenderItems()
 	{
 		RenderItem ShockWaveWaterRitem = {};
 		ShockWaveWaterRitem.World = MathHelper::Identity4x4();
-		XMStoreFloat4x4(&ShockWaveWaterRitem.World, XMMatrixScaling(10.24f, 1.0f, 10.24f));
+		XMStoreFloat4x4(&ShockWaveWaterRitem.World, XMMatrixScaling(20.48f, 1.0f, 20.48f));
 		XMStoreFloat4x4(&ShockWaveWaterRitem.TexTransform, XMMatrixScaling(5.0f, 5.0f, 5.0f));
 		ShockWaveWaterRitem.ObjCBIndex = ObjCBIndex++;
 		ShockWaveWaterRitem.Mat = mMaterials[L"PBRharshbricks"].get();
@@ -2162,7 +2162,7 @@ HeightmapTerrain::InitInfo GameApp::HeightmapTerrainInit()
 	TerrainInfo.HeightScale = 100.0f;
 	TerrainInfo.HeightmapWidth = 2049;
 	TerrainInfo.HeightmapHeight = 2049;
-	TerrainInfo.CellSpacing = 1.0f;
+	TerrainInfo.CellSpacing = 2.0f;
 
 	return TerrainInfo;
 }

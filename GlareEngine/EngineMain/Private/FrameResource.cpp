@@ -12,7 +12,7 @@ FrameResource::FrameResource(ID3D12Device* device, UINT passCount, UINT Instance
    //one Terrain Constants
     TerrainCB= std::make_unique<UploadBuffer<TerrainConstants>>(device, 2, true);
     
-    for (int i = 0; i < InstanceModelSubMeshNum; ++i)
+    for (UINT i = 0; i < InstanceModelSubMeshNum; ++i)
     {
         InstanceSimpleObjectCB.push_back(std::make_unique<UploadBuffer<InstanceConstants>>(device, InstanceCounts, false));
         ReflectionInstanceSimpleObjectCB.push_back(std::make_unique<UploadBuffer<InstanceConstants>>(device, InstanceCounts, false));

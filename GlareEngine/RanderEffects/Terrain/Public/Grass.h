@@ -20,8 +20,8 @@ private:
 
 	ID3D12Device* mDevice;
 
-	int mNumVertRows;
-	int mNumVertCols;
+	UINT mNumVertRows;
+	UINT mNumVertCols;
 	float mGrassWidth;
 	float mGrassDepth;
 

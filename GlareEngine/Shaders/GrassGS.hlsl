@@ -26,6 +26,28 @@ static	float2 gGrassTexC[12] =
 };
 
 
+static float4 v[12] = {
+float4(0.0f,0.0f,0.0f,0.0f),
+float4(0.0f,0.0f,0.0f,0.0f),
+
+float4(0.0f,0.0f,0.0f,0.0f),
+float4(0.0f,0.0f,0.0f,0.0f),
+
+float4(0.0f,0.0f,0.0f,0.0f),
+float4(0.0f,0.0f,0.0f,0.0f),
+
+float4(0.0f,0.0f,0.0f,0.0f),
+float4(0.0f,0.0f,0.0f,0.0f),
+
+float4(0.0f,0.0f,0.0f,0.0f),
+float4(0.0f,0.0f,0.0f,0.0f),
+
+float4(0.0f,0.0f,0.0f,0.0f),
+float4(0.0f,0.0f,0.0f,0.0f)
+};
+
+
+
 struct GSOutput
 {
 	float4 pos : SV_POSITION;
@@ -122,12 +144,23 @@ void GS(
 		// Compute triangle strip vertices (quad) in world space.
 		float HalfWidth = halfWidth;
 		float PerHeight = perHeight;
-		float4 v[12];
+
 		float3 Height = PerHeight * up;
 		float3 Width = HalfWidth * right;
 
-
-		v[0] = float4(input[0].PosW - Width + Height * 0, 1.0f);
+		[unroll]
+		for (int i = 0; i < 6; ++i)
+		{
+			int index = i * 2;
+			v[index] = float4(input[0].PosW - Width + Height * i, 1.0f);
+			v[index].xz += wind.xy * windCoEff;
+			v[index].y -= windForce * windCoEff * 0.8;
+			v[index +1] = float4(input[0].PosW + Width + Height * i, 1.0f);
+			v[index +1].xz += wind.xy * windCoEff;
+			v[index +1].y -= windForce * windCoEff * 0.8;
+			windCoEff += 1 - gGrassTexC[index].y;
+		}
+		/*v[0] = float4(input[0].PosW - Width + Height * 0, 1.0f);
 		v[0].xz += wind.xy * windCoEff;
 		v[0].y -= windForce * windCoEff * 0.8;
 		v[1] = float4(input[0].PosW + Width + Height * 0, 1.0f);
@@ -173,7 +206,7 @@ void GS(
 		v[11] = float4(input[0].PosW + Width + Height * 5, 1.0f);
 		v[11].xz += wind.xy * windCoEff;
 		v[11].y -= windForce * windCoEff * 0.8;
-		windCoEff += 1 - gGrassTexC[10].y;
+		windCoEff += 1 - gGrassTexC[10].y;*/
 
 
 		GSOutput element;
