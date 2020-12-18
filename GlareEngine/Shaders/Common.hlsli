@@ -46,7 +46,7 @@ struct InstanceData
 TextureCube gCubeMap : register(t0);
 //纹理数组，仅着色器模型5.1+支持。 与Texture2DArray不同，
 //此数组中的纹理可以具有不同的大小和格式，使其比纹理数组更灵活。
-Texture2D gSRVMap[90] : register(t1);
+Texture2D gSRVMap[91] : register(t1);
 //放入space1，因此纹理数组不会与这些资源重叠。
 //纹理数组将占用space0中的寄存器t0，t1，...，t3。
 StructuredBuffer<MaterialData> gMaterialData : register(t1, space1);

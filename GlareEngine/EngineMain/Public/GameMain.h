@@ -291,6 +291,7 @@ private:
 	TerrainConstants  mTerrainConstant;
 	int mBlendMapIndex = 0;
 	int mHeightMapIndex = 0;
+	int mRGBNoiseMapIndex = 0;
 	//play back anime 
 	//std::unordered_map<std::string, AnimePlayback> AnimationPlayback;
 

@@ -369,19 +369,18 @@ void GameApp::Draw(const GameTimer& gt)
 void GameApp::CreateDescriptorHeaps()
 {
 	int SRVIndex = 0;
+	//Size
 	UINT PBRTextureNum = (UINT)(mPBRTextureName.size() * 6);
 	UINT ModelTextureNum = (UINT)mModelLoder->GetAllModelTextures().size() * 6;
 	UINT ShockWaveWater = 3;
-	UINT HeightMapTerrain = 32;
+	UINT HeightMapTerrain = 32+2;
+	UINT Noise = 1;
 	//
 	// Create the SRV heap.
 	//
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-	//PBR Textures
-	//sky+shadow map=2
-	//model PBR texture
-	//ShockWaveWater map
-	srvHeapDesc.NumDescriptors = PBRTextureNum+ ModelTextureNum+ ShockWaveWater+ HeightMapTerrain +2;
+
+	srvHeapDesc.NumDescriptors = PBRTextureNum + ModelTextureNum + ShockWaveWater + HeightMapTerrain + Noise;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mSrvDescriptorHeap)));
@@ -474,6 +473,25 @@ void GameApp::CreateDescriptorHeaps()
 	mHeightMapIndex = SRVIndex++;
 
 	mHeightMapTerrain->BuildHeightmapSRV(BlendMapDescriptor, HeightMapDescriptor);
+#pragma endregion
+
+
+#pragma region Grass
+	{
+		auto RandomTex = mTextureManage->GetTexture(L"RGB_Noise")->Resource;
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC GrassSrvDesc = {};
+		GrassSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		GrassSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		GrassSrvDesc.TextureCube.MostDetailedMip = 0;
+		GrassSrvDesc.TextureCube.MipLevels = RandomTex->GetDesc().MipLevels;
+		GrassSrvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
+		GrassSrvDesc.Format = RandomTex->GetDesc().Format;
+		md3dDevice->CreateShaderResourceView(RandomTex.Get(), &GrassSrvDesc, hDescriptor);
+		mRGBNoiseMapIndex = SRVIndex++;
+		// next descriptor
+		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
+	}
 #pragma endregion
 
 	mSRVSize = SRVIndex;
@@ -2317,6 +2335,7 @@ void GameApp::UpdateTerrainPassCB(const GameTimer& gt)
 	mTerrainConstant.isReflection = false;
 	mTerrainConstant.gBlendMapIndex = mBlendMapIndex;
 	mTerrainConstant.gHeightMapIndex = mHeightMapIndex;
+	mTerrainConstant.gRGBNoiseMapIndex = mRGBNoiseMapIndex;
 
 	auto currPassCB = mCurrFrameResource->TerrainCB.get();
 	currPassCB->CopyData(0, mTerrainConstant);

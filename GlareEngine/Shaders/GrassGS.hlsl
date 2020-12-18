@@ -85,16 +85,13 @@ void GS(
 		&& !isGrassClip)
 	{
 
-		float time = gTotalTime / 20.0f;
+		float time = gTotalTime*2;
+		float3 randomRGB = gSRVMap[mRGBNoiseMapIndex].SampleLevel(gsamLinearWrap, float2(input[0].PosW.x, input[0].PosW.z), 0).rgb;
 
-
-		//float3 randomRGB = gRandomTex.SampleLevel(samRandom, UVoffset.x / UVoffset.y, 0).rgb;// sin(frac(PosW.x) + frac(PosW.z));
-		//float random = sin(randomRGB.r + randomRGB.b + randomRGB.g);
-		float random = sin(time);
-		float3 randomRGB = float3(sin(input[0].PosW.x), cos(input[0].PosW.y), sin(input[0].PosW.z));
+		float random = sin(randomRGB.r + randomRGB.b + randomRGB.g);
 		//风的影响系数
 		float windCoEff = 0.0f;
-		float2 wind = float2(sin(randomRGB.r * time * 15), sin(randomRGB.g * time * 15));
+		float2 wind = float2(sin(randomRGB.r * time), sin(randomRGB.g * time));
 		wind.x += (sin(time + input[0].PosW.x / 25) + sin((time + input[0].PosW.x / 15) + 50)) * 0.5;
 		wind.y += cos(time + input[0].PosW.z / 80);
 		wind *= lerp(0.7, 1.0, 1.0 - random);

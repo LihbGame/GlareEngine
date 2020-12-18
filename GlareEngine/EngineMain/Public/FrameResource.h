@@ -113,8 +113,7 @@ struct TerrainConstants
 
 	int gHeightMapIndex = 0;
 	int gBlendMapIndex = 0;
-	float gMinGrassTess;
-	float gMaxGrassTess;
+    int gRGBNoiseMapIndex=0;
 };
 
 

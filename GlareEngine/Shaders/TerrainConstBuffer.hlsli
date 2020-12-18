@@ -15,4 +15,5 @@ cbuffer TerrainCBPass : register(b2)
 
 	int mHeightMapIndex;
 	int mBlendMapIndex;
+	int mRGBNoiseMapIndex;
 };
