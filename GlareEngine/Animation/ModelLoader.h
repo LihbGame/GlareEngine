@@ -29,6 +29,8 @@ public:
 
     //animation string:model name 
     unordered_map<string, map<string, Animation>> mAnimations;
+
+    void BuildMaterials();
 private:
     ID3D12Device* dev;
     ID3D12GraphicsCommandList* pCommandList;

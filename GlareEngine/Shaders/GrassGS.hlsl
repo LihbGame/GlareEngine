@@ -160,53 +160,6 @@ void GS(
 			v[index +1].y -= windForce * windCoEff * 0.8;
 			windCoEff += 1 - gGrassTexC[index].y;
 		}
-		/*v[0] = float4(input[0].PosW - Width + Height * 0, 1.0f);
-		v[0].xz += wind.xy * windCoEff;
-		v[0].y -= windForce * windCoEff * 0.8;
-		v[1] = float4(input[0].PosW + Width + Height * 0, 1.0f);
-		v[1].xz += wind.xy * windCoEff;
-		v[1].y -= windForce * windCoEff * 0.8;
-		windCoEff += 1 - gGrassTexC[0].y;
-
-		v[2] = float4(input[0].PosW - Width + Height * 1, 1.0f);
-		v[2].xz += wind.xy * windCoEff;
-		v[2].y -= windForce * windCoEff * 0.8;
-		v[3] = float4(input[0].PosW + Width + Height * 1, 1.0f);
-		v[3].xz += wind.xy * windCoEff;
-		v[3].y -= windForce * windCoEff * 0.8;
-		windCoEff += 1 - gGrassTexC[2].y;
-
-		v[4] = float4(input[0].PosW - Width + Height * 2, 1.0f);
-		v[4].xz += wind.xy * windCoEff;
-		v[4].y -= windForce * windCoEff * 0.8;
-		v[5] = float4(input[0].PosW + Width + Height * 2, 1.0f);
-		v[5].xz += wind.xy * windCoEff;
-		v[5].y -= windForce * windCoEff * 0.8;
-		windCoEff += 1 - gGrassTexC[4].y;
-
-		v[6] = float4(input[0].PosW - Width + Height * 3, 1.0f);
-		v[6].xz += wind.xy * windCoEff;
-		v[6].y -= windForce * windCoEff * 0.8;
-		v[7] = float4(input[0].PosW + Width + Height * 3, 1.0f);
-		v[7].xz += wind.xy * windCoEff;
-		v[7].y -= windForce * windCoEff * 0.8;
-		windCoEff += 1 - gGrassTexC[6].y;
-
-		v[8] = float4(input[0].PosW - Width + Height * 4, 1.0f);
-		v[8].xz += wind.xy * windCoEff;
-		v[8].y -= windForce * windCoEff * 0.8;
-		v[9] = float4(input[0].PosW + Width + Height * 4, 1.0f);
-		v[9].xz += wind.xy * windCoEff;
-		v[9].y -= windForce * windCoEff * 0.8;
-		windCoEff += 1 - gGrassTexC[8].y;
-
-		v[10] = float4(input[0].PosW - Width + Height * 5, 1.0f);
-		v[10].xz += wind.xy * windCoEff;
-		v[10].y -= windForce * windCoEff * 0.8;
-		v[11] = float4(input[0].PosW + Width + Height * 5, 1.0f);
-		v[11].xz += wind.xy * windCoEff;
-		v[11].y -= windForce * windCoEff * 0.8;
-		windCoEff += 1 - gGrassTexC[10].y;*/
 
 
 		GSOutput element;

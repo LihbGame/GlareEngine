@@ -166,6 +166,7 @@
     <ClInclude Include="Core\Public\L3DCamera.h" />
     <ClInclude Include="Core\Public\L3DGameTimer.h" />
     <ClInclude Include="Core\Public\L3DGeometryGenerator.h" />
+    <ClInclude Include="Core\Public\L3DMaterial.h" />
     <ClInclude Include="Core\Public\L3DMathHelper.h" />
     <ClInclude Include="Core\Public\L3DTextureManage.h" />
     <ClInclude Include="Core\Public\L3DUploadBuffer.h" />
@@ -217,6 +218,7 @@
     <ClCompile Include="Core\Private\L3DGameTimer.cpp" />
     <ClCompile Include="Core\Private\L3DGeometryGenerator.cpp" />
     <ClCompile Include="Core\Private\L3DInputLayout.cpp" />
+    <ClCompile Include="Core\Private\L3DMaterial.cpp" />
     <ClCompile Include="Core\Private\L3DMathHelper.cpp" />
     <ClCompile Include="Core\Private\L3DTextureManage.cpp" />
     <ClCompile Include="Core\Private\L3DUtil.cpp" />

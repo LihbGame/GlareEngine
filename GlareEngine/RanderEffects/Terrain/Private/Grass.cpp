@@ -1,6 +1,7 @@
 #include "Grass.h"
 #include "L3DVertex.h"
 #include "L3DTextureManage.h"
+#include "L3DMaterial.h"
 
 Grass::Grass(ID3D12Device* device, 
 	ID3D12GraphicsCommandList* CommandList,
@@ -74,3 +75,19 @@ void Grass::BuildGrassVB()
 
 	mGeometries = std::move(geo);
 }
+
+void Grass::BuildMaterials()
+{
+	XMFLOAT4X4  MatTransform = MathHelper::Identity4x4();
+
+	//PBRGrass Material
+	L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
+		L"PBRGrass",
+		0.01f,
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		XMFLOAT3(0.1f, 0.1f, 0.1f),
+		MatTransform,
+		MaterialType::NormalPBRMat);
+}
+
+

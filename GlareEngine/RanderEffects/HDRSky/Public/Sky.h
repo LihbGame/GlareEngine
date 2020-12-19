@@ -9,18 +9,13 @@ public:
 	void BuildSkyMesh();
 	std::unique_ptr<MeshGeometry>& GetSkyMesh();
 
-	void BuildSkyMaterials(int MatCBIndex);
-	std::unique_ptr<Material>& GetSkyMaterial();
+	void BuildMaterials();
 private:
-	std::unique_ptr<Material> mMaterial;
 	std::unique_ptr<MeshGeometry> mSkyMesh;
-
-
 
 	ID3D12Device* md3dDevice;
 	ID3D12GraphicsCommandList* mCommandList;
 
-	
 	float mRadius;
 	int mSliceCount;
 	int mStackCount;

@@ -13,6 +13,8 @@ public:
 	void BuildGrassVB();
 
 	MeshGeometry* GetMeshGeometry()const { return mGeometries.get(); };
+
+	void BuildMaterials();
 private:
 	ID3D11ShaderResourceView* mGrassTexSRV;
 	ID3D11ShaderResourceView* mGrassBlendTexSRV;

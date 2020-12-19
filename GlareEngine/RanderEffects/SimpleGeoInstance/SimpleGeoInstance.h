@@ -23,6 +23,9 @@ public:
 
     std::unique_ptr<MeshGeometry>& GetSimpleGeoMesh(SimpleGeometry GeoType);
 
+    void BuildMaterials();
+
+    const std::vector<wstring>& GetTextureNames() { return mPBRTextureName; }
 private:
 
     void BuildSimpleGeometryMesh(SimpleGeometry GeoType);
@@ -30,5 +33,5 @@ private:
     ID3D12GraphicsCommandList* pCommandList;
     ID3D12Device* pd3dDevice;
     std::unique_ptr<MeshGeometry> mSimpleMesh;
-
+    std::vector<wstring> mPBRTextureName;
 };

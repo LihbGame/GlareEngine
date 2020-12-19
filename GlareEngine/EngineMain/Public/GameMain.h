@@ -7,6 +7,7 @@
 #include "L3DGeometryGenerator.h"
 #include "Waves.h"
 #include "FrameResource.h"
+#include "L3DMaterial.h"
 
 //shader head files
 #include "BaseShader.h"
@@ -93,14 +94,6 @@ enum class RenderLayer : int
 	Count
 };
 
-enum class MaterialType : int
-{
-	NormalPBRMat = 0,
-    HeightMapTerrainPBRMat,
-	ModelPBRMat,
-	Count
-};
-
 
 
 //APPLICATION
@@ -162,7 +155,6 @@ private:
 	void BuildFrameResources();
 	//创建材质信息
 	void BuildAllMaterials();
-	void BuildMaterials(wstring name, int MatCBIndex, float Height_Scale, XMFLOAT4 DiffuseAlbedo, XMFLOAT3 FresnelR0,XMFLOAT4X4 MatTransform, MaterialType MatType= MaterialType::NormalPBRMat);
 	//创建渲染项
 	void BuildRenderItems();
 	void BuildModelGeoInstanceItems();
@@ -211,7 +203,6 @@ private:
 
 
 	std::unordered_map<std::string, std::unique_ptr<MeshGeometry>> mGeometries;
-	std::unordered_map<std::wstring, std::unique_ptr<Material>> mMaterials;
 	std::unordered_map<std::string, std::unique_ptr<Texture>> mTextures;
 
 

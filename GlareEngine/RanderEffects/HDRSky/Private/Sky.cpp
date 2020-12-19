@@ -1,6 +1,7 @@
 #include "Sky.h"
 #include "L3DGeometryGenerator.h"
 #include "L3DVertex.h"
+#include "L3DMaterial.h"
 using namespace DirectX;
 Sky::Sky(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList,float radius, int sliceCount, int stackCount)
 :md3dDevice(d3dDevice),
@@ -66,17 +67,13 @@ std::unique_ptr<MeshGeometry>& Sky::GetSkyMesh()
 	return mSkyMesh;
 }
 
-void Sky::BuildSkyMaterials(int MatCBIndex)
+void Sky::BuildMaterials()
 {
-	auto sky = std::make_unique<Material>();
-	sky->Name = L"sky";
-	sky->MatCBIndex = MatCBIndex;
-	sky->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	sky->FresnelR0 = XMFLOAT3(0.1f, 0.1f, 0.1f);
-	mMaterial=std::move(sky);
-}
-
-std::unique_ptr<Material>& Sky::GetSkyMaterial()
-{
-	return mMaterial;
+	L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
+		L"sky",
+		0.0f,
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		XMFLOAT3(0.1f, 0.1f, 0.1f),
+		MathHelper::Identity4x4(),
+		MaterialType::SkyMat);
 }

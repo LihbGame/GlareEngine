@@ -50,6 +50,8 @@ public:
 	void GetTerrainConstant(TerrainConstants& TerrainConstant);
 
 	Grass* GetGrass() { return mGrass.get(); };
+
+	void BuildMaterials();
 private:
 	void LoadHeightmapAsset();
 	void Smooth();

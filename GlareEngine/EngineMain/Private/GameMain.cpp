@@ -200,7 +200,7 @@ void GameApp::Draw(const GameTimer& gt)
 		// If we wanted to use "local" cube maps, we would have to change them per-object, or dynamically
 		// index into an array of cube maps.
 		CD3DX12_GPU_DESCRIPTOR_HANDLE skyTexDescriptor(mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-		skyTexDescriptor.Offset(mMaterials[L"Sky"]->DiffuseSrvHeapIndex, mCbvSrvDescriptorSize);
+		skyTexDescriptor.Offset(L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"sky")->DiffuseSrvHeapIndex, mCbvSrvDescriptorSize);
 		mCommandList->SetGraphicsRootDescriptorTable(5, skyTexDescriptor);
 
 
@@ -370,17 +370,18 @@ void GameApp::CreateDescriptorHeaps()
 {
 	int SRVIndex = 0;
 	//Size
-	UINT PBRTextureNum = (UINT)(mPBRTextureName.size() * 6);
+	UINT PBRTextureNum = (UINT)mSimpleGeoInstance->GetTextureNames().size() * 6;
 	UINT ModelTextureNum = (UINT)mModelLoder->GetAllModelTextures().size() * 6;
 	UINT ShockWaveWater = 3;
 	UINT HeightMapTerrain = 32+2;
+	UINT Grass = 6;
 	UINT Noise = 1;
 	//
 	// Create the SRV heap.
 	//
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
 
-	srvHeapDesc.NumDescriptors = PBRTextureNum + ModelTextureNum + ShockWaveWater + HeightMapTerrain + Noise;
+	srvHeapDesc.NumDescriptors = PBRTextureNum + ModelTextureNum + ShockWaveWater + HeightMapTerrain + Noise+ Grass;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mSrvDescriptorHeap)));
@@ -392,7 +393,7 @@ void GameApp::CreateDescriptorHeaps()
 
 	unordered_map<string, ID3D12Resource*> PBRTexResource;
 #pragma region simple geometry PBR Texture
-	for (auto &e : mPBRTextureName)
+	for (auto &e : mSimpleGeoInstance->GetTextureNames())
 	{
 		PBRTexResource["Diffuse"] =mTextureManage->GetTexture(e + L"\\" + e + L"_albedo")->Resource.Get();
 		PBRTexResource["Normal"] = mTextureManage->GetTexture(e + L"\\" + e + L"_normal")->Resource.Get();
@@ -478,6 +479,17 @@ void GameApp::CreateDescriptorHeaps()
 
 #pragma region Grass
 	{
+		wstring e = L"PBRGrass";
+		PBRTexResource["Diffuse"] = mTextureManage->GetTexture(e + L"\\" + e + L"_albedo")->Resource.Get();
+		PBRTexResource["Normal"] = mTextureManage->GetTexture(e + L"\\" + e + L"_normal")->Resource.Get();
+		PBRTexResource["AO"] = mTextureManage->GetTexture(e + L"\\" + e + L"_ao")->Resource.Get();
+		PBRTexResource["Metallic"] = mTextureManage->GetTexture(e + L"\\" + e + L"_metallic")->Resource.Get();
+		PBRTexResource["Roughness"] = mTextureManage->GetTexture(e + L"\\" + e + L"_roughness")->Resource.Get();
+		PBRTexResource["Height"] = mTextureManage->GetTexture(e + L"\\" + e + L"_height")->Resource.Get();
+
+		CreatePBRSRVinDescriptorHeap(PBRTexResource, &SRVIndex, &hDescriptor, e);
+
+		//RandomTex
 		auto RandomTex = mTextureManage->GetTexture(L"RGB_Noise")->Resource;
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC GrassSrvDesc = {};
@@ -508,7 +520,7 @@ void GameApp::CreateDescriptorHeaps()
 		SkysrvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
 		SkysrvDesc.Format = SkyTex->GetDesc().Format;
 		md3dDevice->CreateShaderResourceView(SkyTex.Get(), &SkysrvDesc, hDescriptor);
-		mMaterials[L"Sky"]->DiffuseSrvHeapIndex = SRVIndex++;
+		L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"sky")->DiffuseSrvHeapIndex = SRVIndex++;
 		// next descriptor
 		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	}
@@ -539,7 +551,7 @@ void GameApp::CreatePBRSRVinDescriptorHeap(
 	srvDesc.Texture2D.MipLevels = TexResource["Diffuse"]->GetDesc().MipLevels;
 	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 	md3dDevice->CreateShaderResourceView(TexResource["Diffuse"], &srvDesc, *hDescriptor);
-	mMaterials[MaterialName]->DiffuseSrvHeapIndex = (*SRVIndex)++;
+	L3DMaterial::GetL3DMaterialInstance()->GetMaterial(MaterialName)->DiffuseSrvHeapIndex = (*SRVIndex)++;
 
 	// next descriptor
 	hDescriptor->Offset(1, mCbvSrvDescriptorSize);
@@ -547,7 +559,7 @@ void GameApp::CreatePBRSRVinDescriptorHeap(
 	srvDesc.Format = TexResource["Normal"]->GetDesc().Format;
 	srvDesc.Texture2D.MipLevels = TexResource["Normal"]->GetDesc().MipLevels;
 	md3dDevice->CreateShaderResourceView(TexResource["Normal"], &srvDesc, *hDescriptor);
-	mMaterials[MaterialName]->NormalSrvHeapIndex = (*SRVIndex)++;
+	L3DMaterial::GetL3DMaterialInstance()->GetMaterial(MaterialName)->NormalSrvHeapIndex = (*SRVIndex)++;
 
 
 	// next descriptor
@@ -556,7 +568,7 @@ void GameApp::CreatePBRSRVinDescriptorHeap(
 	srvDesc.Format = TexResource["AO"]->GetDesc().Format;
 	srvDesc.Texture2D.MipLevels = TexResource["AO"]->GetDesc().MipLevels;
 	md3dDevice->CreateShaderResourceView(TexResource["AO"], &srvDesc, *hDescriptor);
-	mMaterials[MaterialName]->AoSrvHeapIndex = (*SRVIndex)++;
+	L3DMaterial::GetL3DMaterialInstance()->GetMaterial(MaterialName)->AoSrvHeapIndex = (*SRVIndex)++;
 
 
 	// next descriptor
@@ -565,7 +577,7 @@ void GameApp::CreatePBRSRVinDescriptorHeap(
 	srvDesc.Format = TexResource["Metallic"]->GetDesc().Format;
 	srvDesc.Texture2D.MipLevels = TexResource["Metallic"]->GetDesc().MipLevels;
 	md3dDevice->CreateShaderResourceView(TexResource["Metallic"], &srvDesc, *hDescriptor);
-	mMaterials[MaterialName]->MetallicSrvHeapIndex = (*SRVIndex)++;
+	L3DMaterial::GetL3DMaterialInstance()->GetMaterial(MaterialName)->MetallicSrvHeapIndex = (*SRVIndex)++;
 
 
 	// next descriptor
@@ -574,7 +586,7 @@ void GameApp::CreatePBRSRVinDescriptorHeap(
 	srvDesc.Format = TexResource["Roughness"]->GetDesc().Format;
 	srvDesc.Texture2D.MipLevels = TexResource["Roughness"]->GetDesc().MipLevels;
 	md3dDevice->CreateShaderResourceView(TexResource["Roughness"], &srvDesc, *hDescriptor);
-	mMaterials[MaterialName]->RoughnessSrvHeapIndex = (*SRVIndex)++;
+	L3DMaterial::GetL3DMaterialInstance()->GetMaterial(MaterialName)->RoughnessSrvHeapIndex = (*SRVIndex)++;
 
 	// next descriptor
 	hDescriptor->Offset(1, mCbvSrvDescriptorSize);
@@ -582,7 +594,7 @@ void GameApp::CreatePBRSRVinDescriptorHeap(
 	srvDesc.Format = TexResource["Height"]->GetDesc().Format;
 	srvDesc.Texture2D.MipLevels = TexResource["Height"]->GetDesc().MipLevels;
 	md3dDevice->CreateShaderResourceView(TexResource["Height"], &srvDesc, *hDescriptor);
-	mMaterials[MaterialName]->HeightSrvHeapIndex = (*SRVIndex)++;
+	L3DMaterial::GetL3DMaterialInstance()->GetMaterial(MaterialName)->HeightSrvHeapIndex = (*SRVIndex)++;
 
 	// next descriptor
 	hDescriptor->Offset(1, mCbvSrvDescriptorSize);
@@ -721,7 +733,9 @@ void GameApp::UpdateInstanceCBs(const GameTimer& gt)
 		const auto& ReflectioninstanceData = mReflectionWaterLayer[(int)RenderLayer::InstanceSimpleItems][index]->Instances;
 		int visibleInstanceCount = 0;
 		
-		for (int matNum = 0; matNum < mModelLoder->GetModelTextureNames("Blue_Tree_02a").size(); ++matNum)
+		std::vector<string> ModelTextureNames = mModelLoder->GetModelTextureNames("Blue_Tree_02a");
+
+		for (int matNum = 0; matNum < ModelTextureNames.size(); ++matNum)
 		{
 			visibleInstanceCount = 0;
 			auto currInstanceBuffer = mCurrFrameResource->InstanceSimpleObjectCB[matNum].get();
@@ -748,8 +762,8 @@ void GameApp::UpdateInstanceCBs(const GameTimer& gt)
 					InstanceConstants data;
 					XMStoreFloat4x4(&data.World, XMMatrixTranspose(world));
 					XMStoreFloat4x4(&data.TexTransform, XMMatrixTranspose(texTransform));
-					string matname = mModelLoder->GetModelTextureNames("Blue_Tree_02a")[matNum];
-					data.MaterialIndex = mMaterials[wstring(matname.begin(),matname.end())]->MatCBIndex;
+					
+					data.MaterialIndex = L3DMaterial::GetL3DMaterialInstance()->GetMaterial(std::wstring(ModelTextureNames[matNum].begin(), ModelTextureNames[matNum].end()))->MatCBIndex;
 				
 					InstanceConstants Reflectiondata= data;
 					XMStoreFloat4x4(&Reflectiondata.World, XMMatrixTranspose(ReflectionWorld));
@@ -769,7 +783,7 @@ void GameApp::UpdateInstanceCBs(const GameTimer& gt)
 void GameApp::UpdateMaterialCBs(const GameTimer& gt)
 {
 	auto currMaterialBuffer = mCurrFrameResource->MaterialBuffer.get();
-	for (auto& e : mMaterials)
+	for (auto& e : L3DMaterial::GetL3DMaterialInstance()->GetAllMaterial())
 	{
 		// Only update the cbuffer data if the constants have changed.  If the cbuffer
 		// data changes, it needs to be updated for each FrameResource.
@@ -1498,156 +1512,17 @@ void GameApp::BuildFrameResources()
 	for (int i = 0; i < gNumFrameResources; ++i)
 	{
 		mFrameResources.push_back(std::make_unique<FrameResource>(md3dDevice.Get(),
-			2,(UINT)mModelLoder->GetModelMesh("Blue_Tree_02a").size(),1,(UINT)mAllRitems.size(), (UINT)mMaterials.size(), mWaves->VertexCount()));
+			2,(UINT)mModelLoder->GetModelMesh("Blue_Tree_02a").size(),1,(UINT)mAllRitems.size(), (UINT)L3DMaterial::GetMaterialSize(), mWaves->VertexCount()));
 	}
 }
 
 void GameApp::BuildAllMaterials()
 {
-	//Index
-	int MatCBIndex = 0;
-	int DiffuseSrvHeapIndex = 0;
-	XMFLOAT4X4  MatTransform = MathHelper::Identity4x4();
-
-
-#pragma region Simple Geometry Material
-
-	//white_spruce_tree_bark Material
-	BuildMaterials(
-		L"PBRwhite_spruce_tree_bark",
-		MatCBIndex++,
-		0.09f,
-		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
-		XMFLOAT3(0.1f, 0.1f, 0.1f),
-		MatTransform);
-
-	//PBRharshbricks Material
-	BuildMaterials(
-		L"PBRharshbricks",
-		MatCBIndex++,
-		0.05f,
-		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
-		XMFLOAT3(0.1f, 0.1f, 0.1f),
-		MatTransform);
-
-	//PBRrocky_shoreline1 Material
-	BuildMaterials(
-		L"PBRrocky_shoreline1",
-		MatCBIndex++,
-		0.05f,
-		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
-		XMFLOAT3(0.1f, 0.1f, 0.1f),
-		MatTransform);
-
-	//PBRstylized_grass1 Material
-	BuildMaterials(
-		L"PBRstylized_grass1",
-		MatCBIndex++,
-		0.09f,
-		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
-		XMFLOAT3(0.1f, 0.1f, 0.1f),
-		MatTransform);
-
-	//PBRIndustrial_narrow_brick Material
-	BuildMaterials(
-		L"PBRIndustrial_narrow_brick",
-		MatCBIndex++,
-		0.05f,
-		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
-		XMFLOAT3(0.1f, 0.1f, 0.1f),
-		MatTransform);
-
-	//PBRGrass Material
-	BuildMaterials(
-		L"PBRGrass",
-		MatCBIndex++,
-		0.01f,
-		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
-		XMFLOAT3(0.1f, 0.1f, 0.1f),
-		MatTransform);
-
-
-	//PBRBrass Material
-	XMStoreFloat4x4(&MatTransform, XMMatrixScaling(0.1f, 0.1f, 0.1f));
-	BuildMaterials(
-		L"PBRBrass",
-		MatCBIndex++,
-		0.01f,
-		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
-		XMFLOAT3(0.1f, 0.1f, 0.1f),
-		MatTransform);
-#pragma endregion
-
-
-#pragma region Load Model Material
-	MatTransform = MathHelper::Identity4x4();
-	for (auto e : mModelLoder->GetAllModelTextures())
-	{
-		BuildMaterials(
-			wstring(e.first.begin(), e.first.end()),
-			MatCBIndex++,
-			0.09f,
-			XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
-			XMFLOAT3(0.1f, 0.1f, 0.1f),
-			MatTransform,
-			MaterialType::ModelPBRMat);
-	}
-#pragma endregion
-
-
-#pragma region Height Map Terrain Material
-	MatTransform = MathHelper::Identity4x4();
-	for (auto e : mHeightMapTerrain->GetAllTerrainTextures())
-	{
-		BuildMaterials(
-			wstring(e.first.begin(), e.first.end()),
-			MatCBIndex++,
-			0.02f,
-			XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
-			XMFLOAT3(0.1f, 0.1f, 0.1f),
-			MatTransform,
-			MaterialType::HeightMapTerrainPBRMat);
-	}
-#pragma endregion
-
-
-
-#pragma region Sky Material
-		mSky->BuildSkyMaterials(MatCBIndex++);
-		mMaterials[L"Sky"] = std::move(mSky->GetSkyMaterial());
-#pragma endregion
+	mSimpleGeoInstance->BuildMaterials();
+	mModelLoder->BuildMaterials();
+	mHeightMapTerrain->BuildMaterials();
+	mSky->BuildMaterials();
 }
-
-
-void GameApp::BuildMaterials(
-	wstring name,
-	int MatCBIndex,
-	float Height_Scale,
-	XMFLOAT4 DiffuseAlbedo, 
-	XMFLOAT3 FresnelR0,
-	XMFLOAT4X4 MatTransform,
-	MaterialType MatType)
-{
-	auto  Mat = std::make_unique<Material>();
-	Mat->Name = name;
-	Mat->MatCBIndex = MatCBIndex;
-	Mat->DiffuseAlbedo = DiffuseAlbedo;
-	Mat->FresnelR0 = FresnelR0;
-	Mat->MatTransform = MatTransform;
-	Mat->height_scale = Height_Scale;
-	mMaterials[name] = std::move(Mat);
-
-
-	switch (MatType)
-	{
-	case MaterialType::NormalPBRMat:
-		mPBRTextureName.push_back(name);
-		break;
-	default:
-		break;
-	}
-}
-
 
 void GameApp::BuildRenderItems()
 {
@@ -1662,7 +1537,7 @@ void GameApp::BuildRenderItems()
 		XMStoreFloat4x4(&LandRitem.World,XMMatrixTranslation(0.0f,1.0f,0.0f)* XMMatrixScaling(1.0, 1.0, 1.0));
 		XMStoreFloat4x4(&LandRitem.TexTransform, XMMatrixScaling(2.0, 2.0, 2.0));
 		LandRitem.ObjCBIndex = ObjCBIndex++;
-		LandRitem.Mat = mMaterials[L"Terrain/grass"].get();
+		LandRitem.Mat = L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"Terrain/grass");
 		LandRitem.Geo.push_back(mGeometries["landGeo"].get());
 		LandRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 		LandRitem.IndexCount.push_back(LandRitem.Geo[0]->DrawArgs["grid"].IndexCount);
@@ -1693,7 +1568,7 @@ void GameApp::BuildRenderItems()
 		XMStoreFloat4x4(&TerrainRitem.World, XMMatrixTranslation(0.0f, 0.0f, 0.0f) * XMMatrixScaling(1.0, 1.0, 1.0));
 		XMStoreFloat4x4(&TerrainRitem.TexTransform, XMMatrixScaling(1.0, 1.0, 1.0));
 		TerrainRitem.ObjCBIndex = ObjCBIndex++;
-		TerrainRitem.Mat = mMaterials[L"Terrain/grass"].get();
+		TerrainRitem.Mat = L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"Terrain/grass");
 		TerrainRitem.Geo.push_back(mHeightMapTerrain->GetMeshGeometry());
 		TerrainRitem.PrimitiveType =  D3D11_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST;
 		TerrainRitem.IndexCount.push_back(TerrainRitem.Geo[0]->DrawArgs["HeightMapTerrain"].IndexCount);
@@ -1723,7 +1598,7 @@ void GameApp::BuildRenderItems()
 		XMStoreFloat4x4(&GrassRitem.World, XMMatrixScaling(1.0, 1.0, 1.0));
 		XMStoreFloat4x4(&GrassRitem.TexTransform, XMMatrixScaling(1.0, 1.0, 1.0));
 		GrassRitem.ObjCBIndex = ObjCBIndex++;
-		GrassRitem.Mat = mMaterials[L"PBRGrass"].get();
+		GrassRitem.Mat = L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"PBRGrass");
 		GrassRitem.Geo.push_back(mHeightMapTerrain->GetGrass()->GetMeshGeometry());
 		GrassRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
 		GrassRitem.IndexCount.push_back(GrassRitem.Geo[0]->DrawArgs["Grass"].IndexCount);
@@ -1755,7 +1630,7 @@ void GameApp::BuildRenderItems()
 		XMStoreFloat4x4(&ShockWaveWaterRitem.World, XMMatrixScaling(20.48f, 1.0f, 20.48f));
 		XMStoreFloat4x4(&ShockWaveWaterRitem.TexTransform, XMMatrixScaling(5.0f, 5.0f, 5.0f));
 		ShockWaveWaterRitem.ObjCBIndex = ObjCBIndex++;
-		ShockWaveWaterRitem.Mat = mMaterials[L"PBRharshbricks"].get();
+		ShockWaveWaterRitem.Mat = L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"PBRharshbricks");
 		ShockWaveWaterRitem.Geo.push_back(mGeometries["landGeo"].get());
 		ShockWaveWaterRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 		ShockWaveWaterRitem.IndexCount.push_back(ShockWaveWaterRitem.Geo[0]->DrawArgs["grid"].IndexCount);
@@ -1774,7 +1649,7 @@ void GameApp::BuildRenderItems()
 		XMStoreFloat4x4(&skyRitem.World, XMMatrixScaling(5000.0f, 5000.0f, 5000.0f));
 		skyRitem.TexTransform = MathHelper::Identity4x4();
 		skyRitem.ObjCBIndex = ObjCBIndex++;
-		skyRitem.Mat = mMaterials[L"Sky"].get();
+		skyRitem.Mat = L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"sky");
 		skyRitem.Geo.push_back(mGeometries["Sky"].get());
 		skyRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 		skyRitem.IndexCount.push_back(skyRitem.Geo[0]->DrawArgs["Sphere"].IndexCount);
@@ -1821,7 +1696,6 @@ void GameApp::BuildModelGeoInstanceItems()
 	InstanceModelRitem.World = MathHelper::Identity4x4();
 	InstanceModelRitem.TexTransform = MathHelper::Identity4x4();
 	InstanceModelRitem.ObjCBIndex = -1;//not important in instance item
-	InstanceModelRitem.Mat = mMaterials[L"PBRBrass"].get();
 	InstanceModelRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	InstanceModelRitem.Bounds = lbox;
 	
@@ -1852,7 +1726,6 @@ void GameApp::BuildModelGeoInstanceItems()
 					0.0f, 0.0f, 0.1f, 0.0f,
 					x + j * dx, mHeightMapTerrain->GetHeight(x + j * dx, y + i * dy), y + i * dy, 1.0f)));
 
-				InstanceModelRitem.Instances[index].MaterialIndex = (UINT)(mMaterials.size() - 3);
 				InstanceModelRitem.Instances[index].TexTransform= MathHelper::Identity4x4();
 			}
 		}

@@ -2,6 +2,7 @@
 #include "L3DGeometryGenerator.h"
 #include "L3DVertex.h"
 #include "Grass.h"
+#include "L3DMaterial.h"
 using namespace DirectX::PackedVector;
 
 HeightmapTerrain::HeightmapTerrain(
@@ -36,7 +37,7 @@ HeightmapTerrain::HeightmapTerrain(
 	//init Grass
 	mGrass = std::make_unique<Grass>(device, CommandList, TextureManage, 
 		this->GetWidth(), this->GetDepth(), 
-		2000, 2000);
+		2500, 2500);
 
 }
 
@@ -115,6 +116,23 @@ void HeightmapTerrain::Update(float dt)
 {
 
 
+}
+
+void HeightmapTerrain::BuildMaterials()
+{
+	XMFLOAT4X4  MatTransform = MathHelper::Identity4x4();
+	for (auto e : TerrainTextures)
+	{
+		L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
+			wstring(e.first.begin(), e.first.end()),
+			0.02f,
+			XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+			XMFLOAT3(0.1f, 0.1f, 0.1f),
+			MatTransform,
+			MaterialType::HeightMapTerrainPBRMat);
+	}
+
+	mGrass->BuildMaterials();
 }
 
 void HeightmapTerrain::LoadHeightmapAsset()

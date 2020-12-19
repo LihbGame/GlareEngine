@@ -1,5 +1,5 @@
 #include "SimpleGeoInstance.h"
-
+#include "L3DMaterial.h"
 
 SimpleGeoInstance::SimpleGeoInstance(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pd3dDevice)
 {
@@ -121,5 +121,72 @@ std::unique_ptr<MeshGeometry>& SimpleGeoInstance::GetSimpleGeoMesh(SimpleGeometr
 {
     BuildSimpleGeometryMesh(GeoType);
     return mSimpleMesh;
+
+}
+
+void SimpleGeoInstance::BuildMaterials()
+{
+    XMFLOAT4X4  MatTransform = MathHelper::Identity4x4();
+
+    L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
+        L"PBRwhite_spruce_tree_bark",
+        0.09f,
+        XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+        XMFLOAT3(0.1f, 0.1f, 0.1f),
+        MatTransform,
+        MaterialType::NormalPBRMat);
+    mPBRTextureName.push_back(L"PBRwhite_spruce_tree_bark");
+
+	//PBRharshbricks Material
+    L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
+		L"PBRharshbricks",
+		0.05f,
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		XMFLOAT3(0.1f, 0.1f, 0.1f),
+		MatTransform,
+        MaterialType::NormalPBRMat);
+    mPBRTextureName.push_back(L"PBRharshbricks");
+
+	//PBRrocky_shoreline1 Material
+    L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
+		L"PBRrocky_shoreline1",
+		0.05f,
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		XMFLOAT3(0.1f, 0.1f, 0.1f),
+		MatTransform,
+		MaterialType::NormalPBRMat);
+    mPBRTextureName.push_back(L"PBRrocky_shoreline1");
+
+	//PBRstylized_grass1 Material
+    L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
+		L"PBRstylized_grass1",
+		0.09f,
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		XMFLOAT3(0.1f, 0.1f, 0.1f),
+		MatTransform,
+		MaterialType::NormalPBRMat);
+    mPBRTextureName.push_back(L"PBRstylized_grass1");
+
+	//PBRIndustrial_narrow_brick Material
+    L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
+		L"PBRIndustrial_narrow_brick",
+		0.05f,
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		XMFLOAT3(0.1f, 0.1f, 0.1f),
+		MatTransform,
+		MaterialType::NormalPBRMat);
+    mPBRTextureName.push_back(L"PBRIndustrial_narrow_brick");
+
+	//PBRBrass Material
+	XMStoreFloat4x4(&MatTransform, XMMatrixScaling(0.1f, 0.1f, 0.1f));
+    L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
+		L"PBRBrass",
+		0.01f,
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		XMFLOAT3(0.1f, 0.1f, 0.1f),
+		MatTransform,
+		MaterialType::NormalPBRMat);
+    mPBRTextureName.push_back(L"PBRBrass");
+#pragma endregion
 
 }
