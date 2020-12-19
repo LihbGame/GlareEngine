@@ -59,46 +59,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Core\Public\d3dx12.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Public\DDSTextureLoader.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Public\L3DBaseApp.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Public\L3DCamera.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Public\L3DGameTimer.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Public\L3DGeometryGenerator.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Public\L3DMathHelper.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Public\L3DUploadBuffer.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Public\L3DUtil.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
     <ClInclude Include="ShaderSource\Public\BaseShader.h">
       <Filter>ShaderSource\Public</Filter>
     </ClInclude>
     <ClInclude Include="ShaderSource\Public\GerstnerWaveShader.h">
       <Filter>ShaderSource\Public</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Public\L3DTextureManage.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Public\L3DVertex.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Public\L3DInputLayout.h" />
     <ClInclude Include="ShaderSource\Public\SkyShader.h" />
     <ClInclude Include="EngineEditor\EngineGUI.h" />
     <ClInclude Include="EngineEditor\imconfig.h" />
@@ -129,7 +95,6 @@
       <Filter>MainSource\Public</Filter>
     </ClInclude>
     <ClInclude Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.h" />
-    <ClInclude Include="Core\Public\WICTextureLoader12.h" />
     <ClInclude Include="RanderEffects\Water\Public\Waves.h">
       <Filter>Water\Public</Filter>
     </ClInclude>
@@ -148,44 +113,49 @@
     <ClInclude Include="ShaderSource\Public\HeightMapTerrainShader.h" />
     <ClInclude Include="RanderEffects\Terrain\Public\Grass.h" />
     <ClInclude Include="ShaderSource\Public\GrassShader.h" />
-    <ClInclude Include="Core\Public\L3DMaterial.h" />
+    <ClInclude Include="EngineCore\Public\d3dx12.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Public\DDSTextureLoader.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Public\L3DBaseApp.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Public\L3DCamera.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Public\L3DGameTimer.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Public\L3DGeometryGenerator.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Public\L3DInputLayout.h" />
+    <ClInclude Include="EngineCore\Public\L3DMaterial.h" />
+    <ClInclude Include="EngineCore\Public\L3DMathHelper.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Public\L3DTextureManage.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Public\L3DUploadBuffer.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Public\L3DUtil.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Public\L3DVertex.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Public\WICTextureLoader12.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Core\Private\DDSTextureLoader.cpp">
-      <Filter>Core\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Private\L3DBaseApp.cpp">
-      <Filter>Core\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Private\L3DCamera.cpp">
-      <Filter>Core\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Private\L3DGameTimer.cpp">
-      <Filter>Core\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Private\L3DGeometryGenerator.cpp">
-      <Filter>Core\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Private\L3DMathHelper.cpp">
-      <Filter>Core\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Private\L3DUtil.cpp">
-      <Filter>Core\Private</Filter>
-    </ClCompile>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
       <Filter>ShaderSource\Private</Filter>
     </ClCompile>
     <ClCompile Include="ShaderSource\Private\GerstnerWaveShader.cpp">
       <Filter>ShaderSource\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Private\L3DTextureManage.cpp">
-      <Filter>Core\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Private\L3DVertex.cpp">
-      <Filter>Core\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Private\L3DInputLayout.cpp">
-      <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="ShaderSource\Private\SkyShader.cpp">
       <Filter>MainSource</Filter>
@@ -235,9 +205,6 @@
     <ClCompile Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Private\WICTextureLoader12.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
     <ClCompile Include="RanderEffects\Water\Private\Waves.cpp">
       <Filter>Water\Private</Filter>
     </ClCompile>
@@ -280,7 +247,40 @@
     <ClCompile Include="ShaderSource\Private\GrassShader.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Private\L3DMaterial.cpp">
+    <ClCompile Include="EngineCore\Private\DDSTextureLoader.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Private\L3DBaseApp.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Private\L3DCamera.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Private\L3DGameTimer.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Private\L3DGeometryGenerator.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Private\L3DInputLayout.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Private\L3DMaterial.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Private\L3DMathHelper.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Private\L3DTextureManage.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Private\L3DUtil.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Private\L3DVertex.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Private\WICTextureLoader12.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>

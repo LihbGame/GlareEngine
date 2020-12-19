@@ -84,7 +84,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>.\RanderEffects\Terrain\Public;.\RanderEffects\ShockWaveWater\Public;.\Dependences\include;.\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\EngineMain\Public;.\Core\Public;$(IncludePath)</IncludePath>
+    <IncludePath>.\RanderEffects\Particle\Public;.\RanderEffects\Terrain\Public;.\RanderEffects\ShockWaveWater\Public;.\Dependences\include;.\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\EngineMain\Public;.\EngineCore\Public;$(IncludePath)</IncludePath>
     <LibraryPath>.\Dependences\lib\ozz\debug;.\Dependences\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -159,20 +159,20 @@
     <ClInclude Include="Animation\ModelLoader.h" />
     <ClInclude Include="Animation\ModelMesh.h" />
     <ClInclude Include="Animation\OzzAnimePlayBack.h" />
-    <ClInclude Include="Core\Public\L3DInputLayout.h" />
-    <ClInclude Include="Core\Public\d3dx12.h" />
-    <ClInclude Include="Core\Public\DDSTextureLoader.h" />
-    <ClInclude Include="Core\Public\L3DBaseApp.h" />
-    <ClInclude Include="Core\Public\L3DCamera.h" />
-    <ClInclude Include="Core\Public\L3DGameTimer.h" />
-    <ClInclude Include="Core\Public\L3DGeometryGenerator.h" />
-    <ClInclude Include="Core\Public\L3DMaterial.h" />
-    <ClInclude Include="Core\Public\L3DMathHelper.h" />
-    <ClInclude Include="Core\Public\L3DTextureManage.h" />
-    <ClInclude Include="Core\Public\L3DUploadBuffer.h" />
-    <ClInclude Include="Core\Public\L3DUtil.h" />
-    <ClInclude Include="Core\Public\L3DVertex.h" />
-    <ClInclude Include="Core\Public\WICTextureLoader12.h" />
+    <ClInclude Include="EngineCore\Public\L3DInputLayout.h" />
+    <ClInclude Include="EngineCore\Public\d3dx12.h" />
+    <ClInclude Include="EngineCore\Public\DDSTextureLoader.h" />
+    <ClInclude Include="EngineCore\Public\L3DBaseApp.h" />
+    <ClInclude Include="EngineCore\Public\L3DCamera.h" />
+    <ClInclude Include="EngineCore\Public\L3DGameTimer.h" />
+    <ClInclude Include="EngineCore\Public\L3DGeometryGenerator.h" />
+    <ClInclude Include="EngineCore\Public\L3DMaterial.h" />
+    <ClInclude Include="EngineCore\Public\L3DMathHelper.h" />
+    <ClInclude Include="EngineCore\Public\L3DTextureManage.h" />
+    <ClInclude Include="EngineCore\Public\L3DUploadBuffer.h" />
+    <ClInclude Include="EngineCore\Public\L3DUtil.h" />
+    <ClInclude Include="EngineCore\Public\L3DVertex.h" />
+    <ClInclude Include="EngineCore\Public\WICTextureLoader12.h" />
     <ClInclude Include="EngineEditor\EngineGUI.h" />
     <ClInclude Include="EngineEditor\imconfig.h" />
     <ClInclude Include="EngineEditor\imgui.h" />
@@ -212,18 +212,18 @@
     <ClCompile Include="Animation\Animations.cpp" />
     <ClCompile Include="Animation\AnimEvaluator.cpp" />
     <ClCompile Include="Animation\ModelMesh.cpp" />
-    <ClCompile Include="Core\Private\DDSTextureLoader.cpp" />
-    <ClCompile Include="Core\Private\L3DBaseApp.cpp" />
-    <ClCompile Include="Core\Private\L3DCamera.cpp" />
-    <ClCompile Include="Core\Private\L3DGameTimer.cpp" />
-    <ClCompile Include="Core\Private\L3DGeometryGenerator.cpp" />
-    <ClCompile Include="Core\Private\L3DInputLayout.cpp" />
-    <ClCompile Include="Core\Private\L3DMaterial.cpp" />
-    <ClCompile Include="Core\Private\L3DMathHelper.cpp" />
-    <ClCompile Include="Core\Private\L3DTextureManage.cpp" />
-    <ClCompile Include="Core\Private\L3DUtil.cpp" />
-    <ClCompile Include="Core\Private\L3DVertex.cpp" />
-    <ClCompile Include="Core\Private\WICTextureLoader12.cpp" />
+    <ClCompile Include="EngineCore\Private\DDSTextureLoader.cpp" />
+    <ClCompile Include="EngineCore\Private\L3DBaseApp.cpp" />
+    <ClCompile Include="EngineCore\Private\L3DCamera.cpp" />
+    <ClCompile Include="EngineCore\Private\L3DGameTimer.cpp" />
+    <ClCompile Include="EngineCore\Private\L3DGeometryGenerator.cpp" />
+    <ClCompile Include="EngineCore\Private\L3DInputLayout.cpp" />
+    <ClCompile Include="EngineCore\Private\L3DMaterial.cpp" />
+    <ClCompile Include="EngineCore\Private\L3DMathHelper.cpp" />
+    <ClCompile Include="EngineCore\Private\L3DTextureManage.cpp" />
+    <ClCompile Include="EngineCore\Private\L3DUtil.cpp" />
+    <ClCompile Include="EngineCore\Private\L3DVertex.cpp" />
+    <ClCompile Include="EngineCore\Private\WICTextureLoader12.cpp" />
     <ClCompile Include="EngineEditor\EngineGUI.cpp" />
     <ClCompile Include="EngineEditor\imgui.cpp" />
     <ClCompile Include="EngineEditor\imgui_demo.cpp" />

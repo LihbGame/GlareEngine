@@ -2293,7 +2293,7 @@ void GameApp::DrawSceneToShadowMap(const GameTimer& gr)
 	PIXEndEvent(mCommandList.Get());
 
 	PIXBeginEvent(mCommandList.Get(), 0, "Draw Shadow::RenderLayer::Terrain");
-	DrawHeightMapTerrain(gr);
+	//DrawHeightMapTerrain(gr);
 	PIXEndEvent(mCommandList.Get());
 
 }
