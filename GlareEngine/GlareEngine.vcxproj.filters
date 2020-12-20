@@ -149,6 +149,7 @@
       <Filter>Core\Public</Filter>
     </ClInclude>
     <ClInclude Include="EngineCore\Public\WICTextureLoader12.h" />
+    <ClInclude Include="RanderEffects\Particle\Public\ParticleSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -281,6 +282,9 @@
       <Filter>Core\Private</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Private\WICTextureLoader12.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="RanderEffects\Particle\Private\ParticleSystem.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
