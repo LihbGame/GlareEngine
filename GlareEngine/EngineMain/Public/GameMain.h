@@ -161,7 +161,7 @@ private:
 	
 	//创建资源描述堆
 	void CreateDescriptorHeaps();
-	void CreatePBRSRVinDescriptorHeap(unordered_map<std::string, ID3D12Resource*> TexResource,int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor,wstring MaterialName);
+	void CreatePBRSRVinDescriptorHeap(vector<ID3D12Resource*> TexResource,int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor,wstring MaterialName);
 
 	//sampler
 	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> GetStaticSamplers();

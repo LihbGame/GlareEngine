@@ -339,13 +339,13 @@ void ModelLoader::LoadPBRTexture(string texturename)
     string Fullfilenames = rootfilename + "_albedo";
     ModelTextures[texturename].push_back(pTextureManage->GetModelTexture(wstring(Fullfilenames.begin(), Fullfilenames.end())).get());
     //ao
-    Fullfilenames = rootfilename + "_ao";
+    Fullfilenames = rootfilename + "_normal";
     ModelTextures[texturename].push_back(pTextureManage->GetModelTexture(wstring(Fullfilenames.begin(), Fullfilenames.end())).get());
     //Metallic
-    Fullfilenames = rootfilename + "_metallic";
+    Fullfilenames = rootfilename + "_ao";
     ModelTextures[texturename].push_back(pTextureManage->GetModelTexture(wstring(Fullfilenames.begin(), Fullfilenames.end())).get());
     //normal
-    Fullfilenames = rootfilename + "_normal";
+    Fullfilenames = rootfilename + "_metallic";
     ModelTextures[texturename].push_back(pTextureManage->GetModelTexture(wstring(Fullfilenames.begin(), Fullfilenames.end())).get());
     //Roughness
     Fullfilenames = rootfilename + "_roughness";

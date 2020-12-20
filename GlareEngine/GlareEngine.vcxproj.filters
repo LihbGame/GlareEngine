@@ -149,7 +149,6 @@
       <Filter>Core\Public</Filter>
     </ClInclude>
     <ClInclude Include="EngineCore\Public\WICTextureLoader12.h" />
-    <ClInclude Include="RanderEffects\Particle\Public\ParticleSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -284,9 +283,6 @@
     <ClCompile Include="EngineCore\Private\WICTextureLoader12.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="RanderEffects\Particle\Private\ParticleSystem.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -333,6 +329,10 @@
     <None Include="Dependences\lib\assimp-vc142-mtd.pdb" />
     <None Include="packages.config" />
     <None Include="Shaders\TerrainConstBuffer.hlsli" />
+    <None Include="RanderEffects\Particle\Private\ParticleSystem.cpp">
+      <Filter>MainSource</Filter>
+    </None>
+    <None Include="RanderEffects\Particle\Public\ParticleSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GlareEngine.rc">

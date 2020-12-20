@@ -200,7 +200,7 @@ void GameApp::Draw(const GameTimer& gt)
 		// If we wanted to use "local" cube maps, we would have to change them per-object, or dynamically
 		// index into an array of cube maps.
 		CD3DX12_GPU_DESCRIPTOR_HANDLE skyTexDescriptor(mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-		skyTexDescriptor.Offset(L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"sky")->DiffuseSrvHeapIndex, mCbvSrvDescriptorSize);
+		skyTexDescriptor.Offset(L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"sky")->PBRSrvHeapIndex[PBRTextureType::DiffuseSrvHeapIndex], mCbvSrvDescriptorSize);
 		mCommandList->SetGraphicsRootDescriptorTable(5, skyTexDescriptor);
 
 
@@ -391,16 +391,17 @@ void GameApp::CreateDescriptorHeaps()
 	//
 	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
-	unordered_map<string, ID3D12Resource*> PBRTexResource;
+	vector<ID3D12Resource*> PBRTexResource;
+	PBRTexResource.resize(PBRTextureType::Count);
 #pragma region simple geometry PBR Texture
 	for (auto &e : mSimpleGeoInstance->GetTextureNames())
 	{
-		PBRTexResource["Diffuse"] =mTextureManage->GetTexture(e + L"\\" + e + L"_albedo")->Resource.Get();
-		PBRTexResource["Normal"] = mTextureManage->GetTexture(e + L"\\" + e + L"_normal")->Resource.Get();
-		PBRTexResource["AO"] = mTextureManage->GetTexture(e + L"\\" + e + L"_ao")->Resource.Get();
-		PBRTexResource["Metallic"] = mTextureManage->GetTexture(e + L"\\" + e + L"_metallic")->Resource.Get();
-		PBRTexResource["Roughness"] = mTextureManage->GetTexture(e + L"\\" + e + L"_roughness")->Resource.Get();
-		PBRTexResource["Height"] = mTextureManage->GetTexture(e + L"\\" + e + L"_height")->Resource.Get();
+		PBRTexResource[PBRTextureType::DiffuseSrvHeapIndex] =mTextureManage->GetTexture(e + L"\\" + e + L"_albedo")->Resource.Get();
+		PBRTexResource[PBRTextureType::NormalSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_normal")->Resource.Get();
+		PBRTexResource[PBRTextureType::AoSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_ao")->Resource.Get();
+		PBRTexResource[PBRTextureType::MetallicSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_metallic")->Resource.Get();
+		PBRTexResource[PBRTextureType::RoughnessSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_roughness")->Resource.Get();
+		PBRTexResource[PBRTextureType::HeightSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_height")->Resource.Get();
 
 		CreatePBRSRVinDescriptorHeap(PBRTexResource, &SRVIndex, &hDescriptor,e);
 	}
@@ -409,12 +410,12 @@ void GameApp::CreateDescriptorHeaps()
 #pragma region Load model 
 	for (auto& e : mModelLoder->GetAllModelTextures())
 	{
-		PBRTexResource["Diffuse"] = e.second[0]->Resource.Get();
-		PBRTexResource["AO"] = e.second[1]->Resource.Get();
-		PBRTexResource["Metallic"] = e.second[2]->Resource.Get();
-		PBRTexResource["Normal"] = e.second[3]->Resource.Get();
-		PBRTexResource["Roughness"] = e.second[4]->Resource.Get();
-		PBRTexResource["Height"] = e.second[5]->Resource.Get();
+		PBRTexResource[PBRTextureType::DiffuseSrvHeapIndex] = e.second[0]->Resource.Get();
+		PBRTexResource[PBRTextureType::NormalSrvHeapIndex] = e.second[1]->Resource.Get();
+		PBRTexResource[PBRTextureType::AoSrvHeapIndex] = e.second[2]->Resource.Get();
+		PBRTexResource[PBRTextureType::MetallicSrvHeapIndex] = e.second[3]->Resource.Get();
+		PBRTexResource[PBRTextureType::RoughnessSrvHeapIndex] = e.second[4]->Resource.Get();
+		PBRTexResource[PBRTextureType::HeightSrvHeapIndex] = e.second[5]->Resource.Get();
 
 		CreatePBRSRVinDescriptorHeap(PBRTexResource, &SRVIndex, &hDescriptor, wstring(e.first.begin(), e.first.end()));
 	}
@@ -456,12 +457,12 @@ void GameApp::CreateDescriptorHeaps()
 #pragma region height map terrain
 	for (auto& e : mHeightMapTerrain->GetAllTerrainTextures())
 	{
-		PBRTexResource["Diffuse"] = e.second[0]->Resource.Get();
-		PBRTexResource["AO"] = e.second[1]->Resource.Get();
-		PBRTexResource["Metallic"] = e.second[2]->Resource.Get();
-		PBRTexResource["Normal"] = e.second[3]->Resource.Get();
-		PBRTexResource["Roughness"] = e.second[4]->Resource.Get();
-		PBRTexResource["Height"] = e.second[5]->Resource.Get();
+		PBRTexResource[PBRTextureType::DiffuseSrvHeapIndex] = e.second[0]->Resource.Get();
+		PBRTexResource[PBRTextureType::NormalSrvHeapIndex] = e.second[1]->Resource.Get();
+		PBRTexResource[PBRTextureType::AoSrvHeapIndex] = e.second[2]->Resource.Get();
+		PBRTexResource[PBRTextureType::MetallicSrvHeapIndex] = e.second[3]->Resource.Get();
+		PBRTexResource[PBRTextureType::RoughnessSrvHeapIndex] = e.second[4]->Resource.Get();
+		PBRTexResource[PBRTextureType::HeightSrvHeapIndex] = e.second[5]->Resource.Get();
 
 		CreatePBRSRVinDescriptorHeap(PBRTexResource, &SRVIndex, &hDescriptor, wstring(e.first.begin(), e.first.end()));
 	}
@@ -480,12 +481,12 @@ void GameApp::CreateDescriptorHeaps()
 #pragma region Grass
 	{
 		wstring e = L"PBRGrass";
-		PBRTexResource["Diffuse"] = mTextureManage->GetTexture(e + L"\\" + e + L"_albedo")->Resource.Get();
-		PBRTexResource["Normal"] = mTextureManage->GetTexture(e + L"\\" + e + L"_normal")->Resource.Get();
-		PBRTexResource["AO"] = mTextureManage->GetTexture(e + L"\\" + e + L"_ao")->Resource.Get();
-		PBRTexResource["Metallic"] = mTextureManage->GetTexture(e + L"\\" + e + L"_metallic")->Resource.Get();
-		PBRTexResource["Roughness"] = mTextureManage->GetTexture(e + L"\\" + e + L"_roughness")->Resource.Get();
-		PBRTexResource["Height"] = mTextureManage->GetTexture(e + L"\\" + e + L"_height")->Resource.Get();
+		PBRTexResource[PBRTextureType::DiffuseSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_albedo")->Resource.Get();
+		PBRTexResource[PBRTextureType::NormalSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_normal")->Resource.Get();
+		PBRTexResource[PBRTextureType::AoSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_ao")->Resource.Get();
+		PBRTexResource[PBRTextureType::MetallicSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_metallic")->Resource.Get();
+		PBRTexResource[PBRTextureType::RoughnessSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_roughness")->Resource.Get();
+		PBRTexResource[PBRTextureType::HeightSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_height")->Resource.Get();
 
 		CreatePBRSRVinDescriptorHeap(PBRTexResource, &SRVIndex, &hDescriptor, e);
 
@@ -520,7 +521,7 @@ void GameApp::CreateDescriptorHeaps()
 		SkysrvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
 		SkysrvDesc.Format = SkyTex->GetDesc().Format;
 		md3dDevice->CreateShaderResourceView(SkyTex.Get(), &SkysrvDesc, hDescriptor);
-		L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"sky")->DiffuseSrvHeapIndex = SRVIndex++;
+		L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"sky")->PBRSrvHeapIndex[PBRTextureType::DiffuseSrvHeapIndex] = SRVIndex++;
 		// next descriptor
 		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	}
@@ -538,67 +539,26 @@ void GameApp::CreateDescriptorHeaps()
 }
 
 void GameApp::CreatePBRSRVinDescriptorHeap(
-	unordered_map<std::string,ID3D12Resource*> TexResource,
+	vector<ID3D12Resource*> TexResource,
 	int* SRVIndex, 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor,
 	wstring MaterialName)
 {
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.Format = TexResource["Diffuse"]->GetDesc().Format;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MostDetailedMip = 0;
-	srvDesc.Texture2D.MipLevels = TexResource["Diffuse"]->GetDesc().MipLevels;
 	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-	md3dDevice->CreateShaderResourceView(TexResource["Diffuse"], &srvDesc, *hDescriptor);
-	L3DMaterial::GetL3DMaterialInstance()->GetMaterial(MaterialName)->DiffuseSrvHeapIndex = (*SRVIndex)++;
 
-	// next descriptor
-	hDescriptor->Offset(1, mCbvSrvDescriptorSize);
-
-	srvDesc.Format = TexResource["Normal"]->GetDesc().Format;
-	srvDesc.Texture2D.MipLevels = TexResource["Normal"]->GetDesc().MipLevels;
-	md3dDevice->CreateShaderResourceView(TexResource["Normal"], &srvDesc, *hDescriptor);
-	L3DMaterial::GetL3DMaterialInstance()->GetMaterial(MaterialName)->NormalSrvHeapIndex = (*SRVIndex)++;
-
-
-	// next descriptor
-	hDescriptor->Offset(1, mCbvSrvDescriptorSize);
-
-	srvDesc.Format = TexResource["AO"]->GetDesc().Format;
-	srvDesc.Texture2D.MipLevels = TexResource["AO"]->GetDesc().MipLevels;
-	md3dDevice->CreateShaderResourceView(TexResource["AO"], &srvDesc, *hDescriptor);
-	L3DMaterial::GetL3DMaterialInstance()->GetMaterial(MaterialName)->AoSrvHeapIndex = (*SRVIndex)++;
-
-
-	// next descriptor
-	hDescriptor->Offset(1, mCbvSrvDescriptorSize);
-
-	srvDesc.Format = TexResource["Metallic"]->GetDesc().Format;
-	srvDesc.Texture2D.MipLevels = TexResource["Metallic"]->GetDesc().MipLevels;
-	md3dDevice->CreateShaderResourceView(TexResource["Metallic"], &srvDesc, *hDescriptor);
-	L3DMaterial::GetL3DMaterialInstance()->GetMaterial(MaterialName)->MetallicSrvHeapIndex = (*SRVIndex)++;
-
-
-	// next descriptor
-	hDescriptor->Offset(1, mCbvSrvDescriptorSize);
-
-	srvDesc.Format = TexResource["Roughness"]->GetDesc().Format;
-	srvDesc.Texture2D.MipLevels = TexResource["Roughness"]->GetDesc().MipLevels;
-	md3dDevice->CreateShaderResourceView(TexResource["Roughness"], &srvDesc, *hDescriptor);
-	L3DMaterial::GetL3DMaterialInstance()->GetMaterial(MaterialName)->RoughnessSrvHeapIndex = (*SRVIndex)++;
-
-	// next descriptor
-	hDescriptor->Offset(1, mCbvSrvDescriptorSize);
-
-	srvDesc.Format = TexResource["Height"]->GetDesc().Format;
-	srvDesc.Texture2D.MipLevels = TexResource["Height"]->GetDesc().MipLevels;
-	md3dDevice->CreateShaderResourceView(TexResource["Height"], &srvDesc, *hDescriptor);
-	L3DMaterial::GetL3DMaterialInstance()->GetMaterial(MaterialName)->HeightSrvHeapIndex = (*SRVIndex)++;
-
-	// next descriptor
-	hDescriptor->Offset(1, mCbvSrvDescriptorSize);
-
+	for (int i=0;i<TexResource.size();++i)
+	{
+		srvDesc.Format = TexResource[i]->GetDesc().Format;
+		srvDesc.Texture2D.MipLevels = TexResource[i]->GetDesc().MipLevels;
+		md3dDevice->CreateShaderResourceView(TexResource[i], &srvDesc, *hDescriptor);
+		L3DMaterial::GetL3DMaterialInstance()->GetMaterial(MaterialName)->PBRSrvHeapIndex[i] = (*SRVIndex)++;
+		// next descriptor
+		hDescriptor->Offset(1, mCbvSrvDescriptorSize);
+	}
 }
 
 void GameApp::OnMouseDown(WPARAM btnState, int x, int y)
@@ -795,12 +755,12 @@ void GameApp::UpdateMaterialCBs(const GameTimer& gt)
 			MaterialData matConstants;
 			matConstants.DiffuseAlbedo = mat->DiffuseAlbedo;
 			matConstants.FresnelR0 = mat->FresnelR0;
-			matConstants.NormalSrvHeapIndex = mat->NormalSrvHeapIndex;
-			matConstants.RoughnessSrvHeapIndex = mat->RoughnessSrvHeapIndex;
-			matConstants.MetallicSrvHeapIndex = mat->MetallicSrvHeapIndex;
-			matConstants.AOSrvHeapIndex = mat->AoSrvHeapIndex;
-			matConstants.DiffuseMapIndex = mat->DiffuseSrvHeapIndex;
-			matConstants.HeightSrvHeapIndex = mat->HeightSrvHeapIndex;
+			matConstants.NormalSrvHeapIndex = mat->PBRSrvHeapIndex[PBRTextureType::NormalSrvHeapIndex];
+			matConstants.RoughnessSrvHeapIndex = mat->PBRSrvHeapIndex[PBRTextureType::RoughnessSrvHeapIndex];
+			matConstants.MetallicSrvHeapIndex = mat->PBRSrvHeapIndex[PBRTextureType::MetallicSrvHeapIndex];
+			matConstants.AOSrvHeapIndex = mat->PBRSrvHeapIndex[PBRTextureType::AoSrvHeapIndex];
+			matConstants.DiffuseMapIndex = mat->PBRSrvHeapIndex[PBRTextureType::DiffuseSrvHeapIndex];
+			matConstants.HeightSrvHeapIndex = mat->PBRSrvHeapIndex[PBRTextureType::HeightSrvHeapIndex];
 			matConstants.height_scale = mat->height_scale;
 			XMStoreFloat4x4(&matConstants.MatTransform, XMMatrixTranspose(matTransform));
 			

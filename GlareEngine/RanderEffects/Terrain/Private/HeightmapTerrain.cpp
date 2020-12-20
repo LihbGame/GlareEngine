@@ -141,9 +141,9 @@ void HeightmapTerrain::LoadHeightmapAsset()
 	for (int i = 0; i < 5; ++i)
 	{
 		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "_albedo");
+		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "_normal");
 		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "_ao");
 		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "_metallic");
-		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "_normal");
 		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "_roughness");
 		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "_height");
 	}

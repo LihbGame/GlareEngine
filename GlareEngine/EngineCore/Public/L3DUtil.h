@@ -268,19 +268,9 @@ struct Material
 	// Index into constant buffer corresponding to this material.
 	int MatCBIndex = -1;
 
-	//diffuse texture.
-	int DiffuseSrvHeapIndex = -1;
-	// normal texture.
-	int NormalSrvHeapIndex = -1;
-    //ao texture.
-    int AoSrvHeapIndex = -1;
-    // Metallic texture.
-    int MetallicSrvHeapIndex = -1;
-    //Roughness texture.
-    int RoughnessSrvHeapIndex = -1;
-    //Height texture.
-    int HeightSrvHeapIndex = -1;
-    //for height map
+	//Texture Srv Heap Index.
+    int PBRSrvHeapIndex[6];
+
     float height_scale = 0.0f;
 	// Dirty flag indicating the material has changed and we need to update the constant buffer.
 	// Because we have a material constant buffer for each FrameResource, we have to apply the

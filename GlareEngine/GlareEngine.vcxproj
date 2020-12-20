@@ -186,7 +186,7 @@
     <ClInclude Include="EngineMain\Public\framework.h" />
     <ClInclude Include="EngineMain\Public\GameMain.h" />
     <ClInclude Include="EngineMain\Public\targetver.h" />
-    <ClInclude Include="RanderEffects\Particle\Public\ParticleSystem.h" />
+    <None Include="RanderEffects\Particle\Public\ParticleSystem.h" />
     <ClInclude Include="RanderEffects\Terrain\Public\Grass.h" />
     <ClInclude Include="PSO\Public\PSOManager.h" />
     <ClInclude Include="RanderEffects\HDRSky\Public\Sky.h" />
@@ -235,7 +235,7 @@
     <ClCompile Include="EngineMain\Private\FrameResource.cpp" />
     <ClCompile Include="EngineMain\Private\GameMain.cpp" />
     <ClCompile Include="Animation\ModelLoader.cpp" />
-    <ClCompile Include="RanderEffects\Particle\Private\ParticleSystem.cpp" />
+    <None Include="RanderEffects\Particle\Private\ParticleSystem.cpp" />
     <ClCompile Include="RanderEffects\Terrain\Private\Grass.cpp" />
     <ClCompile Include="PSO\Private\PSOManager.cpp" />
     <ClCompile Include="RanderEffects\HDRSky\Private\Sky.cpp" />

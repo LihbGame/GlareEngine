@@ -1,6 +1,24 @@
 #pragma once
 #include "L3DUtil.h"
 
+enum PBRTextureType
+{
+	//diffuse texture.
+	DiffuseSrvHeapIndex,
+	// normal texture.
+	NormalSrvHeapIndex,
+	//ao texture.
+	AoSrvHeapIndex,
+	// Metallic texture.
+	MetallicSrvHeapIndex,
+	//Roughness texture.
+	RoughnessSrvHeapIndex,
+	//Height texture.
+	HeightSrvHeapIndex,
+	//count
+	Count
+};
+
 class L3DTextureManage
 {
 public:
