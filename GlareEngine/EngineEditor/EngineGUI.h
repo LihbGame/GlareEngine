@@ -19,17 +19,20 @@ public:
 	void DrawUI(ID3D12GraphicsCommandList* d3dCommandList);
 
 
-	bool IsShowShadow() { return show_shadow; }
-	bool IsShowModel() { return show_model; }
-	bool IsShowWater() { return show_water; }
-	bool IsShowLand() { return show_land; }
-	bool IsShowSky() { return show_sky; }
-	bool IsShowFog() { return FogEnabled; }
-	bool IsShowTerrain() { return show_HeightMapTerrain; }
-	float GetCameraModeSpeed() { return CameraMoveSpeed; }
-	float GetFogStart() { return FogStart; }
-	float GetFogRange() { return FogRange; }
-	bool IsShowGrass() { return show_Grass; }
+	bool IsShowShadow()const { return show_shadow; }
+	bool IsShowModel()const { return show_model; }
+	bool IsShowWater()const { return show_water; }
+	bool IsShowLand() const { return show_land; }
+	bool IsShowSky()const { return show_sky; }
+	bool IsShowFog()const { return FogEnabled; }
+	bool IsShowTerrain() const { return show_HeightMapTerrain; }
+	float GetCameraModeSpeed()const { return CameraMoveSpeed; }
+	float GetFogStart()const { return FogStart; }
+	float GetFogRange()const { return FogRange; }
+	bool IsShowGrass()const { return show_Grass; }
+
+	float GetGrassMinWind()const { return GrassMinWind; }
+	float GetGrassMaxWind()const { return GrassMaxWind; }
 private:
 	bool show_demo_window = true;
 	bool show_another_window = true;
@@ -42,9 +45,13 @@ private:
 	bool show_HeightMapTerrain = true;
 	bool show_Grass = true;
 	float CameraMoveSpeed = 50.0f;
+
 	bool  FogEnabled = false;
 	float FogStart = 300.0f;
 	float FogRange = 600.0f;
+
+	float GrassMinWind = 0.5f;
+	float GrassMaxWind = 1.0f;
 
 	ID3D12DescriptorHeap* mGUISrvDescriptorHeap = nullptr;
 

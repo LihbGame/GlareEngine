@@ -114,6 +114,9 @@ struct TerrainConstants
 	int gHeightMapIndex = 0;
 	int gBlendMapIndex = 0;
     int gRGBNoiseMapIndex=0;
+
+	float gMinWind=0.0f;
+	float gMaxWind=0.0f;
 };
 
 

@@ -2,7 +2,6 @@ cbuffer TerrainCBPass : register(b2)
 {
 	float gMinDist;
 	float gMaxDist;
-
 	float gMinTess;
 	float gMaxTess;
 
@@ -16,4 +15,6 @@ cbuffer TerrainCBPass : register(b2)
 	int mHeightMapIndex;
 	int mBlendMapIndex;
 	int mRGBNoiseMapIndex;
+	float gMinWind;
+	float gMaxWind;
 };

@@ -110,26 +110,33 @@ void GS(
 		float time = gTotalTime*2;
 		float3 randomRGB = gSRVMap[mRGBNoiseMapIndex].SampleLevel(gsamLinearWrap, float2(input[0].PosW.x, input[0].PosW.z), 0).rgb;
 
-		float random = sin(randomRGB.r + randomRGB.b + randomRGB.g);
+		float random = (sin(randomRGB.r + randomRGB.b + randomRGB.g) + 1.0) / 2;
 		//风的影响系数
 		float windCoEff = 0.0f;
+		//单棵草的随机风
 		float2 wind = float2(sin(randomRGB.r * time), sin(randomRGB.g * time));
-		wind.x += (sin(time + input[0].PosW.x / 25) + sin((time + input[0].PosW.x / 15) + 50)) * 0.5;
-		wind.y += cos(time + input[0].PosW.z / 80);
-		wind *= lerp(0.7, 1.0, 1.0 - random);
+		//一片草的群体摆动
+		wind.x += sin(time + input[0].PosW.x / 100);
+		wind.y += cos(time + input[0].PosW.z / 100);
+		//缩放风的大小
+		wind *= lerp(gMinWind, gMaxWind, random);
 
+		//草震荡
+		//振荡强度
 		float oscillationStrength = 2.5f;
+		//sin偏斜系数
 		float sinSkewCoeff = random;
-		float lerpCoeff = (sin(oscillationStrength * time + sinSkewCoeff) + 1.0) / 2;
+		float lerpCoeff = (sin(oscillationStrength * time + sinSkewCoeff) + 1.0) / 2;//0-1
+		//摆动范围绑定
 		float2 leftWindBound = wind * (1.0 - 0.05);
 		float2 rightWindBound = wind * (1.0 + 0.05);
 
 		wind = lerp(leftWindBound, rightWindBound, lerpCoeff);
 
-		float randomAngle = lerp(-3.14, 3.14, random);
-		float randomMagnitude = lerp(0, 1., random);
+	/*	float randomAngle = lerp(-3.14, 3.14, random);
+		float randomMagnitude = lerp(0, 1, random);
 		float2 randomWindDir = float2(sin(randomAngle), cos(randomAngle));
-		wind += randomWindDir * randomMagnitude;
+		wind += randomWindDir * randomMagnitude;*/
 
 		float windForce = length(wind);
 
