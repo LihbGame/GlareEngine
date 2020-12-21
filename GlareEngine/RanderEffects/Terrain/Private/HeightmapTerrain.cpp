@@ -135,6 +135,34 @@ void HeightmapTerrain::BuildMaterials()
 	mGrass->BuildMaterials();
 }
 
+void HeightmapTerrain::FillSRVDescriptorHeap(int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor)
+{
+	vector<ID3D12Resource*> PBRTexResource;
+	PBRTexResource.resize(PBRTextureType::Count);
+	for (auto& e : TerrainTextures)
+	{
+		PBRTexResource[PBRTextureType::DiffuseSrvHeapIndex] = e.second[0]->Resource.Get();
+		PBRTexResource[PBRTextureType::NormalSrvHeapIndex] = e.second[1]->Resource.Get();
+		PBRTexResource[PBRTextureType::AoSrvHeapIndex] = e.second[2]->Resource.Get();
+		PBRTexResource[PBRTextureType::MetallicSrvHeapIndex] = e.second[3]->Resource.Get();
+		PBRTexResource[PBRTextureType::RoughnessSrvHeapIndex] = e.second[4]->Resource.Get();
+		PBRTexResource[PBRTextureType::HeightSrvHeapIndex] = e.second[5]->Resource.Get();
+
+		pTextureManage->CreatePBRSRVinDescriptorHeap(PBRTexResource, SRVIndex, hDescriptor, wstring(e.first.begin(), e.first.end()));
+	}
+
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE BlendMapDescriptor = *hDescriptor;
+	(*hDescriptor).Offset(1, pTextureManage->GetCbvSrvDescriptorSize());
+	mBlendMapIndex = (*SRVIndex)++;
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE HeightMapDescriptor = *hDescriptor;
+	(*hDescriptor).Offset(1, pTextureManage->GetCbvSrvDescriptorSize());
+	mHeightMapIndex = (*SRVIndex)++;
+
+	BuildHeightmapSRV(BlendMapDescriptor, HeightMapDescriptor);
+}
+
 void HeightmapTerrain::LoadHeightmapAsset()
 {
 	vector<string> AllTerrainTextureNames;

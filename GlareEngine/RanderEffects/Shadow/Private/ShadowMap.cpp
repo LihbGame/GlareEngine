@@ -1,5 +1,7 @@
 #include "ShadowMap.h"
-ShadowMap::ShadowMap(ID3D12Device* device, UINT width, UINT height)
+#include "L3DTextureManage.h"
+ShadowMap::ShadowMap(ID3D12Device* device, UINT width, UINT height, L3DTextureManage* TextureManage)
+	:pTextureManage(TextureManage)
 {
 	md3dDevice = device;
 
@@ -73,6 +75,18 @@ void ShadowMap::OnResize(UINT newWidth, UINT newHeight)
 		// New resource, so we need new descriptors to that resource.
 		BuildDescriptors();
 	}
+}
+
+void ShadowMap::FillSRVDescriptorHeap(int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor, D3D12_CPU_DESCRIPTOR_HANDLE DSVCPUStart, int DsvDescriptorSize)
+{
+	UINT CbvSrvDescriptorSize = pTextureManage->GetCbvSrvDescriptorSize();
+	
+	BuildDescriptors(*hDescriptor,
+		CD3DX12_CPU_DESCRIPTOR_HANDLE(DSVCPUStart, 1, DsvDescriptorSize));//把shadow map的DSV存放在DSV堆中的第二个位置
+	
+	mShadowMapIndex = (*SRVIndex)++;
+	// next descriptor
+	(*hDescriptor).Offset(1, CbvSrvDescriptorSize);
 }
 
 void ShadowMap::BuildDescriptors()

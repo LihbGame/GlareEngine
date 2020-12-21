@@ -2,13 +2,15 @@
 #include "L3DGeometryGenerator.h"
 #include "L3DVertex.h"
 #include "L3DMaterial.h"
+#include "L3DTextureManage.h"
 using namespace DirectX;
-Sky::Sky(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList,float radius, int sliceCount, int stackCount)
+Sky::Sky(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList,float radius, int sliceCount, int stackCount, L3DTextureManage* TextureManage)
 :md3dDevice(d3dDevice),
 mCommandList(CommandList),
 mRadius(radius),
 mSliceCount(sliceCount),
-mStackCount(stackCount)
+mStackCount(stackCount),
+pTextureManage(TextureManage)
 {
 }
 
@@ -76,4 +78,21 @@ void Sky::BuildMaterials()
 		XMFLOAT3(0.1f, 0.1f, 0.1f),
 		MathHelper::Identity4x4(),
 		MaterialType::SkyMat);
+}
+
+void Sky::FillSRVDescriptorHeap(int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor)
+{
+	auto SkyTex = pTextureManage->GetTexture(L"HDRSky\\Sky")->Resource;
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC SkysrvDesc = {};
+	SkysrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	SkysrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+	SkysrvDesc.TextureCube.MostDetailedMip = 0;
+	SkysrvDesc.TextureCube.MipLevels = SkyTex->GetDesc().MipLevels;
+	SkysrvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
+	SkysrvDesc.Format = SkyTex->GetDesc().Format;
+	md3dDevice->CreateShaderResourceView(SkyTex.Get(), &SkysrvDesc, *hDescriptor);
+	L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"sky")->PBRSrvHeapIndex[PBRTextureType::DiffuseSrvHeapIndex] = (*SRVIndex)++;
+	// next descriptor
+	(*hDescriptor).Offset(1, pTextureManage->GetCbvSrvDescriptorSize());
 }

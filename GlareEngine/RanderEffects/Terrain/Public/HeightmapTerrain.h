@@ -52,6 +52,12 @@ public:
 	Grass* GetGrass() { return mGrass.get(); };
 
 	void BuildMaterials();
+
+	void FillSRVDescriptorHeap(int* SRVIndex,
+		CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor);
+
+	int GetHeightMapIndex()const{ return mHeightMapIndex; }
+	int GetBlendMapIndex()const { return mBlendMapIndex; }
 private:
 	void LoadHeightmapAsset();
 	void Smooth();
@@ -95,4 +101,9 @@ private:
 
 	//grass
 	std::unique_ptr<Grass> mGrass;
+
+
+	//srv index
+	int mBlendMapIndex;
+	int mHeightMapIndex;
 };

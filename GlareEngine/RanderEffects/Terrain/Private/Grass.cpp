@@ -90,4 +90,34 @@ void Grass::BuildMaterials()
 		MaterialType::NormalPBRMat);
 }
 
+void Grass::FillSRVDescriptorHeap(int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor)
+{
+	vector<ID3D12Resource*> PBRTexResource;
+	PBRTexResource.resize(PBRTextureType::Count);
+	wstring e = L"PBRGrass";
+	PBRTexResource[PBRTextureType::DiffuseSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_albedo")->Resource.Get();
+	PBRTexResource[PBRTextureType::NormalSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_normal")->Resource.Get();
+	PBRTexResource[PBRTextureType::AoSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_ao")->Resource.Get();
+	PBRTexResource[PBRTextureType::MetallicSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_metallic")->Resource.Get();
+	PBRTexResource[PBRTextureType::RoughnessSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_roughness")->Resource.Get();
+	PBRTexResource[PBRTextureType::HeightSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_height")->Resource.Get();
+
+	mTextureManage->CreatePBRSRVinDescriptorHeap(PBRTexResource, SRVIndex, hDescriptor, e);
+
+	//RandomTex
+	auto RandomTex = mTextureManage->GetTexture(L"RGB_Noise")->Resource;
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC GrassSrvDesc = {};
+	GrassSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	GrassSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	GrassSrvDesc.TextureCube.MostDetailedMip = 0;
+	GrassSrvDesc.TextureCube.MipLevels = RandomTex->GetDesc().MipLevels;
+	GrassSrvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
+	GrassSrvDesc.Format = RandomTex->GetDesc().Format;
+	mDevice->CreateShaderResourceView(RandomTex.Get(), &GrassSrvDesc, *hDescriptor);
+	mRGBNoiseMapIndex = (*SRVIndex)++;
+	// next descriptor
+	(*hDescriptor).Offset(1, mTextureManage->GetCbvSrvDescriptorSize());
+}
+
 

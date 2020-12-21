@@ -127,6 +127,23 @@ void ModelLoader::BuildMaterials()
 	}
 }
 
+void ModelLoader::FillSRVDescriptorHeap(int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor)
+{
+	vector<ID3D12Resource*> PBRTexResource;
+	PBRTexResource.resize(PBRTextureType::Count);
+	for (auto& e : ModelTextures)
+	{
+		PBRTexResource[PBRTextureType::DiffuseSrvHeapIndex] = e.second[0]->Resource.Get();
+		PBRTexResource[PBRTextureType::NormalSrvHeapIndex] = e.second[1]->Resource.Get();
+		PBRTexResource[PBRTextureType::AoSrvHeapIndex] = e.second[2]->Resource.Get();
+		PBRTexResource[PBRTextureType::MetallicSrvHeapIndex] = e.second[3]->Resource.Get();
+		PBRTexResource[PBRTextureType::RoughnessSrvHeapIndex] = e.second[4]->Resource.Get();
+		PBRTexResource[PBRTextureType::HeightSrvHeapIndex] = e.second[5]->Resource.Get();
+
+		pTextureManage->CreatePBRSRVinDescriptorHeap(PBRTexResource, SRVIndex, hDescriptor, wstring(e.first.begin(), e.first.end()));
+	}
+}
+
 
 void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene,bool isAnimation)
 {

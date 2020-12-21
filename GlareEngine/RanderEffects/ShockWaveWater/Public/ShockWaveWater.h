@@ -23,6 +23,15 @@ public:
 
 	void OnResize(UINT newWidth, UINT newHeight);
 
+	void FillSRVDescriptorHeap(int* SRVIndex,
+		CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor);
+
+
+	//srv index
+	int GetWaterDumpWaveIndex()const { return mWaterDumpWaveIndex; }
+	int GetWaterReflectionMapIndex()const { return mWaterReflectionMapIndex; }
+	int GetWaterRefractionMapIndex()const { return mWaterRefractionMapIndex; }
+
 private:
 	void BuildDescriptors();
 	void BuildResource();
@@ -50,5 +59,10 @@ private:
 	CD3DX12_CPU_DESCRIPTOR_HANDLE mRefractionSRVDescriptor;
 	CD3DX12_CPU_DESCRIPTOR_HANDLE mReflectionSRVDescriptor;
 	CD3DX12_CPU_DESCRIPTOR_HANDLE mWavesBumpDescriptor;
+
+	//srv index
+	int mWaterDumpWaveIndex;
+	int mWaterReflectionMapIndex;
+	int mWaterRefractionMapIndex;
 };
 

@@ -31,6 +31,9 @@ public:
     unordered_map<string, map<string, Animation>> mAnimations;
 
     void BuildMaterials();
+
+	void FillSRVDescriptorHeap(int* SRVIndex,
+		CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor);
 private:
     ID3D12Device* dev;
     ID3D12GraphicsCommandList* pCommandList;

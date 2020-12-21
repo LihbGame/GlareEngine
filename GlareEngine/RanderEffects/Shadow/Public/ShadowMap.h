@@ -2,11 +2,12 @@
 
 #include "L3DUtil.h"
 #include "L3DGameTimer.h"
+class L3DTextureManage;
 class ShadowMap
 {
 public:
 	ShadowMap(ID3D12Device* device,
-		UINT width, UINT height);
+		UINT width, UINT height, L3DTextureManage* TextureManage);
 
 	ShadowMap(const ShadowMap& rhs) = delete;
 	ShadowMap& operator=(const ShadowMap& rhs) = delete;
@@ -27,6 +28,13 @@ public:
 	void OnResize(UINT newWidth, UINT newHeight);
 
 	void SetSceneBoundCenter(XMFLOAT3 center) { mSceneBounds.Center = center; }
+
+	void FillSRVDescriptorHeap(int* SRVIndex,
+		CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor,
+		D3D12_CPU_DESCRIPTOR_HANDLE DSVCPUStart,
+		int DsvDescriptorSize);
+
+	int GetShadowMapIndex() { return mShadowMapIndex; }
 private:
 	void BuildDescriptors();
 	void BuildResource();
@@ -72,4 +80,8 @@ public:
 	};
 	//旋转后光的方向
 	XMFLOAT3 mRotatedLightDirections[3];
+
+	L3DTextureManage* pTextureManage = nullptr;
+
+	int mShadowMapIndex;
 };

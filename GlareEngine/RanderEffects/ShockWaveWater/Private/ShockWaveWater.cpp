@@ -100,6 +100,27 @@ void ShockWaveWater::OnResize(UINT newWidth, UINT newHeight)
 	}
 }
 
+void ShockWaveWater::FillSRVDescriptorHeap(int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor)
+{
+	UINT CbvSrvDescriptorSize = mTextureManage->GetCbvSrvDescriptorSize();
+	CD3DX12_CPU_DESCRIPTOR_HANDLE RefractionSRVDescriptor = *hDescriptor;
+	(*hDescriptor).Offset(1, CbvSrvDescriptorSize);
+	mWaterRefractionMapIndex = (*SRVIndex)++;
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE ReflectionRTVDescriptor = *hDescriptor;
+	(*hDescriptor).Offset(1, CbvSrvDescriptorSize);
+	mWaterReflectionMapIndex = (*SRVIndex)++;
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE WavesBumpDescriptor = *hDescriptor;
+	(*hDescriptor).Offset(1, CbvSrvDescriptorSize);
+	mWaterDumpWaveIndex = (*SRVIndex)++;
+
+	BuildDescriptors(
+		RefractionSRVDescriptor,
+		ReflectionRTVDescriptor,
+		WavesBumpDescriptor);
+}
+
 void ShockWaveWater::BuildDescriptors()
 {
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};

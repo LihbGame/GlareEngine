@@ -1,10 +1,11 @@
 #include "SimpleGeoInstance.h"
 #include "L3DMaterial.h"
-
-SimpleGeoInstance::SimpleGeoInstance(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pd3dDevice)
+#include "L3DTextureManage.h"
+SimpleGeoInstance::SimpleGeoInstance(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pd3dDevice,L3DTextureManage* TextureManage)
 {
     this->pd3dDevice = pd3dDevice;
     this->pCommandList = pCommandList;
+    this->pTextureManage = TextureManage;
 }
 
 
@@ -188,5 +189,23 @@ void SimpleGeoInstance::BuildMaterials()
 		MaterialType::NormalPBRMat);
     mPBRTextureName.push_back(L"PBRBrass");
 #pragma endregion
+
+}
+
+void SimpleGeoInstance::FillSRVDescriptorHeap(int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor)
+{
+	vector<ID3D12Resource*> PBRTexResource;
+	PBRTexResource.resize(PBRTextureType::Count);
+	for (auto& e : mPBRTextureName)
+	{
+		PBRTexResource[PBRTextureType::DiffuseSrvHeapIndex] = pTextureManage->GetTexture(e + L"\\" + e + L"_albedo")->Resource.Get();
+		PBRTexResource[PBRTextureType::NormalSrvHeapIndex] = pTextureManage->GetTexture(e + L"\\" + e + L"_normal")->Resource.Get();
+		PBRTexResource[PBRTextureType::AoSrvHeapIndex] = pTextureManage->GetTexture(e + L"\\" + e + L"_ao")->Resource.Get();
+		PBRTexResource[PBRTextureType::MetallicSrvHeapIndex] = pTextureManage->GetTexture(e + L"\\" + e + L"_metallic")->Resource.Get();
+		PBRTexResource[PBRTextureType::RoughnessSrvHeapIndex] = pTextureManage->GetTexture(e + L"\\" + e + L"_roughness")->Resource.Get();
+		PBRTexResource[PBRTextureType::HeightSrvHeapIndex] = pTextureManage->GetTexture(e + L"\\" + e + L"_height")->Resource.Get();
+
+		pTextureManage->CreatePBRSRVinDescriptorHeap(PBRTexResource, SRVIndex, hDescriptor, e);
+	}
 
 }

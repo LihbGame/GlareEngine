@@ -4,17 +4,18 @@
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx12.h"
 #include <imgui_internal.h>
-#include <L3DUtil.h>
+#include "L3DUtil.h"
 
 #define MainMenuBarHeight  19.0f
 
 class EngineGUI
 {
 public:
-	EngineGUI();
+	EngineGUI(ID3D12Device* d3dDevice);
 	~EngineGUI();
 
-	void InitGUI(HWND GameWnd,ID3D12Device* d3dDevice, ID3D12DescriptorHeap* GUISrvDescriptorHeap);
+	void InitGUI(HWND GameWnd,ID3D12DescriptorHeap* GUISrvDescriptorHeap);
+	void CreateUIDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& DescriptorHeap);
 	void DrawUI(ID3D12GraphicsCommandList* d3dCommandList);
 
 
@@ -49,6 +50,6 @@ private:
 
 	ImGuiContext *g=nullptr;
 	bool helloWindow = true;
-	
+	ID3D12Device* pd3dDevice;
 };
 

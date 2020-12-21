@@ -1,9 +1,10 @@
 #include "EngineGUI.h"
 #include <dxgi.h>
-
-
-EngineGUI::EngineGUI()
+#include "L3DUtil.h"
+using Microsoft::WRL::ComPtr;
+EngineGUI::EngineGUI(ID3D12Device* d3dDevice)
 {
+	pd3dDevice = d3dDevice;
 }
 
 EngineGUI::~EngineGUI()
@@ -13,7 +14,7 @@ EngineGUI::~EngineGUI()
 	ImGui::DestroyContext();
 }
 
-void EngineGUI::InitGUI(HWND GameWnd, ID3D12Device* d3dDevice, ID3D12DescriptorHeap* GUISrvDescriptorHeap)
+void EngineGUI::InitGUI(HWND GameWnd,ID3D12DescriptorHeap* GUISrvDescriptorHeap)
 {
 	mGUISrvDescriptorHeap = GUISrvDescriptorHeap;
 
@@ -31,7 +32,7 @@ void EngineGUI::InitGUI(HWND GameWnd, ID3D12Device* d3dDevice, ID3D12DescriptorH
 	//ImGui::StyleColorsClassic();
 	 // Setup Platform/Renderer bindings
 	ImGui_ImplWin32_Init(GameWnd);
-	ImGui_ImplDX12_Init(d3dDevice, gNumFrameResources,
+	ImGui_ImplDX12_Init(pd3dDevice, gNumFrameResources,
 		DXGI_FORMAT_R8G8B8A8_UNORM, GUISrvDescriptorHeap,
 		GUISrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		GUISrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
@@ -55,6 +56,16 @@ void EngineGUI::InitGUI(HWND GameWnd, ID3D12Device* d3dDevice, ID3D12DescriptorH
 
 	 g = ImGui::GetCurrentContext();
 	 g->Style.WindowRounding = 0;
+}
+
+void EngineGUI::CreateUIDescriptorHeap(ComPtr<ID3D12DescriptorHeap>& DescriptorHeap)
+{
+	
+	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	desc.NumDescriptors = 1;
+	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	ThrowIfFailed(pd3dDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(DescriptorHeap.GetAddressOf())));
 }
 
 void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)

@@ -70,11 +70,11 @@ bool GameApp::Initialize()
 	ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
 
 	//init UI
-	mEngineUI = make_unique<EngineGUI>();
+	mEngineUI = make_unique<EngineGUI>(md3dDevice.Get());
 	// 获取此堆类型中描述符的增量大小。 这是特定于硬件的，因此我们必须查询此信息。
 	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	//texture manage
-	mTextureManage = std::make_unique<L3DTextureManage>(md3dDevice.Get(), mCommandList.Get());
+	mTextureManage = std::make_unique<L3DTextureManage>(md3dDevice.Get(), mCommandList.Get(),mCbvSrvDescriptorSize);
 	//pso init
 	mPSOs = std::make_unique<PSO>();
 	//wave :not use
@@ -84,11 +84,11 @@ bool GameApp::Initialize()
 	//camera
 	mCamera.LookAt(XMFLOAT3(20.0f, 100.0f, 20.0f), XMFLOAT3(0.0f,0.0f,0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f));
 	//sky
-	mSky= std::make_unique<Sky>(md3dDevice.Get(), mCommandList.Get(),5.0f,20,20);
+	mSky= std::make_unique<Sky>(md3dDevice.Get(), mCommandList.Get(),5.0f,20,20, mTextureManage.get());
 	//shadow map
-	mShadowMap = std::make_unique<ShadowMap>(md3dDevice.Get(), ShadowMapSize, ShadowMapSize);
+	mShadowMap = std::make_unique<ShadowMap>(md3dDevice.Get(), ShadowMapSize, ShadowMapSize, mTextureManage.get());
 	//Simple Geometry Instance Draw
-	mSimpleGeoInstance = std::make_unique<SimpleGeoInstance>(mCommandList.Get(), md3dDevice.Get());
+	mSimpleGeoInstance = std::make_unique<SimpleGeoInstance>(mCommandList.Get(), md3dDevice.Get(), mTextureManage.get());
 	//init model loader
 	mModelLoder = std::make_unique<ModelLoader>(mhMainWnd, md3dDevice.Get(), mCommandList.Get(), mTextureManage.get());
 	//init HeightMap Terrain
@@ -110,7 +110,7 @@ bool GameApp::Initialize()
 	}
 
 	//init UI
-	mEngineUI->InitGUI(mhMainWnd, md3dDevice.Get(), mGUISrvDescriptorHeap.Get());
+	mEngineUI->InitGUI(mhMainWnd,  mGUISrvDescriptorHeap.Get());
 	
 	// 执行初始化命令。
 	ThrowIfFailed(mCommandList->Close());
@@ -369,196 +369,66 @@ void GameApp::Draw(const GameTimer& gt)
 void GameApp::CreateDescriptorHeaps()
 {
 	int SRVIndex = 0;
-	//Size
+	//SRV heap Size
 	UINT PBRTextureNum = (UINT)mSimpleGeoInstance->GetTextureNames().size() * 6;
 	UINT ModelTextureNum = (UINT)mModelLoder->GetAllModelTextures().size() * 6;
 	UINT ShockWaveWater = 3;
 	UINT HeightMapTerrain = 32+2;
 	UINT Grass = 6;
 	UINT Noise = 1;
-	//
-	// Create the SRV heap.
-	//
-	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
 
+	// Create the SRV heap.
+	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
 	srvHeapDesc.NumDescriptors = PBRTextureNum + ModelTextureNum + ShockWaveWater + HeightMapTerrain + Noise+ Grass;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mSrvDescriptorHeap)));
 
-	//
 	// Fill out the heap with actual descriptors.
-	//
 	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
-	vector<ID3D12Resource*> PBRTexResource;
-	PBRTexResource.resize(PBRTextureType::Count);
 #pragma region simple geometry PBR Texture
-	for (auto &e : mSimpleGeoInstance->GetTextureNames())
-	{
-		PBRTexResource[PBRTextureType::DiffuseSrvHeapIndex] =mTextureManage->GetTexture(e + L"\\" + e + L"_albedo")->Resource.Get();
-		PBRTexResource[PBRTextureType::NormalSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_normal")->Resource.Get();
-		PBRTexResource[PBRTextureType::AoSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_ao")->Resource.Get();
-		PBRTexResource[PBRTextureType::MetallicSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_metallic")->Resource.Get();
-		PBRTexResource[PBRTextureType::RoughnessSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_roughness")->Resource.Get();
-		PBRTexResource[PBRTextureType::HeightSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_height")->Resource.Get();
-
-		CreatePBRSRVinDescriptorHeap(PBRTexResource, &SRVIndex, &hDescriptor,e);
-	}
+	mSimpleGeoInstance->FillSRVDescriptorHeap(&SRVIndex, &hDescriptor);
 #pragma endregion
 
-#pragma region Load model 
-	for (auto& e : mModelLoder->GetAllModelTextures())
-	{
-		PBRTexResource[PBRTextureType::DiffuseSrvHeapIndex] = e.second[0]->Resource.Get();
-		PBRTexResource[PBRTextureType::NormalSrvHeapIndex] = e.second[1]->Resource.Get();
-		PBRTexResource[PBRTextureType::AoSrvHeapIndex] = e.second[2]->Resource.Get();
-		PBRTexResource[PBRTextureType::MetallicSrvHeapIndex] = e.second[3]->Resource.Get();
-		PBRTexResource[PBRTextureType::RoughnessSrvHeapIndex] = e.second[4]->Resource.Get();
-		PBRTexResource[PBRTextureType::HeightSrvHeapIndex] = e.second[5]->Resource.Get();
-
-		CreatePBRSRVinDescriptorHeap(PBRTexResource, &SRVIndex, &hDescriptor, wstring(e.first.begin(), e.first.end()));
-	}
+#pragma region Model SRV
+	mModelLoder->FillSRVDescriptorHeap(&SRVIndex, &hDescriptor);
 #pragma endregion
 
 #pragma region Shadow Map
-	{
-		auto dsvCpuStart = mDsvHeap->GetCPUDescriptorHandleForHeapStart();
-		mShadowMap->BuildDescriptors(hDescriptor,
-			CD3DX12_CPU_DESCRIPTOR_HANDLE(dsvCpuStart, 1, mDsvDescriptorSize));//把shadow map的DSV存放在DSV堆中的第二个位置
-		mShadowMapIndex = SRVIndex++;
-		// next descriptor
-		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
-	}
+	auto dsvCpuStart = mDsvHeap->GetCPUDescriptorHandleForHeapStart();
+	mShadowMap->FillSRVDescriptorHeap(&SRVIndex, &hDescriptor, dsvCpuStart, mDsvDescriptorSize);
+	mShadowMapIndex = mShadowMap->GetShadowMapIndex();
 #pragma endregion
 
 #pragma region ShockWaveWater
-	{
-		CD3DX12_CPU_DESCRIPTOR_HANDLE RefractionSRVDescriptor = hDescriptor;
-		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
-		mWaterRefractionMapIndex = SRVIndex++;
-
-		CD3DX12_CPU_DESCRIPTOR_HANDLE ReflectionRTVDescriptor = hDescriptor;
-		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
-		mWaterReflectionMapIndex = SRVIndex++;
-
-		CD3DX12_CPU_DESCRIPTOR_HANDLE WavesBumpDescriptor = hDescriptor;
-		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
-		mWaterDumpWaveIndex = SRVIndex++;
-
-		mShockWaveWater->BuildDescriptors(
-			RefractionSRVDescriptor,
-			ReflectionRTVDescriptor,
-			WavesBumpDescriptor
-		);
-	}
+	mShockWaveWater->FillSRVDescriptorHeap(&SRVIndex, &hDescriptor);
+	mWaterReflectionMapIndex = mShockWaveWater->GetWaterReflectionMapIndex();
+	mWaterRefractionMapIndex = mShockWaveWater->GetWaterRefractionMapIndex();
+	mWaterDumpWaveIndex = mShockWaveWater->GetWaterDumpWaveIndex();
 #pragma region
-
+	
 #pragma region height map terrain
-	for (auto& e : mHeightMapTerrain->GetAllTerrainTextures())
-	{
-		PBRTexResource[PBRTextureType::DiffuseSrvHeapIndex] = e.second[0]->Resource.Get();
-		PBRTexResource[PBRTextureType::NormalSrvHeapIndex] = e.second[1]->Resource.Get();
-		PBRTexResource[PBRTextureType::AoSrvHeapIndex] = e.second[2]->Resource.Get();
-		PBRTexResource[PBRTextureType::MetallicSrvHeapIndex] = e.second[3]->Resource.Get();
-		PBRTexResource[PBRTextureType::RoughnessSrvHeapIndex] = e.second[4]->Resource.Get();
-		PBRTexResource[PBRTextureType::HeightSrvHeapIndex] = e.second[5]->Resource.Get();
-
-		CreatePBRSRVinDescriptorHeap(PBRTexResource, &SRVIndex, &hDescriptor, wstring(e.first.begin(), e.first.end()));
-	}
-	CD3DX12_CPU_DESCRIPTOR_HANDLE BlendMapDescriptor = hDescriptor;
-	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
-	mBlendMapIndex = SRVIndex++;
-
-	CD3DX12_CPU_DESCRIPTOR_HANDLE HeightMapDescriptor = hDescriptor;
-	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
-	mHeightMapIndex = SRVIndex++;
-
-	mHeightMapTerrain->BuildHeightmapSRV(BlendMapDescriptor, HeightMapDescriptor);
+	mHeightMapTerrain->FillSRVDescriptorHeap(&SRVIndex, &hDescriptor);
+	mHeightMapIndex = mHeightMapTerrain->GetHeightMapIndex();
+	mBlendMapIndex = mHeightMapTerrain->GetBlendMapIndex();
 #pragma endregion
-
 
 #pragma region Grass
-	{
-		wstring e = L"PBRGrass";
-		PBRTexResource[PBRTextureType::DiffuseSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_albedo")->Resource.Get();
-		PBRTexResource[PBRTextureType::NormalSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_normal")->Resource.Get();
-		PBRTexResource[PBRTextureType::AoSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_ao")->Resource.Get();
-		PBRTexResource[PBRTextureType::MetallicSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_metallic")->Resource.Get();
-		PBRTexResource[PBRTextureType::RoughnessSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_roughness")->Resource.Get();
-		PBRTexResource[PBRTextureType::HeightSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_height")->Resource.Get();
-
-		CreatePBRSRVinDescriptorHeap(PBRTexResource, &SRVIndex, &hDescriptor, e);
-
-		//RandomTex
-		auto RandomTex = mTextureManage->GetTexture(L"RGB_Noise")->Resource;
-
-		D3D12_SHADER_RESOURCE_VIEW_DESC GrassSrvDesc = {};
-		GrassSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		GrassSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		GrassSrvDesc.TextureCube.MostDetailedMip = 0;
-		GrassSrvDesc.TextureCube.MipLevels = RandomTex->GetDesc().MipLevels;
-		GrassSrvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
-		GrassSrvDesc.Format = RandomTex->GetDesc().Format;
-		md3dDevice->CreateShaderResourceView(RandomTex.Get(), &GrassSrvDesc, hDescriptor);
-		mRGBNoiseMapIndex = SRVIndex++;
-		// next descriptor
-		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
-	}
+	mHeightMapTerrain->GetGrass()->FillSRVDescriptorHeap(&SRVIndex, &hDescriptor);
+	mRGBNoiseMapIndex = mHeightMapTerrain->GetGrass()->GetRGBNoiseMapIndex();
 #pragma endregion
 
+	//for root Signature
 	mSRVSize = SRVIndex;
 
 #pragma region HDR Sky
-	{
-		auto SkyTex = mTextureManage->GetTexture(L"HDRSky\\Sky")->Resource;
-
-		D3D12_SHADER_RESOURCE_VIEW_DESC SkysrvDesc = {};
-		SkysrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		SkysrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
-		SkysrvDesc.TextureCube.MostDetailedMip = 0;
-		SkysrvDesc.TextureCube.MipLevels = SkyTex->GetDesc().MipLevels;
-		SkysrvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
-		SkysrvDesc.Format = SkyTex->GetDesc().Format;
-		md3dDevice->CreateShaderResourceView(SkyTex.Get(), &SkysrvDesc, hDescriptor);
-		L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"sky")->PBRSrvHeapIndex[PBRTextureType::DiffuseSrvHeapIndex] = SRVIndex++;
-		// next descriptor
-		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
-	}
+	mSky->FillSRVDescriptorHeap(&SRVIndex, &hDescriptor);
 #pragma endregion
 
 #pragma region GUI
-	{
-		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-		desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-		desc.NumDescriptors = 1;
-		desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-		ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&mGUISrvDescriptorHeap)));
-	}
+		mEngineUI->CreateUIDescriptorHeap(mGUISrvDescriptorHeap);
 #pragma endregion
-}
-
-void GameApp::CreatePBRSRVinDescriptorHeap(
-	vector<ID3D12Resource*> TexResource,
-	int* SRVIndex, 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor,
-	wstring MaterialName)
-{
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MostDetailedMip = 0;
-	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-
-	for (int i=0;i<TexResource.size();++i)
-	{
-		srvDesc.Format = TexResource[i]->GetDesc().Format;
-		srvDesc.Texture2D.MipLevels = TexResource[i]->GetDesc().MipLevels;
-		md3dDevice->CreateShaderResourceView(TexResource[i], &srvDesc, *hDescriptor);
-		L3DMaterial::GetL3DMaterialInstance()->GetMaterial(MaterialName)->PBRSrvHeapIndex[i] = (*SRVIndex)++;
-		// next descriptor
-		hDescriptor->Offset(1, mCbvSrvDescriptorSize);
-	}
 }
 
 void GameApp::OnMouseDown(WPARAM btnState, int x, int y)

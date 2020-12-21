@@ -15,6 +15,11 @@ public:
 	MeshGeometry* GetMeshGeometry()const { return mGeometries.get(); };
 
 	void BuildMaterials();
+
+	void FillSRVDescriptorHeap(int* SRVIndex,
+		CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor);
+
+	int GetRGBNoiseMapIndex() { return mRGBNoiseMapIndex; }
 private:
 	ID3D11ShaderResourceView* mGrassTexSRV;
 	ID3D11ShaderResourceView* mGrassBlendTexSRV;
@@ -31,5 +36,8 @@ private:
 	L3DTextureManage* mTextureManage;
 
 	std::unique_ptr<MeshGeometry> mGeometries;
+
+	//srv index
+	int mRGBNoiseMapIndex;
 };
 
