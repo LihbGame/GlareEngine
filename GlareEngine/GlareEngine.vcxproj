@@ -84,12 +84,12 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>.\RanderEffects\Particle\Public;.\RanderEffects\Terrain\Public;.\RanderEffects\ShockWaveWater\Public;.\Dependences\include;.\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\EngineMain\Public;.\EngineCore\Public;$(IncludePath)</IncludePath>
+    <IncludePath>.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\RanderEffects\ShockWaveWater\Public;.\Dependences\include;.\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\EngineMain\Public;.\EngineCore\Public;$(IncludePath)</IncludePath>
     <LibraryPath>.\Dependences\lib\ozz\debug;.\Dependences\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>.\RanderEffects\Terrain\Public;.\Core\Public;.\EngineMain\Public;.\PSO\Public;.\ShaderSource\Public;.\RanderEffects\HDRSky\Public;.\Water\Public;.\EngineEditor;.\;.\RanderEffects\Shadow\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Water\Public;.\Animation;.\Dependences\include;.\RanderEffects\ShockWaveWater\Public;$(IncludePath)</IncludePath>
+    <IncludePath>.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\Core\Public;.\EngineMain\Public;.\PSO\Public;.\ShaderSource\Public;.\RanderEffects\HDRSky\Public;.\Water\Public;.\EngineEditor;.\;.\RanderEffects\Shadow\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Water\Public;.\Animation;.\Dependences\include;.\RanderEffects\ShockWaveWater\Public;$(IncludePath)</IncludePath>
     <LibraryPath>.\Dependences\lib;.\Dependences\lib\ozz\release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -186,9 +186,11 @@
     <ClInclude Include="EngineMain\Public\framework.h" />
     <ClInclude Include="EngineMain\Public\GameMain.h" />
     <ClInclude Include="EngineMain\Public\targetver.h" />
-    <None Include="RanderEffects\Particle\Public\ParticleSystem.h" />
+    <None Include="RanderEffects\ParticleSystem\Public\ParticleSystem.h" />
+    <ClInclude Include="RanderEffects\ParticleSystem\Public\BaseParticle.h" />
+    <ClInclude Include="RanderEffects\ParticleSystem\Public\ParticleGroup.h" />
     <ClInclude Include="RanderEffects\Terrain\Public\Grass.h" />
-    <ClInclude Include="PSO\Public\PSOManager.h" />
+    <ClInclude Include="EngineCore\Public\PSOManager.h" />
     <ClInclude Include="RanderEffects\HDRSky\Public\Sky.h" />
     <ClInclude Include="RanderEffects\Shadow\Public\ShadowMap.h" />
     <ClInclude Include="RanderEffects\ShockWaveWater\Public\ShockWaveWater.h" />
@@ -235,9 +237,11 @@
     <ClCompile Include="EngineMain\Private\FrameResource.cpp" />
     <ClCompile Include="EngineMain\Private\GameMain.cpp" />
     <ClCompile Include="Animation\ModelLoader.cpp" />
-    <None Include="RanderEffects\Particle\Private\ParticleSystem.cpp" />
+    <None Include="RanderEffects\ParticleSystem\Private\ParticleSystem.cpp" />
+    <ClCompile Include="RanderEffects\ParticleSystem\Private\BaseParticle.cpp" />
+    <ClCompile Include="RanderEffects\ParticleSystem\Private\ParticleGroup.cpp" />
     <ClCompile Include="RanderEffects\Terrain\Private\Grass.cpp" />
-    <ClCompile Include="PSO\Private\PSOManager.cpp" />
+    <ClCompile Include="EngineCore\Private\PSOManager.cpp" />
     <ClCompile Include="RanderEffects\HDRSky\Private\Sky.cpp" />
     <ClCompile Include="RanderEffects\Shadow\Private\ShadowMap.cpp" />
     <ClCompile Include="RanderEffects\ShockWaveWater\Private\ShockWaveWater.cpp" />

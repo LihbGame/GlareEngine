@@ -76,9 +76,6 @@
     <ClInclude Include="EngineEditor\imstb_textedit.h" />
     <ClInclude Include="EngineEditor\imstb_truetype.h" />
     <ClInclude Include="ShaderSource\Public\SimpleGeometryInstanceShader.h" />
-    <ClInclude Include="PSO\Public\PSOManager.h">
-      <Filter>PSO\Public</Filter>
-    </ClInclude>
     <ClInclude Include="RanderEffects\HDRSky\Public\Sky.h" />
     <ClInclude Include="RanderEffects\Shadow\Public\ShadowMap.h" />
     <ClInclude Include="ShaderSource\Public\SimpleGeometryShadowMapShader.h" />
@@ -149,6 +146,11 @@
       <Filter>Core\Public</Filter>
     </ClInclude>
     <ClInclude Include="EngineCore\Public\WICTextureLoader12.h" />
+    <ClInclude Include="RanderEffects\ParticleSystem\Public\BaseParticle.h" />
+    <ClInclude Include="RanderEffects\ParticleSystem\Public\ParticleGroup.h" />
+    <ClInclude Include="EngineCore\Public\PSOManager.h">
+      <Filter>PSO\Public</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -183,9 +185,6 @@
     </ClCompile>
     <ClCompile Include="ShaderSource\Private\SimpleGeometryInstanceShader.cpp">
       <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="PSO\Private\PSOManager.cpp">
-      <Filter>PSO\Private</Filter>
     </ClCompile>
     <ClCompile Include="RanderEffects\HDRSky\Private\Sky.cpp">
       <Filter>MainSource</Filter>
@@ -283,6 +282,15 @@
     <ClCompile Include="EngineCore\Private\WICTextureLoader12.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
+    <ClCompile Include="RanderEffects\ParticleSystem\Private\BaseParticle.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="RanderEffects\ParticleSystem\Private\ParticleGroup.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Private\PSOManager.cpp">
+      <Filter>PSO\Private</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -329,10 +337,10 @@
     <None Include="Dependences\lib\assimp-vc142-mtd.pdb" />
     <None Include="packages.config" />
     <None Include="Shaders\TerrainConstBuffer.hlsli" />
-    <None Include="RanderEffects\Particle\Private\ParticleSystem.cpp">
+    <None Include="RanderEffects\ParticleSystem\Private\ParticleSystem.cpp">
       <Filter>MainSource</Filter>
     </None>
-    <None Include="RanderEffects\Particle\Public\ParticleSystem.h" />
+    <None Include="RanderEffects\ParticleSystem\Public\ParticleSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GlareEngine.rc">

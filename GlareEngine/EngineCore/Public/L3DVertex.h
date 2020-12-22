@@ -38,4 +38,14 @@ public:
 		DirectX::XMFLOAT3 Pos;
 		DirectX::XMFLOAT2 Tex;
 	};
+
+	struct Particle
+	{
+		XMFLOAT3 InitialPos;
+		XMFLOAT3 InitialVel;
+		XMFLOAT2 Size;
+		float Age;
+		unsigned int Type;
+	};
+
 };
