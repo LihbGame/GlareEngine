@@ -39,7 +39,7 @@ private:
 
 	bool show_shadow = false;
 	bool show_model = false;
-	bool show_water = true;
+	bool show_water = false;
 	bool show_land = false;
 	bool show_sky = true;
 	bool show_HeightMapTerrain = true;
