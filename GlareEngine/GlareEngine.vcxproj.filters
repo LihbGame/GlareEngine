@@ -153,6 +153,7 @@
     </ClInclude>
     <ClInclude Include="EngineCore\Graphics\Public\SamplerManager.h" />
     <ClInclude Include="EngineCore\Graphics\Public\GraphicsCore.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\CommandAllocatorPool.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -297,6 +298,9 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Graphics\Private\GraphicsCore.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\CommandAllocatorPool.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
