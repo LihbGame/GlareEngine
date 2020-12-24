@@ -151,6 +151,8 @@
     <ClInclude Include="EngineCore\Public\PSOManager.h">
       <Filter>PSO\Public</Filter>
     </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\Public\SamplerManager.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\GraphicsCore.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -290,6 +292,12 @@
     </ClCompile>
     <ClCompile Include="EngineCore\Private\PSOManager.cpp">
       <Filter>PSO\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\SamplerManager.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\GraphicsCore.cpp">
+      <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
