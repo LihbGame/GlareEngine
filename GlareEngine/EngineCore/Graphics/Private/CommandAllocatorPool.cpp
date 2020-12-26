@@ -1,5 +1,6 @@
 #include "CommandAllocatorPool.h"
 #include "L3DUtil.h"
+using namespace GlareEngine;
 
 CommandAllocatorPool::CommandAllocatorPool(D3D12_COMMAND_LIST_TYPE Type) :
 	m_cCommandListType(Type),

@@ -160,8 +160,9 @@
     <ClInclude Include="Animation\ModelMesh.h" />
     <ClInclude Include="Animation\OzzAnimePlayBack.h" />
     <ClInclude Include="EngineCore\Graphics\Public\CommandAllocatorPool.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\GraphicsCore.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\SamplerManager.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\GPUResource.h" />
+    <None Include="EngineCore\Graphics\Public\GraphicsCore.h" />
+    <None Include="EngineCore\Graphics\Public\SamplerManager.h" />
     <ClInclude Include="EngineCore\Public\L3DInputLayout.h" />
     <ClInclude Include="EngineCore\Public\d3dx12.h" />
     <ClInclude Include="EngineCore\Public\DDSTextureLoader.h" />
@@ -190,6 +191,7 @@
     <ClInclude Include="EngineMain\Public\GameMain.h" />
     <ClInclude Include="EngineMain\Public\targetver.h" />
     <None Include="RanderEffects\ParticleSystem\Public\ParticleSystem.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\GPUBuffer.h" />
     <ClInclude Include="RanderEffects\ParticleSystem\Public\BaseParticle.h" />
     <ClInclude Include="RanderEffects\ParticleSystem\Public\ParticleGroup.h" />
     <ClInclude Include="RanderEffects\Terrain\Public\Grass.h" />
@@ -219,8 +221,8 @@
     <ClCompile Include="Animation\AnimEvaluator.cpp" />
     <ClCompile Include="Animation\ModelMesh.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\CommandAllocatorPool.cpp" />
-    <ClCompile Include="EngineCore\Graphics\Private\GraphicsCore.cpp" />
-    <ClCompile Include="EngineCore\Graphics\Private\SamplerManager.cpp" />
+    <None Include="EngineCore\Graphics\Private\GraphicsCore.cpp" />
+    <None Include="EngineCore\Graphics\Private\SamplerManager.cpp" />
     <ClCompile Include="EngineCore\Private\DDSTextureLoader.cpp" />
     <ClCompile Include="EngineCore\Private\L3DBaseApp.cpp" />
     <ClCompile Include="EngineCore\Private\L3DCamera.cpp" />
@@ -244,6 +246,7 @@
     <ClCompile Include="EngineMain\Private\GameMain.cpp" />
     <ClCompile Include="Animation\ModelLoader.cpp" />
     <None Include="RanderEffects\ParticleSystem\Private\ParticleSystem.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\GPUBuffer.cpp" />
     <ClCompile Include="RanderEffects\ParticleSystem\Private\BaseParticle.cpp" />
     <ClCompile Include="RanderEffects\ParticleSystem\Private\ParticleGroup.cpp" />
     <ClCompile Include="RanderEffects\Terrain\Private\Grass.cpp" />
