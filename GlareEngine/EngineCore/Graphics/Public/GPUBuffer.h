@@ -28,7 +28,7 @@ namespace GlareEngine
 		const D3D12_CPU_DESCRIPTOR_HANDLE& GetUAV(void) const { return m_UAV; }
 		const D3D12_CPU_DESCRIPTOR_HANDLE& GetSRV(void) const { return m_SRV; }
 
-		D3D12_GPU_VIRTUAL_ADDRESS RootConstantBufferView(void) const { return m_GpuVirtualAddress; }
+		D3D12_GPU_VIRTUAL_ADDRESS RootConstantBufferView(void) const { return m_GPUVirtualAddress; }
 
 		D3D12_CPU_DESCRIPTOR_HANDLE CreateConstantBufferView(uint32_t Offset, uint32_t Size) const;
 

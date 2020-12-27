@@ -78,3 +78,19 @@ void GPUBuffer::CreatePlaced(const std::wstring& name,
 	CreateDerivedViews();
 
 }
+
+inline D3D12_CPU_DESCRIPTOR_HANDLE GlareEngine::GPUBuffer::CreateConstantBufferView(uint32_t Offset, uint32_t Size) const
+{
+	assert(Offset + Size <= m_BufferSize);
+
+	Size = Math::AlignUp(Size, 16);
+
+	D3D12_CONSTANT_BUFFER_VIEW_DESC CBVDesc;
+	CBVDesc.BufferLocation = m_GPUVirtualAddress + (size_t)Offset;
+	CBVDesc.SizeInBytes = Size;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE hCBV = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	g_Device->CreateConstantBufferView(&CBVDesc, hCBV);
+	return hCBV;
+}
+
