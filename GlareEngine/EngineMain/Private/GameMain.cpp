@@ -250,6 +250,8 @@ void GameApp::Draw(const GameTimer& gt)
 		mCommandList->ClearRenderTargetView(rtvDescriptor, Colors::Transparent, 0, nullptr);
 		mCommandList->ClearDepthStencilView(dsvDescriptor, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
+		//const D3D12_SHADING_RATE_COMBINER combiner[] = { D3D12_SHADING_RATE_COMBINER_PASSTHROUGH , D3D12_SHADING_RATE_COMBINER_MIN };
+		//mCommandList->RSSetShadingRate(D3D12_SHADING_RATE_2X2, combiner);
 	}
 	else
 	{

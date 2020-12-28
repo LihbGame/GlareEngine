@@ -191,7 +191,7 @@
     <ClInclude Include="EngineMain\Public\GameMain.h" />
     <ClInclude Include="EngineMain\Public\targetver.h" />
     <None Include="RanderEffects\ParticleSystem\Public\ParticleSystem.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\GPUBuffer.h" />
+    <None Include="EngineCore\Graphics\Public\GPUBuffer.h" />
     <ClInclude Include="RanderEffects\ParticleSystem\Public\BaseParticle.h" />
     <ClInclude Include="RanderEffects\ParticleSystem\Public\ParticleGroup.h" />
     <ClInclude Include="RanderEffects\Terrain\Public\Grass.h" />
@@ -246,7 +246,7 @@
     <ClCompile Include="EngineMain\Private\GameMain.cpp" />
     <ClCompile Include="Animation\ModelLoader.cpp" />
     <None Include="RanderEffects\ParticleSystem\Private\ParticleSystem.cpp" />
-    <ClCompile Include="EngineCore\Graphics\Private\GPUBuffer.cpp" />
+    <None Include="EngineCore\Graphics\Private\GPUBuffer.cpp" />
     <ClCompile Include="RanderEffects\ParticleSystem\Private\BaseParticle.cpp" />
     <ClCompile Include="RanderEffects\ParticleSystem\Private\ParticleGroup.cpp" />
     <ClCompile Include="RanderEffects\Terrain\Private\Grass.cpp" />

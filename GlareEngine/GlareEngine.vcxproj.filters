@@ -152,7 +152,6 @@
       <Filter>PSO\Public</Filter>
     </ClInclude>
     <ClInclude Include="EngineCore\Graphics\Public\CommandAllocatorPool.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\GPUBuffer.h" />
     <ClInclude Include="EngineCore\Graphics\Public\GPUResource.h" />
   </ItemGroup>
   <ItemGroup>
@@ -297,9 +296,6 @@
     <ClCompile Include="EngineCore\Graphics\Private\CommandAllocatorPool.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\Graphics\Private\GPUBuffer.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -358,6 +354,10 @@
     </None>
     <None Include="EngineCore\Graphics\Public\GraphicsCore.h" />
     <None Include="EngineCore\Graphics\Public\SamplerManager.h" />
+    <None Include="EngineCore\Graphics\Public\GPUBuffer.h" />
+    <None Include="EngineCore\Graphics\Private\GPUBuffer.cpp">
+      <Filter>MainSource</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GlareEngine.rc">
