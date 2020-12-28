@@ -1864,7 +1864,7 @@ HeightmapTerrain::InitInfo GameApp::HeightmapTerrainInit()
 	TerrainInfo.LayerMapFilename[3] = "Terrain/lightdirt";
 	TerrainInfo.LayerMapFilename[4] = "Terrain/snow";
 	TerrainInfo.BlendMapFilename = "Terrain/blend";
-	TerrainInfo.HeightScale = 100.0f;
+	TerrainInfo.HeightScale = 130.0f;
 	TerrainInfo.HeightmapWidth = 2049;
 	TerrainInfo.HeightmapHeight = 2049;
 	TerrainInfo.CellSpacing = 2.0f;

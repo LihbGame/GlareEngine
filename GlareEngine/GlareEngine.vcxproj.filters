@@ -113,9 +113,6 @@
     <ClInclude Include="EngineCore\Public\d3dx12.h">
       <Filter>Core\Public</Filter>
     </ClInclude>
-    <ClInclude Include="EngineCore\Public\DDSTextureLoader.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
     <ClInclude Include="EngineCore\Public\L3DBaseApp.h">
       <Filter>Core\Public</Filter>
     </ClInclude>
@@ -145,7 +142,6 @@
     <ClInclude Include="EngineCore\Public\L3DVertex.h">
       <Filter>Core\Public</Filter>
     </ClInclude>
-    <ClInclude Include="EngineCore\Public\WICTextureLoader12.h" />
     <ClInclude Include="RanderEffects\ParticleSystem\Public\BaseParticle.h" />
     <ClInclude Include="RanderEffects\ParticleSystem\Public\ParticleGroup.h" />
     <ClInclude Include="EngineCore\Public\PSOManager.h">
@@ -156,6 +152,10 @@
     <ClInclude Include="EngineCore\Math\Common.h" />
     <ClInclude Include="EngineCore\Math\Scalar.h" />
     <ClInclude Include="EngineCore\Math\Vector.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\DDSTextureLoader.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\Public\WICTextureLoader12.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">

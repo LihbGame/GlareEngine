@@ -440,8 +440,8 @@ void HeightmapTerrain::GetTerrainConstant(TerrainConstants& TerrainConstant)
 {
 	TerrainConstant.gMinDist = 200.0f;
 	TerrainConstant.gMaxDist = 2000.0f;
-	TerrainConstant.gMinTess = 0.0f;
-	TerrainConstant.gMaxTess = 4.0f;
+	TerrainConstant.gMinTess = 5.0f;
+	TerrainConstant.gMaxTess = 5.0f;
 
 	TerrainConstant.gTexelCellSpaceU = 1.0f / mInfo.HeightmapWidth;
 	TerrainConstant.gTexelCellSpaceV = 1.0f / mInfo.HeightmapHeight;

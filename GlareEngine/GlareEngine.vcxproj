@@ -168,7 +168,7 @@
     <ClInclude Include="EngineCore\Math\Vector.h" />
     <ClInclude Include="EngineCore\Public\L3DInputLayout.h" />
     <ClInclude Include="EngineCore\Public\d3dx12.h" />
-    <ClInclude Include="EngineCore\Public\DDSTextureLoader.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\DDSTextureLoader.h" />
     <ClInclude Include="EngineCore\Public\L3DBaseApp.h" />
     <ClInclude Include="EngineCore\Public\L3DCamera.h" />
     <ClInclude Include="EngineCore\Public\L3DGameTimer.h" />
@@ -179,7 +179,7 @@
     <ClInclude Include="EngineCore\Public\L3DUploadBuffer.h" />
     <ClInclude Include="EngineCore\Public\L3DUtil.h" />
     <ClInclude Include="EngineCore\Public\L3DVertex.h" />
-    <ClInclude Include="EngineCore\Public\WICTextureLoader12.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\WICTextureLoader12.h" />
     <ClInclude Include="EngineEditor\EngineGUI.h" />
     <ClInclude Include="EngineEditor\imconfig.h" />
     <ClInclude Include="EngineEditor\imgui.h" />
