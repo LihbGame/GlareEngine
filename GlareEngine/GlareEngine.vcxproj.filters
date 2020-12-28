@@ -153,6 +153,9 @@
     </ClInclude>
     <ClInclude Include="EngineCore\Graphics\Public\CommandAllocatorPool.h" />
     <ClInclude Include="EngineCore\Graphics\Public\GPUResource.h" />
+    <ClInclude Include="EngineCore\Math\Common.h" />
+    <ClInclude Include="EngineCore\Math\Scalar.h" />
+    <ClInclude Include="EngineCore\Math\Vector.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -358,6 +361,7 @@
     <None Include="EngineCore\Graphics\Private\GPUBuffer.cpp">
       <Filter>MainSource</Filter>
     </None>
+    <None Include="EngineCore\Math\Functions.inl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GlareEngine.rc">

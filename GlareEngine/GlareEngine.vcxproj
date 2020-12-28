@@ -163,6 +163,9 @@
     <ClInclude Include="EngineCore\Graphics\Public\GPUResource.h" />
     <None Include="EngineCore\Graphics\Public\GraphicsCore.h" />
     <None Include="EngineCore\Graphics\Public\SamplerManager.h" />
+    <ClInclude Include="EngineCore\Math\Common.h" />
+    <ClInclude Include="EngineCore\Math\Scalar.h" />
+    <ClInclude Include="EngineCore\Math\Vector.h" />
     <ClInclude Include="EngineCore\Public\L3DInputLayout.h" />
     <ClInclude Include="EngineCore\Public\d3dx12.h" />
     <ClInclude Include="EngineCore\Public\DDSTextureLoader.h" />
@@ -190,6 +193,7 @@
     <ClInclude Include="EngineMain\Public\framework.h" />
     <ClInclude Include="EngineMain\Public\GameMain.h" />
     <ClInclude Include="EngineMain\Public\targetver.h" />
+    <None Include="EngineCore\Math\Functions.inl" />
     <None Include="RanderEffects\ParticleSystem\Public\ParticleSystem.h" />
     <None Include="EngineCore\Graphics\Public\GPUBuffer.h" />
     <ClInclude Include="RanderEffects\ParticleSystem\Public\BaseParticle.h" />
