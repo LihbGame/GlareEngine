@@ -129,7 +129,7 @@ void GameApp::OnResize()
 	D3DApp::OnResize();
 
 	//窗口调整大小，因此更新宽高比并重新计算投影矩阵;
-	mCamera.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 5000.0f);
+	mCamera.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 40000.0f);
 	//窗口调整大小重新计算视锥包围体。
 	BoundingFrustum::CreateFromMatrix(mCamFrustum, mCamera.GetProj());
 	//Shock Wave Water map resize
@@ -1216,7 +1216,7 @@ void GameApp::BuildPSOs()
 #pragma region Height Map Terrain
 	Input = mShaders["HeightMapTerrain"]->GetInputLayout();
 	D3D12_RASTERIZER_DESC HeightMapRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	//HeightMapRasterizerState.FillMode=D3D12_FILL_MODE_WIREFRAME;
+	HeightMapRasterizerState.FillMode=D3D12_FILL_MODE_WIREFRAME;
 	mPSOs->BuildPSO(md3dDevice.Get(),
 		PSOName::HeightMapTerrain,
 		mRootSignature.Get(),
@@ -1864,7 +1864,7 @@ HeightmapTerrain::InitInfo GameApp::HeightmapTerrainInit()
 	TerrainInfo.LayerMapFilename[3] = "Terrain/lightdirt";
 	TerrainInfo.LayerMapFilename[4] = "Terrain/snow";
 	TerrainInfo.BlendMapFilename = "Terrain/blend";
-	TerrainInfo.HeightScale = 130.0f;
+	TerrainInfo.HeightScale = 150.0f;
 	TerrainInfo.HeightmapWidth = 2049;
 	TerrainInfo.HeightmapHeight = 2049;
 	TerrainInfo.CellSpacing = 2.0f;

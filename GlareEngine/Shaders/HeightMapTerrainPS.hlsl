@@ -65,7 +65,7 @@ float4 PS(DomainOut pin) : SV_TARGET
 
 			float4 diffuseAlbedo = gSRVMap[DiffuseMapSrvIndex].Sample(gsamAnisotropicWrap, UV);
 			float Roughness = gSRVMap[RoughnessMapSrvIndex].Sample(gsamLinearWrap, UV).x;
-			float Metallic = gSRVMap[MetallicMapSrvIndex].Sample(gsamLinearWrap, UV).x;
+			//float Metallic = gSRVMap[MetallicMapSrvIndex].Sample(gsamLinearWrap, UV).x;
 			float AO = gSRVMap[AOMapSrvIndex].Sample(gsamLinearWrap, UV).x;
 
 			// Indirect lighting.
@@ -77,11 +77,11 @@ float4 PS(DomainOut pin) : SV_TARGET
 			float3 bumpedNormalW = NormalSampleToModelSpace(normalMapSample, normalW, tangent);
 			bumpedNormalW = normalize(bumpedNormalW);
 
-			Material mat = { diffuseAlbedo, Mat.FresnelR0, Roughness,Metallic,AO };
+			Material mat = { diffuseAlbedo, Mat.FresnelR0, Roughness,0,AO };
 
 			// Only the first light casts a shadow.
 			float3 shadowFactor = float3(1.0f, 1.0f, 1.0f);
-			shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
+			//shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
 			float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
 				bumpedNormalW, toEye, shadowFactor);
 

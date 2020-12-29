@@ -106,7 +106,7 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 
 			
 			ImGui::Text("Camera Move Speed");
-			ImGui::SliderFloat("   ", &CameraMoveSpeed, 0.0f, 100.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+			ImGui::SliderFloat("   ", &CameraMoveSpeed, 0.0f, 500.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 
 			ImGui::Text("Show Sence");
 			ImGui::Checkbox("Shadow", &show_shadow);

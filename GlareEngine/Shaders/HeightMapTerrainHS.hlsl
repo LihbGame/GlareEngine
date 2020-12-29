@@ -26,8 +26,8 @@ float CalcTessFactor(float3 p)
 	float d = distance(p, gEyePosW);
 
 	float s = saturate((d - gMinDist) / (gMaxDist - gMinDist));
-
-	return pow(2, (lerp(gMaxTess, gMinTess, s)));
+	s = ceil(lerp(gMaxTess, gMinTess, s));
+	return pow(2, s);
 }
 
 PatchTess ConstantHS(InputPatch<VertexOut, 4> patch, uint patchID : SV_PrimitiveID)
