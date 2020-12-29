@@ -1216,7 +1216,7 @@ void GameApp::BuildPSOs()
 #pragma region Height Map Terrain
 	Input = mShaders["HeightMapTerrain"]->GetInputLayout();
 	D3D12_RASTERIZER_DESC HeightMapRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	HeightMapRasterizerState.FillMode=D3D12_FILL_MODE_WIREFRAME;
+	//HeightMapRasterizerState.FillMode=D3D12_FILL_MODE_WIREFRAME;
 	mPSOs->BuildPSO(md3dDevice.Get(),
 		PSOName::HeightMapTerrain,
 		mRootSignature.Get(),

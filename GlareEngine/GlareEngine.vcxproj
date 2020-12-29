@@ -84,12 +84,12 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>.\EngineCore\Graphics\Public;.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\RanderEffects\ShockWaveWater\Public;.\Dependences\include;.\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\EngineMain\Public;.\EngineCore\Public;$(IncludePath)</IncludePath>
+    <IncludePath>.\EngineCore\Math;.\EngineCore\Graphics\Public;.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\RanderEffects\ShockWaveWater\Public;.\Dependences\include;.\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\EngineMain\Public;.\EngineCore\Public;$(IncludePath)</IncludePath>
     <LibraryPath>.\Dependences\lib\ozz\debug;.\Dependences\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>.\EngineCore\Graphics\Public;.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\Core\Public;.\EngineMain\Public;.\PSO\Public;.\ShaderSource\Public;.\RanderEffects\HDRSky\Public;.\Water\Public;.\EngineEditor;.\;.\RanderEffects\Shadow\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Water\Public;.\Animation;.\Dependences\include;.\RanderEffects\ShockWaveWater\Public;$(IncludePath)</IncludePath>
+    <IncludePath>.\EngineCore\Math;.\EngineCore\Graphics\Public;.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\Core\Public;.\EngineMain\Public;.\PSO\Public;.\ShaderSource\Public;.\RanderEffects\HDRSky\Public;.\Water\Public;.\EngineEditor;.\;.\RanderEffects\Shadow\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Water\Public;.\Animation;.\Dependences\include;.\RanderEffects\ShockWaveWater\Public;$(IncludePath)</IncludePath>
     <LibraryPath>.\Dependences\lib;.\Dependences\lib\ozz\release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -166,6 +166,7 @@
     <ClInclude Include="EngineCore\Math\Common.h" />
     <ClInclude Include="EngineCore\Math\Scalar.h" />
     <ClInclude Include="EngineCore\Math\Vector.h" />
+    <ClInclude Include="EngineCore\Math\VectorMath.h" />
     <ClInclude Include="EngineCore\Public\L3DInputLayout.h" />
     <ClInclude Include="EngineCore\Public\d3dx12.h" />
     <ClInclude Include="EngineCore\Graphics\Public\DDSTextureLoader.h" />

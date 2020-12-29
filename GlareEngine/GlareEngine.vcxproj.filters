@@ -156,6 +156,7 @@
       <Filter>Core\Public</Filter>
     </ClInclude>
     <ClInclude Include="EngineCore\Graphics\Public\WICTextureLoader12.h" />
+    <ClInclude Include="EngineCore\Math\VectorMath.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
