@@ -123,7 +123,7 @@ namespace GlareEngine
 		ByteAddressBuffer m_CounterBuffer;
 	};
 
-	class TypedBuffer : public GpuBuffer
+	class TypedBuffer : public GPUBuffer
 	{
 	public:
 		TypedBuffer(DXGI_FORMAT Format) : m_DataFormat(Format) {}
