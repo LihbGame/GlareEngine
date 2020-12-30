@@ -66,15 +66,6 @@
       <Filter>ShaderSource\Public</Filter>
     </ClInclude>
     <ClInclude Include="ShaderSource\Public\SkyShader.h" />
-    <ClInclude Include="EngineEditor\EngineGUI.h" />
-    <ClInclude Include="EngineEditor\imconfig.h" />
-    <ClInclude Include="EngineEditor\imgui.h" />
-    <ClInclude Include="EngineEditor\imgui_impl_dx12.h" />
-    <ClInclude Include="EngineEditor\imgui_impl_win32.h" />
-    <ClInclude Include="EngineEditor\imgui_internal.h" />
-    <ClInclude Include="EngineEditor\imstb_rectpack.h" />
-    <ClInclude Include="EngineEditor\imstb_textedit.h" />
-    <ClInclude Include="EngineEditor\imstb_truetype.h" />
     <ClInclude Include="ShaderSource\Public\SimpleGeometryInstanceShader.h" />
     <ClInclude Include="RanderEffects\HDRSky\Public\Sky.h" />
     <ClInclude Include="RanderEffects\Shadow\Public\ShadowMap.h" />
@@ -157,6 +148,15 @@
     </ClInclude>
     <ClInclude Include="EngineCore\Graphics\Public\WICTextureLoader12.h" />
     <ClInclude Include="EngineCore\Math\VectorMath.h" />
+    <ClInclude Include="EngineEditor\ImgUIEditor\EngineGUI.h" />
+    <ClInclude Include="EngineEditor\ImgUIEditor\imconfig.h" />
+    <ClInclude Include="EngineEditor\ImgUIEditor\imgui.h" />
+    <ClInclude Include="EngineEditor\ImgUIEditor\imgui_impl_dx12.h" />
+    <ClInclude Include="EngineEditor\ImgUIEditor\imgui_impl_win32.h" />
+    <ClInclude Include="EngineEditor\ImgUIEditor\imgui_internal.h" />
+    <ClInclude Include="EngineEditor\ImgUIEditor\imstb_rectpack.h" />
+    <ClInclude Include="EngineEditor\ImgUIEditor\imstb_textedit.h" />
+    <ClInclude Include="EngineEditor\ImgUIEditor\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -166,27 +166,6 @@
       <Filter>ShaderSource\Private</Filter>
     </ClCompile>
     <ClCompile Include="ShaderSource\Private\SkyShader.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineEditor\EngineGUI.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineEditor\imgui.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineEditor\imgui_demo.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineEditor\imgui_draw.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineEditor\imgui_impl_dx12.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineEditor\imgui_impl_win32.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineEditor\imgui_widgets.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="ShaderSource\Private\SimpleGeometryInstanceShader.cpp">
@@ -298,6 +277,27 @@
       <Filter>PSO\Private</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Graphics\Private\CommandAllocatorPool.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_demo.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_draw.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_impl_dx12.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_impl_win32.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_widgets.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>

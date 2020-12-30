@@ -84,12 +84,12 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>.\EngineCore\Math;.\EngineCore\Graphics\Public;.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\RanderEffects\ShockWaveWater\Public;.\Dependences\include;.\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\EngineMain\Public;.\EngineCore\Public;$(IncludePath)</IncludePath>
+    <IncludePath>.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\EngineCore\Graphics\Public;.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\RanderEffects\ShockWaveWater\Public;.\Dependences\include;.\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\EngineMain\Public;.\EngineCore\Public;$(IncludePath)</IncludePath>
     <LibraryPath>.\Dependences\lib\ozz\debug;.\Dependences\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>.\EngineCore\Math;.\EngineCore\Graphics\Public;.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\Core\Public;.\EngineMain\Public;.\PSO\Public;.\ShaderSource\Public;.\RanderEffects\HDRSky\Public;.\Water\Public;.\EngineEditor;.\;.\RanderEffects\Shadow\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Water\Public;.\Animation;.\Dependences\include;.\RanderEffects\ShockWaveWater\Public;$(IncludePath)</IncludePath>
+    <IncludePath>.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\EngineCore\Graphics\Public;.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\Core\Public;.\EngineMain\Public;.\PSO\Public;.\ShaderSource\Public;.\RanderEffects\HDRSky\Public;.\Water\Public;.\EngineEditor;.\;.\RanderEffects\Shadow\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Water\Public;.\Animation;.\Dependences\include;.\RanderEffects\ShockWaveWater\Public;$(IncludePath)</IncludePath>
     <LibraryPath>.\Dependences\lib;.\Dependences\lib\ozz\release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -181,15 +181,15 @@
     <ClInclude Include="EngineCore\Public\L3DUtil.h" />
     <ClInclude Include="EngineCore\Public\L3DVertex.h" />
     <ClInclude Include="EngineCore\Graphics\Public\WICTextureLoader12.h" />
-    <ClInclude Include="EngineEditor\EngineGUI.h" />
-    <ClInclude Include="EngineEditor\imconfig.h" />
-    <ClInclude Include="EngineEditor\imgui.h" />
-    <ClInclude Include="EngineEditor\imgui_impl_dx12.h" />
-    <ClInclude Include="EngineEditor\imgui_impl_win32.h" />
-    <ClInclude Include="EngineEditor\imgui_internal.h" />
-    <ClInclude Include="EngineEditor\imstb_rectpack.h" />
-    <ClInclude Include="EngineEditor\imstb_textedit.h" />
-    <ClInclude Include="EngineEditor\imstb_truetype.h" />
+    <ClInclude Include="EngineEditor\ImgUIEditor\EngineGUI.h" />
+    <ClInclude Include="EngineEditor\ImgUIEditor\imconfig.h" />
+    <ClInclude Include="EngineEditor\ImgUIEditor\imgui.h" />
+    <ClInclude Include="EngineEditor\ImgUIEditor\imgui_impl_dx12.h" />
+    <ClInclude Include="EngineEditor\ImgUIEditor\imgui_impl_win32.h" />
+    <ClInclude Include="EngineEditor\ImgUIEditor\imgui_internal.h" />
+    <ClInclude Include="EngineEditor\ImgUIEditor\imstb_rectpack.h" />
+    <ClInclude Include="EngineEditor\ImgUIEditor\imstb_textedit.h" />
+    <ClInclude Include="EngineEditor\ImgUIEditor\imstb_truetype.h" />
     <ClInclude Include="EngineMain\Public\FrameResource.h" />
     <ClInclude Include="EngineMain\Public\framework.h" />
     <ClInclude Include="EngineMain\Public\GameMain.h" />
@@ -240,13 +240,13 @@
     <ClCompile Include="EngineCore\Private\L3DUtil.cpp" />
     <ClCompile Include="EngineCore\Private\L3DVertex.cpp" />
     <ClCompile Include="EngineCore\Private\WICTextureLoader12.cpp" />
-    <ClCompile Include="EngineEditor\EngineGUI.cpp" />
-    <ClCompile Include="EngineEditor\imgui.cpp" />
-    <ClCompile Include="EngineEditor\imgui_demo.cpp" />
-    <ClCompile Include="EngineEditor\imgui_draw.cpp" />
-    <ClCompile Include="EngineEditor\imgui_impl_dx12.cpp" />
-    <ClCompile Include="EngineEditor\imgui_impl_win32.cpp" />
-    <ClCompile Include="EngineEditor\imgui_widgets.cpp" />
+    <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp" />
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui.cpp" />
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_demo.cpp" />
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_draw.cpp" />
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_impl_dx12.cpp" />
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_impl_win32.cpp" />
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_widgets.cpp" />
     <ClCompile Include="EngineMain\Private\FrameResource.cpp" />
     <ClCompile Include="EngineMain\Private\GameMain.cpp" />
     <ClCompile Include="Animation\ModelLoader.cpp" />
