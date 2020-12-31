@@ -157,6 +157,7 @@
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_rectpack.h" />
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_textedit.h" />
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_truetype.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\DescriptorAllocator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -298,6 +299,9 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="EngineEditor\ImgUIEditor\imgui_widgets.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\DescriptorAllocator.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>

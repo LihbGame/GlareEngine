@@ -61,12 +61,12 @@ float4 PS(VertexOut pin) : SV_Target
     half Heigh = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, pin.HeighTex.xy, 0).r;
 
     // Use distance to lerp between refraction and deep water color
-    float fDistScale = saturate((0.0- Heigh)/80);
-    float3 WaterDeepColor = (vRefraction.xyz * (1 - fDistScale) + fDistScale * float3(0.0025, 0.1, 0.125));
+    float fDistScale = saturate(20 / pin.Wave0.w);
+    float3 WaterDeepColor = (vRefraction.xyz * fDistScale + (1 - fDistScale) * float3(0.0025, 0.1, 0.125));
     // Lerp between water color and deep water color
     float3 WaterColor = float3(0.005, 0.1, 0.15);
     float3 waterColor = (WaterColor * facing + WaterDeepColor * (1.0 - facing));
-    float3 cReflect = saturate(fresnel+0.1) * vReflection.xyz*0.5f;//Reflection Scale=0.5f
+    float3 cReflect = fresnel * vReflection.xyz*0.5;//Reflection Scale=0.5f
 
 
 

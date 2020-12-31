@@ -160,6 +160,7 @@
     <ClInclude Include="Animation\ModelMesh.h" />
     <ClInclude Include="Animation\OzzAnimePlayBack.h" />
     <ClInclude Include="EngineCore\Graphics\Public\CommandAllocatorPool.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\DescriptorAllocator.h" />
     <ClInclude Include="EngineCore\Graphics\Public\GPUResource.h" />
     <None Include="EngineCore\Graphics\Public\GraphicsCore.h" />
     <None Include="EngineCore\Graphics\Public\SamplerManager.h" />
@@ -228,6 +229,7 @@
     <ClCompile Include="EngineCore\Graphics\Private\CommandAllocatorPool.cpp" />
     <None Include="EngineCore\Graphics\Private\GraphicsCore.cpp" />
     <None Include="EngineCore\Graphics\Private\SamplerManager.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\DescriptorAllocator.cpp" />
     <ClCompile Include="EngineCore\Private\DDSTextureLoader.cpp" />
     <ClCompile Include="EngineCore\Private\L3DBaseApp.cpp" />
     <ClCompile Include="EngineCore\Private\L3DCamera.cpp" />
