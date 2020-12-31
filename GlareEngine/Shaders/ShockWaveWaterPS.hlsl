@@ -39,7 +39,7 @@ float4 PS(VertexOut pin) : SV_Target
     float3 vBumpTex = normalize(2.0 * (vBumpTexA.xyz + vBumpTexB.xyz + vBumpTexC.xyz + vBumpTexD.xyz) - 4.0);
 
     // Apply individual bump scale for refraction and reflection
-    float3 vRefrBump = vBumpTex.xyz * float3(0.02, 0.02, 1.0);
+    float3 vRefrBump = vBumpTex.xyz * float3(0.002, 0.002, 1.0);
     float3 vReflBump = vBumpTex.xyz * float3(0.01, 0.01, 1.0);
 
 
@@ -57,16 +57,18 @@ float4 PS(VertexOut pin) : SV_Target
     float facing = (1.0 - NdotL);
     float fresnel = Fresnel(NdotL, 0.02, 5.0);
 
+    //Foam and heigh to water
+    half Heigh = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, pin.HeighTex.xy, 0).r;
+
     // Use distance to lerp between refraction and deep water color
-    float fDistScale = saturate(30.0 / pin.Wave0.w);
-    float3 WaterDeepColor = (vRefraction.xyz * fDistScale + (1 - fDistScale) * float3(0.0025, 0.1, 0.125));
+    float fDistScale = saturate((0.0- Heigh)/80);
+    float3 WaterDeepColor = (vRefraction.xyz * (1 - fDistScale) + fDistScale * float3(0.0025, 0.1, 0.125));
     // Lerp between water color and deep water color
     float3 WaterColor = float3(0.005, 0.1, 0.15);
     float3 waterColor = (WaterColor * facing + WaterDeepColor * (1.0 - facing));
-    float3 cReflect = fresnel * vReflection.xyz*0.7f;//Reflection Scale=0.5f
+    float3 cReflect = saturate(fresnel+0.1) * vReflection.xyz*0.5f;//Reflection Scale=0.5f
 
-    //Foam and heigh to water
-    half Heigh = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, pin.HeighTex.xy,0).r;
+
 
     float3 Foam = float3(0.0f, 0.0f, 0.0f);
     float time = abs(cos(gTotalTime/3));

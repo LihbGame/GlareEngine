@@ -58,7 +58,7 @@ float4 PS(DomainOut pin) : SV_TARGET
 	float4 c[5];
 	for (int i = 0; i < 1; ++i)
 	{
-		if (!isReflection)
+		if (/*!isReflection*/1)
 		{
 			//ÊÓ²îÓ³Éä
 			float2 UV = ParallaxMapping(HeightMapSrvIndex, pin.TiledTex, ModeSpacetoEye, Mat.height_scale);
