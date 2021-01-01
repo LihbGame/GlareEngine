@@ -157,7 +157,7 @@
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_rectpack.h" />
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_textedit.h" />
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_truetype.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\DescriptorAllocator.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\DescriptorHeap.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -232,9 +232,6 @@
     <ClCompile Include="ShaderSource\Private\GrassShader.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\Private\DDSTextureLoader.cpp">
-      <Filter>Core\Private</Filter>
-    </ClCompile>
     <ClCompile Include="EngineCore\Private\L3DBaseApp.cpp">
       <Filter>Core\Private</Filter>
     </ClCompile>
@@ -264,9 +261,6 @@
     </ClCompile>
     <ClCompile Include="EngineCore\Private\L3DVertex.cpp">
       <Filter>Core\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Private\WICTextureLoader12.cpp">
-      <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="RanderEffects\ParticleSystem\Private\BaseParticle.cpp">
       <Filter>MainSource</Filter>
@@ -301,7 +295,13 @@
     <ClCompile Include="EngineEditor\ImgUIEditor\imgui_widgets.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\Graphics\Private\DescriptorAllocator.cpp">
+    <ClCompile Include="EngineCore\Graphics\Private\DDSTextureLoader.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\WICTextureLoader12.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\DescriptorHeap.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
