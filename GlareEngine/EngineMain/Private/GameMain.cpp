@@ -141,6 +141,16 @@ void GameApp::OnResize()
 
 void GameApp::Update(const GameTimer& gt)
 {
+	if (EngineGUI::mWindowMaxSize&& !mMaximized)
+	{
+		SendMessage(mhMainWnd, WM_SYSCOMMAND, SC_MAXIMIZE, NULL);
+	}
+	if(!EngineGUI::mWindowMaxSize && mMaximized)
+	{
+		SendMessage(mhMainWnd, WM_SYSCOMMAND, SC_RESTORE, NULL);
+	}
+
+
 	OnKeyboardInput(gt);
 	//UpdateCamera(gt);
 

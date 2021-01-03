@@ -6,7 +6,6 @@ using Microsoft::WRL::ComPtr;
 using namespace std;
 using namespace DirectX;
 
-
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	//转发hwnd因为我们可以在CreateWindow返回之前获取消息（例如，WM_CREATE），因此在mhMainWnd有效之前。
@@ -296,14 +295,15 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam);
-	if (msg==WM_SETCURSOR) {
+	if (msg == WM_SETCURSOR) {
 		SetCursor(LoadCursor(mhAppInst, MAKEINTRESOURCE(IDC_CURSOR1)));
 	}
 	
-	switch( msg )
+
+	switch (msg)
 	{
-	// 激活或取消激活窗口时发送WM_ACTIVATE。
-	//我们在停用窗口时暂停游戏，并在窗口激活时取消暂停。
+		// 激活或取消激活窗口时发送WM_ACTIVATE。
+		//我们在停用窗口时暂停游戏，并在窗口激活时取消暂停。
 	case WM_CREATE:
 	{
 		// demo #3
@@ -328,28 +328,28 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	// WM_SIZE is sent when the user resizes the window.  
 	case WM_SIZE:
 		// Save the new client area dimensions.
-		mClientWidth  = LOWORD(lParam);
+		mClientWidth = LOWORD(lParam);
 		mClientHeight = HIWORD(lParam);
-		if( md3dDevice )
+		if (md3dDevice)
 		{
-			if( wParam == SIZE_MINIMIZED )
+			if (wParam == SIZE_MINIMIZED)
 			{
 				mAppPaused = true;
 				mMinimized = true;
 				mMaximized = false;
 			}
-			else if( wParam == SIZE_MAXIMIZED )
+			else if (wParam == SIZE_MAXIMIZED)
 			{
 				mAppPaused = false;
 				mMinimized = false;
 				mMaximized = true;
 				OnResize();
 			}
-			else if( wParam == SIZE_RESTORED )
+			else if (wParam == SIZE_RESTORED)
 			{
-				
+
 				// Restoring from minimized state?
-				if( mMinimized )
+				if (mMinimized)
 				{
 					mAppPaused = false;
 					mMinimized = false;
@@ -357,15 +357,15 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 
 				// Restoring from maximized state?
-				else if( mMaximized )
+				else if (mMaximized)
 				{
 					mAppPaused = false;
 					mMaximized = false;
 					OnResize();
 				}
-				else if( mResizing )//正在调整大小
+				else if (mResizing)//正在调整大小
 				{
-					
+
 					// 如果用户正在拖动调整大小条，我们不会在此处调整缓冲区的大小，
 					//因为当用户不断拖动调整大小条时，会向窗口发送一个WM_SIZE消息流，
 					//并且为每个WM_SIZE调整大小是没有意义的（并且很慢） 通过拖动调整大小条收到的消息。
@@ -379,39 +379,60 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		return 0;
 
-	// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
+		// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
 	case WM_ENTERSIZEMOVE:
 		mAppPaused = true;
-		mResizing  = true;
+		mResizing = true;
 		mTimer.Stop();
 		return 0;
 
-	// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
-	// Here we reset everything based on the new window dimensions.
+		// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
+		// Here we reset everything based on the new window dimensions.
 	case WM_EXITSIZEMOVE:
 		mAppPaused = false;
-		mResizing  = false;
+		mResizing = false;
 		mTimer.Start();
 		OnResize();
 		return 0;
- 
-	// WM_DESTROY is sent when the window is being destroyed.
+
+		// WM_DESTROY is sent when the window is being destroyed.
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
 
-	// 当菜单处于活动状态且用户按下与任何助记符或加速键不对应的键时，将发送WM_MENUCHAR消息。
+		// 当菜单处于活动状态且用户按下与任何助记符或加速键不对应的键时，将发送WM_MENUCHAR消息。
 	case WM_MENUCHAR:
-        // Don't beep when we alt-enter.
-        return MAKELRESULT(0, MNC_CLOSE);
+		// Don't beep when we alt-enter.
+		return MAKELRESULT(0, MNC_CLOSE);
 
-	// 抓住此消息以防止窗口变得太小。
+		// 抓住此消息以防止窗口变得太小。
 	case WM_GETMINMAXINFO:
 		((MINMAXINFO*)lParam)->ptMinTrackSize.x = 800;
-		((MINMAXINFO*)lParam)->ptMinTrackSize.y = 600; 
+		((MINMAXINFO*)lParam)->ptMinTrackSize.y = 600;
 		return 0;
 
 	case WM_LBUTTONDOWN:
+		OnMouseDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		SystemParametersInfo(SPI_SETDRAGFULLWINDOWS, true, NULL, 0);
+
+		//在客户区域实现拖动窗口
+		if (GET_Y_LPARAM(lParam) < 22 &&
+			GET_X_LPARAM(lParam) > 80&&
+			GET_X_LPARAM(lParam)< mClientWidth-200
+			&& !mFullscreenState)
+		{
+			ReleaseCapture();
+			SendMessage(hwnd, WM_NCLBUTTONDOWN, HTCAPTION, NULL);
+			SendMessage(hwnd, WM_LBUTTONUP, NULL, NULL);
+
+			if (EngineGUI::mWindowMaxSize)
+			{
+				SendMessage(mhMainWnd, WM_SYSCOMMAND, SC_RESTORE, NULL);
+				EngineGUI::mWindowMaxSize = false;
+			}
+
+		}
+		return 0;
 	case WM_MBUTTONDOWN:
 	case WM_RBUTTONDOWN:
 		OnMouseDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
@@ -440,35 +461,38 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		return 0;
-    case WM_KEYUP:
-        if(wParam == VK_ESCAPE)
-        {
-            PostQuitMessage(0);
-        }
+	case WM_KEYUP:
+		if (wParam == VK_ESCAPE)
+		{
+			PostQuitMessage(0);
+		}
 		//FullScreen 
 		if (wParam == VK_TAB)
 		{
-			if (!mFullscreenState)
+			if (!mFullscreenState&&!EngineGUI::mWindowMaxSize)
 			{
 				mClientHeight = GetSystemMetrics(SM_CYSCREEN);
 				mClientWidth = GetSystemMetrics(SM_CXSCREEN);
+				
 				OnResize();
 				mSwapChain->SetFullscreenState(true, NULL);
-				mFullscreenState = true;
+				gFullSreenMode=mFullscreenState = true;
 			}
 			else
 			{
+				
+				OnResize();
 				mSwapChain->SetFullscreenState(false, NULL);
-				mFullscreenState = false;
+				gFullSreenMode = mFullscreenState = false;
 			}
 		}
 		if ((int)wParam == VK_SHIFT)
 		{
+			//SendMessage(hwnd, WM_SYSCOMMAND, SC_MAXIMIZE, NULL);
 		}
-
-        return 0;
+		
+		return 0;
 	}
-
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
@@ -494,8 +518,6 @@ bool D3DApp::InitMainWindow()
 		return false;
 	}
 	
-
-
 	// Compute window rectangle dimensions based on requested client area dimensions.
 	RECT R = { 0, 0, mClientWidth, mClientHeight };
     AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, false);
@@ -504,7 +526,7 @@ bool D3DApp::InitMainWindow()
 
 
 	mhMainWnd = CreateWindow(L"MainWnd", mMainWndCaption.c_str(), 
-		WS_OVERLAPPEDWINDOW|WS_EX_TOPMOST, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, mhAppInst, 0);
+		WS_POPUP|WS_EX_TOPMOST, 200, 50, width, height, 0, 0, mhAppInst, 0);
 	if( !mhMainWnd )
 	{
 		MessageBox(0, L"CreateWindow Failed.", 0, 0);

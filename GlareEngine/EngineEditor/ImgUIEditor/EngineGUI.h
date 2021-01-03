@@ -6,8 +6,9 @@
 #include <imgui_internal.h>
 #include "L3DUtil.h"
 
-#define MainMenuBarHeight  19.0f
+#define MainMenuBarHeight  25.0f
 
+extern bool gFullSreenMode;
 class EngineGUI
 {
 public:
@@ -33,6 +34,8 @@ public:
 
 	float GetGrassMinWind()const { return GrassMinWind; }
 	float GetGrassMaxWind()const { return GrassMaxWind; }
+
+	static bool mWindowMaxSize;
 private:
 	bool show_demo_window = true;
 	bool show_another_window = true;

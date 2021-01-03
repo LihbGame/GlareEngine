@@ -65,6 +65,7 @@ Index of this file:
 #endif
 
 #include "imgui.h"
+#include "EngineGUI.h"
 #ifndef IMGUI_DISABLE
 
 #include <ctype.h>          // toupper
@@ -128,7 +129,7 @@ Index of this file:
 
 // Forward Declarations
 static void ShowExampleAppDocuments(bool* p_open);
-static void ShowExampleAppMainMenuBar();
+static void ShowExampleAppMainMenuBar(bool* Max,bool isFullScreenMode);
 static void ShowExampleAppConsole(bool* p_open);
 static void ShowExampleAppLog(bool* p_open);
 static void ShowExampleAppLayout(bool* p_open);
@@ -205,10 +206,19 @@ static void ShowDemoWindowMisc();
 
 // Demonstrate most Dear ImGui features (this is big function!)
 // You may execute this function to experiment with the UI and understand what it does. You may then search for keywords in the code when you are interested by a specific feature.
-void ImGui::ShowDemoWindow(bool* p_open)
+void ImGui::ShowDemoWindow(bool* p_open,bool* isMax)
 {
-    IM_ASSERT(ImGui::GetCurrentContext() != NULL && "Missing dear imgui context. Refer to examples app!"); // Exceptionally add an extra assert here for people confused with initial dear imgui setup
+    //Frame Rounding
+    {
+        ImGuiStyle& style = ImGui::GetStyle();
+        style.FrameRounding = 7;
+        style.GrabRounding = 7;
+        //style.WindowRounding = 7;
+        style.WindowBorderSize = 1.5f;
+    }
 
+    IM_ASSERT(ImGui::GetCurrentContext() != NULL && "Missing dear imgui context. Refer to examples app!"); // Exceptionally add an extra assert here for people confused with initial dear imgui setup
+   
     // Examples Apps (accessible from the "Examples" menu)
     static bool show_app_documents = false;
     static bool show_app_main_menu_bar = true;
@@ -223,8 +233,9 @@ void ImGui::ShowDemoWindow(bool* p_open)
     static bool show_app_window_titles = false;
     static bool show_app_custom_rendering = false;
 
+
     if (show_app_documents)           ShowExampleAppDocuments(&show_app_documents);
-    if (show_app_main_menu_bar)       ShowExampleAppMainMenuBar();
+    if (show_app_main_menu_bar)       ShowExampleAppMainMenuBar(isMax,gFullSreenMode);
     if (show_app_console)             ShowExampleAppConsole(&show_app_console);
     if (show_app_log)                 ShowExampleAppLog(&show_app_log);
     if (show_app_layout)              ShowExampleAppLayout(&show_app_layout);
@@ -273,8 +284,8 @@ void ImGui::ShowDemoWindow(bool* p_open)
  /*   ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);*/
 
-    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x * 5.0f / 6.0f, 22.0f));
-    ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x * 1.0f / 6.0f, ImGui::GetIO().DisplaySize.y * 0.75f-22.0f));
+    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x * 5.0f / 6.0f, MainMenuBarHeight));
+    ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x * 1.0f / 6.0f+1.0f, ImGui::GetIO().DisplaySize.y * 0.75f- MainMenuBarHeight));
 
     // Main body of the Demo window starts here.
     if (!ImGui::Begin("Dear ImGui Demo", p_open, window_flags))
@@ -3543,7 +3554,8 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
 // Note the difference between BeginMainMenuBar() and BeginMenuBar():
 // - BeginMenuBar() = menu-bar inside current window we Begin()-ed into (the window needs the ImGuiWindowFlags_MenuBar flag)
 // - BeginMainMenuBar() = helper to create menu-bar-sized window at the top of the main viewport + call BeginMenuBar() into it.
-static void ShowExampleAppMainMenuBar()
+extern HWND  g_hWnd;
+static void ShowExampleAppMainMenuBar(bool* IsMax,bool IsFullScreenMode)
 {
     if (ImGui::BeginMainMenuBar())
     {
@@ -3561,6 +3573,29 @@ static void ShowExampleAppMainMenuBar()
             if (ImGui::MenuItem("Copy", "CTRL+C")) {}
             if (ImGui::MenuItem("Paste", "CTRL+V")) {}
             ImGui::EndMenu();
+        }
+        ImGuiIO& io = ImGui::GetIO();
+        if (!IsFullScreenMode)
+        {
+            if (ImGui::RadioButton("Min", true, ImVec2(ImGui::GetWindowSize().x - 290.0f, 0.0f)))
+            {
+                SendMessage((HWND)io.ImeWindowHandle, WM_SYSCOMMAND, SC_MINIMIZE, NULL);
+            }
+            if (ImGui::RadioButton("Max", true, ImVec2(ImGui::GetWindowSize().x - 280.0f, 0.0f)))
+            {
+                *IsMax = !(*IsMax);
+            }
+			if (ImGui::RadioButton("Close", true, ImVec2(ImGui::GetWindowSize().x - 270.0f, 0.0f)))
+			{
+				SendMessage((HWND)io.ImeWindowHandle, WM_CLOSE, NULL, NULL);
+			}
+        }
+        else
+        {
+            if (ImGui::RadioButton("Close", true, ImVec2(ImGui::GetWindowSize().x - 160.0f, 0.0f)))
+            {
+                SendMessage((HWND)io.ImeWindowHandle, WM_CLOSE, NULL, NULL);
+            }
         }
         ImGui::EndMainMenuBar();
     }
@@ -4911,7 +4946,7 @@ void ShowExampleAppDocuments(bool* p_open)
 #else
 
 void ImGui::ShowAboutWindow(bool*) {}
-void ImGui::ShowDemoWindow(bool*) {}
+void ImGui::ShowDemoWindow(bool*,SystemMenuMessage&) {}
 void ImGui::ShowUserGuide() {}
 void ImGui::ShowStyleEditor(ImGuiStyle*) {}
 

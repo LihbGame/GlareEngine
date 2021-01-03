@@ -2,6 +2,8 @@
 #include <dxgi.h>
 #include "L3DUtil.h"
 using Microsoft::WRL::ComPtr;
+bool gFullSreenMode = false;
+bool EngineGUI::mWindowMaxSize = false;
 EngineGUI::EngineGUI(ID3D12Device* d3dDevice)
 {
 	pd3dDevice = d3dDevice;
@@ -28,7 +30,7 @@ void EngineGUI::InitGUI(HWND GameWnd,ID3D12DescriptorHeap* GUISrvDescriptorHeap)
 
 
 	// Setup Dear ImGui style
-	ImGui::StyleColorsDark();
+	ImGui::StyleColorsLight();
 	//ImGui::StyleColorsClassic();
 	 // Setup Platform/Renderer bindings
 	ImGui_ImplWin32_Init(GameWnd);
@@ -88,7 +90,7 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 			g->NextWindowData.MenuBarOffsetMinVal = ImVec2(g->Style.DisplaySafeAreaPadding.x, ImMax(g->Style.DisplaySafeAreaPadding.y - g->Style.FramePadding.y, 0.0f));
 			ImGui::SetNextWindowPos(ImVec2(g->IO.DisplaySize.x * 5.0f / 6.0f, 0.0f));
 			ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * 1.0f/6.0f, g->IO.DisplaySize.y * 0.75f));
-			ImGui::ShowDemoWindow(&show_demo_window);
+			ImGui::ShowDemoWindow(&show_demo_window,&mWindowMaxSize);
 
 		}
 		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
@@ -124,6 +126,8 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 			ImGui::Text("Fog Range");
 			ImGui::SliderFloat("  ", &FogRange, 0.0f, 1000.0f);
 			//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			
+
 			ImGui::End();
 		}
 

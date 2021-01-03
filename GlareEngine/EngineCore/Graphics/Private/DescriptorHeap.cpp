@@ -47,3 +47,31 @@ ID3D12DescriptorHeap* GlareEngine::DescriptorAllocator::RequestNewHeap(D3D12_DES
 	sm_DescriptorHeapPool.emplace_back(pHeap);
 	return pHeap.Get();
 }
+
+void GlareEngine::UserDescriptorHeap::Create(const std::wstring& DebugHeapName)
+{
+	assert(Graphics::g_Device->CreateDescriptorHeap(&m_HeapDesc, IID_PPV_ARGS(m_Heap.ReleaseAndGetAddressOf())));
+#ifdef RELEASE
+	(void)DebugHeapName;
+#else
+	m_Heap->SetName(DebugHeapName.c_str());
+#endif
+
+	m_DescriptorSize = Graphics::g_Device->GetDescriptorHandleIncrementSize(m_HeapDesc.Type);
+	m_NumFreeDescriptors = m_HeapDesc.NumDescriptors;
+	m_FirstHandle = DescriptorHandle(m_Heap->GetCPUDescriptorHandleForHeapStart(), m_Heap->GetGPUDescriptorHandleForHeapStart());
+	m_NextFreeHandle = m_FirstHandle;
+}
+
+DescriptorHandle GlareEngine::UserDescriptorHeap::Alloc(uint32_t Count)
+{
+	assert(HasAvailableSpace(Count), "Descriptor Heap out of space.  Increase heap size.");
+	DescriptorHandle ret = m_NextFreeHandle;
+	m_NextFreeHandle += Count * m_DescriptorSize;
+	return ret;
+}
+
+bool GlareEngine::UserDescriptorHeap::ValidateHandle(const DescriptorHandle& DHandle) const
+{
+	return false;
+}
