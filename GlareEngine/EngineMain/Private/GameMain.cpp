@@ -83,7 +83,7 @@ bool GameApp::Initialize()
 	//ShockWaveWater
 	mShockWaveWater = std::make_unique<ShockWaveWater>(md3dDevice.Get(), mClientWidth, mClientHeight,m4xMsaaState, mTextureManage.get());
 	//camera
-	mCamera.LookAt(XMFLOAT3(20.0f, 100.0f, 20.0f), XMFLOAT3(0.0f,0.0f,0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f));
+	mCamera.LookAt(XMFLOAT3(200.0f, 100.0f, 200.0f), XMFLOAT3(0.0f,0.0f,0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f));
 	//sky
 	mSky= std::make_unique<Sky>(md3dDevice.Get(), mCommandList.Get(),5.0f,20,20, mTextureManage.get());
 	//shadow map

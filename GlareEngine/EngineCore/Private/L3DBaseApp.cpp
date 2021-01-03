@@ -418,7 +418,7 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		//在客户区域实现拖动窗口
 		if (GET_Y_LPARAM(lParam) < 22 &&
 			GET_X_LPARAM(lParam) > 80&&
-			GET_X_LPARAM(lParam)< mClientWidth-200
+			GET_X_LPARAM(lParam)< mClientWidth-205
 			&& !mFullscreenState)
 		{
 			ReleaseCapture();
