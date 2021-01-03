@@ -86,6 +86,18 @@ float4 PS(VertexOut pin) : SV_Target
     // final water = reflection_color * fresnel + water_color
     float4 texColor = float4(cReflect + waterColor + Foam, 1.0f);
 
+    Material mat = { texColor, float3(0.01f,0.01f,0.01f), 0.4f,0.0f,1.0f };
+    // Only the first light casts a shadow.
+    float3 shadowFactor = float3(1.0f, 1.0f, 1.0f);
+    //shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
+
+    //tansform normal
+    float3 bumpedNormalW = NormalSampleToModelSpace(vReflBump, float3(0.0f,1.0f,0.0f), float3(1.0f,0.0f,0.0f));
+    bumpedNormalW = normalize(bumpedNormalW);
+
+
+    float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
+        bumpedNormalW, normalize(gEyePosW.xyz - pin.PosW), shadowFactor)+ texColor;
 
     //
     // Fogging
@@ -97,5 +109,5 @@ float4 PS(VertexOut pin) : SV_Target
     texColor.rgb = lerp(texColor.rgb, gFogColor.rgb, fogLerp);
     }
 
-    return texColor;
+    return directLight;
 }
