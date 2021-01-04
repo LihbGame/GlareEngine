@@ -17,6 +17,17 @@ struct VertexOut
 };
 
 
+float3x3 GetTangentSpaceBasis(float3 T, float3 N)
+{
+    float3x3 objToTangentSpace;
+
+    objToTangentSpace[0] = T;           // tangent
+    objToTangentSpace[1] = cross(N,T); // binormal
+    objToTangentSpace[2] = N;           // normal  
+
+    return objToTangentSpace;
+}
+
 // This assumes NdotL comes clamped
 half Fresnel(half NdotL, half fresnelBias, half fresnelPow)
 {
@@ -40,7 +51,7 @@ float4 PS(VertexOut pin) : SV_Target
 
     // Apply individual bump scale for refraction and reflection
     float3 vRefrBump = vBumpTex.xyz * float3(0.002, 0.002, 1.0);
-    float3 vReflBump = vBumpTex.xyz * float3(0.03, 0.03, 1.0);
+    float3 vReflBump = vBumpTex.xyz * float3(0.08, 0.08, 1.0);
 
 
     // Compute projected coordinates gSRVMap[50]:∑¥…‰Œ∆¿Ì  gSRVMap[49]£∫’€…‰Œ∆¿Ì
@@ -55,7 +66,7 @@ float4 PS(VertexOut pin) : SV_Target
     // Compute Fresnel term
     float NdotL = max(dot(vEye, vReflBump), 0);
     float facing = (1.0 - NdotL);
-    float fresnel = Fresnel(NdotL, 0.2, 5.0);
+    float fresnel = Fresnel(NdotL, 0.02, 5.0);
 
     //Foam and heigh to water
     half Heigh = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, pin.HeighTex.xy, 0).r;
@@ -86,13 +97,13 @@ float4 PS(VertexOut pin) : SV_Target
     // final water = reflection_color * fresnel + water_color
     float4 texColor = float4(cReflect + waterColor + Foam, 1.0f);
 
-    Material mat = { texColor, float3(0.01f,0.01f,0.01f), 0.04f,0.0f,0.0f };
+    Material mat = { float4(waterColor, 1.0f), float3(0.01f,0.01f,0.01f), 0.4f,0.0f,1.0f };
     // Only the first light casts a shadow.
     float3 shadowFactor = float3(1.0f, 1.0f, 1.0f);
     //shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
 
     //tansform normal
-    float3 bumpedNormalW = NormalSampleToModelSpace(vReflBump, float3(0.0f,1.0f,0.0f), float3(0.0f,0.0f,-1.0f));
+    float3 bumpedNormalW = mul(vBumpTex * float3(0.5, 0.5, 1.0), GetTangentSpaceBasis(float3(1.0f, 0.0f, 0.0f), float3(0.0f, 1.0f, 0.0f)));
     bumpedNormalW = normalize(bumpedNormalW);
 
 

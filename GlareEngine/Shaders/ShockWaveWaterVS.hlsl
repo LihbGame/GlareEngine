@@ -27,10 +27,10 @@ float3x3 GetTangentSpaceBasis(float3 T, float3 N)
     float3x3 objToTangentSpace;
 
     objToTangentSpace[0] = T;           // tangent
-    objToTangentSpace[1] = cross(T, N); // binormal
+    objToTangentSpace[1] = cross(N,T); // binormal
     objToTangentSpace[2] = N;           // normal  
 
-    return objToTangentSpace;
+    return  transpose(objToTangentSpace);
 }
 
 VertexOut VS(VertexIn vin)
@@ -68,7 +68,6 @@ VertexOut VS(VertexIn vin)
 
     float3 EyeVec = gEyePosW.xyz - PosW;
     vout.Eye.xyz = mul(EyeVec, objToTangentSpace);
-
 
     return vout;
 }
