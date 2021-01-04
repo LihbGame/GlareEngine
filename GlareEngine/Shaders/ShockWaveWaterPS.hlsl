@@ -22,7 +22,7 @@ float3x3 GetTangentSpaceBasis(float3 T, float3 N)
     float3x3 objToTangentSpace;
 
     objToTangentSpace[0] = T;           // tangent
-    objToTangentSpace[1] = cross(N,T); // binormal
+    objToTangentSpace[1] = cross(T,N); // binormal
     objToTangentSpace[2] = N;           // normal  
 
     return objToTangentSpace;
@@ -51,7 +51,7 @@ float4 PS(VertexOut pin) : SV_Target
 
     // Apply individual bump scale for refraction and reflection
     float3 vRefrBump = vBumpTex.xyz * float3(0.002, 0.002, 1.0);
-    float3 vReflBump = vBumpTex.xyz * float3(0.08, 0.08, 1.0);
+    float3 vReflBump = vBumpTex.xyz * float3(0.05, 0.05, 1.0);
 
 
     // Compute projected coordinates gSRVMap[50]:∑¥…‰Œ∆¿Ì  gSRVMap[49]£∫’€…‰Œ∆¿Ì
@@ -103,7 +103,7 @@ float4 PS(VertexOut pin) : SV_Target
     //shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
 
     //tansform normal
-    float3 bumpedNormalW = mul(vBumpTex * float3(0.5, 0.5, 1.0), GetTangentSpaceBasis(float3(1.0f, 0.0f, 0.0f), float3(0.0f, 1.0f, 0.0f)));
+    float3 bumpedNormalW = mul(vBumpTex * float3(0.3, 0.3, 1.0), GetTangentSpaceBasis(float3(1.0f, 0.0f, 0.0f), float3(0.0f, 1.0f, 0.0f)));
     bumpedNormalW = normalize(bumpedNormalW);
 
 
