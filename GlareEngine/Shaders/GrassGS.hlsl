@@ -103,7 +103,7 @@ void GS(
 	}
 
 
-	if (input[0].PosW.y>-3.0f /*&& input[0].PosW.y <= 20.0f*/
+	if (input[0].PosW.y>0.0f /*&& input[0].PosW.y <= 20.0f*/
 		&& !isGrassClip)
 	{
 

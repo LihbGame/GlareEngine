@@ -45,7 +45,7 @@ VertexOut VS(VertexIn vin)
     vout.PosH = mul(float4(vout.PosW, 1.0f), gViewProj);
     float tans = gTotalTime * 0.01;
     float2 fTranslation = float2(0,tans);
-    float2 vTexCoords = PosW.xz * 0.02;
+    float2 vTexCoords = PosW.xz * 0.05;
 
     // Scale texture coordinates to get mix of low/high frequency details
     vout.Wave0.xy = vTexCoords.xy + fTranslation * 2.0;

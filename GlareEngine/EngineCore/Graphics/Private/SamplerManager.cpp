@@ -1,5 +1,8 @@
 #include "SamplerManager.h"
+#include "GraphicsCore.h"
+#include "Hash.h"
 
+using namespace GlareEngine::Graphics;
 namespace
 {
 	map< size_t, D3D12_CPU_DESCRIPTOR_HANDLE > s_SamplerCache;

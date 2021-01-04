@@ -113,5 +113,4 @@ namespace GlareEngine
 		DescriptorHandle m_FirstHandle;
 		DescriptorHandle m_NextFreeHandle;
 	};
-
 }

@@ -73,5 +73,13 @@ DescriptorHandle GlareEngine::UserDescriptorHeap::Alloc(uint32_t Count)
 
 bool GlareEngine::UserDescriptorHeap::ValidateHandle(const DescriptorHandle& DHandle) const
 {
-	return false;
+	if (DHandle.GetCPUHandle().ptr < m_FirstHandle.GetCPUHandle().ptr ||
+		DHandle.GetCPUHandle().ptr >= m_FirstHandle.GetCPUHandle().ptr + m_HeapDesc.NumDescriptors * m_DescriptorSize)
+		return false;
+
+	if (DHandle.GetGPUHandle().ptr - m_FirstHandle.GetGPUHandle().ptr !=
+		DHandle.GetCPUHandle().ptr - m_FirstHandle.GetCPUHandle().ptr)
+		return false;
+
+	return true;
 }

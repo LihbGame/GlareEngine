@@ -158,6 +158,7 @@
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_textedit.h" />
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_truetype.h" />
     <ClInclude Include="EngineCore\Graphics\Public\DescriptorHeap.h" />
+    <ClInclude Include="EngineCore\Math\Hash.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -301,9 +302,6 @@
     <ClCompile Include="EngineCore\Graphics\Private\WICTextureLoader12.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\Graphics\Private\DescriptorHeap.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -367,6 +365,9 @@
       <Filter>MainSource</Filter>
     </None>
     <None Include="EngineCore\Math\Functions.inl" />
+    <None Include="EngineCore\Graphics\Private\DescriptorHeap.cpp">
+      <Filter>MainSource</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GlareEngine.rc">

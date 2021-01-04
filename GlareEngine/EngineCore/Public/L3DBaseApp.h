@@ -126,8 +126,8 @@ protected:
 	D3D_DRIVER_TYPE md3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
     DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
     DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;//深度值类型
-	int mClientWidth = 1600;
-	int mClientHeight = 900;
+	int mClientWidth = 1440;
+	int mClientHeight = 810;
 
 };
 

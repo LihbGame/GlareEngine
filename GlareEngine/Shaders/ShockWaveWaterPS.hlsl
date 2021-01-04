@@ -5,15 +5,15 @@
  
 struct VertexOut
 {
-    float4 PosH    : SV_POSITION;
+    float4 PosH       : SV_POSITION;
     float3 Eye        : TEXCOORD0;
     float4 Wave0      : TEXCOORD1;
     float2 Wave1      : TEXCOORD2;
     float2 Wave2      : TEXCOORD3;
     float2 Wave3      : TEXCOORD4;
     float4 ScreenPos  : TEXCOORD5;
-    float2 HeighTex  : TEXCOORD6;
-    float3 PosW        : TEXCOORD7;
+    float2 HeighTex   : TEXCOORD6;
+    float3 PosW       : TEXCOORD7;
 };
 
 
@@ -22,7 +22,7 @@ float3x3 GetTangentSpaceBasis(float3 T, float3 N)
     float3x3 objToTangentSpace;
 
     objToTangentSpace[0] = T;           // tangent
-    objToTangentSpace[1] = cross(T,N); // binormal
+    objToTangentSpace[1] = cross(N,T); // binormal
     objToTangentSpace[2] = N;           // normal  
 
     return objToTangentSpace;
@@ -54,9 +54,9 @@ float4 PS(VertexOut pin) : SV_Target
     float3 vReflBump = vBumpTex.xyz * float3(0.05, 0.05, 1.0);
 
 
-    // Compute projected coordinates gSRVMap[50]:∑¥…‰Œ∆¿Ì  gSRVMap[49]£∫’€…‰Œ∆¿Ì
+    // Compute projected coordinates
     float2 vProj = (pin.ScreenPos.xy / pin.ScreenPos.w);
-    float4 vReflection = gSRVMap[gWaterReflectionMapIndex].Sample(gsamLinearWrap, vProj.xy + vReflBump.xy);
+    float4 vReflection = gSRVMap[gWaterReflectionMapIndex].Sample(gsamLinearClamp, vProj.xy + vReflBump.xy);
     float4 vRefrA = gSRVMap[gWaterRefractionMapIndex].Sample(gsamLinearWrap, vProj.xy + vRefrBump.xy);
     float4 vRefrB = gSRVMap[gWaterRefractionMapIndex].Sample(gsamLinearWrap, vProj.xy);
 
@@ -72,7 +72,7 @@ float4 PS(VertexOut pin) : SV_Target
     half Heigh = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, pin.HeighTex.xy, 0).r;
 
     // Use distance to lerp between refraction and deep water color
-    float fDistScale = saturate(20 / pin.Wave0.w);
+    float fDistScale = saturate(10 / pin.Wave0.w);
     float3 WaterDeepColor = (vRefraction.xyz * fDistScale + (1 - fDistScale) * float3(0.0025, 0.1, 0.125));
     // Lerp between water color and deep water color
     float3 WaterColor = float3(0.005, 0.1, 0.15);
@@ -97,13 +97,13 @@ float4 PS(VertexOut pin) : SV_Target
     // final water = reflection_color * fresnel + water_color
     float4 texColor = float4(cReflect + waterColor + Foam, 1.0f);
 
-    Material mat = { float4(waterColor, 1.0f), float3(0.01f,0.01f,0.01f), 0.4f,0.0f,1.0f };
+    Material mat = { float4(waterColor, 1.0f), float3(0.01f,0.01f,0.01f), 0.4f,0.0f,0.0f };
     // Only the first light casts a shadow.
     float3 shadowFactor = float3(1.0f, 1.0f, 1.0f);
     //shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
 
     //tansform normal
-    float3 bumpedNormalW = mul(vBumpTex * float3(0.3, 0.3, 1.0), GetTangentSpaceBasis(float3(1.0f, 0.0f, 0.0f), float3(0.0f, 1.0f, 0.0f)));
+    float3 bumpedNormalW = mul(vBumpTex * float3(0.8, 0.8, 1.0), GetTangentSpaceBasis(float3(1.0f, 0.0f, 0.0f), float3(0.0f, 1.0f, 0.0f)));
     bumpedNormalW = normalize(bumpedNormalW);
 
 
