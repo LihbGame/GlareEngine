@@ -35,6 +35,8 @@ public:
 	float GetGrassMinWind()const { return GrassMinWind; }
 	float GetGrassMaxWind()const { return GrassMaxWind; }
 
+	void SetCameraPosition(const XMFLOAT3& position) { mCameraPosition = position; }
+
 	XMFLOAT3 GetGrassColor()const { return XMFLOAT3(mGrassColor); }
 
 	static bool mWindowMaxSize;
@@ -60,7 +62,7 @@ private:
 
 
 	float mGrassColor[3] = { 0.39f,0.196f,0.0f };
-
+	XMFLOAT3 mCameraPosition = { 0.0f,0.0f,0.0f };
 
 	ID3D12DescriptorHeap* mGUISrvDescriptorHeap = nullptr;
 

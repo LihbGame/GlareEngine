@@ -102,9 +102,9 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 			
 			ImGui::Begin("Hello, world!",&helloWindow,ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);                          // Create a window called "Hello, world!" and append into it.
 			
-			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+			
 			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-			ImGui::Checkbox("Another Window", &show_another_window);
+			ImGui::Checkbox("Debug Window", &show_another_window);
 
 			
 			ImGui::Text("Camera Move Speed");
@@ -142,10 +142,8 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 			ImGui::SetNextWindowPos(ImVec2(0.0f, g->IO.DisplaySize.y * 0.75f));
 			ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x, g->IO.DisplaySize.y * 0.25f));
 
-			ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-			ImGui::Text("Hello from another window!");
-			if (ImGui::Button("Close Me"))
-				show_another_window = false;
+			ImGui::Begin("Debug Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+			ImGui::Text("Camera Position X:%.1f Y:%.1f Z:%.1f", mCameraPosition.x, mCameraPosition.y, mCameraPosition.z);
 			ImGui::End();
 		}
 		ImGui::Render();
