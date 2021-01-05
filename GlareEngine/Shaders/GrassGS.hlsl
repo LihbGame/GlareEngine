@@ -1,8 +1,8 @@
 #include "Common.hlsli"
 #include "TerrainConstBuffer.hlsli"
 
-#define halfWidth 0.8f
-#define perHeight 2.4f
+#define halfWidth 2.0f
+#define perHeight 6.0f
 #define halfheight 6.0f
 static	float2 gGrassTexC[12] =
 {
@@ -52,8 +52,8 @@ struct GSOutput
 {
 	float4 pos : SV_POSITION;
 	float3 PosW    : POSITION;
-	//float3 NormalW : NORMAL;
-	//float3 TangentW:TANGENT;
+	float3 NormalW : NORMAL;
+	float3 TangentW:TANGENT;
 	float2 Tex  : TEXCOORD;
 };
 
@@ -183,8 +183,8 @@ void GS(
 			// Project to homogeneous clip space.
 			element.pos = mul(v[J], gViewProj);
 			element.PosW = v[J].xyz;
-			//element.NormalW = look;
-			//element.TangentW = right;
+			element.NormalW = look;
+			element.TangentW = right;
 			element.Tex = gGrassTexC[J];
 			output.Append(element);
 		}

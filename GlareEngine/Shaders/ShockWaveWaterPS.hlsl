@@ -57,8 +57,8 @@ float4 PS(VertexOut pin) : SV_Target
     // Compute projected coordinates
     float2 vProj = (pin.ScreenPos.xy / pin.ScreenPos.w);
     float4 vReflection = gSRVMap[gWaterReflectionMapIndex].Sample(gsamLinearClamp, vProj.xy + vReflBump.xy);
-    float4 vRefrA = gSRVMap[gWaterRefractionMapIndex].Sample(gsamLinearWrap, vProj.xy + vRefrBump.xy);
-    float4 vRefrB = gSRVMap[gWaterRefractionMapIndex].Sample(gsamLinearWrap, vProj.xy);
+    float4 vRefrA = gSRVMap[gWaterRefractionMapIndex].Sample(gsamLinearClamp, vProj.xy + vRefrBump.xy);
+    float4 vRefrB = gSRVMap[gWaterRefractionMapIndex].Sample(gsamLinearClamp, vProj.xy);
 
     // Mask occluders from refraction map
     float4 vRefraction = vRefrB * vRefrA.w + vRefrA * (1 - vRefrA.w);

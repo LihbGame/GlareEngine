@@ -35,6 +35,8 @@ public:
 	float GetGrassMinWind()const { return GrassMinWind; }
 	float GetGrassMaxWind()const { return GrassMaxWind; }
 
+	XMFLOAT3 GetGrassColor()const { return XMFLOAT3(mGrassColor); }
+
 	static bool mWindowMaxSize;
 private:
 	bool show_demo_window = true;
@@ -55,6 +57,10 @@ private:
 
 	float GrassMinWind = 0.5f;
 	float GrassMaxWind = 1.0f;
+
+
+	float mGrassColor[3] = { 0.39f,0.196f,0.0f };
+
 
 	ID3D12DescriptorHeap* mGUISrvDescriptorHeap = nullptr;
 

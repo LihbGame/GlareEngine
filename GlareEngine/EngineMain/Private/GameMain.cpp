@@ -2053,6 +2053,7 @@ void GameApp::UpdateTerrainPassCB(const GameTimer& gt)
 	mTerrainConstant.gRGBNoiseMapIndex = mRGBNoiseMapIndex;
 	mTerrainConstant.gMinWind = mEngineUI->GetGrassMinWind();
 	mTerrainConstant.gMaxWind = mEngineUI->GetGrassMaxWind();
+	mTerrainConstant.gGrassColor = mEngineUI->GetGrassColor();
 
 	auto currPassCB = mCurrFrameResource->TerrainCB.get();
 	currPassCB->CopyData(0, mTerrainConstant);
