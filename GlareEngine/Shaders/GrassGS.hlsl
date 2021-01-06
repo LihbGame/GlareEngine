@@ -150,6 +150,12 @@ void GS(
 		float3 Height = gPerGrassHeight * up;
 		float3 Width = gPerGrassWidth * right;
 
+		if (gIsGrassRandom)
+		{
+			Height *= randomRGB.r;
+			Width *= randomRGB.b;
+		}
+
 		//风的影响系数
 		float windCoEff = 0.0f;
 		[unroll]

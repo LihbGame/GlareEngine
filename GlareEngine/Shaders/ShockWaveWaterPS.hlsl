@@ -107,7 +107,7 @@ float4 PS(VertexOut pin) : SV_Target
     bumpedNormalW = normalize(bumpedNormalW);
 
 
-    float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
+     texColor = ComputeLighting(gLights, mat, pin.PosW,
         bumpedNormalW, normalize(gEyePosW.xyz - pin.PosW), shadowFactor)+ texColor;
 
     //
@@ -120,5 +120,5 @@ float4 PS(VertexOut pin) : SV_Target
     texColor.rgb = lerp(texColor.rgb, gFogColor.rgb, fogLerp);
     }
 
-    return directLight;
+    return texColor;
 }

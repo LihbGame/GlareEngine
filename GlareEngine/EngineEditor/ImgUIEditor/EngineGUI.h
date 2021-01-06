@@ -40,6 +40,7 @@ public:
 	XMFLOAT3 GetGrassColor()const { return XMFLOAT3(mGrassColor); }
 	float GetPerGrassHeight()const { return mPerGrassHeight; }
 	float GetPerGrassWidth()const { return mPerGrassWidth; }
+	bool IsGrassRandom()const { return mIsGrassRandom; }
 
 	static bool mWindowMaxSize;
 private:
@@ -64,6 +65,7 @@ private:
 
 	float mPerGrassHeight = 8.0f;
 	float mPerGrassWidth = 2.0f;
+	bool mIsGrassRandom = false;
 
 	float mGrassColor[3] = { 0.39f,0.196f,0.0f };
 	XMFLOAT3 mCameraPosition = { 0.0f,0.0f,0.0f };

@@ -348,7 +348,7 @@ void GameApp::Draw(const GameTimer& gt)
 		
 	//Draw UI
 	PIXBeginEvent(mCommandList.Get(), 0, "Draw UI");
-	mEngineUI->DrawUI(mCommandList.Get());
+	//mEngineUI->DrawUI(mCommandList.Get());
 	PIXEndEvent(mCommandList.Get());
 		
 	mCommandList->ResourceBarrier(2, barriers);
@@ -2057,6 +2057,7 @@ void GameApp::UpdateTerrainPassCB(const GameTimer& gt)
 	mTerrainConstant.gGrassColor = mEngineUI->GetGrassColor();
 	mTerrainConstant.gPerGrassHeight = mEngineUI->GetPerGrassHeight();
 	mTerrainConstant.gPerGrassWidth = mEngineUI->GetPerGrassWidth();
+	mTerrainConstant.isGrassRandom = mEngineUI->IsGrassRandom();
 
 	auto currPassCB = mCurrFrameResource->TerrainCB.get();
 	currPassCB->CopyData(0, mTerrainConstant);

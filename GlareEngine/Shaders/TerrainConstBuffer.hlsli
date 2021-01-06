@@ -22,4 +22,5 @@ cbuffer TerrainCBPass : register(b2)
 
 	float gPerGrassHeight;
 	float gPerGrassWidth;
+	bool gIsGrassRandom;
 };

@@ -118,19 +118,26 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 			ImGui::Checkbox("Water", &show_water);
 			ImGui::Checkbox("HeightMapTerrain", &show_HeightMapTerrain);
 
-			ImGui::Checkbox("Grass", &show_Grass);
-			ImGui::ColorEdit3("Grass color", mGrassColor,0);
-			ImGui::SliderFloat("Height", &mPerGrassHeight, 3.0f, 10.0f);
-			ImGui::SliderFloat("Width", &mPerGrassWidth, 0.5f, 3.0f);
-			ImGui::SliderFloat("MinWind", &GrassMinWind, 0.0f, 1.0f);
-			ImGui::SliderFloat("MaxWind", &GrassMaxWind, 1.0f, 2.5f);
+			if (ImGui::CollapsingHeader("Grass"))
+			{
+				ImGui::Checkbox("Grass Rendering", &show_Grass);
+				ImGui::Checkbox("RandomSize", &mIsGrassRandom);
+				ImGui::ColorEdit3("Grass color", mGrassColor, 0);
+				ImGui::SliderFloat("Height", &mPerGrassHeight, 3.0f, 10.0f);
+				ImGui::SliderFloat("Width", &mPerGrassWidth, 0.5f, 3.0f);
+				ImGui::SliderFloat("MinWind", &GrassMinWind, 0.0f, 1.0f);
+				ImGui::SliderFloat("MaxWind", &GrassMaxWind, 1.0f, 2.5f);
+			}
 
-			ImGui::Checkbox("Fog", &FogEnabled);
-			ImGui::Text("Fog Start");
-			ImGui::SliderFloat(" ", &FogStart, 0.0f, 1000.0f);
-			ImGui::Text("Fog Range");
-			ImGui::SliderFloat("  ", &FogRange, 0.0f, 1000.0f);
-			//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			if (ImGui::CollapsingHeader("Fog"))
+			{
+				ImGui::Checkbox("Fog Rendering", &FogEnabled);
+				ImGui::Text("Fog Start");
+				ImGui::SliderFloat(" ", &FogStart, 0.0f, 1000.0f);
+				ImGui::Text("Fog Range");
+				ImGui::SliderFloat("  ", &FogRange, 0.0f, 1000.0f);
+			}
+				//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			
 
 			ImGui::End();
