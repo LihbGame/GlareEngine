@@ -479,9 +479,9 @@ void GameApp::OnMouseMove(WPARAM btnState, int x, int y)
 
 	if ((btnState & MK_LBUTTON) != 0)
 	{
-		if (x >= mScissorRect.left && y >= mScissorRect.top
-			&& y <= (mScissorRect.top+ (mScissorRect.bottom- mScissorRect.top))
-			&& x <= (mScissorRect .left+ (mScissorRect.right- mScissorRect.left)))
+		if (x >= mClientRect.left && y >= mClientRect.top
+			&& y <= (mClientRect.top+ (mClientRect.bottom- mClientRect.top))
+			&& x <= (mClientRect.left+ (mClientRect.right- mClientRect.left)))
 		{
 			float dx = XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
 			float dy = XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
@@ -2055,6 +2055,8 @@ void GameApp::UpdateTerrainPassCB(const GameTimer& gt)
 	mTerrainConstant.gMinWind = mEngineUI->GetGrassMinWind();
 	mTerrainConstant.gMaxWind = mEngineUI->GetGrassMaxWind();
 	mTerrainConstant.gGrassColor = mEngineUI->GetGrassColor();
+	mTerrainConstant.gPerGrassHeight = mEngineUI->GetPerGrassHeight();
+	mTerrainConstant.gPerGrassWidth = mEngineUI->GetPerGrassWidth();
 
 	auto currPassCB = mCurrFrameResource->TerrainCB.get();
 	currPassCB->CopyData(0, mTerrainConstant);

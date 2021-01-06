@@ -1,9 +1,6 @@
 #include "Common.hlsli"
 #include "TerrainConstBuffer.hlsli"
 
-#define halfWidth 2.0f
-#define perHeight 6.0f
-#define halfheight 6.0f
 static	float2 gGrassTexC[12] =
 {
 	float2(0.0f,1.0f),
@@ -91,15 +88,16 @@ void GS(
 {
 	bool isGrassClip;
 	float3 tempCenter = input[0].PosW;
-	tempCenter.y +=halfheight;
+    half halfheight=gPerGrassHeight * 2.5f;
+	tempCenter.y += halfheight;
 	if (isReflection)
 	{
 		tempCenter.y = -tempCenter.y;
-		isGrassClip = AABBOutsideFrustumTest(tempCenter, float3(halfWidth, halfWidth, halfheight), gWorldFrustumPlanes);
+		isGrassClip = AABBOutsideFrustumTest(tempCenter, float3(gPerGrassWidth, gPerGrassWidth, halfheight), gWorldFrustumPlanes);
 	}
 	else
 	{
-		isGrassClip = AABBOutsideFrustumTest(tempCenter, float3(halfWidth, halfWidth, halfheight), gWorldFrustumPlanes);
+		isGrassClip = AABBOutsideFrustumTest(tempCenter, float3(gPerGrassWidth, gPerGrassWidth, halfheight), gWorldFrustumPlanes);
 	}
 
 
@@ -149,11 +147,8 @@ void GS(
 
 
 		// Compute triangle strip vertices (quad) in world space.
-		float HalfWidth = halfWidth;
-		float PerHeight = perHeight;
-
-		float3 Height = PerHeight * up;
-		float3 Width = HalfWidth * right;
+		float3 Height = gPerGrassHeight * up;
+		float3 Width = gPerGrassWidth * right;
 
 		//风的影响系数
 		float windCoEff = 0.0f;

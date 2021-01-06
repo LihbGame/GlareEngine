@@ -165,13 +165,18 @@ void D3DApp::OnResize()
 	mScreenViewport.Height = mClientHeight;// static_cast<float>(mClientHeight * 0.75f - MainMenuBarHeight);
 	mScreenViewport.MinDepth = 0.0f;
 	mScreenViewport.MaxDepth = 1.0f;
-	mScissorRect = { static_cast<LONG>(mClientWidth * 1.0f / 6.0f),
+	mScissorRect = { 0,// static_cast<LONG>(mClientWidth * 1.0f / 6.0f),
+		0,//static_cast<LONG>(MainMenuBarHeight),
+		mClientWidth,//static_cast<LONG>(static_cast<float>(mClientWidth * 5.0f / 6.0f)),
+		mClientHeight,//static_cast<LONG>(static_cast<float>(mClientHeight * 0.75f))
+	};
+
+	//Client Rect
+	mClientRect = { static_cast<LONG>(mClientWidth * 1.0f / 6.0f),
 		static_cast<LONG>(MainMenuBarHeight),
 		static_cast<LONG>(static_cast<float>(mClientWidth * 5.0f / 6.0f)),
-		static_cast<LONG>(static_cast<float>(mClientHeight * 0.75f)) };
-
-
-
+		static_cast<LONG>(static_cast<float>(mClientHeight * 0.75f))
+	};
 
 
 	// Flush before changing any resources.

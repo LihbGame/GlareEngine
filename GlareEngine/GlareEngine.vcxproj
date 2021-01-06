@@ -159,11 +159,13 @@
     <ClInclude Include="Animation\ModelLoader.h" />
     <ClInclude Include="Animation\ModelMesh.h" />
     <ClInclude Include="Animation\OzzAnimePlayBack.h" />
+    <None Include="EngineCore\Graphics\Public\Color.h" />
     <ClInclude Include="EngineCore\Graphics\Public\CommandAllocatorPool.h" />
     <ClInclude Include="EngineCore\Graphics\Public\DescriptorHeap.h" />
     <ClInclude Include="EngineCore\Graphics\Public\GPUResource.h" />
     <None Include="EngineCore\Graphics\Public\GraphicsCore.h" />
     <None Include="EngineCore\Graphics\Public\SamplerManager.h" />
+    <None Include="EngineCore\Graphics\Public\PixelBuffer.h" />
     <ClInclude Include="EngineCore\Math\Common.h" />
     <ClInclude Include="EngineCore\Math\Hash.h" />
     <ClInclude Include="EngineCore\Math\Scalar.h" />
@@ -227,11 +229,13 @@
     <ClCompile Include="Animation\Animations.cpp" />
     <ClCompile Include="Animation\AnimEvaluator.cpp" />
     <ClCompile Include="Animation\ModelMesh.cpp" />
+    <None Include="EngineCore\Graphics\Private\Color.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\CommandAllocatorPool.cpp" />
     <None Include="EngineCore\Graphics\Private\GraphicsCore.cpp" />
     <None Include="EngineCore\Graphics\Private\SamplerManager.cpp" />
     <None Include="EngineCore\Graphics\Private\DescriptorHeap.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\DDSTextureLoader.cpp" />
+    <None Include="EngineCore\Graphics\Private\PixelBuffer.cpp" />
     <ClCompile Include="EngineCore\Private\L3DBaseApp.cpp" />
     <ClCompile Include="EngineCore\Private\L3DCamera.cpp" />
     <ClCompile Include="EngineCore\Private\L3DGameTimer.cpp" />

@@ -117,7 +117,11 @@ struct TerrainConstants
 
 	float gMinWind=0.0f;
 	float gMaxWind=0.0f;
+
     XMFLOAT3 gGrassColor;
+
+	float gPerGrassHeight = 0.0f;
+	float gPerGrassWidth = 0.0f;
 };
 
 
