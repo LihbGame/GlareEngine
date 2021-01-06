@@ -38,6 +38,8 @@ public:
 	void SetCameraPosition(const XMFLOAT3& position) { mCameraPosition = position; }
 
 	XMFLOAT3 GetGrassColor()const { return XMFLOAT3(mGrassColor); }
+	float GetPerGrassHeight()const { return mPerGrassHeight; }
+	float GetPerGrassWidth()const { return mPerGrassWidth; }
 
 	static bool mWindowMaxSize;
 private:
@@ -60,6 +62,8 @@ private:
 	float GrassMinWind = 0.5f;
 	float GrassMaxWind = 1.0f;
 
+	float mPerGrassHeight = 8.0f;
+	float mPerGrassWidth = 2.0f;
 
 	float mGrassColor[3] = { 0.39f,0.196f,0.0f };
 	XMFLOAT3 mCameraPosition = { 0.0f,0.0f,0.0f };

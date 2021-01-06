@@ -116,6 +116,7 @@ protected:
 
     D3D12_VIEWPORT mScreenViewport; 
     D3D12_RECT mScissorRect;
+	D3D12_RECT mClientRect;
 
 	UINT mRtvDescriptorSize = 0;
 	UINT mDsvDescriptorSize = 0;

@@ -120,6 +120,8 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 
 			ImGui::Checkbox("Grass", &show_Grass);
 			ImGui::ColorEdit3("Grass color", mGrassColor,0);
+			ImGui::SliderFloat("Height", &mPerGrassHeight, 3.0f, 10.0f);
+			ImGui::SliderFloat("Width", &mPerGrassWidth, 0.5f, 3.0f);
 			ImGui::SliderFloat("MinWind", &GrassMinWind, 0.0f, 1.0f);
 			ImGui::SliderFloat("MaxWind", &GrassMaxWind, 1.0f, 2.5f);
 
