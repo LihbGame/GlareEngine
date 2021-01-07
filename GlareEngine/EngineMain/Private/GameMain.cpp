@@ -348,7 +348,7 @@ void GameApp::Draw(const GameTimer& gt)
 		
 	//Draw UI
 	PIXBeginEvent(mCommandList.Get(), 0, "Draw UI");
-	//mEngineUI->DrawUI(mCommandList.Get());
+	mEngineUI->DrawUI(mCommandList.Get());
 	PIXEndEvent(mCommandList.Get());
 		
 	mCommandList->ResourceBarrier(2, barriers);

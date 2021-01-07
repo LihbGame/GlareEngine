@@ -49,12 +49,12 @@ private:
 
 	bool show_shadow = false;
 	bool show_model = false;
-	bool show_water = false;
+	bool show_water = true;
 	bool show_land = false;
 	bool show_sky = true;
 	bool show_HeightMapTerrain = true;
 	bool show_Grass = true;
-	float CameraMoveSpeed = 50.0f;
+	float CameraMoveSpeed = 200.0f;
 
 	bool  FogEnabled = false;
 	float FogStart = 300.0f;
@@ -63,7 +63,7 @@ private:
 	float GrassMinWind = 0.5f;
 	float GrassMaxWind = 1.0f;
 
-	float mPerGrassHeight = 8.0f;
+	float mPerGrassHeight = 5.0f;
 	float mPerGrassWidth = 2.0f;
 	bool mIsGrassRandom = false;
 

@@ -35,12 +35,12 @@ float4 PS(GSOutput pin) : SV_TARGET
 	Material mat = { diffuseAlbedo, matData.FresnelR0, 0.5,0,0};
 
 	// Only the first light casts a shadow.
-	float3 toEyeW = normalize(gEyePosW - pin.PosW);
-	float3 shadowFactor = float3(1.0f, 1.0f, 1.0f);
-	float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
-		pin.NormalW, toEyeW, shadowFactor);
+	//float3 toEyeW = normalize(gEyePosW - pin.PosW);
+	//float3 shadowFactor = float3(1.0f, 1.0f, 1.0f);
+	//float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
+		//pin.NormalW, toEyeW, shadowFactor);
 	 
-	float4 litColor = ambient + directLight;
+	float4 litColor = ambient;// +directLight;
 
 	//
 	// Fogging
