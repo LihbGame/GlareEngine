@@ -159,8 +159,7 @@
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_truetype.h" />
     <ClInclude Include="EngineCore\Graphics\Public\DescriptorHeap.h" />
     <ClInclude Include="EngineCore\Math\Hash.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\Color.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\PixelBuffer.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\ReadbackBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -304,10 +303,7 @@
     <ClCompile Include="EngineCore\Graphics\Private\WICTextureLoader12.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\Graphics\Private\Color.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Graphics\Private\PixelBuffer.cpp">
+    <ClCompile Include="EngineCore\Graphics\Private\ReadbackBuffer.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
@@ -374,6 +370,14 @@
     </None>
     <None Include="EngineCore\Math\Functions.inl" />
     <None Include="EngineCore\Graphics\Private\DescriptorHeap.cpp">
+      <Filter>MainSource</Filter>
+    </None>
+    <None Include="EngineCore\Graphics\Public\Color.h" />
+    <None Include="EngineCore\Graphics\Public\PixelBuffer.h" />
+    <None Include="EngineCore\Graphics\Private\Color.cpp">
+      <Filter>MainSource</Filter>
+    </None>
+    <None Include="EngineCore\Graphics\Private\PixelBuffer.cpp">
       <Filter>MainSource</Filter>
     </None>
   </ItemGroup>

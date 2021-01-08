@@ -166,6 +166,7 @@
     <None Include="EngineCore\Graphics\Public\GraphicsCore.h" />
     <None Include="EngineCore\Graphics\Public\SamplerManager.h" />
     <None Include="EngineCore\Graphics\Public\PixelBuffer.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\ReadbackBuffer.h" />
     <ClInclude Include="EngineCore\Math\Common.h" />
     <ClInclude Include="EngineCore\Math\Hash.h" />
     <ClInclude Include="EngineCore\Math\Scalar.h" />
@@ -236,6 +237,7 @@
     <None Include="EngineCore\Graphics\Private\DescriptorHeap.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\DDSTextureLoader.cpp" />
     <None Include="EngineCore\Graphics\Private\PixelBuffer.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\ReadbackBuffer.cpp" />
     <ClCompile Include="EngineCore\Private\L3DBaseApp.cpp" />
     <ClCompile Include="EngineCore\Private\L3DCamera.cpp" />
     <ClCompile Include="EngineCore\Private\L3DGameTimer.cpp" />
