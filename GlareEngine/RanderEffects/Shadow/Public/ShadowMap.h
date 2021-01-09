@@ -75,8 +75,8 @@ public:
 	//基础光方向
 	XMFLOAT3 mBaseLightDirections[3] = {
 		XMFLOAT3(0.57735f, -0.47735f, 0.57735f),
-		XMFLOAT3(-0.57735f, -0.57735f, 0.57735f),
-		XMFLOAT3(0.57735f, -0.57735f, -0.57735f)
+		XMFLOAT3(-0.57735f, -0.47735f, 0.57735f),
+		XMFLOAT3(0.57735f, -0.47735f, -0.57735f)
 	};
 	//旋转后光的方向
 	XMFLOAT3 mRotatedLightDirections[3];
