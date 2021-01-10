@@ -152,7 +152,7 @@ void GS(
 
 		if (gIsGrassRandom)
 		{
-			Height *= randomRGB.r;
+			Height *= randomRGB.r+0.5f;
 			Width *= randomRGB.b;
 		}
 
