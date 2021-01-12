@@ -160,6 +160,7 @@
     <ClInclude Include="EngineCore\Graphics\Public\DescriptorHeap.h" />
     <ClInclude Include="EngineCore\Math\Hash.h" />
     <ClInclude Include="EngineCore\Graphics\Public\ReadbackBuffer.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\ColorBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -273,9 +274,6 @@
     <ClCompile Include="EngineCore\Private\PSOManager.cpp">
       <Filter>PSO\Private</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\Graphics\Private\CommandAllocatorPool.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
@@ -378,6 +376,12 @@
       <Filter>MainSource</Filter>
     </None>
     <None Include="EngineCore\Graphics\Private\ReadbackBuffer.cpp">
+      <Filter>MainSource</Filter>
+    </None>
+    <None Include="EngineCore\Graphics\Private\CommandAllocatorPool.cpp">
+      <Filter>MainSource</Filter>
+    </None>
+    <None Include="EngineCore\Graphics\Private\ColorBuffer.cpp">
       <Filter>MainSource</Filter>
     </None>
   </ItemGroup>

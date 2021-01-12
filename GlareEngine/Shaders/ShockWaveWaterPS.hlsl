@@ -103,7 +103,7 @@ float4 PS(VertexOut pin) : SV_Target
     //shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
 
     //tansform normal
-    float3 bumpedNormalW = mul(vBumpTex * float3(0.4, 0.4, 1.0), GetTangentSpaceBasis(float3(1.0f, 0.0f, 0.0f), float3(0.0f, 1.0f, 0.0f)));
+    float3 bumpedNormalW = mul(vBumpTex * float3(0.5, 0.5, 1.0), GetTangentSpaceBasis(float3(1.0f, 0.0f, 0.0f), float3(0.0f, 1.0f, 0.0f)));
     bumpedNormalW = normalize(bumpedNormalW);
 
 

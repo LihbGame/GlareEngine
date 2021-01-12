@@ -160,6 +160,7 @@
     <ClInclude Include="Animation\ModelMesh.h" />
     <ClInclude Include="Animation\OzzAnimePlayBack.h" />
     <None Include="EngineCore\Graphics\Public\Color.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\ColorBuffer.h" />
     <ClInclude Include="EngineCore\Graphics\Public\CommandAllocatorPool.h" />
     <ClInclude Include="EngineCore\Graphics\Public\DescriptorHeap.h" />
     <ClInclude Include="EngineCore\Graphics\Public\GPUResource.h" />
@@ -235,6 +236,7 @@
     <None Include="EngineCore\Graphics\Private\GraphicsCore.cpp" />
     <None Include="EngineCore\Graphics\Private\SamplerManager.cpp" />
     <None Include="EngineCore\Graphics\Private\DescriptorHeap.cpp" />
+    <None Include="EngineCore\Graphics\Private\ColorBuffer.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\DDSTextureLoader.cpp" />
     <None Include="EngineCore\Graphics\Private\PixelBuffer.cpp" />
     <None Include="EngineCore\Graphics\Private\ReadbackBuffer.cpp" />
