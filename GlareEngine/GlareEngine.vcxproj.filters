@@ -161,6 +161,7 @@
     <ClInclude Include="EngineCore\Math\Hash.h" />
     <ClInclude Include="EngineCore\Graphics\Public\ReadbackBuffer.h" />
     <ClInclude Include="EngineCore\Graphics\Public\ColorBuffer.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\DepthBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -299,6 +300,9 @@
       <Filter>Core\Private</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Graphics\Private\WICTextureLoader12.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\DepthBuffer.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
