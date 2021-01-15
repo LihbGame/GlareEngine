@@ -11,27 +11,16 @@ struct VertexIn
 struct VertexOut
 {
     float4 PosH    : SV_POSITION;
-    float3 Eye        : TEXCOORD0;
     float4 Wave0      : TEXCOORD1;
     float2 Wave1      : TEXCOORD2;
     float2 Wave2      : TEXCOORD3;
     float2 Wave3      : TEXCOORD4;
     float4 ScreenPos  : TEXCOORD5;
-    float2 HeighTex  : TEXCOORD6;
-    float3 PosW        : TEXCOORD7;
+    float2 HeighTex   : TEXCOORD6;
+    float3 PosW       : TEXCOORD7;
+    float time : Time;
 };
 
-
-float3x3 GetTangentSpaceBasis(float3 T, float3 N)
-{
-    float3x3 objToTangentSpace;
-
-    objToTangentSpace[0] = T;           // tangent
-    objToTangentSpace[1] = cross(N,T); // binormal
-    objToTangentSpace[2] = N;           // normal  
-
-    return  transpose(objToTangentSpace);
-}
 
 VertexOut VS(VertexIn vin)
 {
@@ -45,7 +34,7 @@ VertexOut VS(VertexIn vin)
     vout.PosH = mul(float4(vout.PosW, 1.0f), gViewProj);
     float tans = gTotalTime * 0.005;
     float2 fTranslation = float2(tans, tans);
-    float2 vTexCoords = PosW.xz * 0.03;
+    float2 vTexCoords = PosW.xz * 0.01;
 
     // Scale texture coordinates to get mix of low/high frequency details
     vout.Wave0.xy = vTexCoords.xy + fTranslation * 2.0;
@@ -63,11 +52,6 @@ VertexOut VS(VertexIn vin)
     vout.ScreenPos.xy = (vHPos.xy + vHPos.w) * 0.5;
     vout.ScreenPos.zw = float2(1, vHPos.w);
 
-    // get tangent space basis    
-    float3x3 objToTangentSpace = GetTangentSpaceBasis(vin.Tangent.xyz, vin.Normal.xyz);
-
-    float3 EyeVec = gEyePosW.xyz - PosW;
-    vout.Eye.xyz = mul(EyeVec, objToTangentSpace);
-
+    vout.time = abs(cos(gTotalTime / 3));
     return vout;
 }
