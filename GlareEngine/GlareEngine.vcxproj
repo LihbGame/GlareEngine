@@ -241,7 +241,7 @@
     <ClCompile Include="EngineCore\Graphics\Private\DDSTextureLoader.cpp" />
     <None Include="EngineCore\Graphics\Private\PixelBuffer.cpp" />
     <None Include="EngineCore\Graphics\Private\ReadbackBuffer.cpp" />
-    <ClCompile Include="EngineCore\Graphics\Private\DepthBuffer.cpp" />
+    <None Include="EngineCore\Graphics\Private\DepthBuffer.cpp" />
     <ClCompile Include="EngineCore\Private\L3DBaseApp.cpp" />
     <ClCompile Include="EngineCore\Private\L3DCamera.cpp" />
     <ClCompile Include="EngineCore\Private\L3DGameTimer.cpp" />

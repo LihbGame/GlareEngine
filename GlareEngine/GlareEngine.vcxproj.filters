@@ -302,9 +302,6 @@
     <ClCompile Include="EngineCore\Graphics\Private\WICTextureLoader12.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\Graphics\Private\DepthBuffer.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -386,6 +383,9 @@
       <Filter>MainSource</Filter>
     </None>
     <None Include="EngineCore\Graphics\Private\ColorBuffer.cpp">
+      <Filter>MainSource</Filter>
+    </None>
+    <None Include="EngineCore\Graphics\Private\DepthBuffer.cpp">
       <Filter>MainSource</Filter>
     </None>
   </ItemGroup>
