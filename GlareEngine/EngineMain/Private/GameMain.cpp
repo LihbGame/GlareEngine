@@ -2058,6 +2058,7 @@ void GameApp::UpdateTerrainPassCB(const GameTimer& gt)
 	mTerrainConstant.gPerGrassHeight = mEngineUI->GetPerGrassHeight();
 	mTerrainConstant.gPerGrassWidth = mEngineUI->GetPerGrassWidth();
 	mTerrainConstant.isGrassRandom = mEngineUI->IsGrassRandom();
+	mTerrainConstant.gWaterTransparent = mEngineUI->GetWaterTransparent();
 
 	auto currPassCB = mCurrFrameResource->TerrainCB.get();
 	currPassCB->CopyData(0, mTerrainConstant);

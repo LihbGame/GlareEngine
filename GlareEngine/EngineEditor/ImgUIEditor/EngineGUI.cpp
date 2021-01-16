@@ -115,10 +115,15 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 			ImGui::Checkbox("Model", &show_model);
 			ImGui::Checkbox("Sky", &show_sky);
 			ImGui::Checkbox("Land", &show_land);
-			ImGui::Checkbox("Water", &show_water);
 			ImGui::Checkbox("HeightMapTerrain", &show_HeightMapTerrain);
 
-			if (ImGui::CollapsingHeader("Grass"))
+			if (!ImGui::CollapsingHeader("Water"))
+			{
+				ImGui::Checkbox("Water Rendering", &show_water);
+				ImGui::SliderFloat("Transparent", &mWaterTransparent, 0.0f, 500.0f);
+			}
+
+			if (!ImGui::CollapsingHeader("Grass"))
 			{
 				ImGui::Checkbox("Grass Rendering", &show_Grass);
 				ImGui::Checkbox("RandomSize", &mIsGrassRandom);
@@ -129,7 +134,7 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 				ImGui::SliderFloat("MaxWind", &GrassMaxWind, 1.0f, 2.5f);
 			}
 
-			if (ImGui::CollapsingHeader("Fog"))
+			if (!ImGui::CollapsingHeader("Fog"))
 			{
 				ImGui::Checkbox("Fog Rendering", &FogEnabled);
 				ImGui::Text("Fog Start");

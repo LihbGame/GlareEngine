@@ -50,8 +50,8 @@ float4 PS(VertexOut pin) : SV_Target
     float3 vBumpTex = normalize(2.0 * (vBumpTexA.xyz + vBumpTexB.xyz + vBumpTexC.xyz + vBumpTexD.xyz) - 4.0);
 
     // Apply individual bump scale for refraction and reflection
-    float3 vRefrBump = vBumpTex.xyz * float3(0.001, 0.005, 1.0);
-    float3 vReflBump = vBumpTex.xyz * float3(0.005, 0.005, 1.0);
+    float3 vRefrBump = vBumpTex.xyz * float3(0.01, 0.01, 1.0);
+    float3 vReflBump = vBumpTex.xyz * float3(0.01, 0.01, 1.0);
 
 
     // Compute projected coordinates
@@ -69,7 +69,7 @@ float4 PS(VertexOut pin) : SV_Target
     float fresnel = Fresnel(NdotL, 0.01, 5.0);
 
     // Use distance to lerp between refraction and deep water color
-    float fDistScale = saturate(100 / pin.Wave0.w);
+    float fDistScale = saturate(gWaterTransparent / pin.Wave0.w);
     float3 WaterDeepColor = (vRefraction.xyz * fDistScale + (1 - fDistScale) * float3(0.0025, 0.1, 0.125));
     // Lerp between water color and deep water color
     float3 WaterColor = float3(0.05, 0.1, 0.15);
@@ -98,13 +98,13 @@ float4 PS(VertexOut pin) : SV_Target
 
     //lighting
     {
-        Material mat = { float4(waterColor, 1.0f), float3(0.01f,0.01f,0.01f), 0.3f,0.0f,0.0f };
+        Material mat = { float4(waterColor, 1.0f), float3(0.01f,0.01f,0.01f), 0.3f,0.0f,1.0f };
         // Only the first light casts a shadow.
         float3 shadowFactor = float3(1.0f, 1.0f, 1.0f);
         //shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
 
         //tansform normal
-        float3 bumpedNormalW = mul(vBumpTex * float3(0.5, 0.5, 1.0), GetTangentSpaceBasis(float3(1.0f, 0.0f, 0.0f), float3(0.0f, 1.0f, 0.0f)));
+        float3 bumpedNormalW = mul(vBumpTex * float3(0.8, 0.8, 1.0), GetTangentSpaceBasis(float3(1.0f, 0.0f, 0.0f), float3(0.0f, 1.0f, 0.0f)));
         bumpedNormalW = normalize(bumpedNormalW);
 
         texColor = ComputeLighting(gLights, mat, pin.PosW,

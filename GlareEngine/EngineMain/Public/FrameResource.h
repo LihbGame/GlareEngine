@@ -123,6 +123,7 @@ struct TerrainConstants
 	float gPerGrassHeight = 0.0f;
 	float gPerGrassWidth = 0.0f;
     int isGrassRandom = false;
+    float gWaterTransparent = 0.0f;
 };
 
 
