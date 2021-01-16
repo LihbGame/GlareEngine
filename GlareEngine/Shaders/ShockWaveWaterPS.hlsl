@@ -74,7 +74,7 @@ float4 PS(VertexOut pin) : SV_Target
     // Lerp between water color and deep water color
     float3 WaterColor = float3(0.05, 0.1, 0.15);
     float3 waterColor = (WaterColor* facing + WaterDeepColor * (1.0 - facing));
-    float3 cReflect = fresnel * vReflection.xyz*0.7f ;
+    float3 cReflect = fresnel * vReflection.xyz*0.5f ;
 
 
     float3 Foam = float3(0.0f, 0.0f, 0.0f);

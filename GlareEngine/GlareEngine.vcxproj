@@ -169,6 +169,7 @@
     <None Include="EngineCore\Graphics\Public\SamplerManager.h" />
     <None Include="EngineCore\Graphics\Public\PixelBuffer.h" />
     <ClInclude Include="EngineCore\Graphics\Public\ReadbackBuffer.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\RootSignature.h" />
     <ClInclude Include="EngineCore\Math\Common.h" />
     <ClInclude Include="EngineCore\Math\Hash.h" />
     <ClInclude Include="EngineCore\Math\Scalar.h" />
@@ -242,6 +243,9 @@
     <None Include="EngineCore\Graphics\Private\PixelBuffer.cpp" />
     <None Include="EngineCore\Graphics\Private\ReadbackBuffer.cpp" />
     <None Include="EngineCore\Graphics\Private\DepthBuffer.cpp" />
+    <None Include="EngineCore\Graphics\Private\RootSignature.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </None>
     <ClCompile Include="EngineCore\Private\L3DBaseApp.cpp" />
     <ClCompile Include="EngineCore\Private\L3DCamera.cpp" />
     <ClCompile Include="EngineCore\Private\L3DGameTimer.cpp" />

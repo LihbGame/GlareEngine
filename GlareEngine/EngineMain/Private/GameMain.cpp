@@ -511,10 +511,19 @@ void GameApp::OnKeyboardInput(const GameTimer& gt)
 		mCamera.Strafe(CameraModeSpeed * DeltaTime);
 
 	XMFLOAT3 camPos = mCamera.GetPosition3f();
-	float y = mHeightMapTerrain->GetHeight(camPos.x, camPos.z)+2.0f;
-	if (camPos.y <= y)
+	static float width = 2048.0f;
+	if (camPos.x<-width || camPos.x >width ||
+		camPos.z < -width || camPos.z >width)
 	{
-		mCamera.SetPosition(camPos.x, y, camPos.z);
+	}
+	else
+	{
+
+		float y = mHeightMapTerrain->GetHeight(camPos.x, camPos.z) + 2.0f;
+		if (camPos.y <= y)
+		{
+			mCamera.SetPosition(camPos.x, y, camPos.z);
+		}
 	}
 	mCamera.UpdateViewMatrix();
 	mEngineUI->SetCameraPosition(camPos);

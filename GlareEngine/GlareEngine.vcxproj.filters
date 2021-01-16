@@ -162,6 +162,7 @@
     <ClInclude Include="EngineCore\Graphics\Public\ReadbackBuffer.h" />
     <ClInclude Include="EngineCore\Graphics\Public\ColorBuffer.h" />
     <ClInclude Include="EngineCore\Graphics\Public\DepthBuffer.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\RootSignature.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -386,6 +387,9 @@
       <Filter>MainSource</Filter>
     </None>
     <None Include="EngineCore\Graphics\Private\DepthBuffer.cpp">
+      <Filter>MainSource</Filter>
+    </None>
+    <None Include="EngineCore\Graphics\Private\RootSignature.cpp">
       <Filter>MainSource</Filter>
     </None>
   </ItemGroup>
