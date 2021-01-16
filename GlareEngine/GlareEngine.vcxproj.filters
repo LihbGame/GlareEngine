@@ -73,13 +73,7 @@
     <ClInclude Include="EngineMain\Public\FrameResource.h">
       <Filter>MainSource\Public</Filter>
     </ClInclude>
-    <ClInclude Include="EngineMain\Public\framework.h">
-      <Filter>MainSource\Public</Filter>
-    </ClInclude>
     <ClInclude Include="EngineMain\Public\GameMain.h">
-      <Filter>MainSource\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="EngineMain\Public\targetver.h">
       <Filter>MainSource\Public</Filter>
     </ClInclude>
     <ClInclude Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.h" />
@@ -163,6 +157,7 @@
     <ClInclude Include="EngineCore\Graphics\Public\ColorBuffer.h" />
     <ClInclude Include="EngineCore\Graphics\Public\DepthBuffer.h" />
     <ClInclude Include="EngineCore\Graphics\Public\RootSignature.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\PipelineState.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -390,6 +385,9 @@
       <Filter>MainSource</Filter>
     </None>
     <None Include="EngineCore\Graphics\Private\RootSignature.cpp">
+      <Filter>MainSource</Filter>
+    </None>
+    <None Include="EngineCore\Graphics\Private\PipelineState.cpp">
       <Filter>MainSource</Filter>
     </None>
   </ItemGroup>

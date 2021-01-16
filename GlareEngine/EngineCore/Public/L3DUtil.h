@@ -1,16 +1,21 @@
 #pragma once
 
+// 包含 SDKDDKVer.h 可定义可用的最高版本的 Windows 平台。
+// 如果希望为之前的 Windows 平台构建应用程序，在包含 SDKDDKVer.h 之前请先包含 WinSDKVer.h 并
+// 将 _WIN32_WINNT 宏设置为想要支持的平台。
+#include <SDKDDKVer.h>
+// 从 Windows 头文件中排除极少使用的内容
+#define WIN32_LEAN_AND_MEAN             
+
+// C 运行时头文件
+#include <stdlib.h>
+#include <malloc.h>
+#include <memory.h>
+#include <tchar.h>
+
 #include <windows.h>
 #include <wrl.h>
-#include <dxgi1_4.h>
-#include <d3d12.h>
-#include <D3Dcompiler.h>
-#include <DirectXMath.h>
-#include <DirectXPackedVector.h>
-#include <DirectXColors.h>
-#include <DirectXCollision.h>
 #include <string>
-#include <memory>
 #include <algorithm>
 #include <vector>
 #include <array>
@@ -20,6 +25,13 @@
 #include <sstream>
 #include <cassert>
 #include <map>
+#include <dxgi1_4.h>
+#include <d3d12.h>
+#include <D3Dcompiler.h>
+#include <DirectXMath.h>
+#include <DirectXPackedVector.h>
+#include <DirectXColors.h>
+#include <DirectXCollision.h>
 
 #include "d3dx12.h"
 #include "DDSTextureLoader.h"

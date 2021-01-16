@@ -103,7 +103,7 @@ void GlareEngine::RootSignature::Finalize(const std::wstring& name, D3D12_ROOT_S
 		lock_guard<mutex> CS(s_HashMapMutex);
 		auto iter = s_RootSignatureHashMap.find(HashCode);
 
-		// Reserve space so the next inquiry will find that someone got here first.
+		//Reserve space so the next inquiry will find that someone got here first.
 		if (iter == s_RootSignatureHashMap.end())
 		{
 			RSRef = s_RootSignatureHashMap[HashCode].GetAddressOf();

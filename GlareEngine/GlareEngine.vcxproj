@@ -168,6 +168,7 @@
     <None Include="EngineCore\Graphics\Public\GraphicsCore.h" />
     <None Include="EngineCore\Graphics\Public\SamplerManager.h" />
     <None Include="EngineCore\Graphics\Public\PixelBuffer.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\PipelineState.h" />
     <ClInclude Include="EngineCore\Graphics\Public\ReadbackBuffer.h" />
     <ClInclude Include="EngineCore\Graphics\Public\RootSignature.h" />
     <ClInclude Include="EngineCore\Math\Common.h" />
@@ -199,9 +200,7 @@
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_textedit.h" />
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_truetype.h" />
     <ClInclude Include="EngineMain\Public\FrameResource.h" />
-    <ClInclude Include="EngineMain\Public\framework.h" />
     <ClInclude Include="EngineMain\Public\GameMain.h" />
-    <ClInclude Include="EngineMain\Public\targetver.h" />
     <None Include="EngineCore\Math\Functions.inl" />
     <None Include="RanderEffects\ParticleSystem\Public\ParticleSystem.h" />
     <None Include="EngineCore\Graphics\Public\GPUBuffer.h" />
@@ -246,6 +245,7 @@
     <None Include="EngineCore\Graphics\Private\RootSignature.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </None>
+    <None Include="EngineCore\Graphics\Private\PipelineState.cpp" />
     <ClCompile Include="EngineCore\Private\L3DBaseApp.cpp" />
     <ClCompile Include="EngineCore\Private\L3DCamera.cpp" />
     <ClCompile Include="EngineCore\Private\L3DGameTimer.cpp" />
