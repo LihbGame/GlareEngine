@@ -75,6 +75,21 @@ namespace GlareEngine
 		std::shared_ptr<const D3D12_INPUT_ELEMENT_DESC> m_InputLayouts;
 	};
 
+	class ComputePSO : public PSO
+	{
+		friend class CommandContext;
 
+	public:
+		ComputePSO();
+
+		void SetComputeShader(const void* Binary, size_t Size) { m_PSODesc.CS = CD3DX12_SHADER_BYTECODE(const_cast<void*>(Binary), Size); }
+		void SetComputeShader(const D3D12_SHADER_BYTECODE& Binary) { m_PSODesc.CS = Binary; }
+
+		void Finalize();
+
+	private:
+
+		D3D12_COMPUTE_PIPELINE_STATE_DESC m_PSODesc;
+	};
 
 }

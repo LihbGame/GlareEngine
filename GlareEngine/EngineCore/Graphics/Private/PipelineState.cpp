@@ -93,4 +93,85 @@ void GlareEngine::GraphicsPSO::SetPrimitiveRestart(D3D12_INDEX_BUFFER_STRIP_CUT_
 
 void GlareEngine::GraphicsPSO::Finalize()
 {
+	// Make sure the root signature is finalized first
+	m_PSODesc.pRootSignature = m_RootSignature->GetSignature();
+	assert(m_PSODesc.pRootSignature != nullptr);
+
+	m_PSODesc.InputLayout.pInputElementDescs = nullptr;
+	size_t HashCode = Utility::HashState(&m_PSODesc);
+	HashCode = Utility::HashState(m_InputLayouts.get(), m_PSODesc.InputLayout.NumElements, HashCode);
+	m_PSODesc.InputLayout.pInputElementDescs = m_InputLayouts.get();
+
+	ID3D12PipelineState** PSORef = nullptr;
+	bool firstCompile = false;
+	{
+		static mutex s_HashMapMutex;
+		lock_guard<mutex> CS(s_HashMapMutex);
+		auto iter = s_GraphicsPSOHashMap.find(HashCode);
+
+		// Reserve space so the next inquiry will find that someone got here first.
+		if (iter == s_GraphicsPSOHashMap.end())
+		{
+			firstCompile = true;
+			PSORef = s_GraphicsPSOHashMap[HashCode].GetAddressOf();
+		}
+		else
+			PSORef = iter->second.GetAddressOf();
+	}
+
+	if (firstCompile)
+	{
+		ThrowIfFailed(g_Device->CreateGraphicsPipelineState(&m_PSODesc, IID_PPV_ARGS(&m_PSO)));
+		s_GraphicsPSOHashMap[HashCode].Attach(m_PSO);
+	}
+	else
+	{
+		while (*PSORef == nullptr)
+			this_thread::yield();
+		m_PSO = *PSORef;
+	}
+}
+
+GlareEngine::ComputePSO::ComputePSO()
+{
+	ZeroMemory(&m_PSODesc, sizeof(m_PSODesc));
+	m_PSODesc.NodeMask = 1;
+}
+
+void GlareEngine::ComputePSO::Finalize()
+{
+	// Make sure the root signature is finalized first
+	m_PSODesc.pRootSignature = m_RootSignature->GetSignature();
+	assert(m_PSODesc.pRootSignature != nullptr);
+
+	size_t HashCode = Utility::HashState(&m_PSODesc);
+
+	ID3D12PipelineState** PSORef = nullptr;
+	bool firstCompile = false;
+	{
+		static mutex s_HashMapMutex;
+		lock_guard<mutex> CS(s_HashMapMutex);
+		auto iter = s_ComputePSOHashMap.find(HashCode);
+
+		// Reserve space so the next inquiry will find that someone got here first.
+		if (iter == s_ComputePSOHashMap.end())
+		{
+			firstCompile = true;
+			PSORef = s_ComputePSOHashMap[HashCode].GetAddressOf();
+		}
+		else
+			PSORef = iter->second.GetAddressOf();
+	}
+
+	if (firstCompile)
+	{
+		ThrowIfFailed(g_Device->CreateComputePipelineState(&m_PSODesc, IID_PPV_ARGS(&m_PSO)));
+		s_ComputePSOHashMap[HashCode].Attach(m_PSO);
+	}
+	else
+	{
+		while (*PSORef == nullptr)
+			this_thread::yield();
+		m_PSO = *PSORef;
+	}
 }
