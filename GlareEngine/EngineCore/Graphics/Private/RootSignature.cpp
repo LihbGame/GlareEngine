@@ -5,18 +5,18 @@
 #include <thread>
 #include <mutex>
 
-using namespace GlareEngine::Graphics;
+using namespace GlareEngine::DirectX12Graphics;
 using namespace std;
 using Microsoft::WRL::ComPtr;
 
 static std::map< size_t, ComPtr<ID3D12RootSignature> > s_RootSignatureHashMap;
 
-void GlareEngine::RootSignature::DestroyAll(void)
+void RootSignature::DestroyAll(void)
 {
 	s_RootSignatureHashMap.clear();
 }
 
-void GlareEngine::RootSignature::InitStaticSampler(UINT Register, const D3D12_SAMPLER_DESC& NonStaticSamplerDesc, D3D12_SHADER_VISIBILITY Visibility)
+void RootSignature::InitStaticSampler(UINT Register, const D3D12_SAMPLER_DESC& NonStaticSamplerDesc, D3D12_SHADER_VISIBILITY Visibility)
 {
 	assert(m_NumInitializedStaticSamplers < m_NumSamplers);
 	D3D12_STATIC_SAMPLER_DESC& StaticSamplerDesc = m_SamplerArray[m_NumInitializedStaticSamplers++];
@@ -51,7 +51,7 @@ void GlareEngine::RootSignature::InitStaticSampler(UINT Register, const D3D12_SA
 	}
 }
 
-void GlareEngine::RootSignature::Finalize(const std::wstring& name, D3D12_ROOT_SIGNATURE_FLAGS Flags)
+void RootSignature::Finalize(const std::wstring& name, D3D12_ROOT_SIGNATURE_FLAGS Flags)
 {
 	if (m_Finalized)
 		return;

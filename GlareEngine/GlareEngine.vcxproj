@@ -164,6 +164,7 @@
     <ClInclude Include="EngineCore\Graphics\Public\CommandAllocatorPool.h" />
     <ClInclude Include="EngineCore\Graphics\Public\DepthBuffer.h" />
     <ClInclude Include="EngineCore\Graphics\Public\DescriptorHeap.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\DynamicDescriptorHeap.h" />
     <ClInclude Include="EngineCore\Graphics\Public\GPUResource.h" />
     <None Include="EngineCore\Graphics\Public\GraphicsCore.h" />
     <None Include="EngineCore\Graphics\Public\SamplerManager.h" />
@@ -246,6 +247,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </None>
     <None Include="EngineCore\Graphics\Private\PipelineState.cpp" />
+    <None Include="EngineCore\Graphics\Private\DynamicDescriptorHeap.cpp" />
     <ClCompile Include="EngineCore\Private\L3DBaseApp.cpp" />
     <ClCompile Include="EngineCore\Private\L3DCamera.cpp" />
     <ClCompile Include="EngineCore\Private\L3DGameTimer.cpp" />

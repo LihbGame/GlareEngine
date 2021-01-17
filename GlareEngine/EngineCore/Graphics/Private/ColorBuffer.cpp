@@ -2,20 +2,20 @@
 #include "GraphicsCore.h"
 #include "CommandContext.h"
 
-using namespace GlareEngine::Graphics;
-void GlareEngine::ColorBuffer::CreateFromSwapChain(const std::wstring& Name, ID3D12Resource* BaseResource)
+using namespace GlareEngine::DirectX12Graphics;
+void ColorBuffer::CreateFromSwapChain(const std::wstring& Name, ID3D12Resource* BaseResource)
 {
-	AssociateWithResource(Graphics::g_Device, Name, BaseResource, D3D12_RESOURCE_STATE_PRESENT);
+	AssociateWithResource(DirectX12Graphics::g_Device, Name, BaseResource, D3D12_RESOURCE_STATE_PRESENT);
 
 	//m_UAVHandle[0] = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	//Graphics::g_Device->CreateUnorderedAccessView(m_pResource.Get(), nullptr, nullptr, m_UAVHandle[0]);
 
-	m_RTVHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	Graphics::g_Device->CreateRenderTargetView(m_pResource.Get(), nullptr, m_RTVHandle);
+	m_RTVHandle = DirectX12Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	DirectX12Graphics::g_Device->CreateRenderTargetView(m_pResource.Get(), nullptr, m_RTVHandle);
 
 }
 
-void GlareEngine::ColorBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t NumMips, DXGI_FORMAT Format, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr)
+void ColorBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t NumMips, DXGI_FORMAT Format, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr)
 {
 	NumMips = (NumMips == 0 ? ComputeNumMips(Width, Height) : NumMips);
 	D3D12_RESOURCE_FLAGS Flags = CombineResourceFlags();
@@ -31,11 +31,11 @@ void GlareEngine::ColorBuffer::Create(const std::wstring& Name, uint32_t Width, 
 	ClearValue.Color[2] = m_ClearColor.B();
 	ClearValue.Color[3] = m_ClearColor.A();
 
-	CreateTextureResource(Graphics::g_Device, Name, ResourceDesc, ClearValue, VidMemPtr);
-	CreateDerivedViews(Graphics::g_Device, Format, 1, NumMips);
+	CreateTextureResource(DirectX12Graphics::g_Device, Name, ResourceDesc, ClearValue, VidMemPtr);
+	CreateDerivedViews(DirectX12Graphics::g_Device, Format, 1, NumMips);
 }
 
-void GlareEngine::ColorBuffer::CreateArray(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t ArrayCount, DXGI_FORMAT Format, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr)
+void ColorBuffer::CreateArray(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t ArrayCount, DXGI_FORMAT Format, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr)
 {
 	D3D12_RESOURCE_FLAGS Flags = CombineResourceFlags();
 	D3D12_RESOURCE_DESC ResourceDesc = DescribeTex2D(Width, Height, ArrayCount, 1, Format, Flags);
@@ -47,11 +47,11 @@ void GlareEngine::ColorBuffer::CreateArray(const std::wstring& Name, uint32_t Wi
 	ClearValue.Color[2] = m_ClearColor.B();
 	ClearValue.Color[3] = m_ClearColor.A();
 
-	CreateTextureResource(Graphics::g_Device, Name, ResourceDesc, ClearValue, VidMemPtr);
-	CreateDerivedViews(Graphics::g_Device, Format, ArrayCount, 1);
+	CreateTextureResource(DirectX12Graphics::g_Device, Name, ResourceDesc, ClearValue, VidMemPtr);
+	CreateDerivedViews(DirectX12Graphics::g_Device, Format, ArrayCount, 1);
 }
 
-void GlareEngine::ColorBuffer::GenerateMipMaps(CommandContext& Context)
+void ColorBuffer::GenerateMipMaps(CommandContext& Context)
 {
 	//if (m_NumMipMaps == 0)
 	//	return;
@@ -111,7 +111,7 @@ void GlareEngine::ColorBuffer::GenerateMipMaps(CommandContext& Context)
 	//	D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 }
 
-void GlareEngine::ColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format, uint32_t ArraySize, uint32_t NumMips)
+void ColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format, uint32_t ArraySize, uint32_t NumMips)
 {
 	assert(ArraySize == 1 || NumMips == 1, "We don't support auto-mips on texture arrays");
 
@@ -164,8 +164,8 @@ void GlareEngine::ColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FOR
 
 	if (m_SRVHandle.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
 	{
-		m_RTVHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-		m_SRVHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		m_RTVHandle = DirectX12Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		m_SRVHandle = DirectX12Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	}
 
 	ID3D12Resource* Resource = m_pResource.Get();
@@ -183,7 +183,7 @@ void GlareEngine::ColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FOR
 	for (uint32_t i = 0; i < NumMips; ++i)
 	{
 		if (m_UAVHandle[i].ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
-			m_UAVHandle[i] = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			m_UAVHandle[i] = DirectX12Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 		Device->CreateUnorderedAccessView(Resource, nullptr, &UAVDesc, m_UAVHandle[i]);
 

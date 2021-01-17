@@ -2,7 +2,7 @@
 #include "CommandContext.h"
 #include "ReadbackBuffer.h"
 #include <fstream>
-using namespace GlareEngine;
+using namespace GlareEngine::DirectX12Graphics;
 
 void PixelBuffer::ExportToFile(const std::wstring& FilePath)
 {

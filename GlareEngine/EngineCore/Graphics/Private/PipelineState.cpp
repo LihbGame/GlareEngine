@@ -7,19 +7,19 @@
 #include "Hash.h"
 
 using namespace std;
-using namespace GlareEngine::Graphics;
+using namespace GlareEngine::DirectX12Graphics;
 using Microsoft::WRL::ComPtr;
 
 static map< size_t, ComPtr<ID3D12PipelineState> > s_GraphicsPSOHashMap;
 static map< size_t, ComPtr<ID3D12PipelineState> > s_ComputePSOHashMap;
 
-void GlareEngine::PSO::DestroyAll(void)
+void PSO::DestroyAll(void)
 {
 	s_GraphicsPSOHashMap.clear();
 	s_ComputePSOHashMap.clear();
 }
 
-GlareEngine::GraphicsPSO::GraphicsPSO()
+GraphicsPSO::GraphicsPSO()
 {
 	ZeroMemory(&m_PSODesc, sizeof(m_PSODesc));
 	m_PSODesc.NodeMask = 1;
@@ -28,38 +28,38 @@ GlareEngine::GraphicsPSO::GraphicsPSO()
 	m_PSODesc.InputLayout.NumElements = 0;
 }
 
-void GlareEngine::GraphicsPSO::SetBlendState(const D3D12_BLEND_DESC& BlendDesc)
+void GraphicsPSO::SetBlendState(const D3D12_BLEND_DESC& BlendDesc)
 {
 	m_PSODesc.BlendState = BlendDesc;
 }
 
-void GlareEngine::GraphicsPSO::SetRasterizerState(const D3D12_RASTERIZER_DESC& RasterizerDesc)
+void GraphicsPSO::SetRasterizerState(const D3D12_RASTERIZER_DESC& RasterizerDesc)
 {
 	m_PSODesc.RasterizerState = RasterizerDesc;
 }
 
-void GlareEngine::GraphicsPSO::SetDepthStencilState(const D3D12_DEPTH_STENCIL_DESC& DepthStencilDesc)
+void GraphicsPSO::SetDepthStencilState(const D3D12_DEPTH_STENCIL_DESC& DepthStencilDesc)
 {
 	m_PSODesc.DepthStencilState = DepthStencilDesc;
 }
 
-void GlareEngine::GraphicsPSO::SetSampleMask(UINT SampleMask)
+void GraphicsPSO::SetSampleMask(UINT SampleMask)
 {
 	m_PSODesc.SampleMask = SampleMask;
 }
 
-void GlareEngine::GraphicsPSO::SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE TopologyType)
+void GraphicsPSO::SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE TopologyType)
 {
 	assert(TopologyType != D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED, "Can't draw with undefined topology");
 	m_PSODesc.PrimitiveTopologyType = TopologyType;
 }
 
-void GlareEngine::GraphicsPSO::SetRenderTargetFormat(DXGI_FORMAT RTVFormat, DXGI_FORMAT DSVFormat, UINT MsaaCount, UINT MsaaQuality)
+void GraphicsPSO::SetRenderTargetFormat(DXGI_FORMAT RTVFormat, DXGI_FORMAT DSVFormat, UINT MsaaCount, UINT MsaaQuality)
 {
 	SetRenderTargetFormats(1, &RTVFormat, DSVFormat, MsaaCount, MsaaQuality);
 }
 
-void GlareEngine::GraphicsPSO::SetRenderTargetFormats(UINT NumRTVs, const DXGI_FORMAT* RTVFormats, DXGI_FORMAT DSVFormat, UINT MsaaCount, UINT MsaaQuality)
+void GraphicsPSO::SetRenderTargetFormats(UINT NumRTVs, const DXGI_FORMAT* RTVFormats, DXGI_FORMAT DSVFormat, UINT MsaaCount, UINT MsaaQuality)
 {
 	assert(NumRTVs == 0 || RTVFormats != nullptr, "Null format array conflicts with non-zero length");
 	for (UINT i = 0; i < NumRTVs; ++i)
@@ -72,7 +72,7 @@ void GlareEngine::GraphicsPSO::SetRenderTargetFormats(UINT NumRTVs, const DXGI_F
 	m_PSODesc.SampleDesc.Quality = MsaaQuality;
 }
 
-void GlareEngine::GraphicsPSO::SetInputLayout(UINT NumElements, const D3D12_INPUT_ELEMENT_DESC* pInputElementDescs)
+void GraphicsPSO::SetInputLayout(UINT NumElements, const D3D12_INPUT_ELEMENT_DESC* pInputElementDescs)
 {
 	m_PSODesc.InputLayout.NumElements = NumElements;
 
@@ -86,12 +86,12 @@ void GlareEngine::GraphicsPSO::SetInputLayout(UINT NumElements, const D3D12_INPU
 		m_InputLayouts = nullptr;
 }
 
-void GlareEngine::GraphicsPSO::SetPrimitiveRestart(D3D12_INDEX_BUFFER_STRIP_CUT_VALUE IBProps)
+void GraphicsPSO::SetPrimitiveRestart(D3D12_INDEX_BUFFER_STRIP_CUT_VALUE IBProps)
 {
 	m_PSODesc.IBStripCutValue = IBProps;
 }
 
-void GlareEngine::GraphicsPSO::Finalize()
+void GraphicsPSO::Finalize()
 {
 	// Make sure the root signature is finalized first
 	m_PSODesc.pRootSignature = m_RootSignature->GetSignature();
@@ -121,7 +121,7 @@ void GlareEngine::GraphicsPSO::Finalize()
 
 	if (firstCompile)
 	{
-		ThrowIfFailed(g_Device->CreateGraphicsPipelineState(&m_PSODesc, IID_PPV_ARGS(&m_PSO)));
+		ThrowIfFailed(DirectX12Graphics::g_Device->CreateGraphicsPipelineState(&m_PSODesc, IID_PPV_ARGS(&m_PSO)));
 		s_GraphicsPSOHashMap[HashCode].Attach(m_PSO);
 	}
 	else
@@ -132,13 +132,13 @@ void GlareEngine::GraphicsPSO::Finalize()
 	}
 }
 
-GlareEngine::ComputePSO::ComputePSO()
+ComputePSO::ComputePSO()
 {
 	ZeroMemory(&m_PSODesc, sizeof(m_PSODesc));
 	m_PSODesc.NodeMask = 1;
 }
 
-void GlareEngine::ComputePSO::Finalize()
+void ComputePSO::Finalize()
 {
 	// Make sure the root signature is finalized first
 	m_PSODesc.pRootSignature = m_RootSignature->GetSignature();
@@ -165,7 +165,7 @@ void GlareEngine::ComputePSO::Finalize()
 
 	if (firstCompile)
 	{
-		ThrowIfFailed(g_Device->CreateComputePipelineState(&m_PSODesc, IID_PPV_ARGS(&m_PSO)));
+		ThrowIfFailed(DirectX12Graphics::g_Device->CreateComputePipelineState(&m_PSODesc, IID_PPV_ARGS(&m_PSO)));
 		s_ComputePSOHashMap[HashCode].Attach(m_PSO);
 	}
 	else

@@ -3,19 +3,22 @@
 
 namespace GlareEngine
 {
-	class ReadbackBuffer :
-		public GPUBuffer
+	namespace DirectX12Graphics
 	{
-	public:
-		virtual ~ReadbackBuffer() { Destroy(); }
+		class ReadbackBuffer :
+			public GPUBuffer
+		{
+		public:
+			virtual ~ReadbackBuffer() { Destroy(); }
 
-		void Create(const std::wstring& name, uint32_t NumElements, uint32_t ElementSize);
+			void Create(const std::wstring& name, uint32_t NumElements, uint32_t ElementSize);
 
-		void* Map(void);
-		void Unmap(void);
+			void* Map(void);
+			void Unmap(void);
 
-	protected:
-		void CreateDerivedViews(void) {}
-	};
+		protected:
+			void CreateDerivedViews(void) {}
+		};
+	}
 }
 

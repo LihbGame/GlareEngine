@@ -1,8 +1,8 @@
 #include "ReadbackBuffer.h"
 #include "GraphicsCore.h"
-using namespace GlareEngine::Graphics;
+using namespace GlareEngine::DirectX12Graphics;
 
-void GlareEngine::ReadbackBuffer::Create(const std::wstring& name, uint32_t NumElements, uint32_t ElementSize)
+void ReadbackBuffer::Create(const std::wstring& name, uint32_t NumElements, uint32_t ElementSize)
 {
 	Destroy();
 
@@ -32,7 +32,7 @@ void GlareEngine::ReadbackBuffer::Create(const std::wstring& name, uint32_t NumE
 	ResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 	ResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-	ThrowIfFailed(g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &ResourceDesc,
+	ThrowIfFailed(DirectX12Graphics::g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &ResourceDesc,
 		D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&m_pResource)));
 
 	m_GPUVirtualAddress = m_pResource->GetGPUVirtualAddress();
@@ -44,14 +44,14 @@ void GlareEngine::ReadbackBuffer::Create(const std::wstring& name, uint32_t NumE
 #endif
 }
 
-void* GlareEngine::ReadbackBuffer::Map(void)
+void* ReadbackBuffer::Map(void)
 {
 	void* Memory;
 	m_pResource->Map(0, &CD3DX12_RANGE(0, m_BufferSize), &Memory);
 	return Memory;
 }
 
-void GlareEngine::ReadbackBuffer::Unmap(void)
+void ReadbackBuffer::Unmap(void)
 {
 	m_pResource->Unmap(0, &CD3DX12_RANGE(0, 0));
 }

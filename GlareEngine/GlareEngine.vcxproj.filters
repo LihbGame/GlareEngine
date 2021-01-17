@@ -158,6 +158,7 @@
     <ClInclude Include="EngineCore\Graphics\Public\DepthBuffer.h" />
     <ClInclude Include="EngineCore\Graphics\Public\RootSignature.h" />
     <ClInclude Include="EngineCore\Graphics\Public\PipelineState.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\DynamicDescriptorHeap.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -388,6 +389,9 @@
       <Filter>MainSource</Filter>
     </None>
     <None Include="EngineCore\Graphics\Private\PipelineState.cpp">
+      <Filter>MainSource</Filter>
+    </None>
+    <None Include="EngineCore\Graphics\Private\DynamicDescriptorHeap.cpp">
       <Filter>MainSource</Filter>
     </None>
   </ItemGroup>

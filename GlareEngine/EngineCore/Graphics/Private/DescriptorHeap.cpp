@@ -2,14 +2,14 @@
 #include "GraphicsCore.h"
 #include "CommandListManager.h"
 
-using namespace GlareEngine;
+using namespace GlareEngine::DirectX12Graphics;
 
 // DescriptorAllocator implementation
 std::mutex DescriptorAllocator::sm_AllocationMutex;
 std::vector<Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>> DescriptorAllocator::sm_DescriptorHeapPool;
 
 
-D3D12_CPU_DESCRIPTOR_HANDLE GlareEngine::DescriptorAllocator::Allocate(uint32_t Count)
+D3D12_CPU_DESCRIPTOR_HANDLE DescriptorAllocator::Allocate(uint32_t Count)
 {
 	if (m_CurrentHeap == nullptr || m_RemainingFreeHandles < Count)
 	{
@@ -18,7 +18,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE GlareEngine::DescriptorAllocator::Allocate(uint32_t 
 		m_RemainingFreeHandles = sm_NumDescriptorsPerHeap;
 
 		if (m_DescriptorSize == 0)
-			m_DescriptorSize = Graphics::g_Device->GetDescriptorHandleIncrementSize(m_Type);
+			m_DescriptorSize = DirectX12Graphics::g_Device->GetDescriptorHandleIncrementSize(m_Type);
 	}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE ret = m_CurrentHandle;
@@ -27,12 +27,12 @@ D3D12_CPU_DESCRIPTOR_HANDLE GlareEngine::DescriptorAllocator::Allocate(uint32_t 
 	return ret;
 }
 
-void GlareEngine::DescriptorAllocator::DestroyAll(void)
+void DescriptorAllocator::DestroyAll(void)
 {
 	sm_DescriptorHeapPool.clear();
 }
 
-ID3D12DescriptorHeap* GlareEngine::DescriptorAllocator::RequestNewHeap(D3D12_DESCRIPTOR_HEAP_TYPE Type)
+ID3D12DescriptorHeap* DescriptorAllocator::RequestNewHeap(D3D12_DESCRIPTOR_HEAP_TYPE Type)
 {
 	std::lock_guard<std::mutex> LockGuard(sm_AllocationMutex);
 
@@ -43,27 +43,27 @@ ID3D12DescriptorHeap* GlareEngine::DescriptorAllocator::RequestNewHeap(D3D12_DES
 	Desc.NodeMask = 1;
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> pHeap;
-	assert(Graphics::g_Device->CreateDescriptorHeap(&Desc, IID_PPV_ARGS(&pHeap)));
+	assert(DirectX12Graphics::g_Device->CreateDescriptorHeap(&Desc, IID_PPV_ARGS(&pHeap)));
 	sm_DescriptorHeapPool.emplace_back(pHeap);
 	return pHeap.Get();
 }
 
-void GlareEngine::UserDescriptorHeap::Create(const std::wstring& DebugHeapName)
+void UserDescriptorHeap::Create(const std::wstring& DebugHeapName)
 {
-	assert(Graphics::g_Device->CreateDescriptorHeap(&m_HeapDesc, IID_PPV_ARGS(m_Heap.ReleaseAndGetAddressOf())));
+	assert(DirectX12Graphics::g_Device->CreateDescriptorHeap(&m_HeapDesc, IID_PPV_ARGS(m_Heap.ReleaseAndGetAddressOf())));
 #ifdef RELEASE
 	(void)DebugHeapName;
 #else
 	m_Heap->SetName(DebugHeapName.c_str());
 #endif
 
-	m_DescriptorSize = Graphics::g_Device->GetDescriptorHandleIncrementSize(m_HeapDesc.Type);
+	m_DescriptorSize = DirectX12Graphics::g_Device->GetDescriptorHandleIncrementSize(m_HeapDesc.Type);
 	m_NumFreeDescriptors = m_HeapDesc.NumDescriptors;
 	m_FirstHandle = DescriptorHandle(m_Heap->GetCPUDescriptorHandleForHeapStart(), m_Heap->GetGPUDescriptorHandleForHeapStart());
 	m_NextFreeHandle = m_FirstHandle;
 }
 
-DescriptorHandle GlareEngine::UserDescriptorHeap::Alloc(uint32_t Count)
+DescriptorHandle UserDescriptorHeap::Alloc(uint32_t Count)
 {
 	assert(HasAvailableSpace(Count), "Descriptor Heap out of space.  Increase heap size.");
 	DescriptorHandle ret = m_NextFreeHandle;
@@ -71,7 +71,7 @@ DescriptorHandle GlareEngine::UserDescriptorHeap::Alloc(uint32_t Count)
 	return ret;
 }
 
-bool GlareEngine::UserDescriptorHeap::ValidateHandle(const DescriptorHandle& DHandle) const
+bool UserDescriptorHeap::ValidateHandle(const DescriptorHandle& DHandle) const
 {
 	if (DHandle.GetCPUHandle().ptr < m_FirstHandle.GetCPUHandle().ptr ||
 		DHandle.GetCPUHandle().ptr >= m_FirstHandle.GetCPUHandle().ptr + m_HeapDesc.NumDescriptors * m_DescriptorSize)

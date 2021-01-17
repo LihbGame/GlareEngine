@@ -3,7 +3,7 @@
 
 namespace GlareEngine
 {
-	namespace Graphics
+	namespace DirectX12Graphics
 	{
 #ifndef RELEASE
 		extern const GUID WKPDID_D3DDebugObjectName;
