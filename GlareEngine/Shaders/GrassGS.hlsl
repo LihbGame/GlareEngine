@@ -130,7 +130,7 @@ void GS(
 {
 	bool isGrassClip;
 	float3 tempCenter = input[0].PosW;
-    half halfheight=gPerGrassHeight * 2.5f;
+	half halfheight = gPerGrassHeight * 2.5f;
 	tempCenter.y += halfheight;
 	if (isReflection)
 	{
@@ -143,11 +143,11 @@ void GS(
 	}
 
 
-	if (1 /*&& input[0].PosW.y <= 20.0f*/
+	if (input[0].PosW.y >= 0.0f /*&& input[0].PosW.y <= 20.0f*/
 		&& !isGrassClip)
 	{
 
-		float time = gTotalTime*2;
+		float time = gTotalTime * 2;
 		float3 randomRGB = gSRVMap[mRGBNoiseMapIndex].SampleLevel(gsamLinearWrap, float2(input[0].PosW.x, input[0].PosW.z), 0).rgb;
 
 		float random = sin(randomRGB.r + randomRGB.b + randomRGB.g);
@@ -155,8 +155,8 @@ void GS(
 		//单棵草的随机风
 		float2 wind = float2(sin(randomRGB.r * time), sin(randomRGB.g * time));
 		//一片草的群体摆动
-		wind.x += sin(time + input[0].PosW.x / 100)*gMaxWind;
-		wind.y += cos(time + input[0].PosW.z / 100)*gMaxWind;
+		wind.x += sin(time + input[0].PosW.x / 100) * gMaxWind;
+		wind.y += cos(time + input[0].PosW.z / 100) * gMaxWind;
 		//缩放风的大小
 		wind *= lerp(gMinWind, gMaxWind, random);
 
@@ -173,7 +173,7 @@ void GS(
 		//
 		//wind = lerp(leftWindBound, rightWindBound, lerpCoeff);
 		//
-	    //float randomAngle = lerp(-3.14, 3.14, random);
+		//float randomAngle = lerp(-3.14, 3.14, random);
 		//float randomMagnitude = lerp(0, 1, random);
 		//float2 randomWindDir = float2(sin(randomAngle), cos(randomAngle));
 		//wind += randomWindDir * randomMagnitude;
@@ -187,7 +187,7 @@ void GS(
 		int UVCount = 6;
 		float HeightScale = 1.0f;
 		float WindScale = 0.0f;
-		if (Length <=800.0f)//L0D0
+		if (Length <= 800.0f)//L0D0
 		{
 			gGrassTexC = gGrassTexCLOD0;
 		}
@@ -214,12 +214,12 @@ void GS(
 
 
 		// Compute triangle strip vertices (quad) in world space.
-		float3 Height = gPerGrassHeight * up* HeightScale;
+		float3 Height = gPerGrassHeight * up * HeightScale;
 		float3 Width = gPerGrassWidth * right;
 
 		if (gIsGrassRandom)
 		{
-			Height *= randomRGB.r+0.5f;
+			Height *= randomRGB.r + 0.5f;
 			Width *= randomRGB.b;
 		}
 
@@ -232,10 +232,10 @@ void GS(
 			v[index] = float4(input[0].PosW - Width + Height * i, 1.0f);
 			v[index].xz += wind.xy * windCoEff;
 			v[index].y -= windForce * windCoEff * 0.8;
-			v[index +1] = float4(input[0].PosW + Width + Height * i, 1.0f);
-			v[index +1].xz += wind.xy * windCoEff;
-			v[index +1].y -= windForce * windCoEff * 0.8;
-			windCoEff += (1 - gGrassTexC[index].y)+ WindScale;
+			v[index + 1] = float4(input[0].PosW + Width + Height * i, 1.0f);
+			v[index + 1].xz += wind.xy * windCoEff;
+			v[index + 1].y -= windForce * windCoEff * 0.8;
+			windCoEff += (1 - gGrassTexC[index].y) + WindScale;
 		}
 
 
