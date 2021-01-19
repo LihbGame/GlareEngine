@@ -159,6 +159,7 @@
     <ClInclude Include="EngineCore\Graphics\Public\RootSignature.h" />
     <ClInclude Include="EngineCore\Graphics\Public\PipelineState.h" />
     <ClInclude Include="EngineCore\Graphics\Public\DynamicDescriptorHeap.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\CommandListManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -297,6 +298,9 @@
       <Filter>Core\Private</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Graphics\Private\WICTextureLoader12.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\CommandListManager.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
