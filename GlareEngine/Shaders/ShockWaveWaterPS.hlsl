@@ -6,6 +6,7 @@
 struct VertexOut
 {
     float4 PosH       : SV_POSITION;
+    float3 Eye        : TEXCOORD0;
     float4 Wave0      : TEXCOORD1;
     float2 Wave1      : TEXCOORD2;
     float2 Wave2      : TEXCOORD3;
@@ -13,7 +14,7 @@ struct VertexOut
     float4 ScreenPos  : TEXCOORD5;
     float2 HeighTex   : TEXCOORD6;
     float3 PosW       : TEXCOORD7;
-    float time : Time;
+    float time        : Time;
 };
 
 
@@ -38,7 +39,7 @@ half Fresnel(half NdotL, half fresnelBias, half fresnelPow)
 
 float4 PS(VertexOut pin) : SV_Target
 {
-    float3 vEye = normalize(gEyePosW.xyz - pin.PosW);
+    float3 vEye = normalize(pin.Eye);
 
     // Get bump layers WavesBump
     float3 vBumpTexA = gSRVMap[gWaterDumpWaveIndex].Sample(gsamLinearWrap, pin.Wave0.xy).xyz;
