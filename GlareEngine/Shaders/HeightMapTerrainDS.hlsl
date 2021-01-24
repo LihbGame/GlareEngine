@@ -1,7 +1,7 @@
 #include "TerrainConstBuffer.hlsli"
 #include "Common.hlsli"
 
-#define gTexScale float2(10.0f,10.0f)
+#define gTexScale float2(25.0f,25.0f)
 
 struct DomainOut
 {

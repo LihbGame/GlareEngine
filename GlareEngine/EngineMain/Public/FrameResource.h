@@ -87,6 +87,7 @@ struct PassConstants
 	float  FogStart;
 	float  FogRange;
     int   FogEnabled;
+    int   ShadowEnabled;
 };
 
 

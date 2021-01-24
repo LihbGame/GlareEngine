@@ -125,7 +125,7 @@ void HeightmapTerrain::BuildMaterials()
 	{
 		L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
 			wstring(e.first.begin(), e.first.end()),
-			0.02f,
+			0.08f,
 			XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 			XMFLOAT3(0.1f, 0.1f, 0.1f),
 			MatTransform,
@@ -439,7 +439,7 @@ void HeightmapTerrain::BuildHeightmapSRV(CD3DX12_CPU_DESCRIPTOR_HANDLE BlendMapD
 void HeightmapTerrain::GetTerrainConstant(TerrainConstants& TerrainConstant)
 {
 	TerrainConstant.gMinDist = 200.0f;
-	TerrainConstant.gMaxDist = 2000.0f;
+	TerrainConstant.gMaxDist = 4000.0f;
 	TerrainConstant.gMinTess = 1.0f;
 	TerrainConstant.gMaxTess = 5.0f;
 

@@ -56,7 +56,7 @@ float4 PS(DomainOut pin) : SV_TARGET
 	uint  RoughnessMapSrvIndex = Mat.RoughnessMapIndex;
 
 	float4 c[5];
-	for (int i = 0; i < 1; ++i)
+	for (int i = 0; i < 3; ++i)
 	{
 		if (/*!isReflection*/1)
 		{
@@ -81,11 +81,14 @@ float4 PS(DomainOut pin) : SV_TARGET
 
 			// Only the first light casts a shadow.
 			float3 shadowFactor = float3(1.0f, 1.0f, 1.0f);
-			//shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
+            if (gShadowEnabled)
+            {
+                shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
+            }  
 			float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
 				bumpedNormalW, toEye, shadowFactor);
 
-			c[i] = ambient * (shadowFactor[0]/2) + directLight;
+			c[i] = ambient + directLight;
 
 		}
 		else
@@ -106,8 +109,8 @@ float4 PS(DomainOut pin) : SV_TARGET
 	float4 t = gSRVMap[mBlendMapIndex].Sample(gsamLinearWrap, pin.Tex);
 
 	// Blend the layers on top of each other.
-	float4 texColor = c[0];
-	//texColor = lerp(texColor, c[1], t.r);
+	float4 texColor = c[1];
+	texColor = lerp(texColor, c[2], t.r);
 	//texColor = lerp(texColor, c[2], t.g);
 	//texColor = lerp(texColor, c[3], t.b);
 	//texColor = lerp(texColor, c[4], t.a);

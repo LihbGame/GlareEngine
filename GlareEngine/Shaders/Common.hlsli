@@ -106,6 +106,7 @@ cbuffer cbPass : register(b1)
    float  gFogStart;
    float  gFogRange;
    int gFogEnabled;
+   int gShadowEnabled;
 };
 
 #ifdef SKINNED

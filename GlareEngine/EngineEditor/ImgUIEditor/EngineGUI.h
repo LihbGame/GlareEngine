@@ -50,7 +50,7 @@ private:
 
 	bool show_shadow = false;
 	bool show_model = false;
-	bool show_water = true;
+	bool show_water = false;
 	bool show_land = false;
 	bool show_sky = true;
 	bool show_HeightMapTerrain = true;
@@ -62,11 +62,11 @@ private:
 	float FogRange = 600.0f;
 
 	float GrassMinWind = 0.5f;
-	float GrassMaxWind = 1.0f;
+	float GrassMaxWind = 2.5f;
 
-	float mPerGrassHeight = 5.0f;
-	float mPerGrassWidth = 2.0f;
-	bool mIsGrassRandom = false;
+	float mPerGrassHeight = 10.0f;
+	float mPerGrassWidth = 0.5f;
+	bool mIsGrassRandom = true;
 	float mWaterTransparent = 100.0f;
 
 	float mGrassColor[3] = { 0.39f,0.196f,0.0f };

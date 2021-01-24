@@ -91,6 +91,7 @@ struct GSOutput
 {
 	float4 pos : SV_POSITION;
 	float3 PosW    : POSITION;
+    float4 ShadowPosH : POSITION1;
 	float3 NormalW : NORMAL;
 	float3 TangentW:TANGENT;
 	float2 Tex  : TEXCOORD;
@@ -100,6 +101,7 @@ struct GSOutput
 struct VertexOut
 {
 	float3 PosW    : POSITION;
+    float2 TexC : TEXCOORD;
 };
 
 static float2 gGrassTexC[12];
@@ -142,8 +144,9 @@ void GS(
 		isGrassClip = AABBOutsideFrustumTest(tempCenter, float3(gPerGrassWidth, gPerGrassWidth, halfheight), gWorldFrustumPlanes);
 	}
 
-
-	if (1 /*&& input[0].PosW.y <= 20.0f*/
+	// Sample the blend map.
+    float Mask = gSRVMap[mBlendMapIndex].SampleLevel(gsamLinearWrap, input[0].TexC,0).x;
+    if (Mask>0.0f /*&& input[0].PosW.y <= 20.0f*/
 		&& !isGrassClip)
 	{
 
@@ -158,7 +161,7 @@ void GS(
 		wind.x += sin(time + input[0].PosW.x / 100) * gMaxWind;
 		wind.y += cos(time + input[0].PosW.z / 100) * gMaxWind;
 		//缩放风的大小
-		wind *= lerp(gMinWind, gMaxWind, random);
+        wind *= lerp(gMinWind, gMaxWind, random)*Mask;
 
 
 		////草震荡
@@ -214,8 +217,8 @@ void GS(
 
 
 		// Compute triangle strip vertices (quad) in world space.
-		float3 Height = gPerGrassHeight * up * HeightScale;
-		float3 Width = gPerGrassWidth * right;
+        float3 Height = gPerGrassHeight * up * HeightScale * Mask;
+        float3 Width = gPerGrassWidth * right * Mask;
 
 		if (gIsGrassRandom)
 		{
@@ -250,6 +253,7 @@ void GS(
 
 			// Project to homogeneous clip space.
 			element.pos = mul(v[J], gViewProj);
+            element.ShadowPosH = mul(v[J], gShadowTransform);
 			element.PosW = v[J].xyz;
 			element.NormalW = look;
 			element.TangentW = right;

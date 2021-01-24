@@ -6,7 +6,7 @@
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib,"dxguid.lib")
 
-#define ShadowMapSize 2048
+#define ShadowMapSize 4096
 
 const int gNumFrameResources = 3;
 
@@ -721,6 +721,7 @@ void GameApp::UpdateMainPassCB(const GameTimer& gt)
 	mMainPassCB.FogRange = mEngineUI->GetFogRange();
 	mMainPassCB.FogColor= { 1.0f, 1.0f, 1.0f,1.0f };
 	mMainPassCB.FogEnabled =(int)mEngineUI->IsShowFog();
+	mMainPassCB.ShadowEnabled = (int)mEngineUI->IsShowShadow();
 
 	auto currPassCB = mCurrFrameResource->PassCB.get();
 	currPassCB->CopyData(0, mMainPassCB);//index 0 main pass
@@ -842,6 +843,8 @@ void GameApp::BuildShadersAndInputLayout()
 	mShaders["HeightMapTerrain"] = new HeightMapTerrainShader(L"Shaders\\HeightMapTerrainVS.hlsl", L"Shaders\\HeightMapTerrainPS.hlsl", L"Shaders\\HeightMapTerrainHS.hlsl", L"Shaders\\HeightMapTerrainDS.hlsl");
 
 	mShaders["Grass"] = new GrassShader(L"Shaders\\GrassVS.hlsl", L"Shaders\\GrassPS.hlsl", L"", L"", L"Shaders\\GrassGS.hlsl");
+
+	mShaders["GrassShadow"] = new GrassShader(L"Shaders\\GrassShadowVS.hlsl", L"", L"", L"", L"Shaders\\GrassShadowGS.hlsl");
 }
 
 void GameApp::BuildSimpleGeometry()
@@ -1356,6 +1359,42 @@ void GameApp::BuildPSOs()
 		{},
 		{});
 #pragma endregion
+
+	// PSO for Grass  shadow.
+#pragma region PSO_for_Grass_shadow
+	D3D12_RASTERIZER_DESC GrassShadowRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	GrassShadowRasterizerState.DepthBias = 25000;
+	GrassShadowRasterizerState.DepthBiasClamp = 0.0f;
+	GrassShadowRasterizerState.SlopeScaledDepthBias = 1.0f;
+	RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
+	Input = mShaders["GrassShadow"]->GetInputLayout();
+	mPSOs->BuildPSO(md3dDevice.Get(),
+		PSOName::GrassShadow,
+		mRootSignature.Get(),
+		{ reinterpret_cast<BYTE*>(mShaders["GrassShadow"]->GetVSShader()->GetBufferPointer()),
+			mShaders["GrassShadow"]->GetVSShader()->GetBufferSize() },
+		{},
+		{},
+		{},
+		{ reinterpret_cast<BYTE*>(mShaders["GrassShadow"]->GetGSShader()->GetBufferPointer()),
+		mShaders["GrassShadow"]->GetGSShader()->GetBufferSize() },
+		{},
+		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
+		UINT_MAX,
+		GrassShadowRasterizerState,
+		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
+		{ Input.data(), (UINT)Input.size() },
+		{},
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT,
+		0,
+		RTVFormats,
+		DXGI_FORMAT_D32_FLOAT,
+		{ UINT(1) ,UINT(0) },
+		0,
+		{},
+		{});
+#pragma endregion
+
 
 }
 
@@ -2142,17 +2181,25 @@ void GameApp::DrawSceneToShadowMap(const GameTimer& gr)
 	mCommandList->SetGraphicsRootConstantBufferView(1, passCBAddress);
 
 	//Simple Instance  Shadow map
-	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::InstanceSimpleShadow_Opaque).Get());
+	//mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::InstanceSimpleShadow_Opaque).Get());
 	PIXBeginEvent(mCommandList.Get(),0,"Draw Shadow::RenderLayer::InstanceSimpleItems");
-	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
+	//DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
 	PIXEndEvent(mCommandList.Get());
 
 	PIXBeginEvent(mCommandList.Get(), 0, "Draw Shadow::RenderLayer::Opaque");
-	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
+	//DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
 	PIXEndEvent(mCommandList.Get());
 
 	PIXBeginEvent(mCommandList.Get(), 0, "Draw Shadow::RenderLayer::Terrain");
 	//DrawHeightMapTerrain(gr);
 	PIXEndEvent(mCommandList.Get());
 
+
+	PIXBeginEvent(mCommandList.Get(), 0, "Draw Grass Shadow");
+	auto TerrainCB = mCurrFrameResource->TerrainCB->Resource();
+	mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::GrassShadow).Get());
+	D3D12_GPU_VIRTUAL_ADDRESS TerrainCBAddress = TerrainCB->GetGPUVirtualAddress();
+	mCommandList->SetGraphicsRootConstantBufferView(2, TerrainCBAddress);
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Grass], false);
+	PIXEndEvent(mCommandList.Get());
 }

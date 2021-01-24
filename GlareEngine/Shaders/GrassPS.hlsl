@@ -4,6 +4,7 @@ struct GSOutput
 {
 	float4 pos : SV_POSITION;
 	float3 PosW    : POSITION;
+    float4 ShadowPosH : POSITION1;
 	float3 NormalW : NORMAL;
 	float3 TangentW:TANGENT;
 	float2 Tex  : TEXCOORD;
@@ -37,6 +38,10 @@ float4 PS(GSOutput pin) : SV_TARGET
 	// Only the first light casts a shadow.
 	float3 toEyeW = normalize(gEyePosW - pin.PosW);
 	float3 shadowFactor = float3(1.0f, 1.0f, 1.0f);
+    if (gShadowEnabled)
+    {
+        shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
+    }
 	float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
 		float3(0.0f,0.0f,-1.0f), toEyeW, shadowFactor);
 	 
