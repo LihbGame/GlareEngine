@@ -1363,7 +1363,7 @@ void GameApp::BuildPSOs()
 	// PSO for Grass  shadow.
 #pragma region PSO_for_Grass_shadow
 	D3D12_RASTERIZER_DESC GrassShadowRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	GrassShadowRasterizerState.DepthBias = 25000;
+	GrassShadowRasterizerState.DepthBias = 100000;
 	GrassShadowRasterizerState.DepthBiasClamp = 0.0f;
 	GrassShadowRasterizerState.SlopeScaledDepthBias = 1.0f;
 	RTVFormats[0] = DXGI_FORMAT_UNKNOWN;

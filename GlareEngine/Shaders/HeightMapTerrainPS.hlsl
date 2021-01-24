@@ -64,7 +64,7 @@ float4 PS(DomainOut pin) : SV_TARGET
 			float2 UV = ParallaxMapping(HeightMapSrvIndex, pin.TiledTex, ModeSpacetoEye, Mat.height_scale);
 
 			float4 diffuseAlbedo = gSRVMap[DiffuseMapSrvIndex].Sample(gsamAnisotropicWrap, UV);
-			float Roughness = gSRVMap[RoughnessMapSrvIndex].Sample(gsamLinearWrap, UV).x;
+			float Roughness =1;// gSRVMap[RoughnessMapSrvIndex].Sample(gsamLinearWrap, UV).x;
 			//float Metallic = gSRVMap[MetallicMapSrvIndex].Sample(gsamLinearWrap, UV).x;
 			float AO = gSRVMap[AOMapSrvIndex].Sample(gsamLinearWrap, UV).x;
 
