@@ -8,6 +8,7 @@ struct DomainOut
 	float4 ShadowPosH : POSITION1;
 	float2 Tex      : TEXCOORD0;
 	float2 TiledTex : TEXCOORD1;
+    float FogFactor : TEXCOORD2;
 	float ClipValue : SV_ClipDistance0;//²Ã¼ôÖµ¹Ø¼ü×Ö
 };
 
@@ -121,9 +122,8 @@ float4 PS(DomainOut pin) : SV_TARGET
 	//
 	if (gFogEnabled)
 	{
-		float fogLerp = saturate((distToEye - gFogStart) / gFogRange);
 		// Blend the fog color and the lit color.
-		texColor.rgb = lerp(texColor.rgb, gFogColor.rgb, fogLerp);
+		texColor.rgb = lerp(texColor.rgb, gFogColor.rgb, pin.FogFactor);
 	}
 
 
