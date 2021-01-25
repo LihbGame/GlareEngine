@@ -2,12 +2,13 @@
 #include "TerrainConstBuffer.hlsli"
 struct GSOutput
 {
-	float4 pos : SV_POSITION;
-	float3 PosW    : POSITION;
+	float4 pos        : SV_POSITION;
+	float3 PosW       : POSITION;
     float4 ShadowPosH : POSITION1;
-	float3 NormalW : NORMAL;
-	float3 TangentW:TANGENT;
-	float2 Tex  : TEXCOORD;
+	float3 NormalW    : NORMAL;
+	float3 TangentW   : TANGENT;
+	float2 Tex        : TEXCOORD;
+    float FogFactor   : TEXCOORD1;
 };
 
 
@@ -50,15 +51,12 @@ float4 PS(GSOutput pin) : SV_TARGET
 	//
 	// Fogging
 	//
-	float4 texColor = litColor;
 	if (gFogEnabled)
 	{
-		float distToEye = length(gEyePosW - pin.PosW);
-		float fogLerp = saturate((distToEye - gFogStart) / gFogRange);
 		// Blend the fog color and the lit color.
-		texColor.rgb = lerp(texColor.rgb, gFogColor.rgb, fogLerp);
-	}
+        litColor.rgb = lerp(litColor.rgb, gFogColor.rgb, pin.FogFactor);
+    }
 
 	clip(diffuseAlbedo.a - 0.1f);
-	return texColor;
+    return litColor;
 }

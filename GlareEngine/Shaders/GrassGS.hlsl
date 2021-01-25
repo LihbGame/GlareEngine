@@ -89,12 +89,13 @@ float4(0.0f,0.0f,0.0f,0.0f)
 
 struct GSOutput
 {
-	float4 pos : SV_POSITION;
-	float3 PosW    : POSITION;
+	float4 pos        : SV_POSITION;
+	float3 PosW       : POSITION;
     float4 ShadowPosH : POSITION1;
-	float3 NormalW : NORMAL;
-	float3 TangentW:TANGENT;
-	float2 Tex  : TEXCOORD;
+	float3 NormalW    : NORMAL;
+    float3 TangentW   : TANGENT;
+	float2 Tex        : TEXCOORD;
+    float FogFactor   : TEXCOORD1;
 };
 
 
@@ -250,7 +251,14 @@ void GS(
 			{
 				v[J].y *= -1.0f;
 			}
-
+			//fog
+            float fog = 0.0f;
+            if (gFogEnabled)
+            {
+               
+                fog = ExponentialFog(0.5, length(gEyePosW - v[J].xyz)); 
+				//LinearFog(length(gEyePosW - v[J].xyz));
+            }
 			// Project to homogeneous clip space.
 			element.pos = mul(v[J], gViewProj);
             element.ShadowPosH = mul(v[J], gShadowTransform);
@@ -258,6 +266,7 @@ void GS(
 			element.NormalW = look;
 			element.TangentW = right;
 			element.Tex = gGrassTexC[J];
+            element.FogFactor = fog;
 			output.Append(element);
 		}
 	}

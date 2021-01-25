@@ -10,6 +10,7 @@ struct DomainOut
 	float4 ShadowPosH : POSITION1;
 	float2 Tex      : TEXCOORD0;
 	float2 TiledTex : TEXCOORD1;
+    float FogFactor : TEXCOORD2;
 	float ClipValue : SV_ClipDistance0;//²Ã¼ôÖµ¹Ø¼ü×Ö
 };
 
@@ -76,6 +77,7 @@ DomainOut DS(PatchTess patchTess,
 
 	// Project to homogeneous clip space.
 	dout.PosH = mul(float4(dout.PosW, 1.0f), gViewProj);
-
+	//fog
+    dout.FogFactor = ExponentialFog(0.5, length(gEyePosW - dout.PosW));
 	return dout;
 }

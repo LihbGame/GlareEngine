@@ -115,10 +115,9 @@ float4 PS(VertexOut pin) : SV_Target
      // Fogging
      if (gFogEnabled)
      {
-     float fogLerp = saturate((length(gEyePosW - pin.PosW) - gFogStart) / gFogRange);
      // Blend the fog color and the lit color.
-     texColor.rgb = lerp(texColor.rgb, gFogColor.rgb, fogLerp);
-     }
+        texColor.rgb = lerp(texColor.rgb, gFogColor.rgb, ExponentialFog(0.5, length(pin.Eye)));
+    }
 
      return texColor;
 }
