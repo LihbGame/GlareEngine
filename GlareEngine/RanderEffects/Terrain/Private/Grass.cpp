@@ -41,7 +41,7 @@ void Grass::BuildGrassVB()
 		for (UINT j = 0; j < mNumVertCols; ++j)
 		{
 			float x = -halfWidth + j * PerGrassDepth;
-			vertices[i * mNumVertCols + j].Pos = XMFLOAT3(x, 0.0f, z);
+			vertices[i * mNumVertCols + j].Pos = XMFLOAT3(x+MathHelper::RandF()*5, 0.0f, z+MathHelper::RandF()*5);
 			// Stretch texture over grid.
 			vertices[i * mNumVertCols + j].Tex.x = j * du;
 			vertices[i * mNumVertCols + j].Tex.y = i * dv;

@@ -218,7 +218,7 @@ void GS(
 
 
 		// Compute triangle strip vertices (quad) in world space.
-        float3 Height = gPerGrassHeight * up * HeightScale * Mask;
+        float3 Height = gPerGrassHeight * up * HeightScale * Mask ;
         float3 Width = gPerGrassWidth * right * Mask;
 
 		if (gIsGrassRandom)
@@ -226,7 +226,6 @@ void GS(
 			Height *= randomRGB.r + 0.5f;
 			Width *= randomRGB.b;
 		}
-
 		//风的影响系数
 		float windCoEff = 0.0f;
 		[unroll]
