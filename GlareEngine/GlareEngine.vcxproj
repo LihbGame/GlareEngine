@@ -228,6 +228,7 @@
     <ClInclude Include="ShaderSource\Public\SimpleGeometryShadowMapShader.h" />
     <ClInclude Include="RanderEffects\Water\Public\Waves.h" />
     <ClInclude Include="ShaderSource\Public\WaterRefractionMaskShader.h" />
+    <None Include="Shaders\Fog.hlsli" />
     <None Include="Shaders\TerrainConstBuffer.hlsli" />
   </ItemGroup>
   <ItemGroup>

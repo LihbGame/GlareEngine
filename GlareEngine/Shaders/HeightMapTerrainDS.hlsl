@@ -1,5 +1,5 @@
 #include "TerrainConstBuffer.hlsli"
-#include "Common.hlsli"
+#include "Fog.hlsli"
 
 #define gTexScale float2(25.0f,25.0f)
 
@@ -78,6 +78,7 @@ DomainOut DS(PatchTess patchTess,
 	// Project to homogeneous clip space.
 	dout.PosH = mul(float4(dout.PosW, 1.0f), gViewProj);
 	//fog
-    dout.FogFactor = ExponentialFog(0.5, length(gEyePosW - dout.PosW));
+    dout.FogFactor = LayeredFog(100.0f, 1000.0f,10.0f, dout.PosW);
+	//ExponentialFog(0.5, length(gEyePosW - dout.PosW));
 	return dout;
 }

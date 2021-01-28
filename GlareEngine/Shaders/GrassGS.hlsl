@@ -1,4 +1,4 @@
-#include "Common.hlsli"
+#include "Fog.hlsli"
 #include "TerrainConstBuffer.hlsli"
 
 //LOD0
