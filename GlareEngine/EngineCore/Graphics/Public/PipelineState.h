@@ -1,12 +1,13 @@
 #pragma once
 #include "L3DUtil.h"
-class CommandContext;
-class RootSignature;
 
 namespace GlareEngine
 {
 	namespace DirectX12Graphics
 	{
+		class CommandContext;
+		class RootSignature;
+
 		class PSO
 		{
 		public:
