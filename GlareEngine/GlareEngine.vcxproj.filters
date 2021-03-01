@@ -161,6 +161,7 @@
     <ClInclude Include="EngineCore\Graphics\Public\DynamicDescriptorHeap.h" />
     <ClInclude Include="EngineCore\Graphics\Public\CommandListManager.h" />
     <ClInclude Include="EngineCore\Graphics\Public\CommandSignature.h" />
+    <ClInclude Include="DXR\D3D12RaytracingHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -301,7 +302,7 @@
     <ClCompile Include="EngineCore\Graphics\Private\WICTextureLoader12.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\Graphics\Private\CommandSignature.cpp">
+    <ClCompile Include="DXR\D3D12RaytracingHelper.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
@@ -405,6 +406,9 @@
     </None>
     <None Include="Shaders\Common.hlsli" />
     <None Include="Shaders\Fog.hlsli" />
+    <None Include="EngineCore\Graphics\Private\CommandSignature.cpp">
+      <Filter>MainSource</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GlareEngine.rc">
