@@ -8,7 +8,6 @@ namespace GlareEngine
 	{
 		class RootSignature;
 
-
 		class IndirectParameter
 		{
 			friend class CommandSignature;
@@ -81,6 +80,50 @@ namespace GlareEngine
 
 		class CommandSignature
 		{
+		public:
+			CommandSignature(UINT NumParams = 0) : m_Finalized(FALSE), m_NumParameters(NumParams)
+			{
+				Reset(NumParams);
+			}
+
+			void Destroy(void)
+			{
+				m_Signature = nullptr;
+				m_ParamArray = nullptr;
+			}
+
+			void Reset(UINT NumParams)
+			{
+				if (NumParams > 0)
+					m_ParamArray.reset(new IndirectParameter[NumParams]);
+				else
+					m_ParamArray = nullptr;
+
+				m_NumParameters = NumParams;
+			}
+
+			IndirectParameter& operator[] (size_t EntryIndex)
+			{
+				assert(EntryIndex < m_NumParameters);
+				return m_ParamArray.get()[EntryIndex];
+			}
+
+			const IndirectParameter& operator[] (size_t EntryIndex) const
+			{
+				assert(EntryIndex < m_NumParameters);
+				return m_ParamArray.get()[EntryIndex];
+			}
+
+			void Finalize(const RootSignature* RootSignature = nullptr);
+
+			ID3D12CommandSignature* GetSignature() const { return m_Signature.Get(); }
+
+		protected:
+
+			BOOL m_Finalized;
+			UINT m_NumParameters;
+			std::unique_ptr<IndirectParameter[]> m_ParamArray;
+			Microsoft::WRL::ComPtr<ID3D12CommandSignature> m_Signature;
 		};
 	}
 }
