@@ -169,6 +169,7 @@
     <ClInclude Include="EngineCore\Graphics\Public\DepthBuffer.h" />
     <ClInclude Include="EngineCore\Graphics\Public\DescriptorHeap.h" />
     <ClInclude Include="EngineCore\Graphics\Public\DynamicDescriptorHeap.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\DynamicUploadBuffer.h" />
     <ClInclude Include="EngineCore\Graphics\Public\GPUResource.h" />
     <None Include="EngineCore\Graphics\Public\GraphicsCore.h" />
     <None Include="EngineCore\Graphics\Public\SamplerManager.h" />
@@ -256,6 +257,7 @@
     </None>
     <None Include="EngineCore\Graphics\Private\PipelineState.cpp" />
     <None Include="EngineCore\Graphics\Private\DynamicDescriptorHeap.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\DynamicUploadBuffer.cpp" />
     <ClCompile Include="EngineCore\Private\L3DBaseApp.cpp" />
     <ClCompile Include="EngineCore\Private\L3DCamera.cpp" />
     <ClCompile Include="EngineCore\Private\L3DGameTimer.cpp" />
