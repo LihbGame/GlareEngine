@@ -259,7 +259,7 @@
     <None Include="EngineCore\Graphics\Private\PipelineState.cpp" />
     <None Include="EngineCore\Graphics\Private\DynamicDescriptorHeap.cpp" />
     <None Include="EngineCore\Graphics\Private\DynamicUploadBuffer.cpp" />
-    <ClCompile Include="EngineCore\Graphics\Private\LinearAllocator.cpp" />
+    <None Include="EngineCore\Graphics\Private\LinearAllocator.cpp" />
     <ClCompile Include="EngineCore\Private\L3DBaseApp.cpp" />
     <ClCompile Include="EngineCore\Private\L3DCamera.cpp" />
     <ClCompile Include="EngineCore\Private\L3DGameTimer.cpp" />
