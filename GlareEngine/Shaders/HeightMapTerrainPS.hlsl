@@ -55,7 +55,7 @@ float4 PS(DomainOut pin) : SV_TARGET
 	uint  MetallicMapSrvIndex = Mat.MetallicMapIndex;
 	uint  NormalMapSrvIndex = Mat.NormalMapIndex;
 	uint  RoughnessMapSrvIndex = Mat.RoughnessMapIndex;
-
+    float3 gamma = float(2.2);
 	float4 c[5];
 	for (int i = 0; i < 3; ++i)
 	{
@@ -68,9 +68,11 @@ float4 PS(DomainOut pin) : SV_TARGET
 			float Roughness =1;// gSRVMap[RoughnessMapSrvIndex].Sample(gsamLinearWrap, UV).x;
 			//float Metallic = gSRVMap[MetallicMapSrvIndex].Sample(gsamLinearWrap, UV).x;
 			float AO = gSRVMap[AOMapSrvIndex].Sample(gsamLinearWrap, UV).x;
-
+			
+		    //Gamma to linear color space
+            diffuseAlbedo.rgb = pow(diffuseAlbedo.rgb, gamma);
 			// Indirect lighting.
-			float4 ambient = gAmbientLight * diffuseAlbedo * AO;
+			float4 ambient = gAmbientLight * diffuseAlbedo * AO*0.5f;
 
 			//Sample normal
 			float3 normalMapSample = gSRVMap[NormalMapSrvIndex].Sample(gsamLinearWrap, UV).xyz;
@@ -89,7 +91,7 @@ float4 PS(DomainOut pin) : SV_TARGET
 			float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
 				bumpedNormalW, toEye, shadowFactor);
 
-			c[i] = ambient + directLight;
+            c[i] = ambient + directLight;
 
 		}
 		else
@@ -112,7 +114,7 @@ float4 PS(DomainOut pin) : SV_TARGET
 	// Blend the layers on top of each other.
 	float4 texColor = c[1];
 	texColor = lerp(texColor, c[2], t.r);
-	//texColor = lerp(texColor, c[2], t.g);
+	//texColor = lerp(texColor, c[3], t.g);
 	//texColor = lerp(texColor, c[3], t.b);
 	//texColor = lerp(texColor, c[4], t.a);
 
@@ -125,6 +127,9 @@ float4 PS(DomainOut pin) : SV_TARGET
 		// Blend the fog color and the lit color.
 		texColor.rgb = lerp(texColor.rgb, gFogColor.rgb, pin.FogFactor);
 	}
+	//Gamma to nonlinear space
+    gamma = float(1.0 / 2.2);
+    texColor.rgb = pow(texColor.rgb, gamma);
 
 
 	return texColor;

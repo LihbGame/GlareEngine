@@ -24,8 +24,10 @@ float4 PS(VertexOut pin) : SV_Target
 	// Fetch the material data.
 	MaterialData matData = gMaterialData[pin.MatIndex];
 
-
+    float3 gamma = float(2.2);
 	float4 diffuseAlbedo = gSRVMap[matData.DiffuseMapIndex].Sample(gsamAnisotropicWrap, pin.TexC);
+	 //Gamma to linear color space
+    diffuseAlbedo.rgb = pow(diffuseAlbedo.rgb, gamma);
 	float Roughness = gSRVMap[matData.RoughnessMapIndex].Sample(gsamAnisotropicWrap, pin.TexC).x;
 	float Metallic = gSRVMap[matData.MetallicMapIndex].Sample(gsamAnisotropicWrap, pin.TexC).x;
 	float AO = gSRVMap[matData.AOMapIndex].Sample(gsamAnisotropicWrap, pin.TexC).x;
@@ -55,5 +57,8 @@ float4 PS(VertexOut pin) : SV_Target
 #ifdef ALPHA_TEST
 	clip(litColor.a - 0.1f);
 #endif
+		//Gamma to nonlinear space
+    gamma = float(1.0 / 2.2);
+    litColor.rgb = pow(litColor.rgb, gamma);
 	return litColor;
 }
