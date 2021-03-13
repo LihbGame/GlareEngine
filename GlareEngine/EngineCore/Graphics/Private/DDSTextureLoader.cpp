@@ -1863,7 +1863,7 @@ static HRESULT CreateTextureFromDDS12(
 			mipCount - skipMip,
 			arraySize,
 			format,
-			false, // forceSRGB
+			true, // forceSRGB
 			isCubeMap,
 			initData.get(),
 			texture, 

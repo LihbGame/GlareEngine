@@ -55,7 +55,6 @@ float4 PS(DomainOut pin) : SV_TARGET
 	uint  MetallicMapSrvIndex = Mat.MetallicMapIndex;
 	uint  NormalMapSrvIndex = Mat.NormalMapIndex;
 	uint  RoughnessMapSrvIndex = Mat.RoughnessMapIndex;
-    float3 gamma = float(2.2);
 	float4 c[5];
 	for (int i = 0; i < 3; ++i)
 	{
@@ -68,9 +67,7 @@ float4 PS(DomainOut pin) : SV_TARGET
 			float Roughness =1;// gSRVMap[RoughnessMapSrvIndex].Sample(gsamLinearWrap, UV).x;
 			//float Metallic = gSRVMap[MetallicMapSrvIndex].Sample(gsamLinearWrap, UV).x;
 			float AO = gSRVMap[AOMapSrvIndex].Sample(gsamLinearWrap, UV).x;
-			
-		    //Gamma to linear color space
-            diffuseAlbedo.rgb = pow(diffuseAlbedo.rgb, gamma);
+		
 			// Indirect lighting.
 			float4 ambient = gAmbientLight * diffuseAlbedo * AO*0.5f;
 
@@ -128,7 +125,7 @@ float4 PS(DomainOut pin) : SV_TARGET
 		texColor.rgb = lerp(texColor.rgb, gFogColor.rgb, pin.FogFactor);
 	}
 	//Gamma to nonlinear space
-    gamma = float(1.0 / 2.2);
+    float3 gamma = float(1.0 / 2.2);
     texColor.rgb = pow(texColor.rgb, gamma);
 
 
