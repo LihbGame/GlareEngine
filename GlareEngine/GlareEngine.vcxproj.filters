@@ -327,37 +327,11 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\SkyPS.hlsl" />
-    <FxCompile Include="Shaders\SkyVS.hlsl" />
-    <FxCompile Include="Shaders\SimpleGeoInstanceVS.hlsl" />
-    <FxCompile Include="Shaders\SimpleGeoInstancePS.hlsl" />
-    <FxCompile Include="Shaders\DefaultVS.hlsl" />
-    <FxCompile Include="Shaders\DefaultPS.hlsl" />
-    <FxCompile Include="Shaders\SimpleGeoInstanceShadowVS.hlsl" />
-    <FxCompile Include="Shaders\SimpleGeoInstanceShadowPS.hlsl" />
-    <FxCompile Include="Shaders\ComplexModelInstancePS.hlsl" />
-    <FxCompile Include="Shaders\WaterRefractionMaskVS.hlsl" />
-    <FxCompile Include="Shaders\WaterRefractionMaskPS.hlsl" />
-    <FxCompile Include="Shaders\ShockWaveWaterVS.hlsl" />
-    <FxCompile Include="Shaders\ShockWaveWaterPS.hlsl" />
-    <FxCompile Include="Shaders\HeightMapTerrainVS.hlsl" />
-    <FxCompile Include="Shaders\HeightMapTerrainPS.hlsl" />
-    <FxCompile Include="Shaders\HeightMapTerrainHS.hlsl" />
-    <FxCompile Include="Shaders\GrassVS.hlsl" />
-    <FxCompile Include="Shaders\GrassPS.hlsl" />
-    <FxCompile Include="Shaders\GrassGS.hlsl" />
-    <FxCompile Include="Shaders\HeightMapTerrainDS.hlsl" />
-    <FxCompile Include="Shaders\GrassShadowGS.hlsl" />
-    <FxCompile Include="Shaders\GrassShadowVS.hlsl" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="imgui.ini" />
-    <None Include="Shaders\PBRLighting.hlsli" />
     <None Include="Dependences\lib\assimp.dll" />
     <None Include="Dependences\lib\assimp-vc140-mt.dll" />
     <None Include="Dependences\lib\assimp-vc142-mtd.pdb" />
     <None Include="packages.config" />
-    <None Include="Shaders\TerrainConstBuffer.hlsli" />
     <None Include="RanderEffects\ParticleSystem\Private\ParticleSystem.cpp">
       <Filter>MainSource</Filter>
     </None>
@@ -410,7 +384,6 @@
     <None Include="EngineCore\Graphics\Private\CommandListManager.cpp">
       <Filter>MainSource</Filter>
     </None>
-    <None Include="Shaders\Fog.hlsli" />
     <None Include="EngineCore\Graphics\Private\CommandSignature.cpp">
       <Filter>MainSource</Filter>
     </None>
@@ -420,7 +393,6 @@
     <None Include="EngineCore\Graphics\Private\LinearAllocator.cpp">
       <Filter>MainSource</Filter>
     </None>
-    <None Include="Shaders\Common.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GlareEngine.rc">
