@@ -250,6 +250,6 @@ void ShockWaveWater::LoadTexture()
 	WaterNormalDesc.TextureCube.MostDetailedMip = 0;
 	WaterNormalDesc.TextureCube.MipLevels = WaterNormalTex->GetDesc().MipLevels;
 	WaterNormalDesc.TextureCube.ResourceMinLODClamp = 0.0f;
-	WaterNormalDesc.Format = WaterNormalTex->GetDesc().Format;
+	WaterNormalDesc.Format = DXGI_FORMAT_BC1_UNORM;//linear space normal   //WaterNormalTex->GetDesc().Format;
 	md3dDevice->CreateShaderResourceView(WaterNormalTex.Get(), &WaterNormalDesc, mWavesBumpDescriptor);
 }

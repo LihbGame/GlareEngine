@@ -410,7 +410,6 @@
     <None Include="EngineCore\Graphics\Private\CommandListManager.cpp">
       <Filter>MainSource</Filter>
     </None>
-    <None Include="Shaders\Common.hlsli" />
     <None Include="Shaders\Fog.hlsli" />
     <None Include="EngineCore\Graphics\Private\CommandSignature.cpp">
       <Filter>MainSource</Filter>
@@ -421,6 +420,7 @@
     <None Include="EngineCore\Graphics\Private\LinearAllocator.cpp">
       <Filter>MainSource</Filter>
     </None>
+    <None Include="Shaders\Common.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GlareEngine.rc">
