@@ -34,12 +34,12 @@ namespace GlareEngine
 				AddressW = AddressMode;
 			}
 
-			void SetBorderColor(XMFLOAT4 Border)
+			void SetBorderColor(Color Border)
 			{
-				BorderColor[0] = Border.x;
-				BorderColor[1] = Border.y;
-				BorderColor[2] = Border.z;
-				BorderColor[3] = Border.w;
+				BorderColor[0] = Border.R();
+				BorderColor[1] = Border.G();
+				BorderColor[2] = Border.B();
+				BorderColor[3] = Border.A();
 			}
 
 			//根据需要分配新的描述符； 尽可能返回现有描述符的句柄

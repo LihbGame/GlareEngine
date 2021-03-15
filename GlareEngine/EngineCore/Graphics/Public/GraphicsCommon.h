@@ -50,7 +50,12 @@ namespace GlareEngine
 		extern CommandSignature DispatchIndirectCommandSignature;
 		extern CommandSignature DrawIndirectCommandSignature;
 
-		void InitializeCommonState(void);
+		void InitializeAllCommonState(void);
+		void InitializeSampler(void);
+		void InitializeRasterizer(void);
+		void InitializeDepthState(void);
+		void InitializeBlendState(void);
+
 		void DestroyCommonState(void);
 	}
 }
