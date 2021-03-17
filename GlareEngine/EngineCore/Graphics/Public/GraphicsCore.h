@@ -1,13 +1,19 @@
 #pragma once
 #include "L3DUtil.h"
+#include "DescriptorHeap.h"
+
+class CommandContext;
+class CommandListManager;
+class CommandSignature;
+class ContextManager;
+class ColorBuffer;
+class DepthBuffer;
+class GraphicsPSO;
 
 namespace GlareEngine
 {
 	namespace DirectX12Graphics
 	{
-#ifndef RELEASE
-		extern const GUID WKPDID_D3DDebugObjectName;
-#endif
 		using namespace Microsoft::WRL;
 
 		void Initialize(void);
@@ -19,15 +25,14 @@ namespace GlareEngine
 		extern uint32_t g_DisplayWidth;
 		extern uint32_t g_DisplayHeight;
 
-		// Returns the number of elapsed frames since application start
+		//返回自应用程序启动以来经过的帧数.
 		uint64_t GetFrameCount(void);
 
-		// The amount of time elapsed during the last completed frame.  The CPU and/or
-		// GPU may be idle during parts of the frame.  The frame time measures the time
-		// between calls to present each frame.
+		//在最后完成的帧中经过的时间量。 在部分帧期间，CPU/GPU可能处于空闲状态。
+		//帧时间测量表示每个帧的调用之间的时间。
 		float GetFrameTime(void);
 
-		// The total number of frames per second
+		//每秒的总帧数
 		float GetFrameRate(void);
 
 		extern ID3D12Device* g_Device;
@@ -37,5 +42,22 @@ namespace GlareEngine
 		extern D3D_FEATURE_LEVEL g_D3DFeatureLevel;
 		extern bool g_bTypedUAVLoadSupport_R11G11B10_FLOAT;
 		extern bool g_bEnableHDROutput;
+
+		extern DescriptorAllocator g_DescriptorAllocator[];
+		inline D3D12_CPU_DESCRIPTOR_HANDLE AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE Type, UINT Count = 1)
+		{
+			return g_DescriptorAllocator[Type].Allocate(Count);
+		}
+
+		extern RootSignature g_GenerateMipsRS;
+		extern ComputePSO g_GenerateMipsLinearPSO[4];
+		extern ComputePSO g_GenerateMipsGammaPSO[4];
+
+		enum eResolution { E720p,E900p, E1080p, E1440p, E1800p, E2160p };
+
+		extern bool s_EnableVSync;
+		extern eResolution TargetResolution;
+		extern uint32_t g_DisplayWidth;
+		extern uint32_t g_DisplayHeight;
 	}
 }

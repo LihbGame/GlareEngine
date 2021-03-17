@@ -19,7 +19,7 @@ void PSO::DestroyAll(void)
 	s_ComputePSOHashMap.clear();
 }
 
-GraphicsPSO::GraphicsPSO()
+GlareEngine::DirectX12Graphics::GraphicsPSO::GraphicsPSO()
 {
 	ZeroMemory(&m_PSODesc, sizeof(m_PSODesc));
 	m_PSODesc.NodeMask = 1;
@@ -28,38 +28,38 @@ GraphicsPSO::GraphicsPSO()
 	m_PSODesc.InputLayout.NumElements = 0;
 }
 
-void GraphicsPSO::SetBlendState(const D3D12_BLEND_DESC& BlendDesc)
+void GlareEngine::DirectX12Graphics::GraphicsPSO::SetBlendState(const D3D12_BLEND_DESC& BlendDesc)
 {
 	m_PSODesc.BlendState = BlendDesc;
 }
 
-void GraphicsPSO::SetRasterizerState(const D3D12_RASTERIZER_DESC& RasterizerDesc)
+void GlareEngine::DirectX12Graphics::GraphicsPSO::SetRasterizerState(const D3D12_RASTERIZER_DESC& RasterizerDesc)
 {
 	m_PSODesc.RasterizerState = RasterizerDesc;
 }
 
-void GraphicsPSO::SetDepthStencilState(const D3D12_DEPTH_STENCIL_DESC& DepthStencilDesc)
+void GlareEngine::DirectX12Graphics::GraphicsPSO::SetDepthStencilState(const D3D12_DEPTH_STENCIL_DESC& DepthStencilDesc)
 {
 	m_PSODesc.DepthStencilState = DepthStencilDesc;
 }
 
-void GraphicsPSO::SetSampleMask(UINT SampleMask)
+void GlareEngine::DirectX12Graphics::GraphicsPSO::SetSampleMask(UINT SampleMask)
 {
 	m_PSODesc.SampleMask = SampleMask;
 }
 
-void GraphicsPSO::SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE TopologyType)
+void GlareEngine::DirectX12Graphics::GraphicsPSO::SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE TopologyType)
 {
 	assert(TopologyType != D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED, "Can't draw with undefined topology");
 	m_PSODesc.PrimitiveTopologyType = TopologyType;
 }
 
-void GraphicsPSO::SetRenderTargetFormat(DXGI_FORMAT RTVFormat, DXGI_FORMAT DSVFormat, UINT MsaaCount, UINT MsaaQuality)
+void GlareEngine::DirectX12Graphics::GraphicsPSO::SetRenderTargetFormat(DXGI_FORMAT RTVFormat, DXGI_FORMAT DSVFormat, UINT MsaaCount, UINT MsaaQuality)
 {
 	SetRenderTargetFormats(1, &RTVFormat, DSVFormat, MsaaCount, MsaaQuality);
 }
 
-void GraphicsPSO::SetRenderTargetFormats(UINT NumRTVs, const DXGI_FORMAT* RTVFormats, DXGI_FORMAT DSVFormat, UINT MsaaCount, UINT MsaaQuality)
+void GlareEngine::DirectX12Graphics::GraphicsPSO::SetRenderTargetFormats(UINT NumRTVs, const DXGI_FORMAT* RTVFormats, DXGI_FORMAT DSVFormat, UINT MsaaCount, UINT MsaaQuality)
 {
 	assert(NumRTVs == 0 || RTVFormats != nullptr, "Null format array conflicts with non-zero length");
 	for (UINT i = 0; i < NumRTVs; ++i)
@@ -72,7 +72,7 @@ void GraphicsPSO::SetRenderTargetFormats(UINT NumRTVs, const DXGI_FORMAT* RTVFor
 	m_PSODesc.SampleDesc.Quality = MsaaQuality;
 }
 
-void GraphicsPSO::SetInputLayout(UINT NumElements, const D3D12_INPUT_ELEMENT_DESC* pInputElementDescs)
+void GlareEngine::DirectX12Graphics::GraphicsPSO::SetInputLayout(UINT NumElements, const D3D12_INPUT_ELEMENT_DESC* pInputElementDescs)
 {
 	m_PSODesc.InputLayout.NumElements = NumElements;
 
@@ -86,12 +86,12 @@ void GraphicsPSO::SetInputLayout(UINT NumElements, const D3D12_INPUT_ELEMENT_DES
 		m_InputLayouts = nullptr;
 }
 
-void GraphicsPSO::SetPrimitiveRestart(D3D12_INDEX_BUFFER_STRIP_CUT_VALUE IBProps)
+void GlareEngine::DirectX12Graphics::GraphicsPSO::SetPrimitiveRestart(D3D12_INDEX_BUFFER_STRIP_CUT_VALUE IBProps)
 {
 	m_PSODesc.IBStripCutValue = IBProps;
 }
 
-void GraphicsPSO::Finalize()
+void GlareEngine::DirectX12Graphics::GraphicsPSO::Finalize()
 {
 	// Make sure the root signature is finalized first
 	m_PSODesc.pRootSignature = m_RootSignature->GetSignature();
