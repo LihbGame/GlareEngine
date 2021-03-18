@@ -165,6 +165,7 @@
     <ClInclude Include="DXR\D3D12RaytracingHelper.h" />
     <ClInclude Include="EngineCore\Graphics\Public\ColorBuffer.h" />
     <ClInclude Include="EngineCore\Graphics\Public\CommandAllocatorPool.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\CommandContext.h" />
     <ClInclude Include="EngineCore\Graphics\Public\CommandListManager.h" />
     <ClInclude Include="EngineCore\Graphics\Public\CommandSignature.h" />
     <ClInclude Include="EngineCore\Graphics\Public\DepthBuffer.h" />
@@ -249,6 +250,7 @@
     <None Include="EngineCore\Graphics\Private\CommandListManager.cpp" />
     <ClCompile Include="DXR\D3D12RaytracingHelper.cpp" />
     <None Include="EngineCore\Graphics\Private\CommandSignature.cpp" />
+    <None Include="EngineCore\Graphics\Private\CommandContext.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\DDSTextureLoader.cpp" />
     <None Include="EngineCore\Graphics\Private\PixelBuffer.cpp" />
     <None Include="EngineCore\Graphics\Private\ReadbackBuffer.cpp" />
