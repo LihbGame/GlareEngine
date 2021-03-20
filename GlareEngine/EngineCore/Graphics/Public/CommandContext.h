@@ -60,11 +60,14 @@ namespace GlareEngine
 		private:
 
 			CommandContext(D3D12_COMMAND_LIST_TYPE Type);
-
+			
+			//reset CommandContext
 			void Reset(void);
-
 		public:
 			~CommandContext(void);
+
+			//通过保留命令列表和命令分配器来准备渲染 
+			void Initialize(void);
 
 			static void DestroyAllContexts(void);
 
@@ -76,8 +79,7 @@ namespace GlareEngine
 			// Flush existing commands and release the current context
 			uint64_t Finish(bool WaitForCompletion = false);
 
-			// Prepare to render by reserving a command list and command allocator
-			void Initialize(void);
+			
 
 			GraphicsContext& GetGraphicsContext() {
 				ASSERT(m_Type != D3D12_COMMAND_LIST_TYPE_COMPUTE, "Cannot convert async compute context to graphics");

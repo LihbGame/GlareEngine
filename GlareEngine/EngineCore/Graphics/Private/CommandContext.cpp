@@ -9,6 +9,9 @@ namespace GlareEngine
 {
     namespace DirectX12Graphics
     {
+
+
+#pragma region ContextManager
 		CommandContext* ContextManager::AllocateContext(D3D12_COMMAND_LIST_TYPE Type)
 		{
 			std::lock_guard<std::mutex> LockGuard(m_ContextAllocationMutex);
@@ -44,7 +47,9 @@ namespace GlareEngine
 			for (uint32_t i = 0; i < 4; ++i)
 				m_ContextPool[i].clear();
 		}
+#pragma endregion
 
+#pragma region CommandContext
 		CommandContext::CommandContext(D3D12_COMMAND_LIST_TYPE Type) :
 			m_Type(Type),
 			m_DynamicViewDescriptorHeap(*this, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV),
@@ -63,7 +68,48 @@ namespace GlareEngine
 			m_NumBarriersToFlush = 0;
 		}
 
+		CommandContext::~CommandContext(void)
+		{
+			if (m_CommandList != nullptr)
+				m_CommandList->Release();
+		}
 
+		void CommandContext::Initialize(void)
+		{
+			g_CommandManager.CreateNewCommandList(m_Type, &m_CommandList, &m_CurrentAllocator);
+		}
+
+
+		void CommandContext::BindDescriptorHeaps(void)
+		{
+			UINT NumDescriptorHeaps = 0;
+			ID3D12DescriptorHeap* HeapsToBind[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+			for (UINT i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
+			{
+				ID3D12DescriptorHeap* HeapIter = m_CurrentDescriptorHeaps[i];
+				if (HeapIter != nullptr)
+					HeapsToBind[NumDescriptorHeaps++] = HeapIter;
+			}
+
+			if (NumDescriptorHeaps > 0)
+				m_CommandList->SetDescriptorHeaps(NumDescriptorHeaps, HeapsToBind);
+		}
+
+		void CommandContext::Reset(void)
+		{
+			//我们只对先前释放的上下文调用Reset()。 命令列表会持续存在，但我们必须请求一个新的分配器。 
+			assert(m_CommandList != nullptr && m_CurrentAllocator == nullptr);
+			m_CurrentAllocator = g_CommandManager.GetQueue(m_Type).RequestAllocator();
+			m_CommandList->Reset(m_CurrentAllocator, nullptr);
+
+			m_CurGraphicsRootSignature = nullptr;
+			m_CurPipelineState = nullptr;
+			m_CurComputeRootSignature = nullptr;
+			m_NumBarriersToFlush = 0;
+
+			BindDescriptorHeaps();
+		}
+#pragma endregion
 
 
 
