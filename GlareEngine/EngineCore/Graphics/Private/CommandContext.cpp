@@ -109,6 +109,55 @@ namespace GlareEngine
 
 			BindDescriptorHeaps();
 		}
+
+		void CommandContext::DestroyAllContexts(void)
+		{
+			LinearAllocator::DestroyAll();
+			DynamicDescriptorHeap::DestroyAll();
+			g_ContextManager.DestroyAllContexts();
+		}
+
+		CommandContext& CommandContext::Begin(const std::wstring ID)
+		{
+			CommandContext* NewContext = g_ContextManager.AllocateContext(D3D12_COMMAND_LIST_TYPE_DIRECT);
+			NewContext->SetID(ID);
+			return *NewContext;
+		}
+
+		uint64_t CommandContext::Flush(bool WaitForCompletion)
+		{
+			FlushResourceBarriers();
+
+			assert(m_CurrentAllocator != nullptr);
+
+			uint64_t FenceValue = g_CommandManager.GetQueue(m_Type).ExecuteCommandList(m_CommandList);
+
+			if (WaitForCompletion)
+				g_CommandManager.WaitForFence(FenceValue);
+
+			//
+			// Reset the command list and restore previous state
+			//
+
+			m_CommandList->Reset(m_CurrentAllocator, nullptr);
+
+			if (m_CurGraphicsRootSignature)
+			{
+				m_CommandList->SetGraphicsRootSignature(m_CurGraphicsRootSignature);
+			}
+			if (m_CurComputeRootSignature)
+			{
+				m_CommandList->SetComputeRootSignature(m_CurComputeRootSignature);
+			}
+			if (m_CurPipelineState)
+			{
+				m_CommandList->SetPipelineState(m_CurPipelineState);
+			}
+
+			BindDescriptorHeaps();
+
+			return FenceValue;
+		}
 #pragma endregion
 
 
