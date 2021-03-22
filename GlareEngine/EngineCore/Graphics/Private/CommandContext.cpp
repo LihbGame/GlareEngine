@@ -74,6 +74,15 @@ namespace GlareEngine
 				m_CommandList->Release();
 		}
 
+		inline void CommandContext::FlushResourceBarriers(void)
+		{
+			if (m_NumBarriersToFlush > 0)
+			{
+				m_CommandList->ResourceBarrier(m_NumBarriersToFlush, m_ResourceBarrierBuffer);
+				m_NumBarriersToFlush = 0;
+			}
+		}
+
 		void CommandContext::Initialize(void)
 		{
 			g_CommandManager.CreateNewCommandList(m_Type, &m_CommandList, &m_CurrentAllocator);
@@ -155,6 +164,34 @@ namespace GlareEngine
 			}
 
 			BindDescriptorHeaps();
+
+			return FenceValue;
+		}
+
+
+		uint64_t CommandContext::Finish(bool WaitForCompletion)
+		{
+			assert(m_Type == D3D12_COMMAND_LIST_TYPE_DIRECT || m_Type == D3D12_COMMAND_LIST_TYPE_COMPUTE);
+
+			FlushResourceBarriers();
+
+			assert(m_CurrentAllocator != nullptr);
+
+			CommandQueue& Queue = g_CommandManager.GetQueue(m_Type);
+
+			uint64_t FenceValue = Queue.ExecuteCommandList(m_CommandList);
+			Queue.DiscardAllocator(FenceValue, m_CurrentAllocator);
+			m_CurrentAllocator = nullptr;
+
+			m_CPULinearAllocator.CleanupUsedPages(FenceValue);
+			m_GPULinearAllocator.CleanupUsedPages(FenceValue);
+			m_DynamicViewDescriptorHeap.CleanupUsedHeaps(FenceValue);
+			m_DynamicSamplerDescriptorHeap.CleanupUsedHeaps(FenceValue);
+
+			if (WaitForCompletion)
+				g_CommandManager.WaitForFence(FenceValue);
+
+			g_ContextManager.FreeContext(this);
 
 			return FenceValue;
 		}

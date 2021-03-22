@@ -66,6 +66,9 @@ namespace GlareEngine
 		public:
 			~CommandContext(void);
 
+			//Flush Resource Barriers
+			inline void FlushResourceBarriers(void);
+
 			//通过保留命令列表和命令分配器来准备渲染 
 			void Initialize(void);
 
@@ -79,10 +82,8 @@ namespace GlareEngine
 			// Flush existing commands and release the current context
 			uint64_t Finish(bool WaitForCompletion = false);
 
-			
-
 			GraphicsContext& GetGraphicsContext() {
-				ASSERT(m_Type != D3D12_COMMAND_LIST_TYPE_COMPUTE, "Cannot convert async compute context to graphics");
+				assert(m_Type != D3D12_COMMAND_LIST_TYPE_COMPUTE, "Cannot convert async compute context to graphics");
 				return reinterpret_cast<GraphicsContext&>(*this);
 			}
 
@@ -94,13 +95,13 @@ namespace GlareEngine
 				return m_CommandList;
 			}
 
-			void CopyBuffer(GpuResource& Dest, GpuResource& Src);
-			void CopyBufferRegion(GpuResource& Dest, size_t DestOffset, GpuResource& Src, size_t SrcOffset, size_t NumBytes);
-			void CopySubresource(GpuResource& Dest, UINT DestSubIndex, GpuResource& Src, UINT SrcSubIndex);
-			void CopyCounter(GpuResource& Dest, size_t DestOffset, StructuredBuffer& Src);
+			void CopyBuffer(GPUResource& Dest, GPUResource& Src);
+			void CopyBufferRegion(GPUResource& Dest, size_t DestOffset, GPUResource& Src, size_t SrcOffset, size_t NumBytes);
+			void CopySubresource(GPUResource& Dest, UINT DestSubIndex, GPUResource& Src, UINT SrcSubIndex);
+			void CopyCounter(GPUResource& Dest, size_t DestOffset, StructuredBuffer& Src);
 			void ResetCounter(StructuredBuffer& Buf, uint32_t Value = 0);
 
-			DynAlloc ReserveUploadMemory(size_t SizeInBytes)
+			DynamicAlloc ReserveUploadMemory(size_t SizeInBytes)
 			{
 				return m_CpuLinearAllocator.Allocate(SizeInBytes);
 			}
@@ -117,7 +118,7 @@ namespace GlareEngine
 			void BeginResourceTransition(GpuResource& Resource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate = false);
 			void InsertUAVBarrier(GpuResource& Resource, bool FlushImmediate = false);
 			void InsertAliasBarrier(GpuResource& Before, GpuResource& After, bool FlushImmediate = false);
-			inline void FlushResourceBarriers(void);
+			
 
 			void InsertTimeStamp(ID3D12QueryHeap* pQueryHeap, uint32_t QueryIdx);
 			void ResolveTimeStamps(ID3D12Resource* pReadbackHeap, ID3D12QueryHeap* pQueryHeap, uint32_t NumQueries);
