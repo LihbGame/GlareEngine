@@ -82,18 +82,13 @@ namespace GlareEngine
 			// Flush existing commands and release the current context
 			uint64_t Finish(bool WaitForCompletion = false);
 
-			GraphicsContext& GetGraphicsContext() {
-				assert(m_Type != D3D12_COMMAND_LIST_TYPE_COMPUTE, "Cannot convert async compute context to graphics");
-				return reinterpret_cast<GraphicsContext&>(*this);
-			}
 
-			ComputeContext& GetComputeContext() {
-				return reinterpret_cast<ComputeContext&>(*this);
-			}
+			void TransitionResource(GPUResource& Resource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate = false);
+			void BeginResourceTransition(GPUResource& Resource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate = false);
+			void InsertUAVBarrier(GPUResource& Resource, bool FlushImmediate = false);
+			void InsertAliasBarrier(GPUResource& Before, GPUResource& After, bool FlushImmediate = false);
 
-			ID3D12GraphicsCommandList* GetCommandList() {
-				return m_CommandList;
-			}
+
 
 			void CopyBuffer(GPUResource& Dest, GPUResource& Src);
 			void CopyBufferRegion(GPUResource& Dest, size_t DestOffset, GPUResource& Src, size_t SrcOffset, size_t NumBytes);
@@ -101,10 +96,7 @@ namespace GlareEngine
 			void CopyCounter(GPUResource& Dest, size_t DestOffset, StructuredBuffer& Src);
 			void ResetCounter(StructuredBuffer& Buf, uint32_t Value = 0);
 
-			DynamicAlloc ReserveUploadMemory(size_t SizeInBytes)
-			{
-				return m_CpuLinearAllocator.Allocate(SizeInBytes);
-			}
+
 
 			static void InitializeTexture(GpuResource& Dest, UINT NumSubresources, D3D12_SUBRESOURCE_DATA SubData[]);
 			static void InitializeBuffer(GpuResource& Dest, const void* Data, size_t NumBytes, size_t Offset = 0);
@@ -114,11 +106,8 @@ namespace GlareEngine
 			void WriteBuffer(GpuResource& Dest, size_t DestOffset, const void* Data, size_t NumBytes);
 			void FillBuffer(GpuResource& Dest, size_t DestOffset, DWParam Value, size_t NumBytes);
 
-			void TransitionResource(GpuResource& Resource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate = false);
-			void BeginResourceTransition(GpuResource& Resource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate = false);
-			void InsertUAVBarrier(GpuResource& Resource, bool FlushImmediate = false);
-			void InsertAliasBarrier(GpuResource& Before, GpuResource& After, bool FlushImmediate = false);
 			
+
 
 			void InsertTimeStamp(ID3D12QueryHeap* pQueryHeap, uint32_t QueryIdx);
 			void ResolveTimeStamps(ID3D12Resource* pReadbackHeap, ID3D12QueryHeap* pQueryHeap, uint32_t NumQueries);
@@ -131,6 +120,33 @@ namespace GlareEngine
 			void SetDescriptorHeaps(UINT HeapCount, D3D12_DESCRIPTOR_HEAP_TYPE Type[], ID3D12DescriptorHeap* HeapPtrs[]);
 
 			void SetPredication(ID3D12Resource* Buffer, UINT64 BufferOffset, D3D12_PREDICATION_OP Op);
+
+
+
+			//Get Graphics Context
+			GraphicsContext& GetGraphicsContext() 
+			{
+				assert(m_Type != D3D12_COMMAND_LIST_TYPE_COMPUTE, "Can not convert async compute context to graphics");
+				return reinterpret_cast<GraphicsContext&>(*this);
+			}
+
+			//Get Compute Context
+			ComputeContext& GetComputeContext() 
+			{
+				return reinterpret_cast<ComputeContext&>(*this);
+			}
+
+			//Get Command List
+			ID3D12GraphicsCommandList* GetCommandList() 
+			{
+				return m_CommandList;
+			}
+
+			//Reserve Upload Memory
+			DynamicAlloc ReserveUploadMemory(size_t SizeInBytes)
+			{
+				return m_CPULinearAllocator.Allocate(SizeInBytes);
+			}
 
 		protected:
 

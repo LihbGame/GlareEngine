@@ -2,19 +2,21 @@
 #include "L3DUtil.h"
 #include "DescriptorHeap.h"
 
-class CommandContext;
-class CommandListManager;
-class CommandSignature;
-class ContextManager;
-class ColorBuffer;
-class DepthBuffer;
-class GraphicsPSO;
+
 
 namespace GlareEngine
 {
 	namespace DirectX12Graphics
 	{
 		using namespace Microsoft::WRL;
+
+		class CommandContext;
+		class CommandListManager;
+		class CommandSignature;
+		class ContextManager;
+		class ColorBuffer;
+		class DepthBuffer;
+		class GraphicsPSO;
 
 		void Initialize(void);
 		void Resize(uint32_t width, uint32_t height);

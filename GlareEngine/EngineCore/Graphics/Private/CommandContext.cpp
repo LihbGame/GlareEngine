@@ -195,6 +195,53 @@ namespace GlareEngine
 
 			return FenceValue;
 		}
+
+		void CommandContext::TransitionResource(GPUResource& Resource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate)
+		{
+			D3D12_RESOURCE_STATES OldState = Resource.m_UsageState;
+
+			if (m_Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+			{
+				assert((OldState & VALID_COMPUTE_QUEUE_RESOURCE_STATES) == OldState,"This is not Compute States!");
+				assert((NewState & VALID_COMPUTE_QUEUE_RESOURCE_STATES) == NewState,"This is not Compute States!");
+			}
+
+			if (OldState != NewState)
+			{
+				assert(m_NumBarriersToFlush < 16, "The arbitrary limit of the buffer barrier is exceeded.");
+				D3D12_RESOURCE_BARRIER& BarrierDesc = m_ResourceBarrierBuffer[m_NumBarriersToFlush++];
+
+				BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+				BarrierDesc.Transition.pResource = Resource.GetResource();
+				BarrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+				BarrierDesc.Transition.StateBefore = OldState;
+				BarrierDesc.Transition.StateAfter = NewState;
+
+				//Check if we have started the transition. 
+				if (NewState == Resource.m_TransitioningState)
+				{
+					BarrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_END_ONLY;
+					Resource.m_TransitioningState = (D3D12_RESOURCE_STATES)-1;
+				}
+				else
+				{
+					BarrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+				}
+				Resource.m_UsageState = NewState;
+			}
+			else if (NewState == D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
+				InsertUAVBarrier(Resource, FlushImmediate);
+
+			if (FlushImmediate || m_NumBarriersToFlush == 16)
+				FlushResourceBarriers();
+		}
+
+		void CommandContext::CopyBuffer(GPUResource& Dest, GPUResource& Src)
+		{
+
+
+
+		}
 #pragma endregion
 
 
