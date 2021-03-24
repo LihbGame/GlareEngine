@@ -217,7 +217,7 @@ namespace GlareEngine
 				BarrierDesc.Transition.StateBefore = OldState;
 				BarrierDesc.Transition.StateAfter = NewState;
 
-				//Check if we have started the transition. 
+				//Check if we have started the transition. (多线程同步)
 				if (NewState == Resource.m_TransitioningState)
 				{
 					BarrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_END_ONLY;
@@ -236,12 +236,115 @@ namespace GlareEngine
 				FlushResourceBarriers();
 		}
 
+		void CommandContext::BeginResourceTransition(GPUResource& Resource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate)
+		{
+			// If it's already transitioning, finish that transition
+			if (Resource.m_TransitioningState != (D3D12_RESOURCE_STATES)-1)
+				TransitionResource(Resource, Resource.m_TransitioningState);
+
+			D3D12_RESOURCE_STATES OldState = Resource.m_UsageState;
+
+			if (OldState != NewState)
+			{
+				assert(m_NumBarriersToFlush < 16, "Exceeded arbitrary limit on buffered barriers");
+				D3D12_RESOURCE_BARRIER& BarrierDesc = m_ResourceBarrierBuffer[m_NumBarriersToFlush++];
+
+				BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+				BarrierDesc.Transition.pResource = Resource.GetResource();
+				BarrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+				BarrierDesc.Transition.StateBefore = OldState;
+				BarrierDesc.Transition.StateAfter = NewState;
+
+				BarrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY;
+
+				Resource.m_TransitioningState = NewState;
+			}
+
+			if (FlushImmediate || m_NumBarriersToFlush == 16)
+				FlushResourceBarriers();
+		}
+
+		void CommandContext::InsertUAVBarrier(GPUResource& Resource, bool FlushImmediate)
+		{
+			assert(m_NumBarriersToFlush < 16, "Exceeded arbitrary limit on buffered barriers");
+			D3D12_RESOURCE_BARRIER& BarrierDesc = m_ResourceBarrierBuffer[m_NumBarriersToFlush++];
+
+			BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+			BarrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+			BarrierDesc.UAV.pResource = Resource.GetResource();
+
+			if (FlushImmediate)
+				FlushResourceBarriers();
+		}
+
+		void CommandContext::InsertAliasBarrier(GPUResource& Before, GPUResource& After, bool FlushImmediate)
+		{
+			assert(m_NumBarriersToFlush < 16, "Exceeded arbitrary limit on buffered barriers");
+			D3D12_RESOURCE_BARRIER& BarrierDesc = m_ResourceBarrierBuffer[m_NumBarriersToFlush++];
+
+			BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_ALIASING;
+			BarrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+			BarrierDesc.Aliasing.pResourceBefore = Before.GetResource();
+			BarrierDesc.Aliasing.pResourceAfter = After.GetResource();
+
+			if (FlushImmediate)
+				FlushResourceBarriers();
+		}
+
 		void CommandContext::CopyBuffer(GPUResource& Dest, GPUResource& Src)
 		{
-
-
-
+			TransitionResource(Dest, D3D12_RESOURCE_STATE_COPY_DEST);
+			TransitionResource(Src, D3D12_RESOURCE_STATE_COPY_SOURCE);
+			FlushResourceBarriers();
+			m_CommandList->CopyResource(Dest.GetResource(), Src.GetResource());
 		}
+
+		void CommandContext::CopyBufferRegion(GPUResource& Dest, size_t DestOffset, GPUResource& Src, size_t SrcOffset, size_t NumBytes)
+		{
+			TransitionResource(Dest, D3D12_RESOURCE_STATE_COPY_DEST);
+			//TransitionResource(Src, D3D12_RESOURCE_STATE_COPY_SOURCE);
+			FlushResourceBarriers();
+			m_CommandList->CopyBufferRegion(Dest.GetResource(), DestOffset, Src.GetResource(), SrcOffset, NumBytes);
+		}
+
+		void CommandContext::CopySubresource(GPUResource& Dest, UINT DestSubIndex, GPUResource& Src, UINT SrcSubIndex)
+		{
+			FlushResourceBarriers();
+
+			D3D12_TEXTURE_COPY_LOCATION DestLocation =
+			{
+				Dest.GetResource(),
+				D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX,
+				DestSubIndex
+			};
+
+			D3D12_TEXTURE_COPY_LOCATION SrcLocation =
+			{
+				Src.GetResource(),
+				D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX,
+				SrcSubIndex
+			};
+
+			m_CommandList->CopyTextureRegion(&DestLocation, 0, 0, 0, &SrcLocation, nullptr);
+		}
+
+		void CommandContext::CopyCounter(GPUResource& Dest, size_t DestOffset, StructuredBuffer& Src)
+		{
+			TransitionResource(Dest, D3D12_RESOURCE_STATE_COPY_DEST);
+			TransitionResource(Src.GetCounterBuffer(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+			FlushResourceBarriers();
+			m_CommandList->CopyBufferRegion(Dest.GetResource(), DestOffset, Src.GetCounterBuffer().GetResource(), 0, 4);
+		}
+
+		void CommandContext::ResetCounter(StructuredBuffer& Buf, uint32_t Value)
+		{
+			FillBuffer(Buf.GetCounterBuffer(), 0, Value, sizeof(uint32_t));
+			TransitionResource(Buf.GetCounterBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		}
+
+
+
+
 #pragma endregion
 
 
