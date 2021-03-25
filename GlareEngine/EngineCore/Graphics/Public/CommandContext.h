@@ -89,7 +89,6 @@ namespace GlareEngine
 			void InsertAliasBarrier(GPUResource& Before, GPUResource& After, bool FlushImmediate = false);
 
 
-
 			void CopyBuffer(GPUResource& Dest, GPUResource& Src);
 			void CopyBufferRegion(GPUResource& Dest, size_t DestOffset, GPUResource& Src, size_t SrcOffset, size_t NumBytes);
 			void CopySubresource(GPUResource& Dest, UINT DestSubIndex, GPUResource& Src, UINT SrcSubIndex);
@@ -97,30 +96,28 @@ namespace GlareEngine
 			void ResetCounter(StructuredBuffer& Buf, uint32_t Value = 0);
 
 
+			static void InitializeTexture(GPUResource& Dest, UINT NumSubresources, D3D12_SUBRESOURCE_DATA SubData[]);
+			static void InitializeBuffer(GPUResource& Dest, const void* Data, size_t NumBytes, size_t Offset = 0);
+			static void InitializeTextureArraySlice(GPUResource& Dest, UINT SliceIndex, GPUResource& Src);
+			static void ReadbackTexture2D(GPUResource& ReadbackBuffer, PixelBuffer& SrcBuffer);
 
-			static void InitializeTexture(GpuResource& Dest, UINT NumSubresources, D3D12_SUBRESOURCE_DATA SubData[]);
-			static void InitializeBuffer(GpuResource& Dest, const void* Data, size_t NumBytes, size_t Offset = 0);
-			static void InitializeTextureArraySlice(GpuResource& Dest, UINT SliceIndex, GpuResource& Src);
-			static void ReadbackTexture2D(GpuResource& ReadbackBuffer, PixelBuffer& SrcBuffer);
-
-			void WriteBuffer(GpuResource& Dest, size_t DestOffset, const void* Data, size_t NumBytes);
-			void FillBuffer(GpuResource& Dest, size_t DestOffset, DWParam Value, size_t NumBytes);
+			void WriteBuffer(GPUResource& Dest, size_t DestOffset, const void* Data, size_t NumBytes);
+			void FillBuffer(GPUResource& Dest, size_t DestOffset, DWParam Value, size_t NumBytes);
 
 			
-
-
 			void InsertTimeStamp(ID3D12QueryHeap* pQueryHeap, uint32_t QueryIdx);
 			void ResolveTimeStamps(ID3D12Resource* pReadbackHeap, ID3D12QueryHeap* pQueryHeap, uint32_t NumQueries);
 			void PIXBeginEvent(const wchar_t* label);
 			void PIXEndEvent(void);
 			void PIXSetMarker(const wchar_t* label);
 
+
 			void SetPipelineState(const PSO& PSO);
 			void SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE Type, ID3D12DescriptorHeap* HeapPtr);
 			void SetDescriptorHeaps(UINT HeapCount, D3D12_DESCRIPTOR_HEAP_TYPE Type[], ID3D12DescriptorHeap* HeapPtrs[]);
 
-			void SetPredication(ID3D12Resource* Buffer, UINT64 BufferOffset, D3D12_PREDICATION_OP Op);
 
+			void SetPredication(ID3D12Resource* Buffer, UINT64 BufferOffset, D3D12_PREDICATION_OP Op);
 
 
 			//Get Graphics Context
