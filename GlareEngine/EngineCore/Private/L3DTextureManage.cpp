@@ -13,10 +13,14 @@ L3DTextureManage::~L3DTextureManage()
 
 void L3DTextureManage::CreateTexture(std::wstring name,std::wstring filename)
 {
+
+
 	// Does it already exist?
 	std::unique_ptr<Texture> tex = std::make_unique<Texture>();
 	if (mTextures.find(name) == mTextures.end())
 	{
+		CheckFileExist(filename);
+
 		ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice,
 			mCommandList, filename.c_str(),
 			tex.get()->Resource, tex.get()->UploadHeap));

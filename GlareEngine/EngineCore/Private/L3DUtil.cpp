@@ -379,3 +379,16 @@ std::wstring StringToWString(const std::string& str)
 {
 	return std::wstring(str.begin(), str.end());
 }
+
+void CheckFileExist(const std::wstring& FileName)
+{
+		ifstream f(FileName);
+		if (!f.good())
+		{
+			wstring Message = L"File ";
+			Message += FileName.c_str();
+			Message += L" do not exist!";
+			MessageBox(NULL, Message.c_str(), L"Error", 0);
+			exit(0);
+		}
+}
