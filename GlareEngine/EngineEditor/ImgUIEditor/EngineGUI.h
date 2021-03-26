@@ -43,6 +43,8 @@ public:
 	bool IsGrassRandom()const { return mIsGrassRandom; }
 	float GetWaterTransparent()const { return mWaterTransparent; }
 
+	bool IsWireframe()const { return mWireframe; }
+
 	static bool mWindowMaxSize;
 private:
 	bool show_demo_window = true;
@@ -68,6 +70,8 @@ private:
 	float mPerGrassWidth = 0.5f;
 	bool mIsGrassRandom = true;
 	float mWaterTransparent = 100.0f;
+
+	bool mWireframe = 0;
 
 	float mGrassColor[3] = { 0.39f,0.196f,0.0f };
 	XMFLOAT3 mCameraPosition = { 0.0f,0.0f,0.0f };

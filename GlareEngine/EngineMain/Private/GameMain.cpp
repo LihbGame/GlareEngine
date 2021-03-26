@@ -69,6 +69,7 @@ bool GameApp::Initialize()
 
 	// 将命令列表重置为准备初始化命令。
 	ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
+	
 
 	//init UI
 	mEngineUI = make_unique<EngineGUI>(md3dDevice.Get());
@@ -113,6 +114,9 @@ bool GameApp::Initialize()
 	//init UI
 	mEngineUI->InitGUI(mhMainWnd,  mGUISrvDescriptorHeap.Get());
 	
+	//Wire Frame State
+	mOldWireFrameState = mEngineUI->IsWireframe();
+
 	// 执行初始化命令。
 	ThrowIfFailed(mCommandList->Close());
 	ID3D12CommandList* cmdsLists[] = { mCommandList.Get() };
@@ -150,6 +154,13 @@ void GameApp::Update(const GameTimer& gt)
 		SendMessage(mhMainWnd, WM_SYSCOMMAND, SC_RESTORE, NULL);
 	}
 
+	mNewWireFrameState = mEngineUI->IsWireframe();
+	if (mNewWireFrameState !=mOldWireFrameState)
+	{
+		//We need Rebuild PSO.
+		mOldWireFrameState = mNewWireFrameState;
+		BuildPSOs();
+	}
 
 	OnKeyboardInput(gt);
 	//UpdateCamera(gt);
@@ -969,7 +980,12 @@ void GameApp::BuildWavesGeometryBuffers()
 
 void GameApp::BuildPSOs()
 {
-	
+	D3D12_RASTERIZER_DESC BaseRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	if (mOldWireFrameState)
+	{
+		BaseRasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	}
+
 	// PSO for opaque objects.
 #pragma region PSO_for_opaque_objects
 	std::vector<D3D12_INPUT_ELEMENT_DESC> Input = mShaders["GerstnerWave"]->GetInputLayout();
@@ -988,7 +1004,7 @@ void GameApp::BuildPSOs()
 		{0},
 		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
 		UINT_MAX,
-		CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
+		BaseRasterizerState,
 		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
 		{ Input.data(), (UINT)Input.size() },
 		{},
@@ -1006,7 +1022,7 @@ void GameApp::BuildPSOs()
 	// PSO for sky.
 #pragma region PSO_for_sky
 	Input = mShaders["Sky"]->GetInputLayout();
-	D3D12_RASTERIZER_DESC RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	D3D12_RASTERIZER_DESC RasterizerState = BaseRasterizerState;
 	RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 	D3D12_DEPTH_STENCIL_DESC  DepthStencilState=CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
@@ -1054,7 +1070,7 @@ void GameApp::BuildPSOs()
 		{},
 		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
 		UINT_MAX,
-		CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
+		BaseRasterizerState,
 		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
 		{ Input.data(), (UINT)Input.size() },
 		{},
@@ -1071,7 +1087,7 @@ void GameApp::BuildPSOs()
 
 	// PSO for Instance  shadow.
 #pragma region PSO_for_Instance_shadow
-	D3D12_RASTERIZER_DESC ShadowRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	D3D12_RASTERIZER_DESC ShadowRasterizerState = BaseRasterizerState;
 	ShadowRasterizerState.DepthBias = 25000;
 	ShadowRasterizerState.DepthBiasClamp = 0.0f;
 	ShadowRasterizerState.SlopeScaledDepthBias = 1.0f;
@@ -1122,7 +1138,7 @@ void GameApp::BuildPSOs()
 		{},
 		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
 		UINT_MAX,
-		CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
+		BaseRasterizerState,
 		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
 		{ Input.data(), (UINT)Input.size() },
 		{},
@@ -1154,7 +1170,7 @@ void GameApp::BuildPSOs()
 		{},
 		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
 		UINT_MAX,
-		CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
+		BaseRasterizerState,
 		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
 		{ Input.data(), (UINT)Input.size() },
 		{},
@@ -1190,7 +1206,7 @@ void GameApp::BuildPSOs()
 		{},
 		BlendDesc,
 		UINT_MAX,
-		CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
+		BaseRasterizerState,
 		DepthStencilState,
 		{ Input.data(), (UINT)Input.size() },
 		{},
@@ -1221,7 +1237,7 @@ void GameApp::BuildPSOs()
 		{},
 		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
 		UINT_MAX,
-		CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
+		BaseRasterizerState,
 		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
 		{ Input.data(), (UINT)Input.size() },
 		{},
@@ -1238,7 +1254,7 @@ void GameApp::BuildPSOs()
 	// PSO for Height Map Terrain.
 #pragma region Height Map Terrain
 	Input = mShaders["HeightMapTerrain"]->GetInputLayout();
-	D3D12_RASTERIZER_DESC HeightMapRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	D3D12_RASTERIZER_DESC HeightMapRasterizerState = BaseRasterizerState;
 	//HeightMapRasterizerState.FillMode=D3D12_FILL_MODE_WIREFRAME;
 	mPSOs->BuildPSO(md3dDevice.Get(),
 		PSOName::HeightMapTerrain,
@@ -1302,7 +1318,7 @@ void GameApp::BuildPSOs()
 	// PSO for Grass.
 #pragma region PSO_for_Grass
 	Input = mShaders["Grass"]->GetInputLayout();
-	D3D12_RASTERIZER_DESC GrassRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	D3D12_RASTERIZER_DESC GrassRasterizerState = BaseRasterizerState;
 	GrassRasterizerState.CullMode = D3D12_CULL_MODE_BACK;
 	mPSOs->BuildPSO(md3dDevice.Get(),
 		PSOName::Grass,
@@ -1362,7 +1378,7 @@ void GameApp::BuildPSOs()
 
 	// PSO for Grass  shadow.
 #pragma region PSO_for_Grass_shadow
-	D3D12_RASTERIZER_DESC GrassShadowRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	D3D12_RASTERIZER_DESC GrassShadowRasterizerState = BaseRasterizerState;
 	GrassShadowRasterizerState.DepthBias = 100000;
 	GrassShadowRasterizerState.DepthBiasClamp = 0.0f;
 	GrassShadowRasterizerState.SlopeScaledDepthBias = 1.0f;

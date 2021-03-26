@@ -30,7 +30,7 @@ void EngineGUI::InitGUI(HWND GameWnd,ID3D12DescriptorHeap* GUISrvDescriptorHeap)
 
 
 	// Setup Dear ImGui style
-	ImGui::StyleColorsLight();
+	ImGui::StyleColorsDark();
 	//ImGui::StyleColorsClassic();
 	 // Setup Platform/Renderer bindings
 	ImGui_ImplWin32_Init(GameWnd);
@@ -78,11 +78,11 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 		d3dCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 		// Our state
 
-		ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 		// Start the Dear ImGui frame
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
+		ImGui::SetNextWindowBgAlpha(1);
 
 		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 		if (show_demo_window)
@@ -99,14 +99,13 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 
 			ImGui::SetNextWindowPos(ImVec2(0.0f, MainMenuBarHeight));
 			ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * 1.0f/6.0f, g->IO.DisplaySize.y*0.75f- MainMenuBarHeight));
-			
+			ImGui::SetNextWindowBgAlpha(1);
+
 			ImGui::Begin("Hello, world!",&helloWindow,ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);                          // Create a window called "Hello, world!" and append into it.
-			
 			
 			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
 			ImGui::Checkbox("Debug Window", &show_another_window);
 
-			
 			ImGui::Text("Camera Move Speed");
 			ImGui::SliderFloat("   ", &CameraMoveSpeed, 0.0f, 500.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 
@@ -151,15 +150,42 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 		// 3. Show another simple window.
 		if (show_another_window)
 		{
-
 			//g.NextWindowData.MenuBarOffsetMinVal = ImVec2(g.Style.DisplaySafeAreaPadding.x, ImMax(g.Style.DisplaySafeAreaPadding.y - g.Style.FramePadding.y, 0.0f));
 			ImGui::SetNextWindowPos(ImVec2(0.0f, g->IO.DisplaySize.y * 0.75f));
 			ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x, g->IO.DisplaySize.y * 0.25f));
+			ImGui::SetNextWindowBgAlpha(1);
 
-			ImGui::Begin("Debug Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+			ImGui::Begin("Debug Window", &show_another_window,ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
 			ImGui::Text("Camera Position X:%.1f Y:%.1f Z:%.1f", mCameraPosition.x, mCameraPosition.y, mCameraPosition.z);
 			ImGui::End();
 		}
+
+		//Stat Windows
+		{
+			ImGui::SetNextWindowPos(ImVec2(ImVec2(g->IO.DisplaySize.x / 5.8f, MainMenuBarHeight+5.0f)));
+			ImGui::SetNextWindowSize(ImVec2(120.0f, 200.0f));
+			bool stat = true;
+			ImGui::Begin("Stat Window", &stat, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+			if (ImGui::CollapsingHeader("  States"))
+			{
+				if (ImGui::RadioButton("Wireframe", mWireframe))
+				{
+					if (mWireframe)
+					{
+						mWireframe = false;
+					}
+					else
+					{
+						mWireframe = true;
+					}
+				}
+				
+			}
+			ImGui::End();
+		}
+
+
+
 		ImGui::Render();
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), d3dCommandList);
 	}

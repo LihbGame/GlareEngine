@@ -290,4 +290,7 @@ private:
 	UINT mObjCBByteSize;
 	UINT mSkinnedCBByteSize;
 	UINT mTerrainCBByteSize;
+
+	bool mOldWireFrameState=false;
+	bool mNewWireFrameState=false;
 };
