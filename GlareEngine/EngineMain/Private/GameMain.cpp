@@ -1206,7 +1206,7 @@ void GameApp::BuildPSOs()
 		{},
 		BlendDesc,
 		UINT_MAX,
-		BaseRasterizerState,
+		CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
 		DepthStencilState,
 		{ Input.data(), (UINT)Input.size() },
 		{},
