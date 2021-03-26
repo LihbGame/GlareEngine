@@ -357,6 +357,22 @@ namespace GlareEngine
 			InitContext.Finish(true);
 		}
 
+		void CommandContext::InitializeBuffer(GPUResource& Dest, const void* Data, size_t NumBytes, size_t Offset)
+		{
+			CommandContext& InitContext = CommandContext::Begin();
+
+			DynamicAlloc mem = InitContext.ReserveUploadMemory(NumBytes);
+			SIMDMemoryCopy(mem.DataPtr, Data, Math::DivideByMultiple(NumBytes, 16));
+
+			// copy data to the intermediate upload heap and then schedule a copy from the upload heap to the default texture
+			InitContext.TransitionResource(Dest, D3D12_RESOURCE_STATE_COPY_DEST, true);
+			InitContext.m_CommandList->CopyBufferRegion(Dest.GetResource(), Offset, mem.Buffer.GetResource(), 0, NumBytes);
+			InitContext.TransitionResource(Dest, D3D12_RESOURCE_STATE_GENERIC_READ, true);
+
+			// Execute the command list and wait for it to finish so we can release the upload buffer
+			InitContext.Finish(true);
+		}
+
 
 
 

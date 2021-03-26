@@ -366,3 +366,16 @@ void ExtractFrustumPlanes(XMFLOAT4 planes[6], CXMMATRIX T)
 		XMStoreFloat4(&planes[i], v);
 	}
 }
+
+void SIMDMemoryCopy(void* __restrict Dest, const void* __restrict Source, size_t NumQuadwords)
+{
+}
+
+void SIMDMemoryFill(void* __restrict Dest, __m128 FillVector, size_t NumQuadwords)
+{
+}
+
+std::wstring StringToWString(const std::string& str)
+{
+	return std::wstring(str.begin(), str.end());
+}

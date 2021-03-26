@@ -334,3 +334,9 @@ void ExtractFrustumPlanes(XMFLOAT4 planes[6], CXMMATRIX M);
 #ifndef ReleaseCom
 #define ReleaseCom(x) { if(x){ x->Release(); x = 0; } }
 #endif
+
+
+void SIMDMemoryCopy(void* __restrict Dest, const void* __restrict Source, size_t NumQuadwords);
+void SIMDMemoryFill(void* __restrict Dest, __m128 FillVector, size_t NumQuadwords);
+
+std::wstring StringToWString(const std::string& str);
