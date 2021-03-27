@@ -103,8 +103,8 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 
 			ImGui::Begin("Hello, world!",&helloWindow,ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);                          // Create a window called "Hello, world!" and append into it.
 			
-			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-			ImGui::Checkbox("Debug Window", &show_another_window);
+			//ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+			//ImGui::Checkbox("Debug Window", &show_another_window);
 
 			ImGui::Text("Camera Move Speed");
 			ImGui::SliderFloat("   ", &CameraMoveSpeed, 0.0f, 500.0f);            // Edit 1 float using a slider from 0.0f to 1.0f

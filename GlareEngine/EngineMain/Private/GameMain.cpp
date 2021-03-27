@@ -158,8 +158,8 @@ void GameApp::Update(const GameTimer& gt)
 	if (mNewWireFrameState !=mOldWireFrameState)
 	{
 		//We need Rebuild PSO.
-		mOldWireFrameState = mNewWireFrameState;
 		BuildPSOs();
+		mOldWireFrameState = mNewWireFrameState;
 	}
 
 	OnKeyboardInput(gt);
@@ -981,7 +981,7 @@ void GameApp::BuildWavesGeometryBuffers()
 void GameApp::BuildPSOs()
 {
 	D3D12_RASTERIZER_DESC BaseRasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	if (mOldWireFrameState)
+	if (mNewWireFrameState)
 	{
 		BaseRasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
 	}
@@ -1184,72 +1184,75 @@ void GameApp::BuildPSOs()
 		{});
 #pragma endregion
 
-
-	// PSO for Water Refraction Mask.
+if (mOldWireFrameState == mNewWireFrameState)
+{
+// PSO for Water Refraction Mask.
 #pragma region PSO_for_Water_Refraction_Mask
-	Input = mShaders["WaterRefractionMask"]->GetInputLayout();
-	D3D12_BLEND_DESC BlendDesc = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALPHA;
-	BlendDesc.RenderTarget[0].SrcBlendAlpha= D3D12_BLEND_SRC_ALPHA;
-	DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-	DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-	mPSOs->BuildPSO(md3dDevice.Get(),
-		PSOName::WaterRefractionMask,
-		mRootSignature.Get(),
-		{ reinterpret_cast<BYTE*>(mShaders["WaterRefractionMask"]->GetVSShader()->GetBufferPointer()),
-			mShaders["WaterRefractionMask"]->GetVSShader()->GetBufferSize() },
-		{ reinterpret_cast<BYTE*>(mShaders["WaterRefractionMask"]->GetPSShader()->GetBufferPointer()),
-		mShaders["WaterRefractionMask"]->GetPSShader()->GetBufferSize() },
-		{},
-		{},
-		{},
-		{},
-		BlendDesc,
-		UINT_MAX,
-		CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT),
-		DepthStencilState,
-		{ Input.data(), (UINT)Input.size() },
-		{},
-		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
-		1,
-		RTVFormats,
-		mDepthStencilFormat,
-		{ UINT(m4xMsaaState ? 4 : 1) ,UINT(0) },
-		0,
-		{},
-		{});
+
+		Input = mShaders["WaterRefractionMask"]->GetInputLayout();
+		D3D12_BLEND_DESC BlendDesc = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+		BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALPHA;
+		BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_SRC_ALPHA;
+		DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+		DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+		mPSOs->BuildPSO(md3dDevice.Get(),
+			PSOName::WaterRefractionMask,
+			mRootSignature.Get(),
+			{ reinterpret_cast<BYTE*>(mShaders["WaterRefractionMask"]->GetVSShader()->GetBufferPointer()),
+				mShaders["WaterRefractionMask"]->GetVSShader()->GetBufferSize() },
+			{ reinterpret_cast<BYTE*>(mShaders["WaterRefractionMask"]->GetPSShader()->GetBufferPointer()),
+			mShaders["WaterRefractionMask"]->GetPSShader()->GetBufferSize() },
+			{},
+			{},
+			{},
+			{},
+			BlendDesc,
+			UINT_MAX,
+			BaseRasterizerState,
+			DepthStencilState,
+			{ Input.data(), (UINT)Input.size() },
+			{},
+			D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+			1,
+			RTVFormats,
+			mDepthStencilFormat,
+			{ UINT(m4xMsaaState ? 4 : 1) ,UINT(0) },
+			0,
+			{},
+			{});
+
 #pragma endregion
-
-
-	// PSO for Shock Wave Water.
+// PSO for Shock Wave Water.
 #pragma region Shock Wave Water
-	Input = mShaders["ShockWaveWater"]->GetInputLayout();
-	mPSOs->BuildPSO(md3dDevice.Get(),
-		PSOName::ShockWaveWater,
-		mRootSignature.Get(),
-		{ reinterpret_cast<BYTE*>(mShaders["ShockWaveWater"]->GetVSShader()->GetBufferPointer()),
-			mShaders["ShockWaveWater"]->GetVSShader()->GetBufferSize() },
-		{ reinterpret_cast<BYTE*>(mShaders["ShockWaveWater"]->GetPSShader()->GetBufferPointer()),
-		mShaders["ShockWaveWater"]->GetPSShader()->GetBufferSize() },
-		{},
-		{},
-		{},
-		{},
-		CD3DX12_BLEND_DESC(D3D12_DEFAULT),
-		UINT_MAX,
-		BaseRasterizerState,
-		CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
-		{ Input.data(), (UINT)Input.size() },
-		{},
-		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
-		1,
-		RTVFormats,
-		mDepthStencilFormat,
-		{ UINT(m4xMsaaState ? 4 : 1) ,UINT(0) },
-		0,
-		{},
-		{});
+		Input = mShaders["ShockWaveWater"]->GetInputLayout();
+		mPSOs->BuildPSO(md3dDevice.Get(),
+			PSOName::ShockWaveWater,
+			mRootSignature.Get(),
+			{ reinterpret_cast<BYTE*>(mShaders["ShockWaveWater"]->GetVSShader()->GetBufferPointer()),
+				mShaders["ShockWaveWater"]->GetVSShader()->GetBufferSize() },
+			{ reinterpret_cast<BYTE*>(mShaders["ShockWaveWater"]->GetPSShader()->GetBufferPointer()),
+			mShaders["ShockWaveWater"]->GetPSShader()->GetBufferSize() },
+			{},
+			{},
+			{},
+			{},
+			CD3DX12_BLEND_DESC(D3D12_DEFAULT),
+			UINT_MAX,
+			BaseRasterizerState,
+			CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT),
+			{ Input.data(), (UINT)Input.size() },
+			{},
+			D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+			1,
+			RTVFormats,
+			mDepthStencilFormat,
+			{ UINT(m4xMsaaState ? 4 : 1) ,UINT(0) },
+			0,
+			{},
+			{});
 #pragma endregion
+}
+
 
 	// PSO for Height Map Terrain.
 #pragma region Height Map Terrain
