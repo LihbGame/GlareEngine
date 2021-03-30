@@ -21,6 +21,26 @@ namespace GlareEngine
 		class GraphicsContext;
 		class ComputeContext;
 
+
+		struct DWParam
+		{
+			DWParam(FLOAT f) : Float(f) {}
+			DWParam(UINT u) : Uint(u) {}
+			DWParam(INT i) : Int(i) {}
+
+			void operator= (FLOAT f) { Float = f; }
+			void operator= (UINT u) { Uint = u; }
+			void operator= (INT i) { Int = i; }
+
+			union
+			{
+				FLOAT Float;
+				UINT Uint;
+				INT Int;
+			};
+		};
+
+
 		//Compute Queue Resource States
 #define VALID_COMPUTE_QUEUE_RESOURCE_STATES \
     ( D3D12_RESOURCE_STATE_UNORDERED_ACCESS \

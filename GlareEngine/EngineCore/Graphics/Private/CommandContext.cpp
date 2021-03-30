@@ -434,6 +434,22 @@ namespace GlareEngine
 			Context.Finish(true);
 		}
 
+		void CommandContext::WriteBuffer(GPUResource& Dest, size_t DestOffset, const void* Data, size_t NumBytes)
+		{
+			assert(Data != nullptr && Math::IsAligned(Data, 16));
+			DynamicAlloc TempSpace = m_CPULinearAllocator.Allocate(NumBytes, 512);
+			SIMDMemoryCopy(TempSpace.DataPtr, Data, Math::DivideByMultiple(NumBytes, 16));
+			CopyBufferRegion(Dest, DestOffset, TempSpace.Buffer, TempSpace.Offset, NumBytes);
+		}
+
+		void CommandContext::FillBuffer(GPUResource& Dest, size_t DestOffset, DWParam Value, size_t NumBytes)
+		{
+			DynamicAlloc TempSpace = m_CPULinearAllocator.Allocate(NumBytes, 512);
+			__m128 VectorValue = _mm_set1_ps(Value.Float);
+			SIMDMemoryFill(TempSpace.DataPtr, VectorValue, Math::DivideByMultiple(NumBytes, 16));
+			CopyBufferRegion(Dest, DestOffset, TempSpace.Buffer, TempSpace.Offset, NumBytes);
+		}
+
 
 
 
