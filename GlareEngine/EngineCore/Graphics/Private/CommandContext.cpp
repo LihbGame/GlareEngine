@@ -74,14 +74,6 @@ namespace GlareEngine
 				m_CommandList->Release();
 		}
 
-		inline void CommandContext::FlushResourceBarriers(void)
-		{
-			if (m_NumBarriersToFlush > 0)
-			{
-				m_CommandList->ResourceBarrier(m_NumBarriersToFlush, m_ResourceBarrierBuffer);
-				m_NumBarriersToFlush = 0;
-			}
-		}
 
 		void CommandContext::Initialize(void)
 		{
@@ -291,22 +283,6 @@ namespace GlareEngine
 				FlushResourceBarriers();
 		}
 
-		void CommandContext::CopyBuffer(GPUResource& Dest, GPUResource& Src)
-		{
-			TransitionResource(Dest, D3D12_RESOURCE_STATE_COPY_DEST);
-			TransitionResource(Src, D3D12_RESOURCE_STATE_COPY_SOURCE);
-			FlushResourceBarriers();
-			m_CommandList->CopyResource(Dest.GetResource(), Src.GetResource());
-		}
-
-		void CommandContext::CopyBufferRegion(GPUResource& Dest, size_t DestOffset, GPUResource& Src, size_t SrcOffset, size_t NumBytes)
-		{
-			TransitionResource(Dest, D3D12_RESOURCE_STATE_COPY_DEST);
-			//TransitionResource(Src, D3D12_RESOURCE_STATE_COPY_SOURCE);
-			FlushResourceBarriers();
-			m_CommandList->CopyBufferRegion(Dest.GetResource(), DestOffset, Src.GetResource(), SrcOffset, NumBytes);
-		}
-
 		void CommandContext::CopySubresource(GPUResource& Dest, UINT DestSubIndex, GPUResource& Src, UINT SrcSubIndex)
 		{
 			FlushResourceBarriers();
@@ -328,19 +304,6 @@ namespace GlareEngine
 			m_CommandList->CopyTextureRegion(&DestLocation, 0, 0, 0, &SrcLocation, nullptr);
 		}
 
-		void CommandContext::CopyCounter(GPUResource& Dest, size_t DestOffset, StructuredBuffer& Src)
-		{
-			TransitionResource(Dest, D3D12_RESOURCE_STATE_COPY_DEST);
-			TransitionResource(Src.GetCounterBuffer(), D3D12_RESOURCE_STATE_COPY_SOURCE);
-			FlushResourceBarriers();
-			m_CommandList->CopyBufferRegion(Dest.GetResource(), DestOffset, Src.GetCounterBuffer().GetResource(), 0, 4);
-		}
-
-		void CommandContext::ResetCounter(StructuredBuffer& Buf, uint32_t Value)
-		{
-			FillBuffer(Buf.GetCounterBuffer(), 0, Value, sizeof(uint32_t));
-			TransitionResource(Buf.GetCounterBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-		}
 
 		void CommandContext::InitializeTexture(GPUResource& Dest, UINT NumSubresources, D3D12_SUBRESOURCE_DATA SubData[])
 		{
@@ -450,9 +413,30 @@ namespace GlareEngine
 			CopyBufferRegion(Dest, DestOffset, TempSpace.Buffer, TempSpace.Offset, NumBytes);
 		}
 
+		void CommandContext::PIXBeginEvent(const wchar_t* label)
+		{
+#ifdef RELEASE
+			(label);
+#else
+			::PIXBeginEvent(m_CommandList, 0, label);
+#endif
+		}
 
+		void CommandContext::PIXEndEvent(void)
+		{
+#ifndef RELEASE
+			::PIXEndEvent(m_CommandList);
+#endif
+		}
 
-
+		void CommandContext::PIXSetMarker(const wchar_t* label)
+		{
+#ifdef RELEASE
+			(label);
+#else
+			::PIXSetMarker(m_CommandList, 0, label);
+#endif
+		}
 #pragma endregion
 
 

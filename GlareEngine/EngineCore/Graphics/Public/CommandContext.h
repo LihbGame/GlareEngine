@@ -127,6 +127,7 @@ namespace GlareEngine
 			
 			void InsertTimeStamp(ID3D12QueryHeap* pQueryHeap, uint32_t QueryIdx);
 			void ResolveTimeStamps(ID3D12Resource* pReadbackHeap, ID3D12QueryHeap* pQueryHeap, uint32_t NumQueries);
+
 			void PIXBeginEvent(const wchar_t* label);
 			void PIXEndEvent(void);
 			void PIXSetMarker(const wchar_t* label);
@@ -193,5 +194,69 @@ namespace GlareEngine
 
 			D3D12_COMMAND_LIST_TYPE m_Type;
 		};
+
+
+
+		inline void CommandContext::FlushResourceBarriers(void)
+		{
+			if (m_NumBarriersToFlush > 0)
+			{
+				m_CommandList->ResourceBarrier(m_NumBarriersToFlush, m_ResourceBarrierBuffer);
+				m_NumBarriersToFlush = 0;
+			}
+		}
+
+
+		inline	void CommandContext::CopyCounter(GPUResource& Dest, size_t DestOffset, StructuredBuffer& Src)
+		{
+			TransitionResource(Dest, D3D12_RESOURCE_STATE_COPY_DEST);
+			TransitionResource(Src.GetCounterBuffer(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+			FlushResourceBarriers();
+			m_CommandList->CopyBufferRegion(Dest.GetResource(), DestOffset, Src.GetCounterBuffer().GetResource(), 0, 4);
+		}
+
+		inline	void CommandContext::ResetCounter(StructuredBuffer& Buf, uint32_t Value)
+		{
+			FillBuffer(Buf.GetCounterBuffer(), 0, Value, sizeof(uint32_t));
+			TransitionResource(Buf.GetCounterBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		}
+
+
+		inline void CommandContext::CopyBuffer(GPUResource& Dest, GPUResource& Src)
+		{
+			TransitionResource(Dest, D3D12_RESOURCE_STATE_COPY_DEST);
+			TransitionResource(Src, D3D12_RESOURCE_STATE_COPY_SOURCE);
+			FlushResourceBarriers();
+			m_CommandList->CopyResource(Dest.GetResource(), Src.GetResource());
+		}
+
+		inline void CommandContext::CopyBufferRegion(GPUResource& Dest, size_t DestOffset, GPUResource& Src, size_t SrcOffset, size_t NumBytes)
+		{
+			TransitionResource(Dest, D3D12_RESOURCE_STATE_COPY_DEST);
+			//TransitionResource(Src, D3D12_RESOURCE_STATE_COPY_SOURCE);
+			FlushResourceBarriers();
+			m_CommandList->CopyBufferRegion(Dest.GetResource(), DestOffset, Src.GetResource(), SrcOffset, NumBytes);
+		}
+		
+		inline void CommandContext::InsertTimeStamp(ID3D12QueryHeap* pQueryHeap, uint32_t QueryIdx)
+		{
+			m_CommandList->EndQuery(pQueryHeap, D3D12_QUERY_TYPE_TIMESTAMP, QueryIdx);
+		}
+
+		inline void CommandContext::ResolveTimeStamps(ID3D12Resource* pReadbackHeap, ID3D12QueryHeap* pQueryHeap, uint32_t NumQueries)
+		{
+			m_CommandList->ResolveQueryData(pQueryHeap, D3D12_QUERY_TYPE_TIMESTAMP, 0, NumQueries, pReadbackHeap, 0);
+		}
+
+		inline void CommandContext::SetPipelineState(const PSO& PSO)
+		{
+			ID3D12PipelineState* PipelineState = PSO.GetPipelineStateObject();
+			if (PipelineState == m_CurPipelineState)
+				return;
+
+			m_CommandList->SetPipelineState(PipelineState);
+			m_CurPipelineState = PipelineState;
+		}
+
 	}
 }
