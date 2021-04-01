@@ -258,5 +258,35 @@ namespace GlareEngine
 			m_CurPipelineState = PipelineState;
 		}
 
+		inline void CommandContext::SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE Type, ID3D12DescriptorHeap* HeapPtr)
+		{
+			if (m_CurrentDescriptorHeaps[Type] != HeapPtr)
+			{
+				m_CurrentDescriptorHeaps[Type] = HeapPtr;
+				BindDescriptorHeaps();
+			}
+		}
+
+
+		inline void CommandContext::SetDescriptorHeaps(UINT HeapCount, D3D12_DESCRIPTOR_HEAP_TYPE Type[], ID3D12DescriptorHeap* HeapPtrs[])
+		{
+			bool AnyChanged = false;
+
+			for (UINT i = 0; i < HeapCount; ++i)
+			{
+				if (m_CurrentDescriptorHeaps[Type[i]] != HeapPtrs[i])
+				{
+					m_CurrentDescriptorHeaps[Type[i]] = HeapPtrs[i];
+					AnyChanged = true;
+				}
+			}
+			if (AnyChanged)
+				BindDescriptorHeaps();
+		}
+
+		inline void CommandContext::SetPredication(ID3D12Resource* Buffer, UINT64 BufferOffset, D3D12_PREDICATION_OP Op)
+		{
+			m_CommandList->SetPredication(Buffer, BufferOffset, Op);
+		}
 	}
 }
