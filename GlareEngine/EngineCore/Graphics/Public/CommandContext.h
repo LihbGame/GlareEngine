@@ -170,15 +170,15 @@ namespace GlareEngine
 
 			void BindDescriptorHeaps(void);
 
-			CommandListManager* m_OwningManager;
+			CommandListManager* m_CommandListManager;
 			ID3D12GraphicsCommandList* m_CommandList;
 			ID3D12CommandAllocator* m_CurrentAllocator;
 
-			ID3D12RootSignature* m_CurGraphicsRootSignature;
-			ID3D12PipelineState* m_CurPipelineState;
-			ID3D12RootSignature* m_CurComputeRootSignature;
-
-			DynamicDescriptorHeap m_DynamicViewDescriptorHeap;        // HEAP_TYPE_CBV_SRV_UAV
+			ID3D12RootSignature* m_CurrentGraphicsRootSignature;
+			ID3D12RootSignature* m_CurrentComputeRootSignature;
+			ID3D12PipelineState* m_CurrentPipelineState;
+			
+			DynamicDescriptorHeap m_DynamicViewDescriptorHeap;       // HEAP_TYPE_CBV_SRV_UAV
 			DynamicDescriptorHeap m_DynamicSamplerDescriptorHeap;    // HEAP_TYPE_SAMPLER
 
 			D3D12_RESOURCE_BARRIER m_ResourceBarrierBuffer[16];
@@ -251,11 +251,11 @@ namespace GlareEngine
 		inline void CommandContext::SetPipelineState(const PSO& PSO)
 		{
 			ID3D12PipelineState* PipelineState = PSO.GetPipelineStateObject();
-			if (PipelineState == m_CurPipelineState)
+			if (PipelineState == m_CurrentPipelineState)
 				return;
 
 			m_CommandList->SetPipelineState(PipelineState);
-			m_CurPipelineState = PipelineState;
+			m_CurrentPipelineState = PipelineState;
 		}
 
 		inline void CommandContext::SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE Type, ID3D12DescriptorHeap* HeapPtr)

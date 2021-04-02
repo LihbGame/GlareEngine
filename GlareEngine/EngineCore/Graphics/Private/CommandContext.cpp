@@ -57,14 +57,14 @@ namespace GlareEngine
 			m_CPULinearAllocator(CPUWritable),
 			m_GPULinearAllocator(GPUExclusive)
 		{
-			m_OwningManager = nullptr;
+			m_CommandListManager = nullptr;
 			m_CommandList = nullptr;
 			m_CurrentAllocator = nullptr;
 			ZeroMemory(m_CurrentDescriptorHeaps, sizeof(m_CurrentDescriptorHeaps));
 
-			m_CurGraphicsRootSignature = nullptr;
-			m_CurPipelineState = nullptr;
-			m_CurComputeRootSignature = nullptr;
+			m_CurrentGraphicsRootSignature = nullptr;
+			m_CurrentPipelineState = nullptr;
+			m_CurrentComputeRootSignature = nullptr;
 			m_NumBarriersToFlush = 0;
 		}
 
@@ -103,9 +103,9 @@ namespace GlareEngine
 			m_CurrentAllocator = g_CommandManager.GetQueue(m_Type).RequestAllocator();
 			m_CommandList->Reset(m_CurrentAllocator, nullptr);
 
-			m_CurGraphicsRootSignature = nullptr;
-			m_CurPipelineState = nullptr;
-			m_CurComputeRootSignature = nullptr;
+			m_CurrentGraphicsRootSignature = nullptr;
+			m_CurrentPipelineState = nullptr;
+			m_CurrentComputeRootSignature = nullptr;
 			m_NumBarriersToFlush = 0;
 
 			BindDescriptorHeaps();
@@ -142,17 +142,17 @@ namespace GlareEngine
 
 			m_CommandList->Reset(m_CurrentAllocator, nullptr);
 
-			if (m_CurGraphicsRootSignature)
+			if (m_CurrentGraphicsRootSignature)
 			{
-				m_CommandList->SetGraphicsRootSignature(m_CurGraphicsRootSignature);
+				m_CommandList->SetGraphicsRootSignature(m_CurrentGraphicsRootSignature);
 			}
-			if (m_CurComputeRootSignature)
+			if (m_CurrentComputeRootSignature)
 			{
-				m_CommandList->SetComputeRootSignature(m_CurComputeRootSignature);
+				m_CommandList->SetComputeRootSignature(m_CurrentComputeRootSignature);
 			}
-			if (m_CurPipelineState)
+			if (m_CurrentPipelineState)
 			{
-				m_CommandList->SetPipelineState(m_CurPipelineState);
+				m_CommandList->SetPipelineState(m_CurrentPipelineState);
 			}
 
 			BindDescriptorHeaps();
