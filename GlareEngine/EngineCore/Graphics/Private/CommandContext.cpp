@@ -5,10 +5,10 @@
 #include "GraphicsCore.h"
 #include "DescriptorHeap.h"
 
-namespace GlareEngine 
+namespace GlareEngine
 {
-    namespace DirectX12Graphics
-    {
+	namespace DirectX12Graphics
+	{
 
 
 #pragma region ContextManager
@@ -194,8 +194,8 @@ namespace GlareEngine
 
 			if (m_Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
 			{
-				assert((OldState & VALID_COMPUTE_QUEUE_RESOURCE_STATES) == OldState,"This is not Compute States!");
-				assert((NewState & VALID_COMPUTE_QUEUE_RESOURCE_STATES) == NewState,"This is not Compute States!");
+				assert((OldState & VALID_COMPUTE_QUEUE_RESOURCE_STATES) == OldState, "This is not Compute States!");
+				assert((NewState & VALID_COMPUTE_QUEUE_RESOURCE_STATES) == NewState, "This is not Compute States!");
 			}
 
 			if (OldState != NewState)
@@ -442,9 +442,18 @@ namespace GlareEngine
 
 
 
+#pragma region GraphicsContext
+		void GraphicsContext::ClearUAV(GPUBuffer& Target)
+		{
+			// After binding a UAV, we can get a GPU handle that is required to clear it as a UAV (because it essentially runs
+			// a shader to set all of the values).
+			D3D12_GPU_DESCRIPTOR_HANDLE GPUVisibleHandle = m_DynamicViewDescriptorHeap.UploadDirect(Target.GetUAV());
+			const UINT ClearColor[4] = {};
+			m_CommandList->ClearUnorderedAccessViewUint(GPUVisibleHandle, Target.GetUAV(), Target.GetResource(), ClearColor, 0, nullptr);
+		}
+#pragma endregion
 
 
-
-    }//DirectX12Graphics
+	}//DirectX12Graphics
 }//GlareEngine 
 

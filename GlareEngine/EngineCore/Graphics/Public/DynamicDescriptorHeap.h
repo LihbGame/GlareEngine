@@ -71,7 +71,7 @@ namespace GlareEngine
 		private:
 
 			// Static members
-			static const uint32_t kNumDescriptorsPerHeap = 1024;
+			static const uint32_t NumDescriptorsPerHeap = 1024;
 			static std::mutex sm_Mutex;
 			static std::vector<Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>> sm_DescriptorHeapPool[2];
 			static std::queue<std::pair<uint64_t, ID3D12DescriptorHeap*>> sm_RetiredDescriptorHeaps[2];
@@ -116,15 +116,15 @@ namespace GlareEngine
 				uint32_t m_StaleRootParamsBitMap;
 				uint32_t m_MaxCachedDescriptors;
 
-				static const uint32_t kMaxNumDescriptors = 256;
-				static const uint32_t kMaxNumDescriptorTables = 16;
+				static const uint32_t MaxNumDescriptors = 256;
+				static const uint32_t MaxNumDescriptorTables = 16;
 
 				uint32_t ComputeStagedSize();
 				void CopyAndBindStaleTables(D3D12_DESCRIPTOR_HEAP_TYPE Type, uint32_t DescriptorSize, DescriptorHandle DestHandleStart, ID3D12GraphicsCommandList* CmdList,
 					void (STDMETHODCALLTYPE ID3D12GraphicsCommandList::* SetFunc)(UINT, D3D12_GPU_DESCRIPTOR_HANDLE));
 
-				DescriptorTableCache m_RootDescriptorTable[kMaxNumDescriptorTables];
-				D3D12_CPU_DESCRIPTOR_HANDLE m_HandleCache[kMaxNumDescriptors];
+				DescriptorTableCache m_RootDescriptorTable[MaxNumDescriptorTables];
+				D3D12_CPU_DESCRIPTOR_HANDLE m_HandleCache[MaxNumDescriptors];
 
 				void UnbindAllValid();
 				void StageDescriptorHandles(UINT RootIndex, UINT Offset, UINT NumHandles, const D3D12_CPU_DESCRIPTOR_HANDLE Handles[]);
@@ -136,7 +136,7 @@ namespace GlareEngine
 
 			bool HasSpace(uint32_t Count)
 			{
-				return (m_CurrentHeapPtr != nullptr && m_CurrentOffset + Count <= kNumDescriptorsPerHeap);
+				return (m_CurrentHeapPtr != nullptr && m_CurrentOffset + Count <= NumDescriptorsPerHeap);
 			}
 
 			void RetireCurrentHeap(void);
