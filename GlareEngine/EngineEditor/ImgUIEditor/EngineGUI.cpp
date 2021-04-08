@@ -58,6 +58,8 @@ void EngineGUI::InitGUI(HWND GameWnd,ID3D12DescriptorHeap* GUISrvDescriptorHeap)
 
 	 g = ImGui::GetCurrentContext();
 	 g->Style.WindowRounding = 0;
+
+	 SetWindowStyles();
 }
 
 void EngineGUI::CreateUIDescriptorHeap(ComPtr<ID3D12DescriptorHeap>& DescriptorHeap)
@@ -189,5 +191,27 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 		ImGui::Render();
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), d3dCommandList);
 	}
+}
+
+void EngineGUI::SetWindowStyles()
+{
+	ImGuiStyle& style = ImGui::GetStyle();
+
+	style.Colors[ImGuiCol_Text] = ImVec4(0.347, 0.388, 0.388, 1);
+	style.Colors[ImGuiCol_WindowBg] = ImVec4(0, 0, 0, 1);
+	style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.128, 0.061, 0.061, 1);
+	style.Colors[ImGuiCol_CheckMark] = ImVec4(0, 0, 0, 1);
+	style.Colors[ImGuiCol_Header] = ImVec4(0.19, 0.233, 0.284, 0.8);
+	style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.101, 0.150, 0.205, 1);
+	style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.101, 0.050, 0.075, 1);
+	style.Colors[ImGuiCol_FrameBg] = ImVec4(0.101, 0.150, 0.215, 1);
+	style.Colors[ImGuiCol_Border] = ImVec4(0.1, 0.1, 0.1, 1);
+	style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.101, 0.050, 0.075, 1);
+	style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.101, 0.050, 0.075, 1);
+	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.215, 0.347, 0.517, 1);
+	style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.05, 0.07, 0.07, 1);
+	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.05, 0.17, 0.17, 1);
+	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.15, 0.27, 0.27, 1);
+	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.15, 0.27, 0.27, 1);
 }
 

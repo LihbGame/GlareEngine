@@ -47,6 +47,9 @@ public:
 
 	static bool mWindowMaxSize;
 private:
+	void SetWindowStyles();
+private:
+
 	bool show_demo_window = true;
 	bool show_another_window = true;
 

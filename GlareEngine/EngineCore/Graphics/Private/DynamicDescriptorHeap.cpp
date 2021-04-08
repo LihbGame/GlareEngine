@@ -27,6 +27,10 @@ namespace GlareEngine
 
 		void DynamicDescriptorHeap::CleanupUsedHeaps(uint64_t fenceValue)
 		{
+			RetireCurrentHeap();
+			RetireUsedHeaps(fenceValue);
+			m_GraphicsHandleCache.ClearCache();
+			m_ComputeHandleCache.ClearCache();
 		}
 
 		D3D12_GPU_DESCRIPTOR_HANDLE DynamicDescriptorHeap::UploadDirect(D3D12_CPU_DESCRIPTOR_HANDLE Handles)
@@ -45,6 +49,17 @@ namespace GlareEngine
 
 		void DynamicDescriptorHeap::RetireCurrentHeap(void)
 		{
+			// Don't retire unused heaps.
+			if (m_CurrentOffset == 0)
+			{
+				assert(m_CurrentHeapPtr == nullptr);
+				return;
+			}
+
+			assert(m_CurrentHeapPtr != nullptr);
+			m_RetiredHeaps.push_back(m_CurrentHeapPtr);
+			m_CurrentHeapPtr = nullptr;
+			m_CurrentOffset = 0;
 		}
 
 		void DynamicDescriptorHeap::RetireUsedHeaps(uint64_t fenceValue)
