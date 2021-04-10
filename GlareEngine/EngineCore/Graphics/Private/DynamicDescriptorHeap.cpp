@@ -35,7 +35,20 @@ namespace GlareEngine
 
 		D3D12_GPU_DESCRIPTOR_HANDLE DynamicDescriptorHeap::UploadDirect(D3D12_CPU_DESCRIPTOR_HANDLE Handles)
 		{
-			return D3D12_GPU_DESCRIPTOR_HANDLE();
+			if (!HasSpace(1))
+			{
+				RetireCurrentHeap();
+				UnbindAllValid();
+			}
+
+			m_OwningContext.SetDescriptorHeap(m_DescriptorType, GetHeapPointer());
+
+			DescriptorHandle DestHandle = m_FirstDescriptor + m_CurrentOffset * m_DescriptorSize;
+			m_CurrentOffset += 1;
+
+			g_Device->CopyDescriptorsSimple(1, DestHandle.GetCPUHandle(), Handles, m_DescriptorType);
+
+			return DestHandle.GetGPUHandle();
 		}
 
 		ID3D12DescriptorHeap* DynamicDescriptorHeap::RequestDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE HeapType)
@@ -75,8 +88,18 @@ namespace GlareEngine
 		{
 		}
 
-		void DynamicDescriptorHeap::UnbindAllValid(void)
+		void DynamicDescriptorHeap::DescriptorHandleCache::UnbindAllValid(void)
 		{
+			m_StaleRootParamsBitMap = 0;
+
+			unsigned long TableParams = m_RootDescriptorTablesBitMap;
+			unsigned long RootIndex;
+			while (_BitScanForward(&RootIndex, TableParams))
+			{
+				TableParams ^= (1 << RootIndex);
+				if (m_RootDescriptorTable[RootIndex].AssignedHandlesBitMap != 0)
+					m_StaleRootParamsBitMap |= (1 << RootIndex);
+			}
 		}
 
 		uint32_t DynamicDescriptorHeap::DescriptorHandleCache::ComputeStagedSize()
