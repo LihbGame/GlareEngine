@@ -53,11 +53,42 @@ namespace GlareEngine
 
 		ID3D12DescriptorHeap* DynamicDescriptorHeap::RequestDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE HeapType)
 		{
-			return nullptr;
+			std::lock_guard<std::mutex> LockGuard(sm_Mutex);
+
+			uint32_t idx = HeapType == D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER ? 1 : 0;
+
+			while (!sm_RetiredDescriptorHeaps[idx].empty() && g_CommandManager.IsFenceComplete(sm_RetiredDescriptorHeaps[idx].front().first))
+			{
+				sm_AvailableDescriptorHeaps[idx].push(sm_RetiredDescriptorHeaps[idx].front().second);
+				sm_RetiredDescriptorHeaps[idx].pop();
+			}
+
+			if (!sm_AvailableDescriptorHeaps[idx].empty())
+			{
+				ID3D12DescriptorHeap* HeapPtr = sm_AvailableDescriptorHeaps[idx].front();
+				sm_AvailableDescriptorHeaps[idx].pop();
+				return HeapPtr;
+			}
+			else
+			{
+				D3D12_DESCRIPTOR_HEAP_DESC HeapDesc = {};
+				HeapDesc.Type = HeapType;
+				HeapDesc.NumDescriptors = NumDescriptorsPerHeap;
+				HeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+				HeapDesc.NodeMask = 1;
+				Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> HeapPtr;
+				ThrowIfFailed(g_Device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&HeapPtr)));
+				sm_DescriptorHeapPool[idx].emplace_back(HeapPtr);
+				return HeapPtr.Get();
+			}
 		}
 
 		void DynamicDescriptorHeap::DiscardDescriptorHeaps(D3D12_DESCRIPTOR_HEAP_TYPE HeapType, uint64_t FenceValueForReset, const std::vector<ID3D12DescriptorHeap*>& UsedHeaps)
 		{
+			uint32_t idx = HeapType == D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER ? 1 : 0;
+			std::lock_guard<std::mutex> LockGuard(sm_Mutex);
+			for (auto iter = UsedHeaps.begin(); iter != UsedHeaps.end(); ++iter)
+				sm_RetiredDescriptorHeaps[idx].push(std::make_pair(FenceValueForReset, *iter));
 		}
 
 		void DynamicDescriptorHeap::RetireCurrentHeap(void)
@@ -77,11 +108,22 @@ namespace GlareEngine
 
 		void DynamicDescriptorHeap::RetireUsedHeaps(uint64_t fenceValue)
 		{
+			DiscardDescriptorHeaps(m_DescriptorType, fenceValue, m_RetiredHeaps);
+			m_RetiredHeaps.clear();
 		}
 
 		ID3D12DescriptorHeap* DynamicDescriptorHeap::GetHeapPointer()
 		{
-			return nullptr;
+			if (m_CurrentHeapPtr == nullptr)
+			{
+				assert(m_CurrentOffset == 0);
+				m_CurrentHeapPtr = RequestDescriptorHeap(m_DescriptorType);
+				m_FirstDescriptor = DescriptorHandle(
+					m_CurrentHeapPtr->GetCPUDescriptorHandleForHeapStart(),
+					m_CurrentHeapPtr->GetGPUDescriptorHandleForHeapStart());
+			}
+
+			return m_CurrentHeapPtr;
 		}
 
 		void DynamicDescriptorHeap::CopyAndBindStagedTables(DescriptorHandleCache& HandleCache, ID3D12GraphicsCommandList* CmdList, void(__stdcall ID3D12GraphicsCommandList::* SetFunc)(UINT, D3D12_GPU_DESCRIPTOR_HANDLE))
