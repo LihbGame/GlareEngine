@@ -128,6 +128,17 @@ namespace GlareEngine
 
 		void DynamicDescriptorHeap::CopyAndBindStagedTables(DescriptorHandleCache& HandleCache, ID3D12GraphicsCommandList* CmdList, void(__stdcall ID3D12GraphicsCommandList::* SetFunc)(UINT, D3D12_GPU_DESCRIPTOR_HANDLE))
 		{
+			uint32_t NeededSize = HandleCache.ComputeStagedSize();
+			if (!HasSpace(NeededSize))
+			{
+				RetireCurrentHeap();
+				UnbindAllValid();
+				NeededSize = HandleCache.ComputeStagedSize();
+			}
+
+			// This can trigger the creation of a new heap
+			m_OwningContext.SetDescriptorHeap(m_DescriptorType, GetHeapPointer());
+			HandleCache.CopyAndBindStaleTables(m_DescriptorType, m_DescriptorSize, Allocate(NeededSize), CmdList, SetFunc);
 		}
 
 		void DynamicDescriptorHeap::DescriptorHandleCache::UnbindAllValid(void)
@@ -146,19 +157,39 @@ namespace GlareEngine
 
 		uint32_t DynamicDescriptorHeap::DescriptorHandleCache::ComputeStagedSize()
 		{
-			return uint32_t();
+			// Sum the maximum assigned offsets of stale descriptor tables to determine total needed space.
+			uint32_t NeededSpace = 0;
+			uint32_t RootIndex;
+			uint32_t StaleParams = m_StaleRootParamsBitMap;
+			while (_BitScanForward((unsigned long*)&RootIndex, StaleParams))
+			{
+				StaleParams ^= (1 << RootIndex);
+
+				uint32_t MaxSetHandle;
+				assert(TRUE == _BitScanReverse((unsigned long*)&MaxSetHandle, m_RootDescriptorTable[RootIndex].AssignedHandlesBitMap),
+					"Root entry marked as stale but has no stale descriptors");
+
+				NeededSpace += MaxSetHandle + 1;
+			}
+			return NeededSpace;
 		}
 
 		void DynamicDescriptorHeap::DescriptorHandleCache::CopyAndBindStaleTables(D3D12_DESCRIPTOR_HEAP_TYPE Type, uint32_t DescriptorSize, DescriptorHandle DestHandleStart, ID3D12GraphicsCommandList* CmdList, void(__stdcall ID3D12GraphicsCommandList::* SetFunc)(UINT, D3D12_GPU_DESCRIPTOR_HANDLE))
 		{
 		}
 
-		void DynamicDescriptorHeap::DescriptorHandleCache::UnbindAllValid()
-		{
-		}
 
 		void DynamicDescriptorHeap::DescriptorHandleCache::StageDescriptorHandles(UINT RootIndex, UINT Offset, UINT NumHandles, const D3D12_CPU_DESCRIPTOR_HANDLE Handles[])
 		{
+			assert(((1 << RootIndex) & m_RootDescriptorTablesBitMap) != 0, "Root parameter is not a CBV_SRV_UAV descriptor table");
+			assert(Offset + NumHandles <= m_RootDescriptorTable[RootIndex].TableSize);
+
+			DescriptorTableCache& TableCache = m_RootDescriptorTable[RootIndex];
+			D3D12_CPU_DESCRIPTOR_HANDLE* CopyDest = TableCache.TableStart + Offset;
+			for (UINT i = 0; i < NumHandles; ++i)
+				CopyDest[i] = Handles[i];
+			TableCache.AssignedHandlesBitMap |= ((1 << NumHandles) - 1) << Offset;
+			m_StaleRootParamsBitMap |= (1 << RootIndex);
 		}
 
 		void DynamicDescriptorHeap::DescriptorHandleCache::ParseRootSignature(D3D12_DESCRIPTOR_HEAP_TYPE Type, const RootSignature& RootSig)
