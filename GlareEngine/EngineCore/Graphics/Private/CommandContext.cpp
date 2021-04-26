@@ -451,6 +451,37 @@ namespace GlareEngine
 			const UINT ClearColor[4] = {};
 			m_CommandList->ClearUnorderedAccessViewUint(GPUVisibleHandle, Target.GetUAV(), Target.GetResource(), ClearColor, 0, nullptr);
 		}
+
+		void GraphicsContext::ClearUAV(ColorBuffer& Target)
+		{
+			// After binding a UAV, we can get a GPU handle that is required to clear it as a UAV (because it essentially runs
+            // a shader to set all of the values).
+			D3D12_GPU_DESCRIPTOR_HANDLE GpuVisibleHandle = m_DynamicViewDescriptorHeap.UploadDirect(Target.GetUAV());
+			CD3DX12_RECT ClearRect(0, 0, (LONG)Target.GetWidth(), (LONG)Target.GetHeight());
+
+			//TODO: My Nvidia card is not clearing UAVs with either Float or Uint variants.
+			const float* ClearColor = Target.GetClearColor().GetPtr();
+			m_CommandList->ClearUnorderedAccessViewFloat(GpuVisibleHandle, Target.GetUAV(), Target.GetResource(), ClearColor, 1, &ClearRect);
+		}
+
+		void GraphicsContext::ClearRenderTarget(ColorBuffer& Target)
+		{
+
+			m_CommandList->ClearRenderTargetView(Target.GetRTV(), Target.GetClearColor().GetPtr(), 0, nullptr);
+		}
+
+		void GraphicsContext::ClearDepth(DepthBuffer& Target)
+		{
+			m_CommandList->ClearDepthStencilView(Target.GetDSV(), D3D12_CLEAR_FLAG_DEPTH, Target.GetClearDepth(), Target.GetClearStencil(), 0, nullptr);
+		}
+
+		void GraphicsContext::ClearStencil(DepthBuffer& Target)
+		{
+			m_CommandList->ClearDepthStencilView(Target.GetDSV(), D3D12_CLEAR_FLAG_STENCIL, Target.GetClearDepth(), Target.GetClearStencil(), 0, nullptr);
+		}
+
+
+
 #pragma endregion
 
 

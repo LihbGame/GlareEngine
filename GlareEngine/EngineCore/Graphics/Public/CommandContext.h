@@ -208,7 +208,7 @@ namespace GlareEngine
 
 			void ClearUAV(GPUBuffer& Target);
 			void ClearUAV(ColorBuffer& Target);
-			void ClearColor(ColorBuffer& Target);
+			void ClearRenderTarget(ColorBuffer& Target);
 			void ClearDepth(DepthBuffer& Target);
 			void ClearStencil(DepthBuffer& Target);
 			void ClearDepthAndStencil(DepthBuffer& Target);
