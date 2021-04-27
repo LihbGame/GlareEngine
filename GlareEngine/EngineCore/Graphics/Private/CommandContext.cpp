@@ -480,11 +480,52 @@ namespace GlareEngine
 			m_CommandList->ClearDepthStencilView(Target.GetDSV(), D3D12_CLEAR_FLAG_STENCIL, Target.GetClearDepth(), Target.GetClearStencil(), 0, nullptr);
 		}
 
+		void GraphicsContext::ClearDepthAndStencil(DepthBuffer& Target)
+		{
+			m_CommandList->ClearDepthStencilView(Target.GetDSV(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, Target.GetClearDepth(), Target.GetClearStencil(), 0, nullptr);
+		}
 
+		void GraphicsContext::SetRootSignature(const RootSignature& RootSig)
+		{
+			if (RootSig.GetSignature() == m_CurrentGraphicsRootSignature)
+				return;
+
+			m_CommandList->SetGraphicsRootSignature(m_CurrentGraphicsRootSignature = RootSig.GetSignature());
+
+			m_DynamicViewDescriptorHeap.ParseGraphicsRootSignature(RootSig);
+			m_DynamicSamplerDescriptorHeap.ParseGraphicsRootSignature(RootSig);
+		}
+
+		void GraphicsContext::SetRenderTargets(UINT NumRTVs, const D3D12_CPU_DESCRIPTOR_HANDLE RTVs[])
+		{
+			m_CommandList->OMSetRenderTargets(NumRTVs, RTVs, FALSE, nullptr);
+		}
+
+		void GraphicsContext::SetRenderTargets(UINT NumRTVs, const D3D12_CPU_DESCRIPTOR_HANDLE RTVs[], D3D12_CPU_DESCRIPTOR_HANDLE DSV)
+		{
+			m_CommandList->OMSetRenderTargets(NumRTVs, RTVs, FALSE, &DSV);
+		}
+
+		void GraphicsContext::BeginQuery(ID3D12QueryHeap* QueryHeap, D3D12_QUERY_TYPE Type, UINT HeapIndex)
+		{
+			m_CommandList->BeginQuery(QueryHeap, Type, HeapIndex);
+		}
+
+		void GraphicsContext::EndQuery(ID3D12QueryHeap* QueryHeap, D3D12_QUERY_TYPE Type, UINT HeapIndex)
+		{
+			m_CommandList->EndQuery(QueryHeap, Type, HeapIndex);
+		}
+
+		void GraphicsContext::ResolveQueryData(ID3D12QueryHeap* QueryHeap, D3D12_QUERY_TYPE Type, UINT StartIndex, UINT NumQueries, ID3D12Resource* DestinationBuffer, UINT64 DestinationBufferOffset)
+		{
+			m_CommandList->ResolveQueryData(QueryHeap, Type, StartIndex, NumQueries, DestinationBuffer, DestinationBufferOffset);
+		}
 
 #pragma endregion
 
 
-	}//DirectX12Graphics
+		
+
+}//DirectX12Graphics
 }//GlareEngine 
 
