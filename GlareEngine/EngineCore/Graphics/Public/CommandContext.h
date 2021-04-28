@@ -368,5 +368,32 @@ namespace GlareEngine
 		{
 			m_CommandList->SetPredication(Buffer, BufferOffset, Op);
 		}
+
+
+		inline void GraphicsContext::SetViewportAndScissor(UINT x, UINT y, UINT w, UINT h)
+		{
+			SetViewport((float)x, (float)y, (float)w, (float)h);
+			SetScissor(x, y, x + w, y + h);
+		}
+
+		inline void GraphicsContext::SetScissor(UINT left, UINT top, UINT right, UINT bottom)
+		{
+			SetScissor(CD3DX12_RECT(left, top, right, bottom));
+		}
+
+		inline void GraphicsContext::SetStencilRef(UINT ref)
+		{
+			m_CommandList->OMSetStencilRef(ref);
+		}
+
+		inline void GraphicsContext::SetBlendFactor(Color BlendFactor)
+		{
+			m_CommandList->OMSetBlendFactor(BlendFactor.GetPtr());
+		}
+
+		inline void GraphicsContext::SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY Topology)
+		{
+			m_CommandList->IASetPrimitiveTopology(Topology);
+		}
 	}
 }

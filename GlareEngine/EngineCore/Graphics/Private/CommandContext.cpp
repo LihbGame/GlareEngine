@@ -506,6 +506,41 @@ namespace GlareEngine
 			m_CommandList->OMSetRenderTargets(NumRTVs, RTVs, FALSE, &DSV);
 		}
 
+		void GraphicsContext::SetViewport(const D3D12_VIEWPORT& vp)
+		{
+			m_CommandList->RSSetViewports(1, &vp);
+		}
+
+		void GraphicsContext::SetViewport(FLOAT x, FLOAT y, FLOAT w, FLOAT h, FLOAT minDepth, FLOAT maxDepth)
+		{
+			D3D12_VIEWPORT vp;
+			vp.Width = w;
+			vp.Height = h;
+			vp.MinDepth = minDepth;
+			vp.MaxDepth = maxDepth;
+			vp.TopLeftX = x;
+			vp.TopLeftY = y;
+			m_CommandList->RSSetViewports(1, &vp);
+		}
+
+		void GraphicsContext::SetScissor(const D3D12_RECT& rect)
+		{
+			assert(rect.left < rect.right&& rect.top < rect.bottom);
+			m_CommandList->RSSetScissorRects(1, &rect);
+		}
+
+
+		void GraphicsContext::SetViewportAndScissor(const D3D12_VIEWPORT& vp, const D3D12_RECT& rect)
+		{
+			assert(rect.left < rect.right&& rect.top < rect.bottom);
+			m_CommandList->RSSetViewports(1, &vp);
+			m_CommandList->RSSetScissorRects(1, &rect);
+		}
+
+
+
+
+
 		void GraphicsContext::BeginQuery(ID3D12QueryHeap* QueryHeap, D3D12_QUERY_TYPE Type, UINT HeapIndex)
 		{
 			m_CommandList->BeginQuery(QueryHeap, Type, HeapIndex);
@@ -520,6 +555,8 @@ namespace GlareEngine
 		{
 			m_CommandList->ResolveQueryData(QueryHeap, Type, StartIndex, NumQueries, DestinationBuffer, DestinationBufferOffset);
 		}
+
+
 
 #pragma endregion
 
