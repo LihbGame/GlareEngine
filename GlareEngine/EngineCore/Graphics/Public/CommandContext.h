@@ -395,5 +395,57 @@ namespace GlareEngine
 		{
 			m_CommandList->IASetPrimitiveTopology(Topology);
 		}
+
+		inline void GraphicsContext::SetConstantArray(UINT RootIndex, UINT NumConstants, const void* pConstants)
+		{
+			m_CommandList->SetGraphicsRoot32BitConstants(RootIndex, NumConstants, pConstants, 0);
+		}
+
+		inline void GraphicsContext::SetConstant(UINT RootIndex, DWParam Val, UINT Offset)
+		{
+			m_CommandList->SetGraphicsRoot32BitConstant(RootIndex, Val.Uint, Offset);
+		}
+
+		inline void GraphicsContext::SetConstants(UINT RootIndex, DWParam X)
+		{
+			m_CommandList->SetGraphicsRoot32BitConstant(RootIndex, X.Uint, 0);
+		}
+
+		inline void GraphicsContext::SetConstants(UINT RootIndex, DWParam X, DWParam Y)
+		{
+			m_CommandList->SetGraphicsRoot32BitConstant(RootIndex, X.Uint, 0);
+			m_CommandList->SetGraphicsRoot32BitConstant(RootIndex, Y.Uint, 1);
+		}
+
+		inline void GraphicsContext::SetConstants(UINT RootIndex, DWParam X, DWParam Y, DWParam Z)
+		{
+			m_CommandList->SetGraphicsRoot32BitConstant(RootIndex, X.Uint, 0);
+			m_CommandList->SetGraphicsRoot32BitConstant(RootIndex, Y.Uint, 1);
+			m_CommandList->SetGraphicsRoot32BitConstant(RootIndex, Z.Uint, 2);
+		}
+
+		inline void GraphicsContext::SetConstants(UINT RootIndex, DWParam X, DWParam Y, DWParam Z, DWParam W)
+		{
+			m_CommandList->SetGraphicsRoot32BitConstant(RootIndex, X.Uint, 0);
+			m_CommandList->SetGraphicsRoot32BitConstant(RootIndex, Y.Uint, 1);
+			m_CommandList->SetGraphicsRoot32BitConstant(RootIndex, Z.Uint, 2);
+			m_CommandList->SetGraphicsRoot32BitConstant(RootIndex, W.Uint, 3);
+		}
+
+		inline void GraphicsContext::SetConstantBuffer(UINT RootIndex, D3D12_GPU_VIRTUAL_ADDRESS CBV)
+		{
+			m_CommandList->SetGraphicsRootConstantBufferView(RootIndex, CBV);
+		}
+
+		inline void GraphicsContext::SetDynamicConstantBufferView(UINT RootIndex, size_t BufferSize, const void* BufferData)
+		{
+			assert(BufferData != nullptr && Math::IsAligned(BufferData, 16));
+			DynamicAlloc cb = m_CPULinearAllocator.Allocate(BufferSize);
+			memcpy(cb.DataPtr, BufferData, BufferSize);
+			m_CommandList->SetGraphicsRootConstantBufferView(RootIndex, cb.GPUAddress);
+		}
+
+
+
 	}
 }
