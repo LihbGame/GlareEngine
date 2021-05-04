@@ -239,8 +239,8 @@ namespace GlareEngine
 			void SetConstants(UINT RootIndex, DWParam X, DWParam Y, DWParam Z, DWParam W);
 			void SetConstantBuffer(UINT RootIndex, D3D12_GPU_VIRTUAL_ADDRESS CBV);
 			void SetDynamicConstantBufferView(UINT RootIndex, size_t BufferSize, const void* BufferData);
-			void SetBufferSRV(UINT RootIndex, const GpuBuffer& SRV, UINT64 Offset = 0);
-			void SetBufferUAV(UINT RootIndex, const GpuBuffer& UAV, UINT64 Offset = 0);
+			void SetBufferSRV(UINT RootIndex, const GPUBuffer& SRV, UINT64 Offset = 0);
+			void SetBufferUAV(UINT RootIndex, const GPUBuffer& UAV, UINT64 Offset = 0);
 			void SetDescriptorTable(UINT RootIndex, D3D12_GPU_DESCRIPTOR_HANDLE FirstHandle);
 
 			void SetDynamicDescriptor(UINT RootIndex, UINT Offset, D3D12_CPU_DESCRIPTOR_HANDLE Handle);
@@ -443,6 +443,100 @@ namespace GlareEngine
 			DynamicAlloc cb = m_CPULinearAllocator.Allocate(BufferSize);
 			memcpy(cb.DataPtr, BufferData, BufferSize);
 			m_CommandList->SetGraphicsRootConstantBufferView(RootIndex, cb.GPUAddress);
+		}
+
+		inline void GraphicsContext::SetBufferSRV(UINT RootIndex, const GPUBuffer& SRV, UINT64 Offset)
+		{
+			assert((SRV.m_UsageState & (D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)) != 0);
+			m_CommandList->SetGraphicsRootShaderResourceView(RootIndex, SRV.GetGPUVirtualAddress() + Offset);
+		}
+
+		inline void GraphicsContext::SetBufferUAV(UINT RootIndex, const GPUBuffer& UAV, UINT64 Offset)
+		{
+			assert((UAV.m_UsageState & D3D12_RESOURCE_STATE_UNORDERED_ACCESS) != 0);
+			m_CommandList->SetGraphicsRootUnorderedAccessView(RootIndex, UAV.GetGPUVirtualAddress() + Offset);
+		}
+
+		inline void GraphicsContext::SetDescriptorTable(UINT RootIndex, D3D12_GPU_DESCRIPTOR_HANDLE FirstHandle)
+		{
+			m_CommandList->SetGraphicsRootDescriptorTable(RootIndex, FirstHandle);
+		}
+
+		inline void GraphicsContext::SetDynamicDescriptor(UINT RootIndex, UINT Offset, D3D12_CPU_DESCRIPTOR_HANDLE Handle)
+		{
+			SetDynamicDescriptors(RootIndex, Offset, 1, &Handle);
+		}
+
+		inline void GraphicsContext::SetDynamicDescriptors(UINT RootIndex, UINT Offset, UINT Count, const D3D12_CPU_DESCRIPTOR_HANDLE Handles[])
+		{
+			m_DynamicViewDescriptorHeap.SetGraphicsDescriptorHandles(RootIndex, Offset, Count, Handles);
+		}
+
+		inline void GraphicsContext::SetDynamicSampler(UINT RootIndex, UINT Offset, D3D12_CPU_DESCRIPTOR_HANDLE Handle)
+		{
+			SetDynamicSamplers(RootIndex, Offset, 1, &Handle);
+		}
+
+		inline void GraphicsContext::SetDynamicSamplers(UINT RootIndex, UINT Offset, UINT Count, const D3D12_CPU_DESCRIPTOR_HANDLE Handles[])
+		{
+			m_DynamicSamplerDescriptorHeap.SetGraphicsDescriptorHandles(RootIndex, Offset, Count, Handles);
+		}
+
+		inline void GraphicsContext::SetIndexBuffer(const D3D12_INDEX_BUFFER_VIEW& IBView)
+		{
+			m_CommandList->IASetIndexBuffer(&IBView);
+		}
+
+		inline void GraphicsContext::SetVertexBuffer(UINT Slot, const D3D12_VERTEX_BUFFER_VIEW& VBView)
+		{
+			SetVertexBuffers(Slot, 1, &VBView);
+		}
+
+		inline void GraphicsContext::SetVertexBuffers(UINT StartSlot, UINT Count, const D3D12_VERTEX_BUFFER_VIEW VBViews[])
+		{
+			m_CommandList->IASetVertexBuffers(StartSlot, Count, VBViews);
+		}
+
+		inline void GraphicsContext::SetDynamicVB(UINT Slot, size_t NumVertices, size_t VertexStride, const void* VBData)
+		{
+			assert(VBData != nullptr && Math::IsAligned(VBData, 16));
+
+			size_t BufferSize = Math::AlignUp(NumVertices * VertexStride, 16);
+			DynamicAlloc vb = m_CPULinearAllocator.Allocate(BufferSize);
+
+			SIMDMemoryCopy(vb.DataPtr, VBData, BufferSize >> 4);
+
+			D3D12_VERTEX_BUFFER_VIEW VBView;
+			VBView.BufferLocation = vb.GPUAddress;
+			VBView.SizeInBytes = (UINT)BufferSize;
+			VBView.StrideInBytes = (UINT)VertexStride;
+
+			m_CommandList->IASetVertexBuffers(Slot, 1, &VBView);
+		}
+
+		inline void GraphicsContext::SetDynamicIB(size_t IndexCount, const uint16_t* IBData)
+		{
+			assert(IBData != nullptr && Math::IsAligned(IBData, 16));
+
+			size_t BufferSize = Math::AlignUp(IndexCount * sizeof(uint16_t), 16);
+			DynamicAlloc ib = m_CPULinearAllocator.Allocate(BufferSize);
+
+			SIMDMemoryCopy(ib.DataPtr, IBData, BufferSize >> 4);
+
+			D3D12_INDEX_BUFFER_VIEW IBView;
+			IBView.BufferLocation = ib.GPUAddress;
+			IBView.SizeInBytes = (UINT)(IndexCount * sizeof(uint16_t));
+			IBView.Format = DXGI_FORMAT_R16_UINT;
+
+			m_CommandList->IASetIndexBuffer(&IBView);
+		}
+
+		inline void GraphicsContext::SetDynamicSRV(UINT RootIndex, size_t BufferSize, const void* BufferData)
+		{
+			assert(BufferData != nullptr && Math::IsAligned(BufferData, 16));
+			DynamicAlloc cb = m_CPULinearAllocator.Allocate(BufferSize);
+			SIMDMemoryCopy(cb.DataPtr, BufferData, Math::AlignUp(BufferSize, 16) >> 4);
+			m_CommandList->SetGraphicsRootShaderResourceView(RootIndex, cb.GPUAddress);
 		}
 
 
