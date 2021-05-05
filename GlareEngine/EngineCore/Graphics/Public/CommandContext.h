@@ -10,6 +10,7 @@
 #include "CommandSignature.h"
 #include "GraphicsCore.h"
 #include "L3DTextureManage.h"
+#include "GraphicsCommon.h"
 
 namespace GlareEngine
 {
@@ -261,9 +262,9 @@ namespace GlareEngine
 				UINT StartVertexLocation = 0, UINT StartInstanceLocation = 0);
 			void DrawIndexedInstanced(UINT IndexCountPerInstance, UINT InstanceCount, UINT StartIndexLocation,
 				INT BaseVertexLocation, UINT StartInstanceLocation);
-			void DrawIndirect(GpuBuffer& ArgumentBuffer, uint64_t ArgumentBufferOffset = 0);
-			void ExecuteIndirect(CommandSignature& CommandSig, GpuBuffer& ArgumentBuffer, uint64_t ArgumentStartOffset = 0,
-				uint32_t MaxCommands = 1, GpuBuffer* CommandCounterBuffer = nullptr, uint64_t CounterOffset = 0);
+			void DrawIndirect(GPUBuffer& ArgumentBuffer, uint64_t ArgumentBufferOffset = 0);
+			void ExecuteIndirect(CommandSignature& CommandSig, GPUBuffer& ArgumentBuffer, uint64_t ArgumentStartOffset = 0,
+				uint32_t MaxCommands = 1, GPUBuffer* CommandCounterBuffer = nullptr, uint64_t CounterOffset = 0);
 
 			void BeginQuery(ID3D12QueryHeap* QueryHeap, D3D12_QUERY_TYPE Type, UINT HeapIndex);
 			void EndQuery(ID3D12QueryHeap* QueryHeap, D3D12_QUERY_TYPE Type, UINT HeapIndex);
@@ -273,8 +274,47 @@ namespace GlareEngine
 		};
 #pragma endregion
 
+#pragma region ComputeContext
+		class ComputeContext : public CommandContext
+		{
+		public:
 
+			static ComputeContext& Begin(const std::wstring& ID = L"", bool Async = false);
 
+			void ClearUAV(GPUBuffer& Target);
+			void ClearUAV(ColorBuffer& Target);
+
+			void SetRootSignature(const RootSignature& RootSig);
+
+			void SetConstantArray(UINT RootIndex, UINT NumConstants, const void* pConstants);
+			void SetConstant(UINT RootIndex, DWParam Val, UINT Offset = 0);
+			void SetConstants(UINT RootIndex, DWParam X);
+			void SetConstants(UINT RootIndex, DWParam X, DWParam Y);
+			void SetConstants(UINT RootIndex, DWParam X, DWParam Y, DWParam Z);
+			void SetConstants(UINT RootIndex, DWParam X, DWParam Y, DWParam Z, DWParam W);
+			void SetConstantBuffer(UINT RootIndex, D3D12_GPU_VIRTUAL_ADDRESS CBV);
+			void SetDynamicConstantBufferView(UINT RootIndex, size_t BufferSize, const void* BufferData);
+			void SetDynamicSRV(UINT RootIndex, size_t BufferSize, const void* BufferData);
+			void SetBufferSRV(UINT RootIndex, const GPUBuffer& SRV, UINT64 Offset = 0);
+			void SetBufferUAV(UINT RootIndex, const GPUBuffer& UAV, UINT64 Offset = 0);
+			void SetDescriptorTable(UINT RootIndex, D3D12_GPU_DESCRIPTOR_HANDLE FirstHandle);
+
+			void SetDynamicDescriptor(UINT RootIndex, UINT Offset, D3D12_CPU_DESCRIPTOR_HANDLE Handle);
+			void SetDynamicDescriptors(UINT RootIndex, UINT Offset, UINT Count, const D3D12_CPU_DESCRIPTOR_HANDLE Handles[]);
+			void SetDynamicSampler(UINT RootIndex, UINT Offset, D3D12_CPU_DESCRIPTOR_HANDLE Handle);
+			void SetDynamicSamplers(UINT RootIndex, UINT Offset, UINT Count, const D3D12_CPU_DESCRIPTOR_HANDLE Handles[]);
+
+			void Dispatch(size_t GroupCountX = 1, size_t GroupCountY = 1, size_t GroupCountZ = 1);
+			void Dispatch1D(size_t ThreadCountX, size_t GroupSizeX = 64);
+			void Dispatch2D(size_t ThreadCountX, size_t ThreadCountY, size_t GroupSizeX = 8, size_t GroupSizeY = 8);
+			void Dispatch3D(size_t ThreadCountX, size_t ThreadCountY, size_t ThreadCountZ, size_t GroupSizeX, size_t GroupSizeY, size_t GroupSizeZ);
+			void DispatchIndirect(GPUBuffer& ArgumentBuffer, uint64_t ArgumentBufferOffset = 0);
+			void ExecuteIndirect(CommandSignature& CommandSig, GPUBuffer& ArgumentBuffer, uint64_t ArgumentStartOffset = 0,
+				uint32_t MaxCommands = 1, GPUBuffer* CommandCounterBuffer = nullptr, uint64_t CounterOffset = 0);
+
+		private:
+		};
+#pragma endregion
 
 
 		inline void CommandContext::FlushResourceBarriers(void)
@@ -539,7 +579,45 @@ namespace GlareEngine
 			m_CommandList->SetGraphicsRootShaderResourceView(RootIndex, cb.GPUAddress);
 		}
 
+		inline void GraphicsContext::Draw(UINT VertexCount, UINT VertexStartOffset)
+		{
+			DrawInstanced(VertexCount, 1, VertexStartOffset, 0);
+		}
 
+		inline void GraphicsContext::DrawIndexed(UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation)
+		{
+			DrawIndexedInstanced(IndexCount, 1, StartIndexLocation, BaseVertexLocation, 0);
+		}
 
+		inline void GraphicsContext::DrawInstanced(UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation)
+		{
+			FlushResourceBarriers();
+			m_DynamicViewDescriptorHeap.CommitGraphicsRootDescriptorTables(m_CommandList);
+			m_DynamicSamplerDescriptorHeap.CommitGraphicsRootDescriptorTables(m_CommandList);
+			m_CommandList->DrawInstanced(VertexCountPerInstance, InstanceCount, StartVertexLocation, StartInstanceLocation);
+		}
+
+		inline void GraphicsContext::DrawIndexedInstanced(UINT IndexCountPerInstance, UINT InstanceCount, UINT StartIndexLocation, INT BaseVertexLocation, UINT StartInstanceLocation)
+		{
+			FlushResourceBarriers();
+			m_DynamicViewDescriptorHeap.CommitGraphicsRootDescriptorTables(m_CommandList);
+			m_DynamicSamplerDescriptorHeap.CommitGraphicsRootDescriptorTables(m_CommandList);
+			m_CommandList->DrawIndexedInstanced(IndexCountPerInstance, InstanceCount, StartIndexLocation, BaseVertexLocation, StartInstanceLocation);
+		}
+
+		inline void GraphicsContext::DrawIndirect(GPUBuffer& ArgumentBuffer, uint64_t ArgumentBufferOffset)
+		{
+			ExecuteIndirect(GlareEngine::DirectX12Graphics::DrawIndirectCommandSignature, ArgumentBuffer, ArgumentBufferOffset);
+		}
+
+		inline void GraphicsContext::ExecuteIndirect(CommandSignature& CommandSig, GPUBuffer& ArgumentBuffer, uint64_t ArgumentStartOffset, uint32_t MaxCommands, GPUBuffer* CommandCounterBuffer, uint64_t CounterOffset)
+		{
+			FlushResourceBarriers();
+			m_DynamicViewDescriptorHeap.CommitGraphicsRootDescriptorTables(m_CommandList);
+			m_DynamicSamplerDescriptorHeap.CommitGraphicsRootDescriptorTables(m_CommandList);
+			m_CommandList->ExecuteIndirect(CommandSig.GetSignature(), MaxCommands,
+				ArgumentBuffer.GetResource(), ArgumentStartOffset,
+				CommandCounterBuffer == nullptr ? nullptr : CommandCounterBuffer->GetResource(), CounterOffset);
+		}
 	}
 }

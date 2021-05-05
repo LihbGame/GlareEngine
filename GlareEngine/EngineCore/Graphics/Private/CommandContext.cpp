@@ -455,7 +455,7 @@ namespace GlareEngine
 		void GraphicsContext::ClearUAV(ColorBuffer& Target)
 		{
 			// After binding a UAV, we can get a GPU handle that is required to clear it as a UAV (because it essentially runs
-            // a shader to set all of the values).
+			// a shader to set all of the values).
 			D3D12_GPU_DESCRIPTOR_HANDLE GpuVisibleHandle = m_DynamicViewDescriptorHeap.UploadDirect(Target.GetUAV());
 			CD3DX12_RECT ClearRect(0, 0, (LONG)Target.GetWidth(), (LONG)Target.GetHeight());
 
@@ -561,8 +561,192 @@ namespace GlareEngine
 #pragma endregion
 
 
-		
+#pragma region ComputeContext		
 
-}//DirectX12Graphics
+		ComputeContext& ComputeContext::Begin(const std::wstring& ID, bool Async)
+		{
+			ComputeContext& NewContext = g_ContextManager.AllocateContext(
+				Async ? D3D12_COMMAND_LIST_TYPE_COMPUTE : D3D12_COMMAND_LIST_TYPE_DIRECT)->GetComputeContext();
+			NewContext.SetID(ID);
+			if (ID.length() > 0)
+				EngineProfiling::BeginBlock(ID, &NewContext);
+			return NewContext;
+		}
+
+		void ComputeContext::ClearUAV(GPUBuffer& Target)
+		{
+			// After binding a UAV, we can get a GPU handle that is required to clear it as a UAV (because it essentially runs
+			// a shader to set all of the values).
+			D3D12_GPU_DESCRIPTOR_HANDLE GpuVisibleHandle = m_DynamicViewDescriptorHeap.UploadDirect(Target.GetUAV());
+			const UINT ClearColor[4] = {};
+			m_CommandList->ClearUnorderedAccessViewUint(GpuVisibleHandle, Target.GetUAV(), Target.GetResource(), ClearColor, 0, nullptr);
+		}
+
+		void ComputeContext::ClearUAV(ColorBuffer& Target)
+		{
+			// After binding a UAV, we can get a GPU handle that is required to clear it as a UAV (because it essentially runs
+			// a shader to set all of the values).
+			D3D12_GPU_DESCRIPTOR_HANDLE GpuVisibleHandle = m_DynamicViewDescriptorHeap.UploadDirect(Target.GetUAV());
+			CD3DX12_RECT ClearRect(0, 0, (LONG)Target.GetWidth(), (LONG)Target.GetHeight());
+
+			//TODO: My Nvidia card is not clearing UAVs with either Float or Uint variants.
+			const float* ClearColor = Target.GetClearColor().GetPtr();
+			m_CommandList->ClearUnorderedAccessViewFloat(GpuVisibleHandle, Target.GetUAV(), Target.GetResource(), ClearColor, 1, &ClearRect);
+		}
+
+		void ComputeContext::SetRootSignature(const RootSignature& RootSig)
+		{
+			if (RootSig.GetSignature() == m_CurrentComputeRootSignature)
+				return;
+
+			m_CommandList->SetComputeRootSignature(m_CurrentComputeRootSignature = RootSig.GetSignature());
+
+			m_DynamicViewDescriptorHeap.ParseComputeRootSignature(RootSig);
+			m_DynamicSamplerDescriptorHeap.ParseComputeRootSignature(RootSig);
+		}
+
+		void ComputeContext::SetConstantArray(UINT RootIndex, UINT NumConstants, const void* pConstants)
+		{
+			m_CommandList->SetComputeRoot32BitConstants(RootIndex, NumConstants, pConstants, 0);
+		}
+
+		void ComputeContext::SetConstant(UINT RootIndex, DWParam Val, UINT Offset)
+		{
+			m_CommandList->SetComputeRoot32BitConstant(RootIndex, Val.Uint, Offset);
+		}
+
+		void ComputeContext::SetConstants(UINT RootIndex, DWParam X)
+		{
+			m_CommandList->SetComputeRoot32BitConstant(RootIndex, X.Uint, 0);
+		}
+
+		void ComputeContext::SetConstants(UINT RootIndex, DWParam X, DWParam Y)
+		{
+			m_CommandList->SetComputeRoot32BitConstant(RootIndex, X.Uint, 0);
+			m_CommandList->SetComputeRoot32BitConstant(RootIndex, Y.Uint, 1);
+		}
+
+		void ComputeContext::SetConstants(UINT RootIndex, DWParam X, DWParam Y, DWParam Z)
+		{
+			m_CommandList->SetComputeRoot32BitConstant(RootIndex, X.Uint, 0);
+			m_CommandList->SetComputeRoot32BitConstant(RootIndex, Y.Uint, 1);
+			m_CommandList->SetComputeRoot32BitConstant(RootIndex, Z.Uint, 2);
+		}
+
+		void ComputeContext::SetConstants(UINT RootIndex, DWParam X, DWParam Y, DWParam Z, DWParam W)
+		{
+			m_CommandList->SetComputeRoot32BitConstant(RootIndex, X.Uint, 0);
+			m_CommandList->SetComputeRoot32BitConstant(RootIndex, Y.Uint, 1);
+			m_CommandList->SetComputeRoot32BitConstant(RootIndex, Z.Uint, 2);
+			m_CommandList->SetComputeRoot32BitConstant(RootIndex, W.Uint, 3);
+		}
+
+		void ComputeContext::SetConstantBuffer(UINT RootIndex, D3D12_GPU_VIRTUAL_ADDRESS CBV)
+		{
+			m_CommandList->SetComputeRootConstantBufferView(RootIndex, CBV);
+		}
+
+		void ComputeContext::SetDynamicConstantBufferView(UINT RootIndex, size_t BufferSize, const void* BufferData)
+		{
+			assert(BufferData != nullptr && Math::IsAligned(BufferData, 16));
+			DynamicAlloc cb = m_CPULinearAllocator.Allocate(BufferSize);
+			//SIMDMemCopy(cb.DataPtr, BufferData, Math::AlignUp(BufferSize, 16) >> 4);
+			memcpy(cb.DataPtr, BufferData, BufferSize);
+			m_CommandList->SetComputeRootConstantBufferView(RootIndex, cb.GPUAddress);
+		}
+
+		void ComputeContext::SetDynamicSRV(UINT RootIndex, size_t BufferSize, const void* BufferData)
+		{
+			assert(BufferData != nullptr && Math::IsAligned(BufferData, 16));
+			DynamicAlloc cb = m_CPULinearAllocator.Allocate(BufferSize);
+			SIMDMemoryCopy(cb.DataPtr, BufferData, Math::AlignUp(BufferSize, 16) >> 4);
+			m_CommandList->SetComputeRootShaderResourceView(RootIndex, cb.GPUAddress);
+		}
+
+		void ComputeContext::SetBufferSRV(UINT RootIndex, const GPUBuffer& SRV, UINT64 Offset)
+		{
+			assert((SRV.m_UsageState & D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE) != 0);
+			m_CommandList->SetComputeRootShaderResourceView(RootIndex, SRV.GetGPUVirtualAddress() + Offset);
+		}
+
+		void ComputeContext::SetBufferUAV(UINT RootIndex, const GPUBuffer& UAV, UINT64 Offset)
+		{
+			assert((UAV.m_UsageState & D3D12_RESOURCE_STATE_UNORDERED_ACCESS) != 0);
+			m_CommandList->SetComputeRootUnorderedAccessView(RootIndex, UAV.GetGPUVirtualAddress() + Offset);
+		}
+
+		void ComputeContext::SetDescriptorTable(UINT RootIndex, D3D12_GPU_DESCRIPTOR_HANDLE FirstHandle)
+		{
+			m_CommandList->SetComputeRootDescriptorTable(RootIndex, FirstHandle);
+		}
+
+		void ComputeContext::SetDynamicDescriptor(UINT RootIndex, UINT Offset, D3D12_CPU_DESCRIPTOR_HANDLE Handle)
+		{
+			SetDynamicDescriptors(RootIndex, Offset, 1, &Handle);
+		}
+
+		void ComputeContext::SetDynamicDescriptors(UINT RootIndex, UINT Offset, UINT Count, const D3D12_CPU_DESCRIPTOR_HANDLE Handles[])
+		{
+			m_DynamicViewDescriptorHeap.SetComputeDescriptorHandles(RootIndex, Offset, Count, Handles);
+		}
+
+		void ComputeContext::SetDynamicSampler(UINT RootIndex, UINT Offset, D3D12_CPU_DESCRIPTOR_HANDLE Handle)
+		{
+			SetDynamicSamplers(RootIndex, Offset, 1, &Handle);
+		}
+
+		void ComputeContext::SetDynamicSamplers(UINT RootIndex, UINT Offset, UINT Count, const D3D12_CPU_DESCRIPTOR_HANDLE Handles[])
+		{
+			m_DynamicSamplerDescriptorHeap.SetComputeDescriptorHandles(RootIndex, Offset, Count, Handles);
+		}
+
+		void ComputeContext::Dispatch(size_t GroupCountX, size_t GroupCountY, size_t GroupCountZ)
+		{
+			FlushResourceBarriers();
+			m_DynamicViewDescriptorHeap.CommitComputeRootDescriptorTables(m_CommandList);
+			m_DynamicSamplerDescriptorHeap.CommitComputeRootDescriptorTables(m_CommandList);
+			m_CommandList->Dispatch((UINT)GroupCountX, (UINT)GroupCountY, (UINT)GroupCountZ);
+		}
+
+		void ComputeContext::Dispatch1D(size_t ThreadCountX, size_t GroupSizeX)
+		{
+			Dispatch(Math::DivideByMultiple(ThreadCountX, GroupSizeX), 1, 1);
+		}
+
+		void ComputeContext::Dispatch2D(size_t ThreadCountX, size_t ThreadCountY, size_t GroupSizeX, size_t GroupSizeY)
+		{
+			Dispatch(
+				Math::DivideByMultiple(ThreadCountX, GroupSizeX),
+				Math::DivideByMultiple(ThreadCountY, GroupSizeY), 1);
+		}
+
+		void ComputeContext::Dispatch3D(size_t ThreadCountX, size_t ThreadCountY, size_t ThreadCountZ, size_t GroupSizeX, size_t GroupSizeY, size_t GroupSizeZ)
+		{
+			Dispatch(
+				Math::DivideByMultiple(ThreadCountX, GroupSizeX),
+				Math::DivideByMultiple(ThreadCountY, GroupSizeY),
+				Math::DivideByMultiple(ThreadCountZ, GroupSizeZ));
+		}
+
+		void ComputeContext::DispatchIndirect(GPUBuffer& ArgumentBuffer, uint64_t ArgumentBufferOffset)
+		{
+			ExecuteIndirect(DirectX12Graphics::DispatchIndirectCommandSignature, ArgumentBuffer, ArgumentBufferOffset);
+		}
+
+		void ComputeContext::ExecuteIndirect(CommandSignature& CommandSig, GPUBuffer& ArgumentBuffer, uint64_t ArgumentStartOffset, uint32_t MaxCommands, GPUBuffer* CommandCounterBuffer, uint64_t CounterOffset)
+		{
+			FlushResourceBarriers();
+			m_DynamicViewDescriptorHeap.CommitComputeRootDescriptorTables(m_CommandList);
+			m_DynamicSamplerDescriptorHeap.CommitComputeRootDescriptorTables(m_CommandList);
+			m_CommandList->ExecuteIndirect(CommandSig.GetSignature(), MaxCommands,
+				ArgumentBuffer.GetResource(), ArgumentStartOffset,
+				CommandCounterBuffer == nullptr ? nullptr : CommandCounterBuffer->GetResource(), CounterOffset);
+		}
+
+
+
+#pragma endregion
+
+	}//DirectX12Graphics
 }//GlareEngine 
 
