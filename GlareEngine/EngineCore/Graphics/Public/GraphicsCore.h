@@ -1,6 +1,10 @@
 #pragma once
 #include "L3DUtil.h"
+#include "PipelineState.h"
 #include "DescriptorHeap.h"
+#include "RootSignature.h"
+#include "SamplerManager.h"
+#include "GraphicsCommon.h"
 
 
 

@@ -166,6 +166,7 @@
     <ClInclude Include="EngineCore\Graphics\Public\LinearAllocator.h" />
     <ClInclude Include="EngineCore\Graphics\Public\GraphicsCommon.h" />
     <ClInclude Include="EngineCore\Graphics\Public\CommandContext.h" />
+    <ClInclude Include="EngineCore\Engine\Public\EngineInput.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -309,7 +310,7 @@
     <ClCompile Include="DXR\D3D12RaytracingHelper.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\Graphics\Private\CommandContext.cpp">
+    <ClCompile Include="EngineCore\Engine\Private\EngineInput.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
@@ -395,6 +396,9 @@
       <Filter>MainSource</Filter>
     </None>
     <None Include="EngineCore\Graphics\Private\GraphicsCommon.cpp">
+      <Filter>MainSource</Filter>
+    </None>
+    <None Include="EngineCore\Graphics\Private\CommandContext.cpp">
       <Filter>MainSource</Filter>
     </None>
   </ItemGroup>
