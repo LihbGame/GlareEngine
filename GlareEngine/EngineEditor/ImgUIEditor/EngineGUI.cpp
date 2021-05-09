@@ -198,7 +198,7 @@ void EngineGUI::SetWindowStyles()
 	ImGuiStyle& style = ImGui::GetStyle();
 
 	style.Colors[ImGuiCol_Text] = ImVec4(0.347, 0.388, 0.388, 1);
-	style.Colors[ImGuiCol_WindowBg] = ImVec4(0, 0, 0, 1);
+	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.05, 0.05, 0.05, 1);
 	style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.128, 0.061, 0.061, 1);
 	style.Colors[ImGuiCol_CheckMark] = ImVec4(0, 0, 0, 1);
 	style.Colors[ImGuiCol_Header] = ImVec4(0.19, 0.233, 0.284, 0.8);

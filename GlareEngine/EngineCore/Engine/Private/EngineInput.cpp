@@ -1,5 +1,5 @@
 #include "EngineInput.h"
-#include <cassert>
+#include "L3DUtil.h"
 
 #define USE_XINPUT
 #include <XInput.h>
@@ -23,8 +23,6 @@ namespace
 {
 	bool s_Buttons[2][EngineInput::kNumDigitalInputs];
 	float s_HoldDuration[EngineInput::kNumDigitalInputs] = { 0.0f };
-	float s_Analogs[EngineInput::kNumAnalogInputs];
-	float s_AnalogsTC[EngineInput::kNumAnalogInputs];
 
 #ifdef USE_KEYBOARD_MOUSE
 	IDirectInput8A* s_DI;
@@ -177,7 +175,7 @@ namespace
 	{
 		BuildKeyMapping();
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+//#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 		if (FAILED(DirectInput8Create(GetModuleHandle(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&s_DI, nullptr)))
 			assert(false, "DirectInput8 initialization failed.");
 		if (FAILED(s_DI->CreateDevice(GUID_SysKeyboard, &s_Keyboard, nullptr)))
@@ -202,13 +200,13 @@ namespace
 			assert(false, "Mouse SetDataFormat failed.");
 		if (FAILED(s_Mouse->SetCooperativeLevel(GameCore::g_hWnd, DISCL_FOREGROUND | DISCL_EXCLUSIVE)))
 			assert(false, "Mouse SetCooperativeLevel failed.");
-#endif
+//#endif
 		ZeroInputs();
 	}
 
 	void KMShutdown()
 	{
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+//#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 		if (s_Keyboard)
 		{
 			s_Keyboard->Unacquire();
@@ -226,12 +224,12 @@ namespace
 			s_DI->Release();
 			s_DI = nullptr;
 		}
-#endif
+//#endif
 	}
 
 	void KMUpdate()
 	{
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+//#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 		HWND foreground = GetForegroundWindow();
 		bool visible = IsWindowVisible(foreground) != 0;
 
@@ -247,7 +245,7 @@ namespace
 			s_Keyboard->Acquire();
 			s_Keyboard->GetDeviceState(sizeof(s_Keybuffer), s_Keybuffer);
 		}
-#endif
+//#endif
 	}
 
 
@@ -260,7 +258,6 @@ namespace
 void EngineInput::Initialize()
 {
 	ZeroMemory(s_Buttons, sizeof(s_Buttons));
-	ZeroMemory(s_Analogs, sizeof(s_Analogs));
 
 #ifdef USE_KEYBOARD_MOUSE
 	KMInitialize();
@@ -274,6 +271,87 @@ void EngineInput::Shutdown()
 #endif
 }
 
+void EngineInput::Update(float FrameDelta)
+{
+	memcpy(s_Buttons[1], s_Buttons[0], sizeof(s_Buttons[0]));
+	memset(s_Buttons[0], 0, sizeof(s_Buttons[0]));
 
+#ifdef USE_XINPUT
+	XINPUT_STATE newInputState;
+	if (ERROR_SUCCESS == XInputGetState(0, &newInputState))
+	{
+		if (newInputState.Gamepad.wButtons & (1 << 0)) s_Buttons[0][kDPadUp] = true;
+		if (newInputState.Gamepad.wButtons & (1 << 1)) s_Buttons[0][kDPadDown] = true;
+		if (newInputState.Gamepad.wButtons & (1 << 2)) s_Buttons[0][kDPadLeft] = true;
+		if (newInputState.Gamepad.wButtons & (1 << 3)) s_Buttons[0][kDPadRight] = true;
+		if (newInputState.Gamepad.wButtons & (1 << 4)) s_Buttons[0][kStartButton] = true;
+		if (newInputState.Gamepad.wButtons & (1 << 5)) s_Buttons[0][kBackButton] = true;
+		if (newInputState.Gamepad.wButtons & (1 << 6)) s_Buttons[0][kLThumbClick] = true;
+		if (newInputState.Gamepad.wButtons & (1 << 7)) s_Buttons[0][kRThumbClick] = true;
+		if (newInputState.Gamepad.wButtons & (1 << 8)) s_Buttons[0][kLShoulder] = true;
+		if (newInputState.Gamepad.wButtons & (1 << 9)) s_Buttons[0][kRShoulder] = true;
+		if (newInputState.Gamepad.wButtons & (1 << 12)) s_Buttons[0][kAButton] = true;
+		if (newInputState.Gamepad.wButtons & (1 << 13)) s_Buttons[0][kBButton] = true;
+		if (newInputState.Gamepad.wButtons & (1 << 14)) s_Buttons[0][kXButton] = true;
+		if (newInputState.Gamepad.wButtons & (1 << 15)) s_Buttons[0][kYButton] = true;
 
+	}
+#endif
 
+#ifdef USE_KEYBOARD_MOUSE
+	KMUpdate();
+
+	for (uint32_t i = 0; i < kNumKeys; ++i)
+	{
+		s_Buttons[0][i] = (s_Keybuffer[s_DXKeyMapping[i]] & 0x80) != 0;
+	}
+
+	for (uint32_t i = 0; i < 8; ++i)
+	{
+		if (s_MouseState.rgbButtons[i] > 0) s_Buttons[0][kMouse0 + i] = true;
+	}
+
+#endif
+
+	// Update time duration for buttons pressed
+	for (uint32_t i = 0; i < kNumDigitalInputs; ++i)
+	{
+		if (s_Buttons[0][i])
+		{
+			if (!s_Buttons[1][i])
+				s_HoldDuration[i] = 0.0f;
+			else
+				s_HoldDuration[i] += FrameDelta;
+		}
+	}
+}
+
+bool EngineInput::IsAnyPressed(void)
+{
+	return s_Buttons[0] != 0;
+}
+
+bool EngineInput::IsPressed(GInput di)
+{
+	return s_Buttons[0][di];
+}
+
+bool EngineInput::IsFirstPressed(GInput di)
+{
+	return s_Buttons[0][di] && !s_Buttons[1][di];
+}
+
+bool EngineInput::IsReleased(GInput di)
+{
+	return !s_Buttons[0][di];
+}
+
+bool EngineInput::IsFirstReleased(GInput di)
+{
+	return !s_Buttons[0][di] && s_Buttons[1][di];
+}
+
+float GlareEngine::EngineInput::GetDurationPressed(GInput di)
+{
+	return s_HoldDuration[di];
+}

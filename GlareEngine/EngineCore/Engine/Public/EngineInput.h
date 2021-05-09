@@ -148,24 +148,6 @@ namespace GlareEngine
 		};
 
 
-		enum AnalogInput
-		{
-			// gamepad
-			kAnalogLeftTrigger,
-			kAnalogRightTrigger,
-			kAnalogLeftStickX,
-			kAnalogLeftStickY,
-			kAnalogRightStickX,
-			kAnalogRightStickY,
-
-			// mouse
-			kAnalogMouseX,
-			kAnalogMouseY,
-			kAnalogMouseScroll,
-
-			kNumAnalogInputs
-		};
-
 		bool IsAnyPressed(void);
 
 		bool IsPressed(GInput di);
@@ -174,10 +156,6 @@ namespace GlareEngine
 		bool IsFirstReleased(GInput di);
 
 		float GetDurationPressed(GInput di);
-
-		float GetAnalogInput(AnalogInput ai);
-		float GetTimeCorrectedAnalogInput(AnalogInput ai);
-
 	};
 }
 
