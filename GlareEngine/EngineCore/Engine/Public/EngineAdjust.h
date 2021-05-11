@@ -20,7 +20,6 @@ namespace GlareEngine
 		virtual void Decrement(void) {}    // DPad Left
 		virtual void Bang(void) {}        // A Button
 
-		virtual void DisplayValue(TextContext&) const {}
 		virtual std::string ToString(void) const { return ""; }
 		virtual void SetValue(FILE* file, const std::string& setting) = 0; //set value read from file
 
