@@ -10,8 +10,217 @@ using namespace GlareEngine;
 using namespace GlareEngine::Math;
 using namespace GlareEngine::DirectX12Graphics;
 
+
+
+
+
 namespace GlareEngine
 {
+	//不向公众开放。当调节器的路径包含组名时，将自动创建组。 
+	class VariableGroup : public EngineVar
+	{
+	public:
+		VariableGroup() : m_IsExpanded(false) {}
+
+		EngineVar* FindChild(const string& name)
+		{
+			auto iter = m_Children.find(name);
+			return iter == m_Children.end() ? nullptr : iter->second;
+		}
+
+		void AddChild(const string& name, EngineVar& child)
+		{
+			m_Children[name] = &child;
+			child.m_GroupPtr = this;
+		}
+
+		void SaveToFile(FILE* file, int fileMargin);
+		void LoadSettingsFromFile(FILE* file);
+
+		EngineVar* NextVariable(EngineVar* currentVariable);
+		EngineVar* PrevVariable(EngineVar* currentVariable);
+		EngineVar* FirstVariable(void);
+		EngineVar* LastVariable(void);
+
+		bool IsExpanded(void) const { return m_IsExpanded; }
+
+		virtual void Increment(void) override { m_IsExpanded = true; }
+		virtual void Decrement(void) override { m_IsExpanded = false; }
+		virtual void Bang(void) override { m_IsExpanded = !m_IsExpanded; }
+
+		virtual void SetValue(FILE*, const std::string&) override {}
+
+		static VariableGroup sm_RootGroup;
+
+	private:
+		bool m_IsExpanded;
+		std::map<string, EngineVar*> m_Children;
+	};
+
+	VariableGroup VariableGroup::sm_RootGroup;
+
+
+
+	void EngineAdjust::RegisterVariable(const string& path, EngineVar& var)
+	{
+		if (s_UnregisteredCount >= 0)
+		{
+			int32_t Idx = s_UnregisteredCount++;
+			strcpy_s(s_UnregisteredPath[Idx], path.c_str());
+			s_UnregisteredVariable[Idx] = &var;
+		}
+		else
+		{
+			AddToVariableGraph(path, var);
+		}
+	}
+
+
+	void EngineAdjust::AddToVariableGraph(const string& path, EngineVar& var)
+	{
+		vector<string> SeparatedPath;
+		string leafName;
+		size_t start = 0, end = 0;
+
+		while (true)
+		{
+			end = path.find('/', start);
+			if (end == string::npos)
+			{
+				leafName = path.substr(start);
+				break;
+			}
+			else
+			{
+				SeparatedPath.push_back(path.substr(start, end - start));
+				start = end + 1;
+			}
+		}
+
+		VariableGroup* group = &VariableGroup::sm_RootGroup;
+
+		for (auto iter = SeparatedPath.begin(); iter != SeparatedPath.end(); ++iter)
+		{
+			VariableGroup* nextGroup;
+			EngineVar* node = group->FindChild(*iter);
+			if (node == nullptr)
+			{
+				nextGroup = new VariableGroup();
+				group->AddChild(*iter, *nextGroup);
+				group = nextGroup;
+			}
+			else
+			{
+				nextGroup = dynamic_cast<VariableGroup*>(node);
+				assert(nextGroup != nullptr, "Attempted to trash the tweak graph");
+				group = nextGroup;
+			}
+		}
+
+		group->AddChild(leafName, var);
+	}
+
+	void VariableGroup::SaveToFile(FILE* file, int fileMargin)
+	{
+		for (auto iter = m_Children.begin(); iter != m_Children.end(); ++iter)
+		{
+			const char* buffer = (iter->first).c_str();
+
+			VariableGroup* subGroup = dynamic_cast<VariableGroup*>(iter->second);
+			if (subGroup != nullptr)
+			{
+				fprintf(file, "%*c + %s ...\r\n", fileMargin, ' ', buffer);
+				subGroup->SaveToFile(file, fileMargin + 5);
+			}
+			else if (dynamic_cast<CallbackTrigger*>(iter->second) == nullptr)
+			{
+				fprintf(file, "%*c %s:  %s\r\n", fileMargin, ' ', buffer, iter->second->ToString().c_str());
+			}
+		}
+	}
+
+	void VariableGroup::LoadSettingsFromFile(FILE* file)
+	{
+		for (auto iter = m_Children.begin(); iter != m_Children.end(); ++iter)
+		{
+			VariableGroup* subGroup = dynamic_cast<VariableGroup*>(iter->second);
+			if (subGroup != nullptr)
+			{
+				char skippedLines[100];
+				fscanf_s(file, "%*s %[^\n]", skippedLines, (int)_countof(skippedLines));
+				subGroup->LoadSettingsFromFile(file);
+			}
+			else
+			{
+				iter->second->SetValue(file, iter->first);
+			}
+		}
+	}
+
+	EngineVar* VariableGroup::NextVariable(EngineVar* currentVariable)
+	{
+		auto iter = m_Children.begin();
+		for (; iter != m_Children.end(); ++iter)
+		{
+			if (currentVariable == iter->second)
+				break;
+		}
+
+		assert(iter != m_Children.end(), "Do not find engine variable in its designated group");
+
+		auto nextIter = iter;
+		++nextIter;
+
+		if (nextIter == m_Children.end())
+			return m_GroupPtr ? m_GroupPtr->NextVariable(this) : nullptr;
+		else
+			return nextIter->second;
+	}
+
+	EngineVar* VariableGroup::PrevVariable(EngineVar* currentVariable)
+	{
+		auto iter = m_Children.begin();
+		for (; iter != m_Children.end(); ++iter)
+		{
+			if (currentVariable == iter->second)
+				break;
+		}
+
+		assert(iter != m_Children.end(), "Did not find engine variable in its designated group");
+
+		if (iter == m_Children.begin())
+			return this;
+
+		auto prevIter = iter;
+		--prevIter;
+
+		VariableGroup* isGroup = dynamic_cast<VariableGroup*>(prevIter->second);
+		if (isGroup && isGroup->IsExpanded())
+			return isGroup->LastVariable();
+
+		return prevIter->second;
+	}
+
+	EngineVar* VariableGroup::FirstVariable(void)
+	{
+		return m_Children.size() == 0 ? nullptr : m_Children.begin()->second;
+	}
+
+	EngineVar* VariableGroup::LastVariable(void)
+	{
+		if (m_Children.size() == 0)
+			return this;
+
+		auto LastVariable = m_Children.end();
+		--LastVariable;
+
+		VariableGroup* isGroup = dynamic_cast<VariableGroup*>(LastVariable->second);
+		if (isGroup && isGroup->IsExpanded())
+			return isGroup->LastVariable();
+
+		return LastVariable->second;
+	}
+
 	namespace EngineAdjust
 	{
 		//延迟注册。在将一些对象添加到图之前，
@@ -28,173 +237,105 @@ namespace GlareEngine
 		EngineVar* sm_SelectedVariable = nullptr;
 		bool sm_IsVisible = false;
 	}
-}
 
 
-//不向公众开放。当调节器的路径包含组名时，将自动创建组。 
-class VariableGroup : public EngineVar
-{
-public:
-	VariableGroup() : m_IsExpanded(false) {}
+    //=====================================================================================================================
+    // EngineVar implementations
 
-	EngineVar* FindChild(const string& name)
+	EngineVar::EngineVar(void) : m_GroupPtr(nullptr)
 	{
-		auto iter = m_Children.find(name);
-		return iter == m_Children.end() ? nullptr : iter->second;
 	}
 
-	void AddChild(const string& name, EngineVar& child)
+	EngineVar::EngineVar(const std::string& path) : m_GroupPtr(nullptr)
 	{
-		m_Children[name] = &child;
-		child.m_GroupPtr = this;
+		EngineAdjust::RegisterVariable(path, *this);
 	}
 
-	void SaveToFile(FILE* file, int fileMargin);
-	void LoadSettingsFromFile(FILE* file);
-
-	EngineVar* NextVariable(EngineVar* currentVariable);
-	EngineVar* PrevVariable(EngineVar* currentVariable);
-	EngineVar* FirstVariable(void);
-	EngineVar* LastVariable(void);
-
-	bool IsExpanded(void) const { return m_IsExpanded; }
-
-	virtual void Increment(void) override { m_IsExpanded = true; }
-	virtual void Decrement(void) override { m_IsExpanded = false; }
-	virtual void Bang(void) override { m_IsExpanded = !m_IsExpanded; }
-
-	virtual void SetValue(FILE*, const std::string&) override {}
-
-	static VariableGroup sm_RootGroup;
-
-private:
-	bool m_IsExpanded;
-	std::map<string, EngineVar*> m_Children;
-};
-
-VariableGroup VariableGroup::sm_RootGroup;
-
-
-
-void EngineAdjust::RegisterVariable(const string& path, EngineVar& var)
-{
-	if (s_UnregisteredCount >= 0)
+	EngineVar* EngineVar::NextVar(void)
 	{
-		int32_t Idx = s_UnregisteredCount++;
-		strcpy_s(s_UnregisteredPath[Idx], path.c_str());
-		s_UnregisteredVariable[Idx] = &var;
+		EngineVar* next = nullptr;
+		VariableGroup* isGroup = dynamic_cast<VariableGroup*>(this);
+		if (isGroup != nullptr && isGroup->IsExpanded())
+			next = isGroup->FirstVariable();
+
+		if (next == nullptr)
+			next = m_GroupPtr->NextVariable(this);
+
+		return next != nullptr ? next : this;
 	}
-	else
+
+	EngineVar* EngineVar::PrevVar(void)
 	{
-		AddToVariableGraph(path, var);
-	}
-}
-
-
-void EngineAdjust::AddToVariableGraph(const string& path, EngineVar& var)
-{
-	vector<string> SeparatedPath;
-	string leafName;
-	size_t start = 0, end = 0;
-
-	while (true)
-	{
-		end = path.find('/', start);
-		if (end == string::npos)
+		EngineVar* prev = m_GroupPtr->PrevVariable(this);
+		if (prev != nullptr && prev != m_GroupPtr)
 		{
-			leafName = path.substr(start);
-			break;
+			VariableGroup* isGroup = dynamic_cast<VariableGroup*>(prev);
+			if (isGroup != nullptr && isGroup->IsExpanded())
+				prev = isGroup->LastVariable();
 		}
-		else
-		{
-			SeparatedPath.push_back(path.substr(start, end - start));
-			start = end + 1;
-		}
+		return prev != nullptr ? prev : this;
 	}
 
-	VariableGroup* group = &VariableGroup::sm_RootGroup;
+	//=====================================================================================================================
+	// BoolVar implementations
 
-	for (auto iter = SeparatedPath.begin(); iter != SeparatedPath.end(); ++iter)
+	BoolVar::BoolVar(const std::string& path, bool val)
+		: EngineVar(path)
 	{
-		VariableGroup* nextGroup;
-		EngineVar* node = group->FindChild(*iter);
-		if (node == nullptr)
-		{
-			nextGroup = new VariableGroup();
-			group->AddChild(*iter, *nextGroup);
-			group = nextGroup;
-		}
-		else
-		{
-			nextGroup = dynamic_cast<VariableGroup*>(node);
-			assert(nextGroup != nullptr, "Attempted to trash the tweak graph");
-			group = nextGroup;
-		}
+		m_Flag = val;
 	}
 
-	group->AddChild(leafName, var);
-}
-
-EngineVar* VariableGroup::NextVariable(EngineVar* currentVariable)
-{
-	auto iter = m_Children.begin();
-	for (; iter != m_Children.end(); ++iter)
+	std::string BoolVar::ToString(void) const
 	{
-		if (currentVariable == iter->second)
-			break;
+		return m_Flag ? "on" : "off";
 	}
 
-	assert(iter != m_Children.end(), "Do not find engine variable in its designated group");
-
-	auto nextIter = iter;
-	++nextIter;
-
-	if (nextIter == m_Children.end())
-		return m_GroupPtr ? m_GroupPtr->NextVariable(this) : nullptr;
-	else
-		return nextIter->second;
-}
-
-EngineVar* VariableGroup::PrevVariable(EngineVar* currentVariable)
-{
-	auto iter = m_Children.begin();
-	for (; iter != m_Children.end(); ++iter)
+	void BoolVar::SetValue(FILE* file, const std::string& setting)
 	{
-		if (currentVariable == iter->second)
-			break;
+		std::string pattern = "\n " + setting + ": %s";
+		char valstr[6];
+
+		// 在文件中搜索与该设置的名称匹配的条目
+		fscanf_s(file, pattern.c_str(), valstr, _countof(valstr));
+
+		// Look for one of the many affirmations
+		m_Flag = (
+			0 == _stricmp(valstr, "1") ||
+			0 == _stricmp(valstr, "on") ||
+			0 == _stricmp(valstr, "yes") ||
+			0 == _stricmp(valstr, "true"));
 	}
 
-	assert(iter != m_Children.end(), "Did not find engine variable in its designated group");
 
-	if (iter == m_Children.begin())
-		return this;
+	//=====================================================================================================================
+	// NumVar implementations
 
-	auto prevIter = iter;
-	--prevIter;
+	NumVar::NumVar(const std::string& path, float val, float minVal, float maxVal, float stepSize)
+		: EngineVar(path)
+	{
+		assert(minVal <= maxVal);
+		m_MinValue = minVal;
+		m_MaxValue = maxVal;
+		m_Value = Clamp(val);
+		m_StepSize = stepSize;
+	}
 
-	VariableGroup* isGroup = dynamic_cast<VariableGroup*>(prevIter->second);
-	if (isGroup && isGroup->IsExpanded())
-		return isGroup->LastVariable();
+	std::string NumVar::ToString(void) const
+	{
+		char buf[128];
+		sprintf_s(buf, "%f", m_Value);
+		return buf;
+	}
 
-	return prevIter->second;
+	void NumVar::SetValue(FILE* file, const std::string& setting)
+	{
+		std::string scanString = "\n" + setting + ": %f";
+		float valueRead;
+
+		//If we haven't read correctly, just keep m_Value at default value
+		if (fscanf_s(file, scanString.c_str(), &valueRead))
+			*this = valueRead;
+	}
 }
 
-EngineVar* VariableGroup::FirstVariable(void)
-{
-	return m_Children.size() == 0 ? nullptr : m_Children.begin()->second;
-}
 
-EngineVar* VariableGroup::LastVariable(void)
-{
-	if (m_Children.size() == 0)
-		return this;
-
-	auto LastVariable = m_Children.end();
-	--LastVariable;
-
-	VariableGroup* isGroup = dynamic_cast<VariableGroup*>(LastVariable->second);
-	if (isGroup && isGroup->IsExpanded())
-		return isGroup->LastVariable();
-
-	return LastVariable->second;
-}
