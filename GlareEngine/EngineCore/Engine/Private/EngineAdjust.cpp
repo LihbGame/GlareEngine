@@ -10,12 +10,28 @@ using namespace GlareEngine;
 using namespace GlareEngine::Math;
 using namespace GlareEngine::DirectX12Graphics;
 
-
-
-
-
 namespace GlareEngine
 {
+
+	namespace EngineAdjust
+	{
+		//延迟注册。在将一些对象添加到图之前，
+		//已经构造了一些对象(由于初始化顺序不可靠)。 
+		enum { kMaxUnregisteredTweaks = 1024 };
+		char s_UnregisteredPath[kMaxUnregisteredTweaks][128];
+		EngineVar* s_UnregisteredVariable[kMaxUnregisteredTweaks] = { nullptr };
+		int32_t s_UnregisteredCount = 0;
+
+		// Internal functions
+		void AddToVariableGraph(const string& path, EngineVar& var);
+		void RegisterVariable(const string& path, EngineVar& var);
+
+		EngineVar* sm_SelectedVariable = nullptr;
+		bool sm_IsVisible = false;
+		
+	}
+
+
 	//不向公众开放。当调节器的路径包含组名时，将自动创建组。 
 	class VariableGroup : public EngineVar
 	{
@@ -60,6 +76,26 @@ namespace GlareEngine
 	VariableGroup VariableGroup::sm_RootGroup;
 
 
+
+
+	void EngineAdjust::Initialize(void)
+	{
+
+	}
+
+	void EngineAdjust::Update(float frameTime)
+	{
+	}
+
+	void EngineAdjust::Display(GraphicsContext& Context, float x, float y, float w, float h)
+	{
+
+	}
+
+	bool EngineAdjust::IsFocused(void)
+	{
+		return false;
+	}
 
 	void EngineAdjust::RegisterVariable(const string& path, EngineVar& var)
 	{
@@ -221,23 +257,6 @@ namespace GlareEngine
 		return LastVariable->second;
 	}
 
-	namespace EngineAdjust
-	{
-		//延迟注册。在将一些对象添加到图之前，
-		//已经构造了一些对象(由于初始化顺序不可靠)。 
-		enum { kMaxUnregisteredTweaks = 1024 };
-		char s_UnregisteredPath[kMaxUnregisteredTweaks][128];
-		EngineVar* s_UnregisteredVariable[kMaxUnregisteredTweaks] = { nullptr };
-		int32_t s_UnregisteredCount = 0;
-
-		// Internal functions
-		void AddToVariableGraph(const string& path, EngineVar& var);
-		void RegisterVariable(const string& path, EngineVar& var);
-
-		EngineVar* sm_SelectedVariable = nullptr;
-		bool sm_IsVisible = false;
-	}
-
 
     //=====================================================================================================================
     // EngineVar implementations
@@ -336,6 +355,136 @@ namespace GlareEngine
 		if (fscanf_s(file, scanString.c_str(), &valueRead))
 			*this = valueRead;
 	}
+
+
+	//=====================================================================================================================
+	// ExpVar implementations
+
+	ExpVar::ExpVar(const std::string& path, float val, float minExp, float maxExp, float expStepSize)
+		: NumVar(path, log2f(val), minExp, maxExp, expStepSize)
+	{
+	}
+
+	ExpVar& ExpVar::operator=(float val)
+	{
+		m_Value = Clamp(log2f(val));
+		return *this;
+	}
+
+	ExpVar::operator float() const
+	{
+		return exp2f(m_Value);
+	}
+
+
+	std::string ExpVar::ToString(void) const
+	{
+		char buf[128];
+		sprintf_s(buf, "%f", (float)*this);
+		return buf;
+	}
+
+	void ExpVar::SetValue(FILE* file, const std::string& setting)
+	{
+		std::string scanString = "\n" + setting + ": %f";
+		float valueRead;
+
+		//If we haven't read correctly, just keep m_Value at default value
+		if (fscanf_s(file, scanString.c_str(), &valueRead))
+			*this = valueRead;
+	}
+
+	//=====================================================================================================================
+	// IntVar implementations
+
+	IntVar::IntVar(const std::string& path, int32_t val, int32_t minVal, int32_t maxVal, int32_t stepSize)
+		: EngineVar(path)
+	{
+		assert(minVal <= maxVal);
+		m_MinValue = minVal;
+		m_MaxValue = maxVal;
+		m_Value = Clamp(val);
+		m_StepSize = stepSize;
+	}
+
+
+	std::string IntVar::ToString(void) const
+	{
+		char buf[128];
+		sprintf_s(buf, "%d", m_Value);
+		return buf;
+	}
+
+	void IntVar::SetValue(FILE* file, const std::string& setting)
+	{
+		std::string scanString = "\n" + setting + ": %d";
+		int32_t valueRead;
+
+		if (fscanf_s(file, scanString.c_str(), &valueRead))
+			*this = valueRead;
+	}
+
+
+	//=====================================================================================================================
+	// EnumVar implementations
+
+	EnumVar::EnumVar(const std::string& path, int32_t initialVal, int32_t listLength, const char** listLabels)
+		: EngineVar(path)
+	{
+		assert(listLength > 0);
+		m_EnumLength = listLength;
+		m_EnumLabels = listLabels;
+		m_Value = Clamp(initialVal);
+	}
+
+
+	std::string EnumVar::ToString(void) const
+	{
+		return m_EnumLabels[m_Value];
+	}
+
+	void EnumVar::SetValue(FILE* file, const std::string& setting)
+	{
+		std::string scanString = "\n" + setting + ": %[^\n]";
+		char valueRead[14];
+
+		if (fscanf_s(file, scanString.c_str(), valueRead, _countof(valueRead)) == 1)
+		{
+			std::string valueReadStr = valueRead;
+			valueReadStr = valueReadStr.substr(0, valueReadStr.length() - 1);
+
+			//if we don't find the string, then leave m_EnumLabes[m_Value] as default
+			for (int32_t i = 0; i < m_EnumLength; ++i)
+			{
+				if (m_EnumLabels[i] == valueReadStr)
+				{
+					m_Value = i;
+					break;
+				}
+			}
+		}
+
+	}
+
+	//=====================================================================================================================
+	// CallbackTrigger implementations
+
+	CallbackTrigger::CallbackTrigger(const std::string& path, std::function<void(void*)> callback, void* args)
+		: EngineVar(path)
+	{
+		m_Callback = callback;
+		m_Arguments = args;
+		m_BangDisplay = 0;
+	}
+
+	void CallbackTrigger::SetValue(FILE* file, const std::string& setting)
+	{
+		//Skip over setting without reading anything
+		std::string scanString = "\n" + setting + ": %[^\n]";
+		char skippedLines[100];
+		fscanf_s(file, scanString.c_str(), skippedLines, _countof(skippedLines));
+	}
+
 }
 
 
