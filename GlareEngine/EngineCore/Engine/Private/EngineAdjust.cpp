@@ -80,21 +80,17 @@ namespace GlareEngine
 
 	void EngineAdjust::Initialize(void)
 	{
-
+		for (int32_t i = 0; i < s_UnregisteredCount; ++i)
+		{
+			assert(strlen(s_UnregisteredPath[i]) > 0, "Register = %d\n", i);
+			assert(s_UnregisteredVariable[i] != nullptr);
+			AddToVariableGraph(s_UnregisteredPath[i], *s_UnregisteredVariable[i]);
+		}
+		s_UnregisteredCount = -1;
 	}
 
 	void EngineAdjust::Update(float frameTime)
 	{
-	}
-
-	void EngineAdjust::Display(GraphicsContext& Context, float x, float y, float w, float h)
-	{
-
-	}
-
-	bool EngineAdjust::IsFocused(void)
-	{
-		return false;
 	}
 
 	void EngineAdjust::RegisterVariable(const string& path, EngineVar& var)

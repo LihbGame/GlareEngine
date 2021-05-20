@@ -16,8 +16,6 @@ namespace GlareEngine
 	{
 		void Initialize(void);
 		void Update(float frameTime);
-		void Display(GraphicsContext& Context, float x, float y, float w, float h);
-		bool IsFocused(void);
 
 	} // namespace EngineAdjust
 

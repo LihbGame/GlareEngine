@@ -168,6 +168,7 @@
     <ClInclude Include="EngineCore\Graphics\Public\CommandContext.h" />
     <ClInclude Include="EngineCore\Engine\Public\EngineInput.h" />
     <ClInclude Include="EngineCore\Engine\Public\EngineAdjust.h" />
+    <ClInclude Include="EngineCore\Engine\Public\GameCore.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -315,6 +316,9 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Engine\Private\EngineAdjust.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\Private\GameCore.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
