@@ -169,6 +169,8 @@
     <ClInclude Include="EngineCore\Engine\Public\EngineInput.h" />
     <ClInclude Include="EngineCore\Engine\Public\EngineAdjust.h" />
     <ClInclude Include="EngineCore\Engine\Public\GameCore.h" />
+    <ClInclude Include="EngineCore\Engine\Public\EngineProfiling.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\GPUTimeManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -312,13 +314,7 @@
     <ClCompile Include="DXR\D3D12RaytracingHelper.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\Engine\Private\EngineInput.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Engine\Private\EngineAdjust.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Engine\Private\GameCore.cpp">
+    <ClCompile Include="EngineCore\Graphics\Private\GPUTimeManager.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
@@ -407,6 +403,18 @@
       <Filter>MainSource</Filter>
     </None>
     <None Include="EngineCore\Graphics\Private\CommandContext.cpp">
+      <Filter>MainSource</Filter>
+    </None>
+    <None Include="EngineCore\Engine\Private\GameCore.cpp">
+      <Filter>MainSource</Filter>
+    </None>
+    <None Include="EngineCore\Engine\Private\EngineProfiling.cpp">
+      <Filter>MainSource</Filter>
+    </None>
+    <None Include="EngineCore\Engine\Private\EngineInput.cpp">
+      <Filter>MainSource</Filter>
+    </None>
+    <None Include="EngineCore\Engine\Private\EngineAdjust.cpp">
       <Filter>MainSource</Filter>
     </None>
   </ItemGroup>
