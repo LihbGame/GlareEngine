@@ -2,7 +2,6 @@
 
 #include "GameCore.h"
 
-class CommandContext;
 
 namespace GlareEngine
 {
@@ -15,8 +14,8 @@ namespace GlareEngine
 		uint32_t NewTimer(void);
 
 		//在GPU时间轴上写入开始和结束时间戳记 
-		void StartTimer(CommandContext& Context, uint32_t TimerIdx);
-		void StopTimer(CommandContext& Context, uint32_t TimerIdx);
+		void StartTimer(DirectX12Graphics::CommandContext& Context, uint32_t TimerIdx);
+		void StopTimer(DirectX12Graphics::CommandContext& Context, uint32_t TimerIdx);
 
 		//Map/Unmap相对应的Begin/End预订对GetTime()的所有调用。
 		//这需要在帧的开始或结束时发生。 
