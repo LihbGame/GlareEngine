@@ -260,7 +260,7 @@
     <None Include="EngineCore\Engine\Private\EngineInput.cpp" />
     <None Include="EngineCore\Engine\Private\EngineProfiling.cpp" />
     <None Include="EngineCore\Engine\Private\GameCore.cpp" />
-    <ClCompile Include="EngineCore\Graphics\Private\GPUTimeManager.cpp" />
+    <None Include="EngineCore\Graphics\Private\GPUTimeManager.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\DDSTextureLoader.cpp" />
     <None Include="EngineCore\Graphics\Private\PixelBuffer.cpp" />
     <None Include="EngineCore\Graphics\Private\ReadbackBuffer.cpp" />

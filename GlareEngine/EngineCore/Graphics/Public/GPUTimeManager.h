@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GameCore.h"
-
+#include "CommandContext.h"
 
 namespace GlareEngine
 {
