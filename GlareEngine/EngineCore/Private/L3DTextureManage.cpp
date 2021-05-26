@@ -11,10 +11,8 @@ L3DTextureManage::~L3DTextureManage()
 {
 }
 
-void L3DTextureManage::CreateTexture(std::wstring name,std::wstring filename)
+void L3DTextureManage::CreateTexture(std::wstring name,std::wstring filename, bool ForceSRGB)
 {
-
-
 	// Does it already exist?
 	std::unique_ptr<Texture> tex = std::make_unique<Texture>();
 	if (mTextures.find(name) == mTextures.end())
@@ -23,26 +21,26 @@ void L3DTextureManage::CreateTexture(std::wstring name,std::wstring filename)
 
 		ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice,
 			mCommandList, filename.c_str(),
-			tex.get()->Resource, tex.get()->UploadHeap));
+			tex.get()->Resource, tex.get()->UploadHeap, ForceSRGB));
 
 		mTextures[name] = std::move(tex);
 	}
 }
 
-std::unique_ptr<Texture>& L3DTextureManage::GetTexture(std::wstring name)
+std::unique_ptr<Texture>& L3DTextureManage::GetTexture(std::wstring name, bool ForceSRGB)
 {
 	if (mTextures.find(name) == mTextures.end())
 	{
-		CreateTexture(name, RootFilePath + name + L".dds");
+		CreateTexture(name, RootFilePath + name + L".dds", ForceSRGB);
 	}
 	return mTextures[name];
 }
 
-std::unique_ptr<Texture>& L3DTextureManage::GetModelTexture(std::wstring name)
+std::unique_ptr<Texture>& L3DTextureManage::GetModelTexture(std::wstring name, bool ForceSRGB)
 {
 	if (mTextures.find(name) == mTextures.end())
 	{
-		CreateTexture(name,name + L".dds");
+		CreateTexture(name,name + L".dds",ForceSRGB);
 	}
 	return mTextures[name];
 }

@@ -26,9 +26,9 @@ public:
 	~L3DTextureManage();
 
 
-	void CreateTexture(std::wstring name, std::wstring filename);
-	std::unique_ptr<Texture>& GetTexture(std::wstring name);
-	std::unique_ptr<Texture>& GetModelTexture(std::wstring name);
+	void CreateTexture(std::wstring name, std::wstring filename,bool ForceSRGB=true);
+	std::unique_ptr<Texture>& GetTexture(std::wstring name, bool ForceSRGB = true);
+	std::unique_ptr<Texture>& GetModelTexture(std::wstring name, bool ForceSRGB = true);
 
 	void CreatePBRSRVinDescriptorHeap(
 		vector<ID3D12Resource*> TexResource,
