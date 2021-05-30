@@ -5,23 +5,23 @@ class GameTimer
 public:
 	GameTimer();
 
-	float TotalTime()const; // in seconds
-	float DeltaTime()const; // in seconds
+	static float TotalTime(); // in seconds
+	static float DeltaTime(); // in seconds
 
-	void Reset(); // 在消息循环之前调用
-	void Start(); // 取消暂停时调用
-	void Stop();  // 暂停时调用
-	void Tick();  // 每帧调用
+	static void Reset(); // 在消息循环之前调用
+	static void Start(); // 取消暂停时调用
+	static void Stop();  // 暂停时调用
+	static void Tick();  // 每帧调用
 
 private:
-	double mSecondsPerCount;
-	double mDeltaTime;
+	static double mSecondsPerCount;
+	static double mDeltaTime;
 
-	__int64 mBaseTime;
-	__int64 mPausedTime;
-	__int64 mStopTime;
-	__int64 mPrevTime;
-	__int64 mCurrTime;
+	static __int64 mBaseTime;
+	static __int64 mPausedTime;
+	static __int64 mStopTime;
+	static __int64 mPrevTime;
+	static __int64 mCurrTime;
 
-	bool mStopped;
+	static bool mStopped;
 };

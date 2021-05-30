@@ -1,9 +1,18 @@
 #include <windows.h>
 #include "L3DGameTimer.h"
 
+
+double GameTimer::mSecondsPerCount=0.0f;
+double GameTimer::mDeltaTime=-1.0f;
+__int64 GameTimer::mBaseTime=0;
+__int64 GameTimer::mPausedTime=0;
+__int64 GameTimer::mStopTime=0;
+__int64 GameTimer::mPrevTime=0;
+__int64 GameTimer::mCurrTime=0;
+bool GameTimer::mStopped=false;
+
+
 GameTimer::GameTimer()
-: mSecondsPerCount(0.0), mDeltaTime(-1.0), mBaseTime(0), 
-  mPausedTime(0), mPrevTime(0), mCurrTime(0), mStopped(false)
 {
 	__int64 countsPerSec;
 	QueryPerformanceFrequency((LARGE_INTEGER*)&countsPerSec);
@@ -11,7 +20,7 @@ GameTimer::GameTimer()
 }
 
 //返回自调用Reset（）以来经过的总时间，不计算时钟停止的任何时间。
-float GameTimer::TotalTime()const
+float GameTimer::TotalTime()
 {
 	// 如果我们停止了，不要计算自我们停止以来已经过去的时间。
 	//此外，如果我们之前已经暂停，则距离mStopTime - mBaseTime包括暂停时间，
@@ -41,7 +50,7 @@ float GameTimer::TotalTime()const
 	}
 }
 
-float GameTimer::DeltaTime()const
+float GameTimer::DeltaTime()
 {
 	return (float)mDeltaTime;
 }

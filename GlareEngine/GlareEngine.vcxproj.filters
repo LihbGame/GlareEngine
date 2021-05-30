@@ -405,9 +405,6 @@
     <None Include="EngineCore\Engine\Private\GameCore.cpp">
       <Filter>MainSource</Filter>
     </None>
-    <None Include="EngineCore\Engine\Private\EngineProfiling.cpp">
-      <Filter>MainSource</Filter>
-    </None>
     <None Include="EngineCore\Engine\Private\EngineInput.cpp">
       <Filter>MainSource</Filter>
     </None>
@@ -415,6 +412,9 @@
       <Filter>MainSource</Filter>
     </None>
     <None Include="EngineCore\Graphics\Private\GPUTimeManager.cpp">
+      <Filter>MainSource</Filter>
+    </None>
+    <None Include="EngineCore\Engine\Private\EngineProfiling.cpp">
       <Filter>MainSource</Filter>
     </None>
   </ItemGroup>
