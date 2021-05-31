@@ -253,17 +253,17 @@ public:
 		gpuTime = 0.0f;
 		for (auto iter = m_Children.begin(); iter != m_Children.end(); ++iter)
 		{
-			cpuTime += (*iter)->m_CpuTime.GetLast();
-			gpuTime += (*iter)->m_GpuTime.GetLast();
+			cpuTime += (*iter)->m_CPUTime.GetLast();
+			gpuTime += (*iter)->m_GPUTime.GetLast();
 		}
 	}
 
-	static void PushProfilingMarker(const wstring& name, CommandContext* Context);
-	static void PopProfilingMarker(CommandContext* Context);
+	static void PushProfilingMarker(const wstring& name, DirectX12Graphics::CommandContext* Context);
+	static void PopProfilingMarker(DirectX12Graphics::CommandContext* Context);
 	static void Update(void);
 	static void UpdateTimes(void)
 	{
-		uint32_t FrameIndex = (uint32_t)Graphics::GetFrameCount();
+		uint32_t FrameIndex = (uint32_t)GlareEngine::DirectX12Graphics::GetFrameCount();
 
 		GPUTimeManager::BeginReadBack();
 		sm_RootScope.GatherTimes(FrameIndex);
@@ -272,12 +272,12 @@ public:
 
 		float TotalCpuTime, TotalGpuTime;
 		sm_RootScope.SumInclusiveTimes(TotalCpuTime, TotalGpuTime);
-		s_TotalCpuTime.RecordStat(FrameIndex, TotalCpuTime);
-		s_TotalGpuTime.RecordStat(FrameIndex, TotalGpuTime);
+		s_TotalCPUTime.RecordStat(FrameIndex, TotalCpuTime);
+		s_TotalGPUTime.RecordStat(FrameIndex, TotalGpuTime);
 	}
 
-	static float GetTotalCpuTime(void) { return s_TotalCpuTime.GetAvg(); }
-	static float GetTotalGpuTime(void) { return s_TotalGpuTime.GetAvg(); }
+	static float GetTotalCpuTime(void) { return s_TotalCPUTime.GetAvg(); }
+	static float GetTotalGpuTime(void) { return s_TotalGPUTime.GetAvg(); }
 	static float GetFrameDelta(void) { return s_FrameDelta.GetAvg(); }
 
 
