@@ -12,6 +12,7 @@ const int gNumFrameResources = 3;
 
 bool GameApp::RedrawShadowMap = true;
 
+#if 0
 //[System::STAThreadAttribute]
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 	PSTR cmdLine, int showCmd)
@@ -35,6 +36,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 		return 0;
 	}
 }
+#endif
 
 GameApp::GameApp(HINSTANCE hInstance)
 	: D3DApp(hInstance)

@@ -314,6 +314,15 @@
     <ClCompile Include="DXR\D3D12RaytracingHelper.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
+    <ClCompile Include="EngineCore\Engine\Private\GameCore.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\Private\EngineInput.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\Private\EngineAdjust.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -400,15 +409,6 @@
       <Filter>MainSource</Filter>
     </None>
     <None Include="EngineCore\Graphics\Private\CommandContext.cpp">
-      <Filter>MainSource</Filter>
-    </None>
-    <None Include="EngineCore\Engine\Private\GameCore.cpp">
-      <Filter>MainSource</Filter>
-    </None>
-    <None Include="EngineCore\Engine\Private\EngineInput.cpp">
-      <Filter>MainSource</Filter>
-    </None>
-    <None Include="EngineCore\Engine\Private\EngineAdjust.cpp">
       <Filter>MainSource</Filter>
     </None>
     <None Include="EngineCore\Graphics\Private\GPUTimeManager.cpp">

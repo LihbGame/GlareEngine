@@ -1,12 +1,12 @@
 
 #include "L3DUtil.h"
+#include "Common.h"
 #include <comdef.h>
 #include <fstream>
 
 #define RandomSize 1024
 
 using Microsoft::WRL::ComPtr;
-
 DxException::DxException(HRESULT hr, const std::wstring& functionName, const std::wstring& filename, int lineNumber) :
     ErrorCode(hr),
     FunctionName(functionName),
@@ -370,8 +370,8 @@ void ExtractFrustumPlanes(XMFLOAT4 planes[6], CXMMATRIX T)
 // A faster version of memcopy that uses SSE instructions.  TODO:  Write an ARM variant if necessary.
 void SIMDMemoryCopy(void* __restrict _Dest, const void* __restrict _Source, size_t NumQuadwords)
 {
-	assert(Math::IsAligned(_Dest, 16));
-	assert(Math::IsAligned(_Source, 16));
+	assert(GlareEngine::Math::IsAligned(_Dest, 16));
+	assert(GlareEngine::Math::IsAligned(_Source, 16));
 
 	__m128i* __restrict Dest = (__m128i * __restrict)_Dest;
 	const __m128i* __restrict Source = (const __m128i * __restrict)_Source;
@@ -450,7 +450,7 @@ void SIMDMemoryCopy(void* __restrict _Dest, const void* __restrict _Source, size
 
 void SIMDMemoryFill(void* __restrict _Dest, __m128 FillVector, size_t NumQuadwords)
 {
-	assert(Math::IsAligned(_Dest, 16));
+	assert(GlareEngine::Math::IsAligned(_Dest, 16));
 
 	register const __m128i Source = _mm_castps_si128(FillVector);
 	__m128i* __restrict Dest = (__m128i * __restrict)_Dest;

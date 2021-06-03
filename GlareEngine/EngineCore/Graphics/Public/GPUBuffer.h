@@ -7,8 +7,7 @@ namespace GlareEngine
 {
 	namespace DirectX12Graphics
 	{
-		class GPUBuffer :
-			public GPUResource
+		class GPUBuffer :public GPUResource
 		{
 		public:
 			virtual ~GPUBuffer() { Destroy(); }

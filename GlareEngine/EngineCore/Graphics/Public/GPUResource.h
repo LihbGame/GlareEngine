@@ -46,8 +46,6 @@ namespace GlareEngine
 
 			D3D12_GPU_VIRTUAL_ADDRESS GetGPUVirtualAddress() const { return m_GPUVirtualAddress; }
 
-		protected:
-
 			D3D12_GPU_VIRTUAL_ADDRESS m_GPUVirtualAddress;
 
 			D3D12_RESOURCE_STATES m_UsageState;

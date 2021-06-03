@@ -12,12 +12,13 @@
 #pragma comment(lib, "dxguid.lib")
 
 using namespace GlareEngine;
-
-namespace GameCore
+namespace GlareEngine
 {
-	extern HWND g_hWnd;
+	namespace GameCore
+	{
+		extern HWND g_hWnd;
+	}
 }
-
 
 namespace
 {
