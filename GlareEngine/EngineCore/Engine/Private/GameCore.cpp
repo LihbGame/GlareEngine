@@ -7,6 +7,7 @@
 #include "EngineAdjust.h"
 #include "EngineProfiling.h"
 #include <windowsx.h>
+#include "resource.h"
 #pragma comment(lib, "runtimeobject.lib")
 
 namespace GlareEngine
@@ -73,7 +74,7 @@ namespace GlareEngine
 		//void InitWindow(const wchar_t* className);
 		LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
-		void RunApplication(GameApp& app, const wchar_t* className)
+		void RunApplication(GameApp& app, const wchar_t* className,HINSTANCE hand)
 		{
 			//ASSERT_SUCCEEDED(CoInitializeEx(nullptr, COINITBASE_MULTITHREADED));
 			Microsoft::WRL::Wrappers::RoInitializeWrapper InitializeWinRT(RO_INIT_MULTITHREADED);
@@ -81,7 +82,7 @@ namespace GlareEngine
 
 
 			//当前所调用该函数的程序实例句柄
-			HINSTANCE hInst = GetInstanceModule(NULL);
+			HINSTANCE hInst = hand;
 
 			// Register class
 			WNDCLASSEX wcex;
@@ -91,12 +92,12 @@ namespace GlareEngine
 			wcex.cbClsExtra = 0;
 			wcex.cbWndExtra = 0;
 			wcex.hInstance = hInst;
-			wcex.hIcon = LoadIcon(hInst, IDI_APPLICATION);
-			wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+			wcex.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON1));
+			wcex.hCursor = LoadCursor(hInst, MAKEINTRESOURCE(IDC_CURSOR1));
 			wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 			wcex.lpszMenuName = nullptr;
 			wcex.lpszClassName = className;
-			wcex.hIconSm = LoadIcon(hInst, IDI_APPLICATION);
+			wcex.hIconSm = LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON1));
 			if (!RegisterClassEx(&wcex))
 			{
 				DWORD dwerr = GetLastError();
@@ -116,6 +117,7 @@ namespace GlareEngine
 			
 			ShowWindow(g_hWnd, SW_SHOW);
 			UpdateWindow(g_hWnd);
+			
 			do
 			{
 				MSG msg = {};

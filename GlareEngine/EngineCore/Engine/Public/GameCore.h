@@ -27,7 +27,7 @@ namespace GlareEngine
 			virtual void RenderUI() {};
 		};
 
-		void RunApplication(GameApp& app, const wchar_t* className);
+		void RunApplication(GameApp& app, const wchar_t* className,HINSTANCE HAND);
 
 
 	}
@@ -39,7 +39,7 @@ namespace GlareEngine
     MAIN_FUNCTION() \
     { \
         GameApp* app = new app_class(); \
-        GlareEngine::GameCore::RunApplication( *app, L#app_class ); \
+        GlareEngine::GameCore::RunApplication( *app, L#app_class,hInstance); \
         delete app; \
         return 0; \
     }
