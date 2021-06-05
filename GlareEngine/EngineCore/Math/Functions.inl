@@ -51,7 +51,7 @@ namespace  GlareEngine
 
 #undef CREATE_SIMD_FUNCTIONS
 
-			INLINE float Sqrt(float s) { return Sqrt(Scalar(s)); }
+		INLINE float Sqrt(float s) { return Sqrt(Scalar(s)); }
 		INLINE float Recip(float s) { return Recip(Scalar(s)); }
 		INLINE float RecipSqrt(float s) { return RecipSqrt(Scalar(s)); }
 		INLINE float Floor(float s) { return Floor(Scalar(s)); }

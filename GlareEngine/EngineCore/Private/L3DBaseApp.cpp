@@ -531,7 +531,7 @@ bool D3DApp::InitMainWindow()
 
 
 	mhMainWnd = CreateWindow(L"MainWnd", mMainWndCaption.c_str(), 
-		WS_POPUP|WS_EX_TOPMOST, 200, 50, width, height, 0, 0, mhAppInst, 0);
+		WS_POPUP, 200, 50, width, height, 0, 0, mhAppInst, 0);
 	if( !mhMainWnd )
 	{
 		MessageBox(0, L"CreateWindow Failed.", 0, 0);

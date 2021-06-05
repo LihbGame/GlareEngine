@@ -12,7 +12,7 @@ const int gNumFrameResources = 3;
 
 bool GameApp::RedrawShadowMap = true;
 
-#if 0
+#if 1
 //[System::STAThreadAttribute]
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 	PSTR cmdLine, int showCmd)

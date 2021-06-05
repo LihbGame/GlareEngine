@@ -19,7 +19,7 @@ GameTimer::GameTimer()
 	mSecondsPerCount = 1.0 / (double)countsPerSec;
 }
 
-//返回自调用Reset（）以来经过的总时间，不计算时钟停止的任何时间。
+//返回自调用Reset()以来经过的总时间，不计算时钟停止的任何时间。
 float GameTimer::TotalTime()
 {
 	// 如果我们停止了，不要计算自我们停止以来已经过去的时间。

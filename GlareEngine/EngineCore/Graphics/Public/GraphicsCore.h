@@ -41,14 +41,19 @@ namespace GlareEngine
 		//每秒的总帧数
 		float GetFrameRate(void);
 
+		//Device
 		extern ID3D12Device* g_Device;
 		extern CommandListManager g_CommandManager;
 		extern ContextManager g_ContextManager;
 
+		//FEATURE LEVE 
 		extern D3D_FEATURE_LEVEL g_D3DFeatureLevel;
+
+		//HDR
 		extern bool g_bTypedUAVLoadSupport_R11G11B10_FLOAT;
 		extern bool g_bEnableHDROutput;
 
+		//Descriptor Allocator 
 		extern DescriptorAllocator g_DescriptorAllocator[];
 		inline D3D12_CPU_DESCRIPTOR_HANDLE AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE Type, UINT Count = 1)
 		{
