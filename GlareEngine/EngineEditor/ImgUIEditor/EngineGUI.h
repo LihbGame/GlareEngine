@@ -79,6 +79,13 @@ private:
 	float mGrassColor[3] = { 0.39f,0.196f,0.0f };
 	XMFLOAT3 mCameraPosition = { 0.0f,0.0f,0.0f };
 
+	vector<wstring> mLogs;
+
+
+private:
+	ImGuiTextFilter       OutputFilter;
+	char InputBuffer[256] = {};
+
 	ID3D12DescriptorHeap* mGUISrvDescriptorHeap = nullptr;
 
 	ImGuiContext *g=nullptr;

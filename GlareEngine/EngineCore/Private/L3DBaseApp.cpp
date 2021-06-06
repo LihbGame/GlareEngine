@@ -1,6 +1,7 @@
 #include "L3DBaseApp.h"
 #include <WindowsX.h>
 #include "EngineGUI.h"
+#include "EngineLog.h"
 #include "resource.h"
 using Microsoft::WRL::ComPtr;
 using namespace std;
@@ -783,9 +784,8 @@ void D3DApp::LogAdapterOutputs(IDXGIAdapter* adapter)
         text += desc.DeviceName;
         text += L"\n";
         OutputDebugString(text.c_str());
-
+		EngineLog::AddLog(text);
         LogOutputDisplayModes(output, mBackBufferFormat);
-
         ReleaseCom(output);
 
         ++i;
@@ -812,7 +812,7 @@ void D3DApp::LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format)
             L"Height = " + std::to_wstring(x.Height) + L" " +
             L"Refresh = " + std::to_wstring(n) + L"/" + std::to_wstring(d) +
             L"\n";
-
+		EngineLog::AddLog(text);
         ::OutputDebugString(text.c_str());
     }
 }

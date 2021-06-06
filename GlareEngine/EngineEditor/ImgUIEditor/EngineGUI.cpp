@@ -1,6 +1,7 @@
 #include "EngineGUI.h"
 #include <dxgi.h>
 #include "L3DUtil.h"
+#include "EngineLog.h"
 using Microsoft::WRL::ComPtr;
 bool gFullSreenMode = false;
 bool EngineGUI::mWindowMaxSize = false;
@@ -149,7 +150,7 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 			ImGui::End();
 		}
 
-		// 3. Show another simple window.
+		// 3. Show Output log window.
 		if (show_another_window)
 		{
 			//g.NextWindowData.MenuBarOffsetMinVal = ImVec2(g.Style.DisplaySafeAreaPadding.x, ImMax(g.Style.DisplaySafeAreaPadding.y - g.Style.FramePadding.y, 0.0f));
@@ -158,7 +159,21 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 			ImGui::SetNextWindowBgAlpha(1);
 
 			ImGui::Begin("Debug Window", &show_another_window,ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+			if (ImGui::Button("Clear")) { EngineLog::ClearLogs(); }ImGui::SameLine();
+			if (ImGui::Button("Copy")) { ImGui::LogToClipboard(); }ImGui::SameLine();
+			OutputFilter.Draw("Filter", 180);
+			ImGui::Separator();
+			const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing(); // 1 separator, 1 input text
+			ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar); // Leave room for 1 separator + 1 InputText
+
 			ImGui::Text("Camera Position X:%.1f Y:%.1f Z:%.1f", mCameraPosition.x, mCameraPosition.y, mCameraPosition.z);
+			mLogs = EngineLog::GetLogs();
+			for (auto& e : mLogs)
+			{
+				ImGui::Text((">>"+WStringToString(e)).c_str());
+			}
+			ImGui::EndChild();
+			ImGui::InputText("Input", InputBuffer, 100);
 			ImGui::End();
 		}
 

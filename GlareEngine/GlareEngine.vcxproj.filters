@@ -132,8 +132,6 @@
     <ClInclude Include="EngineCore\Public\PSOManager.h">
       <Filter>PSO\Public</Filter>
     </ClInclude>
-    <ClInclude Include="EngineCore\Graphics\Public\CommandAllocatorPool.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\GPUResource.h" />
     <ClInclude Include="EngineCore\Math\Common.h" />
     <ClInclude Include="EngineCore\Math\Scalar.h" />
     <ClInclude Include="EngineCore\Math\Vector.h" />
@@ -151,26 +149,13 @@
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_rectpack.h" />
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_textedit.h" />
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_truetype.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\DescriptorHeap.h" />
     <ClInclude Include="EngineCore\Math\Hash.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\ReadbackBuffer.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\ColorBuffer.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\DepthBuffer.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\RootSignature.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\PipelineState.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\DynamicDescriptorHeap.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\CommandListManager.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\CommandSignature.h" />
     <ClInclude Include="DXR\D3D12RaytracingHelper.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\DynamicUploadBuffer.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\LinearAllocator.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\GraphicsCommon.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\CommandContext.h" />
     <ClInclude Include="EngineCore\Engine\Public\EngineInput.h" />
     <ClInclude Include="EngineCore\Engine\Public\EngineAdjust.h" />
     <ClInclude Include="EngineCore\Engine\Public\GameCore.h" />
     <ClInclude Include="EngineCore\Engine\Public\EngineProfiling.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\GPUTimeManager.h" />
+    <ClInclude Include="EngineCore\Engine\Public\EngineLog.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -323,6 +308,9 @@
     <ClCompile Include="EngineCore\Engine\Private\EngineAdjust.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
+    <ClCompile Include="EngineCore\Engine\Private\EngineLog.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -417,6 +405,22 @@
     <None Include="EngineCore\Engine\Private\EngineProfiling.cpp">
       <Filter>MainSource</Filter>
     </None>
+    <None Include="EngineCore\Graphics\Public\GPUTimeManager.h" />
+    <None Include="EngineCore\Graphics\Public\ColorBuffer.h" />
+    <None Include="EngineCore\Graphics\Public\CommandAllocatorPool.h" />
+    <None Include="EngineCore\Graphics\Public\CommandContext.h" />
+    <None Include="EngineCore\Graphics\Public\CommandListManager.h" />
+    <None Include="EngineCore\Graphics\Public\CommandSignature.h" />
+    <None Include="EngineCore\Graphics\Public\DepthBuffer.h" />
+    <None Include="EngineCore\Graphics\Public\DescriptorHeap.h" />
+    <None Include="EngineCore\Graphics\Public\DynamicDescriptorHeap.h" />
+    <None Include="EngineCore\Graphics\Public\DynamicUploadBuffer.h" />
+    <None Include="EngineCore\Graphics\Public\GPUResource.h" />
+    <None Include="EngineCore\Graphics\Public\GraphicsCommon.h" />
+    <None Include="EngineCore\Graphics\Public\LinearAllocator.h" />
+    <None Include="EngineCore\Graphics\Public\PipelineState.h" />
+    <None Include="EngineCore\Graphics\Public\ReadbackBuffer.h" />
+    <None Include="EngineCore\Graphics\Public\RootSignature.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GlareEngine.rc">

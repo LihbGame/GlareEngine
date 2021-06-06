@@ -43,7 +43,6 @@ namespace GlareEngine
 	int64_t s_FrameStartTick = 0;
 
 	BoolVar s_LimitTo30Hz("Timing/Limit To 30Hz", false);
-	BoolVar s_DropRandomFrames("Timing/Drop Random Frames", false);
 
 
 	namespace DirectX12Graphics
@@ -184,6 +183,21 @@ namespace GlareEngine
 	{
 		assert(s_SwapChain1 == nullptr, "Graphics has already been initialized");
 
+		Microsoft::WRL::ComPtr<ID3D12Device> pDevice;
+
+#if _DEBUG
+		Microsoft::WRL::ComPtr<ID3D12Debug> debugInterface;
+		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface))))
+			debugInterface->EnableDebugLayer();
+		else
+			Utility::Print("WARNING:  Unable to enable D3D12 debug validation layer\n");
+#endif
+
+
+
+
+
+
 	}
 
 	void DirectX12Graphics::Resize(uint32_t width, uint32_t height)
@@ -289,11 +303,6 @@ namespace GlareEngine
 			//我们需要添加逻辑以在 1 和 2（或 3 个字段）之间变化。 
 			//这个增量时间还决定了前一帧应该显示多长时间（即当前间隔）。
 			s_FrameTime = (s_LimitTo30Hz ? 2.0f : 1.0f) / 60.0f;
-			if (s_DropRandomFrames)
-			{
-				if (std::rand() % 50 == 0)
-					s_FrameTime += (1.0f / 60.0f);
-			}
 		}
 		else
 		{

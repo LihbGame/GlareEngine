@@ -493,6 +493,16 @@ std::wstring StringToWString(const std::string& str)
 	return std::wstring(str.begin(), str.end());
 }
 
+
+std::string WStringToString(const std::wstring& str)
+{
+
+	_bstr_t t = str.c_str();
+	char* pchar = (char*)t;
+	string result = pchar;
+	return result;
+}
+
 void CheckFileExist(const std::wstring& FileName)
 {
 		ifstream f(FileName);

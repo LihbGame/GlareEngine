@@ -33,7 +33,7 @@
 #include "ShockWaveWater.h"
 #include "HeightmapTerrain.h"
 //#include "OzzAnimePlayBack.h"
-
+#include "EngineLog.h"
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 using namespace DirectX::PackedVector;

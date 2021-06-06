@@ -344,6 +344,6 @@ void SIMDMemoryCopy(void* __restrict Dest, const void* __restrict Source, size_t
 void SIMDMemoryFill(void* __restrict Dest, __m128 FillVector, size_t NumQuadwords);
 
 std::wstring StringToWString(const std::string& str);
-
+std::string WStringToString(const std::wstring& str);
 
 void CheckFileExist(const std::wstring& FileName);
