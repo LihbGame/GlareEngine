@@ -510,20 +510,24 @@ void GameApp::OnMouseMove(WPARAM btnState, int x, int y)
 
 void GameApp::OnKeyboardInput(const GameTimer& gt)
 {
-	float CameraModeSpeed = mEngineUI->GetCameraModeSpeed();
-	float DeltaTime = gt.DeltaTime();
-	if (GetAsyncKeyState('W') & 0x8000)
-		mCamera.Walk(CameraModeSpeed * DeltaTime);
+	if (mLastMousePos.x >= mClientRect.left && mLastMousePos.y >= mClientRect.top
+		&& mLastMousePos.y <= (mClientRect.top + (mClientRect.bottom - mClientRect.top))
+		&& mLastMousePos.x <= (mClientRect.left + (mClientRect.right - mClientRect.left)))
+	{
+		float CameraModeSpeed = mEngineUI->GetCameraModeSpeed();
+		float DeltaTime = gt.DeltaTime();
+		if (GetAsyncKeyState('W') & 0x8000)
+			mCamera.Walk(CameraModeSpeed * DeltaTime);
 
-	if (GetAsyncKeyState('S') & 0x8000)
-		mCamera.Walk(-CameraModeSpeed * DeltaTime);
+		if (GetAsyncKeyState('S') & 0x8000)
+			mCamera.Walk(-CameraModeSpeed * DeltaTime);
 
-	if (GetAsyncKeyState('A') & 0x8000)
-		mCamera.Strafe(-CameraModeSpeed * DeltaTime);
+		if (GetAsyncKeyState('A') & 0x8000)
+			mCamera.Strafe(-CameraModeSpeed * DeltaTime);
 
-	if (GetAsyncKeyState('D') & 0x8000)
-		mCamera.Strafe(CameraModeSpeed * DeltaTime);
-
+		if (GetAsyncKeyState('D') & 0x8000)
+			mCamera.Strafe(CameraModeSpeed * DeltaTime);
+	}
 	XMFLOAT3 camPos = mCamera.GetPosition3f();
 	static float width = 2048.0f;
 	if (camPos.x<-width || camPos.x >width ||
@@ -540,6 +544,7 @@ void GameApp::OnKeyboardInput(const GameTimer& gt)
 		}
 	}
 	mCamera.UpdateViewMatrix();
+
 	mEngineUI->SetCameraPosition(camPos);
 }
 

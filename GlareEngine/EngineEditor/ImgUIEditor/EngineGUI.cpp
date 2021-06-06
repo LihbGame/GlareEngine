@@ -2,6 +2,7 @@
 #include <dxgi.h>
 #include "L3DUtil.h"
 #include "EngineLog.h"
+#include "EngineAdjust.h"
 using Microsoft::WRL::ComPtr;
 bool gFullSreenMode = false;
 bool EngineGUI::mWindowMaxSize = false;
@@ -161,19 +162,42 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 			ImGui::Begin("Debug Window", &show_another_window,ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
 			if (ImGui::Button("Clear")) { EngineLog::ClearLogs(); }ImGui::SameLine();
 			if (ImGui::Button("Copy")) { ImGui::LogToClipboard(); }ImGui::SameLine();
-			OutputFilter.Draw("Filter", 180);
+			ImGui::SetNextItemWidth(200);
+			ImGui::InputText("Filter", FilterString, IM_ARRAYSIZE(FilterString));
 			ImGui::Separator();
+		
 			const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing(); // 1 separator, 1 input text
 			ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar); // Leave room for 1 separator + 1 InputText
 
 			ImGui::Text("Camera Position X:%.1f Y:%.1f Z:%.1f", mCameraPosition.x, mCameraPosition.y, mCameraPosition.z);
-			mLogs = EngineLog::GetLogs();
+
+			//Filter logs
+			string Filter(FilterString);
+			if (strcmp(FilterString, "") != 0)
+			{
+				EngineLog::Filter(StringToWString(Filter));
+				mLogs = EngineLog::GetFilterLogs();
+			}
+			else
+			{
+				mLogs = EngineLog::GetLogs();
+			}
+			//Display logs
 			for (auto& e : mLogs)
 			{
 				ImGui::Text((">>"+WStringToString(e)).c_str());
 			}
+
+			//将滚动条滑倒最后一条log
+			int LogSize = mLogs.size();
+			if (LogSize != mLogSize)
+			{
+				ImGui::SetScrollY(ImGui::GetFrameHeightWithSpacing()*LogSize);
+				mLogSize = LogSize;
+			}
 			ImGui::EndChild();
-			ImGui::InputText("Input", InputBuffer, 100);
+			ImGui::SetNextItemWidth(300);
+			ImGui::InputText("Input", InputBuffer, IM_ARRAYSIZE(InputBuffer));
 			ImGui::End();
 		}
 
