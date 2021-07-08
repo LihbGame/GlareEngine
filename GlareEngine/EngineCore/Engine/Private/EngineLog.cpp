@@ -17,8 +17,13 @@ void EngineLog::ClearLogs()
 	FilterDisplayLogs.clear();
 }
 
-void EngineLog::AddLog(wstring log)
+void EngineLog::AddLog(const wchar_t* format, ...)
 {
+	wchar_t buffer[256];
+	va_list ap;
+	va_start(ap, format);
+	vswprintf(buffer, 256, format, ap);
+	wstring log(buffer);
 
 	DisplayLogs.push_back(log);
 	//统一改为小写字符
@@ -26,7 +31,6 @@ void EngineLog::AddLog(wstring log)
 	{
 		*it =tolower(*it);
 	}
-
 	FilterLogs.push_back(log);
 }
 

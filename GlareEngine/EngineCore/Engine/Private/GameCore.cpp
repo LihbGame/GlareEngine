@@ -29,7 +29,7 @@ namespace GlareEngine
 
 		void InitializeApplication(GameApp& Game)
 		{
-			//DirectX12Graphics::Initialize();
+			DirectX12Graphics::Initialize();
 			EngineInput::Initialize();
 			//EngineAdjust::Initialize();
 

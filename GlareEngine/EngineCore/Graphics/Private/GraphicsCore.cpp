@@ -8,6 +8,7 @@
 #include "EngineAdjust.h"
 #include "ColorBuffer.h"
 #include "GPUTimeManager.h"
+#include "EngineLog.h"
 
 // 该宏决定是否检测是否有 HDR 显示并启用 HDR10 输出。
 // 目前，在启用 HDR 显示的情况下，像素放大功能被破坏。
@@ -190,10 +191,132 @@ namespace GlareEngine
 		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface))))
 			debugInterface->EnableDebugLayer();
 		else
-			Utility::Print("WARNING:  Unable to enable D3D12 debug validation layer\n");
+			EngineLog::AddLog(L"WARNING:  Unable to enable D3D12 debug validation layer");
 #endif
 
+		// Obtain the DXGI factory
+		Microsoft::WRL::ComPtr<IDXGIFactory4> dxgiFactory;
+		ThrowIfFailed(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgiFactory)));
 
+		// Create the D3D graphics device
+		Microsoft::WRL::ComPtr<IDXGIAdapter1> pAdapter;
+		//是否使用Windows软光栅
+		static const bool bUseWarpDriver = false;
+
+		if (!bUseWarpDriver)
+		{
+			SIZE_T MaxSize = 0;
+
+			for (uint32_t Idx = 0; DXGI_ERROR_NOT_FOUND != dxgiFactory->EnumAdapters1(Idx, &pAdapter); ++Idx)
+			{
+				DXGI_ADAPTER_DESC1 desc;
+				pAdapter->GetDesc1(&desc);
+				if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+					continue;
+
+				if (desc.DedicatedVideoMemory > MaxSize && SUCCEEDED(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&pDevice))))
+				{
+					pAdapter->GetDesc1(&desc);
+					EngineLog::AddLog(L"D3D12-Capable HardWare found:  %s (%d MB)\0", desc.Description, desc.DedicatedVideoMemory >> 20);
+					MaxSize = desc.DedicatedVideoMemory;
+				}
+			}
+
+			if (MaxSize > 0)
+				g_Device = pDevice.Detach();
+		}
+
+		if (g_Device == nullptr)
+		{
+			if (bUseWarpDriver)
+				EngineLog::AddLog(L"WARP software adapter requested.  Initializing...\n");
+			else
+				EngineLog::AddLog(L"Failed to find a hardware adapter.  Falling back to WARP.\n");
+			ThrowIfFailed(dxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&pAdapter)));
+			ThrowIfFailed(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&pDevice)));
+			g_Device = pDevice.Detach();
+		}
+
+
+		// We like to do read-modify-write operations on UAVs during post processing.  To support that, we
+		// need to either have the hardware do typed UAV loads of R11G11B10_FLOAT or we need to manually
+		// decode an R32_UINT representation of the same buffer.  This code determines if we get the hardware
+		// load support.
+		D3D12_FEATURE_DATA_D3D12_OPTIONS FeatureData = {};
+		if (SUCCEEDED(g_Device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &FeatureData, sizeof(FeatureData))))
+		{
+			if (FeatureData.TypedUAVLoadAdditionalFormats)
+			{
+				D3D12_FEATURE_DATA_FORMAT_SUPPORT Support =
+				{
+					DXGI_FORMAT_R11G11B10_FLOAT, D3D12_FORMAT_SUPPORT1_NONE, D3D12_FORMAT_SUPPORT2_NONE
+				};
+
+				if (SUCCEEDED(g_Device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &Support, sizeof(Support))) &&
+					(Support.Support2 & D3D12_FORMAT_SUPPORT2_UAV_TYPED_LOAD) != 0)
+				{
+					g_bTypedUAVLoadSupport_R11G11B10_FLOAT = true;
+				}
+
+				Support.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+
+				if (SUCCEEDED(g_Device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &Support, sizeof(Support))) &&
+					(Support.Support2 & D3D12_FORMAT_SUPPORT2_UAV_TYPED_LOAD) != 0)
+				{
+					g_bTypedUAVLoadSupport_R16G16B16A16_FLOAT = true;
+				}
+			}
+		}
+
+		g_CommandManager.Create(g_Device);
+
+		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
+		swapChainDesc.Width = g_DisplayWidth;
+		swapChainDesc.Height = g_DisplayHeight;
+		swapChainDesc.Format = SwapChainFormat;
+		swapChainDesc.Scaling = DXGI_SCALING_NONE;
+		swapChainDesc.SampleDesc.Quality = 0;
+		swapChainDesc.SampleDesc.Count = 1;
+		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		swapChainDesc.BufferCount = SWAP_CHAIN_BUFFER_COUNT;
+		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+
+		ThrowIfFailed(dxgiFactory->CreateSwapChainForHwnd(g_CommandManager.GetCommandQueue(), GameCore::g_hWnd, &swapChainDesc, nullptr, nullptr, &s_SwapChain1));
+
+
+		//检查是否支持HDR
+#if CONDITIONALLY_ENABLE_HDR_OUTPUT && defined(NTDDI_WIN10_RS2) && (NTDDI_VERSION >= NTDDI_WIN10_RS2)
+		{
+			IDXGISwapChain4* swapChain = (IDXGISwapChain4*)s_SwapChain1;
+			ComPtr<IDXGIOutput> output;
+			ComPtr<IDXGIOutput6> output6;
+			DXGI_OUTPUT_DESC1 outputDesc;
+			UINT colorSpaceSupport;
+
+			// Query support for ST.2084 on the display and set the color space accordingly
+			if (SUCCEEDED(swapChain->GetContainingOutput(&output)) &&
+				SUCCEEDED(output.As(&output6)) &&
+				SUCCEEDED(output6->GetDesc1(&outputDesc)) &&
+				outputDesc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020 &&
+				SUCCEEDED(swapChain->CheckColorSpaceSupport(DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020, &colorSpaceSupport)) &&
+				(colorSpaceSupport & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT) &&
+				SUCCEEDED(swapChain->SetColorSpace1(DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020)))
+			{
+				g_bEnableHDROutput = true;
+			}
+		}
+#endif
+
+		for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
+		{
+			ComPtr<ID3D12Resource> DisplayPlane;
+			ThrowIfFailed(s_SwapChain1->GetBuffer(i, IID_PPV_ARGS(&DisplayPlane)));
+			g_DisplayBuffers[i].CreateFromSwapChain(L"Primary SwapChain Buffer", DisplayPlane.Detach());
+		}
+
+		// Common state was moved to GraphicsCommon.
+		InitializeAllCommonState();
 
 
 

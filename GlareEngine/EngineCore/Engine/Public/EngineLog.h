@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <stdarg.h>
 using namespace std;
 class EngineLog
 {
@@ -11,7 +12,7 @@ public:
 	static vector<wstring>& GetLogs();
 	static vector<wstring>& GetFilterLogs();
 	static void ClearLogs();
-	static void AddLog(const wstring log);
+	static void AddLog(const wchar_t* format, ...);
 	static void Filter(wstring Filter);
 private:
 	static vector<wstring> DisplayLogs;
