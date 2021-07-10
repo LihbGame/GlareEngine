@@ -52,6 +52,11 @@ namespace GlareEngine
 		void PreparePresentHDR();
 		void CompositeOverlays(GraphicsContext& Context);
 
+		void CreateD3DDevice();
+		void CheckUAVFormatSupport();
+		void CheckHDRSupport();
+		void InitializePersentPSO();
+
 		const uint32_t MaxNativeWidth = 3840;
 		const uint32_t MaxNativeHeight = 2160;
 		const uint32_t NumPredefinedResolutions = 6;
@@ -71,7 +76,7 @@ namespace GlareEngine
 		//Color range
 		NumVar g_HDRPaperWhite("Graphics/Display/Paper White (nits)", 200.0f, 100.0f, 500.0f, 50.0f);
 		NumVar g_MaxDisplayLuminance("Graphics/Display/Peak Brightness (nits)", 1000.0f, 500.0f, 10000.0f, 100.0f);
-		
+
 		const char* HDRModeLabels[] = { "HDR", "SDR", "Side-by-Side" };
 		EnumVar HDRDebugMode("Graphics/Display/HDR Debug Mode", 0, 3, HDRModeLabels);
 
@@ -131,14 +136,14 @@ namespace GlareEngine
 		ID3D12Device* g_Device = nullptr;
 		CommandListManager g_CommandManager;
 		ContextManager g_ContextManager;
-		
+
 		//FEATURE LEVEL 11
 		D3D_FEATURE_LEVEL g_D3DFeatureLevel = D3D_FEATURE_LEVEL_11_0;
-		
+
 		//Display Buffer(三缓存)
 		ColorBuffer g_DisplayBuffers[SWAP_CHAIN_BUFFER_COUNT];
 		UINT g_CurrentBuffer = 0;
-		
+
 		//Swap Chain
 		IDXGISwapChain1* s_SwapChain1 = nullptr;
 
@@ -152,6 +157,7 @@ namespace GlareEngine
 		};
 
 		RootSignature s_PresentRS;
+		GraphicsPSO s_BlendUIPSO;
 		GraphicsPSO PresentSDRPS;
 		GraphicsPSO PresentHDRPS;
 		GraphicsPSO MagnifyPixelsPS;
@@ -176,24 +182,12 @@ namespace GlareEngine
 		enum DebugZoomLevel { EDebugZoomOff, EDebugZoom2x, EDebugZoom4x, EDebugZoom8x, EDebugZoom16x, EDebugZoomCount };
 		const char* DebugZoomLabels[] = { "Off", "2x Zoom", "4x Zoom", "8x Zoom", "16x Zoom" };
 		EnumVar DebugZoom("Graphics/Display/Magnify Pixels", EDebugZoomOff, EDebugZoomCount, DebugZoomLabels);
+
 	}
 
-
-
-	void DirectX12Graphics::Initialize(void)
+	void DirectX12Graphics::CreateD3DDevice()
 	{
-		assert(s_SwapChain1 == nullptr, "Graphics has already been initialized");
-
 		Microsoft::WRL::ComPtr<ID3D12Device> pDevice;
-
-#if _DEBUG
-		Microsoft::WRL::ComPtr<ID3D12Debug> debugInterface;
-		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface))))
-			debugInterface->EnableDebugLayer();
-		else
-			EngineLog::AddLog(L"WARNING:  Unable to enable D3D12 debug validation layer");
-#endif
-
 		// Obtain the DXGI factory
 		Microsoft::WRL::ComPtr<IDXGIFactory4> dxgiFactory;
 		ThrowIfFailed(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgiFactory)));
@@ -237,7 +231,25 @@ namespace GlareEngine
 			g_Device = pDevice.Detach();
 		}
 
+		//Swap Chain
+		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
+		swapChainDesc.Width = g_DisplayWidth;
+		swapChainDesc.Height = g_DisplayHeight;
+		swapChainDesc.Format = SwapChainFormat;
+		swapChainDesc.Scaling = DXGI_SCALING_NONE;
+		swapChainDesc.SampleDesc.Quality = 0;
+		swapChainDesc.SampleDesc.Count = 1;
+		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		swapChainDesc.BufferCount = SWAP_CHAIN_BUFFER_COUNT;
+		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
 
+		ThrowIfFailed(dxgiFactory->CreateSwapChainForHwnd(g_CommandManager.GetCommandQueue(), GameCore::g_hWnd, &swapChainDesc, nullptr, nullptr, &s_SwapChain1));
+
+	}
+
+	void DirectX12Graphics::CheckUAVFormatSupport()
+	{
 		// We like to do read-modify-write operations on UAVs during post processing.  To support that, we
 		// need to either have the hardware do typed UAV loads of R11G11B10_FLOAT or we need to manually
 		// decode an R32_UINT representation of the same buffer.  This code determines if we get the hardware
@@ -267,24 +279,10 @@ namespace GlareEngine
 				}
 			}
 		}
+	}
 
-		g_CommandManager.Create(g_Device);
-
-		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
-		swapChainDesc.Width = g_DisplayWidth;
-		swapChainDesc.Height = g_DisplayHeight;
-		swapChainDesc.Format = SwapChainFormat;
-		swapChainDesc.Scaling = DXGI_SCALING_NONE;
-		swapChainDesc.SampleDesc.Quality = 0;
-		swapChainDesc.SampleDesc.Count = 1;
-		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferCount = SWAP_CHAIN_BUFFER_COUNT;
-		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-
-		ThrowIfFailed(dxgiFactory->CreateSwapChainForHwnd(g_CommandManager.GetCommandQueue(), GameCore::g_hWnd, &swapChainDesc, nullptr, nullptr, &s_SwapChain1));
-
-
+	void DirectX12Graphics::CheckHDRSupport()
+	{
 		//检查是否支持HDR
 #if CONDITIONALLY_ENABLE_HDR_OUTPUT && defined(NTDDI_WIN10_RS2) && (NTDDI_VERSION >= NTDDI_WIN10_RS2)
 		{
@@ -307,7 +305,69 @@ namespace GlareEngine
 			}
 		}
 #endif
+	}
 
+	void DirectX12Graphics::InitializePersentPSO()
+	{
+		s_PresentRS.Reset(4, 2);
+		s_PresentRS[0].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2);
+		s_PresentRS[1].InitAsConstants(0, 6, D3D12_SHADER_VISIBILITY_ALL);
+		s_PresentRS[2].InitAsBufferSRV(2, D3D12_SHADER_VISIBILITY_PIXEL);
+		s_PresentRS[3].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1);
+		s_PresentRS.InitStaticSampler(0, SamplerLinearClampDesc);
+		s_PresentRS.InitStaticSampler(1, SamplerPointClampDesc);
+		s_PresentRS.Finalize(L"Present");
+
+		// Initialize PSOs
+		s_BlendUIPSO.SetRootSignature(s_PresentRS);
+		s_BlendUIPSO.SetRasterizerState(RasterizerTwoSided);
+		s_BlendUIPSO.SetBlendState(BlendPreMultiplied);
+		s_BlendUIPSO.SetDepthStencilState(DepthStateDisabled);
+		s_BlendUIPSO.SetSampleMask(0xFFFFFFFF);
+		s_BlendUIPSO.SetInputLayout(0, nullptr);
+		s_BlendUIPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+		s_BlendUIPSO.SetVertexShader(g_pScreenQuadVS, sizeof(g_pScreenQuadVS));
+		s_BlendUIPSO.SetPixelShader(g_pBufferCopyPS, sizeof(g_pBufferCopyPS));
+		s_BlendUIPSO.SetRenderTargetFormat(SwapChainFormat, DXGI_FORMAT_UNKNOWN);
+		s_BlendUIPSO.Finalize();
+
+		//Create SDR PSO
+		PresentSDRPS = s_BlendUIPSO;
+		PresentSDRPS.SetBlendState(BlendDisable);
+		PresentSDRPS.SetPixelShader(g_pPresentSDRPS, sizeof(g_pPresentSDRPS));
+		PresentSDRPS.Finalize();
+
+		//Create HDR PSO
+		PresentHDRPS = PresentSDRPS;
+		PresentHDRPS.SetPixelShader(g_pPresentHDRPS, sizeof(g_pPresentHDRPS));
+		DXGI_FORMAT SwapChainFormats[2] = { DXGI_FORMAT_R10G10B10A2_UNORM, DXGI_FORMAT_R10G10B10A2_UNORM };
+		PresentHDRPS.SetRenderTargetFormats(2, SwapChainFormats, DXGI_FORMAT_UNKNOWN);
+		PresentHDRPS.Finalize();
+
+	}
+
+
+	void DirectX12Graphics::Initialize(void)
+	{
+		assert(s_SwapChain1 == nullptr, "Graphics has already been initialized");
+
+#if _DEBUG
+		Microsoft::WRL::ComPtr<ID3D12Debug> debugInterface;
+		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface))))
+			debugInterface->EnableDebugLayer();
+		else
+			EngineLog::AddLog(L"WARNING:  Unable to enable D3D12 debug validation layer");
+#endif
+		//D3D Device
+		CreateD3DDevice();
+		//Check UAV Format Support
+		CheckUAVFormatSupport();
+		//Check HDR Support
+		CheckHDRSupport();
+
+		g_CommandManager.Create(g_Device);
+
+		
 		for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
 		{
 			ComPtr<ID3D12Resource> DisplayPlane;
@@ -315,12 +375,19 @@ namespace GlareEngine
 			g_DisplayBuffers[i].CreateFromSwapChain(L"Primary SwapChain Buffer", DisplayPlane.Detach());
 		}
 
-		// Common state was moved to GraphicsCommon.
+		// Common state 
 		InitializeAllCommonState();
+		//Initialize Persent PSO
+		InitializePersentPSO();
 
+		g_PreDisplayBuffer.Create(L"PreDisplay Buffer", g_DisplayWidth, g_DisplayHeight, 1, SwapChainFormat);
 
-
-
+		GPUTimeManager::Initialize(4096);
+		SetNativeResolution();
+		//TemporalEffects::Initialize();
+		//PostEffects::Initialize();
+		//SSAO::Initialize();
+		//ParticleEffects::Initialize(kMaxNativeWidth, kMaxNativeHeight);
 	}
 
 	void DirectX12Graphics::Resize(uint32_t width, uint32_t height)
