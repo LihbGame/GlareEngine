@@ -4,6 +4,7 @@
 #include "DepthBuffer.h"
 #include "GraphicsCore.h"
 #include "DescriptorHeap.h"
+#include "EngineProfiling.h"
 
 namespace GlareEngine
 {

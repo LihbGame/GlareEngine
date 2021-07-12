@@ -66,8 +66,8 @@ namespace GlareEngine
 
 		enum eResolution { E720p,E900p, E1080p, E1440p, E1800p, E2160p };
 
-		extern bool s_EnableVSync;
-		extern eResolution TargetResolution;
+		extern BoolVar s_EnableVSync;
+		extern EnumVar TargetResolution;
 		extern uint32_t g_DisplayWidth;
 		extern uint32_t g_DisplayHeight;
 	}

@@ -9,6 +9,12 @@
 #include "ColorBuffer.h"
 #include "GPUTimeManager.h"
 #include "EngineLog.h"
+#include "BufferManager.h"
+
+
+//Shaders
+#include "CompiledShaders/PresentSDRPS.h"
+
 
 // 该宏决定是否检测是否有 HDR 显示并启用 HDR10 输出。
 // 目前，在启用 HDR 显示的情况下，像素放大功能被破坏。
@@ -48,14 +54,13 @@ namespace GlareEngine
 
 	namespace DirectX12Graphics
 	{
-		void PreparePresentLDR();
-		void PreparePresentHDR();
-		void CompositeOverlays(GraphicsContext& Context);
-
 		void CreateD3DDevice();
 		void CheckUAVFormatSupport();
 		void CheckHDRSupport();
 		void InitializePersentPSO();
+
+		void PreparePresentLDR();
+		void PreparePresentHDR();
 
 		const uint32_t MaxNativeWidth = 3840;
 		const uint32_t MaxNativeHeight = 2160;
@@ -128,7 +133,7 @@ namespace GlareEngine
 
 			g_CommandManager.IdleGPU();
 
-			//resize render buffer
+			//Resize Render Buffer
 			InitializeRenderingBuffers(NativeWidth, NativeHeight);
 		}
 
@@ -160,29 +165,6 @@ namespace GlareEngine
 		GraphicsPSO s_BlendUIPSO;
 		GraphicsPSO PresentSDRPS;
 		GraphicsPSO PresentHDRPS;
-		GraphicsPSO MagnifyPixelsPS;
-		GraphicsPSO SharpeningUpsamplePS;
-		GraphicsPSO BicubicHorizontalUpsamplePS;
-		GraphicsPSO BicubicVerticalUpsamplePS;
-		GraphicsPSO BilinearUpsamplePS;
-
-		//Generate Mips
-		RootSignature g_GenerateMipsRS;
-		ComputePSO g_GenerateMipsLinearPSO[4];
-		ComputePSO g_GenerateMipsGammaPSO[4];
-
-		enum { EBilinear, EBicubic, ESharpening, EFilterCount };
-		const char* FilterLabels[] = { "Bilinear", "Bicubic", "Sharpening" };
-		EnumVar UpsampleFilter("Graphics/Display/Upsample Filter", EFilterCount - 1, EFilterCount, FilterLabels);
-		NumVar BicubicUpsampleWeight("Graphics/Display/Bicubic Filter Weight", -0.75f, -1.0f, -0.25f, 0.25f);
-		NumVar SharpeningSpread("Graphics/Display/Sharpness Sample Spread", 1.0f, 0.7f, 2.0f, 0.1f);
-		NumVar SharpeningRotation("Graphics/Display/Sharpness Sample Rotation", 45.0f, 0.0f, 90.0f, 15.0f);
-		NumVar SharpeningStrength("Graphics/Display/Sharpness Strength", 0.10f, 0.0f, 1.0f, 0.01f);
-
-		enum DebugZoomLevel { EDebugZoomOff, EDebugZoom2x, EDebugZoom4x, EDebugZoom8x, EDebugZoom16x, EDebugZoomCount };
-		const char* DebugZoomLabels[] = { "Off", "2x Zoom", "4x Zoom", "8x Zoom", "16x Zoom" };
-		EnumVar DebugZoom("Graphics/Display/Magnify Pixels", EDebugZoomOff, EDebugZoomCount, DebugZoomLabels);
-
 	}
 
 	void DirectX12Graphics::CreateD3DDevice()
@@ -339,11 +321,76 @@ namespace GlareEngine
 
 		//Create HDR PSO
 		PresentHDRPS = PresentSDRPS;
-		PresentHDRPS.SetPixelShader(g_pPresentHDRPS, sizeof(g_pPresentHDRPS));
-		DXGI_FORMAT SwapChainFormats[2] = { DXGI_FORMAT_R10G10B10A2_UNORM, DXGI_FORMAT_R10G10B10A2_UNORM };
-		PresentHDRPS.SetRenderTargetFormats(2, SwapChainFormats, DXGI_FORMAT_UNKNOWN);
-		PresentHDRPS.Finalize();
+		//PresentHDRPS.SetPixelShader(g_pPresentHDRPS, sizeof(g_pPresentHDRPS));
+		//DXGI_FORMAT SwapChainFormats[2] = { DXGI_FORMAT_R10G10B10A2_UNORM, DXGI_FORMAT_R10G10B10A2_UNORM };
+		//PresentHDRPS.SetRenderTargetFormats(2, SwapChainFormats, DXGI_FORMAT_UNKNOWN);
+		//PresentHDRPS.Finalize();
 
+	}
+
+	void DirectX12Graphics::PreparePresentLDR()
+	{
+		GraphicsContext& Context = GraphicsContext::Begin(L"Present");
+
+		// We're going to be reading these buffers to write to the swap chain buffer(s)
+		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+		Context.SetRootSignature(s_PresentRS);
+		Context.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		// Copy (and convert) the LDR buffer to the back buffer
+		Context.SetDynamicDescriptor(0, 0, g_SceneColorBuffer.GetSRV());
+
+		Context.SetPipelineState(PresentSDRPS);
+		Context.TransitionResource(g_DisplayBuffers[g_CurrentBuffer], D3D12_RESOURCE_STATE_RENDER_TARGET);
+		Context.SetRenderTarget(g_DisplayBuffers[g_CurrentBuffer].GetRTV());
+		Context.SetViewportAndScissor(0, 0, g_NativeWidth, g_NativeHeight);
+		Context.Draw(3);
+
+		Context.TransitionResource(g_DisplayBuffers[g_CurrentBuffer], D3D12_RESOURCE_STATE_PRESENT);
+
+		// Close the final context to be executed before frame present.
+		Context.Finish();
+	}
+
+	void DirectX12Graphics::PreparePresentHDR()
+	{
+		GraphicsContext& Context = GraphicsContext::Begin(L"Present");
+
+		// We're going to be reading these buffers to write to the swap chain buffer(s)
+		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		Context.TransitionResource(g_DisplayBuffers[g_CurrentBuffer], D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+		Context.SetRootSignature(s_PresentRS);
+		Context.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		Context.SetDynamicDescriptor(0, 0, g_SceneColorBuffer.GetSRV());
+
+		D3D12_CPU_DESCRIPTOR_HANDLE RTVs[] =
+		{
+			g_DisplayBuffers[g_CurrentBuffer].GetRTV()
+		};
+
+		Context.SetPipelineState(PresentHDRPS);
+		Context.SetRenderTargets(_countof(RTVs), RTVs);
+		Context.SetViewportAndScissor(0, 0, g_NativeWidth, g_NativeHeight);
+		struct Constants
+		{
+			float RcpDstWidth;
+			float RcpDstHeight;
+			float PaperWhite;
+			float MaxBrightness;
+			int32_t DebugMode;
+		};
+		Constants consts = { 1.0f / g_NativeWidth, 1.0f / g_NativeHeight,
+			(float)g_HDRPaperWhite, (float)g_MaxDisplayLuminance, (int32_t)HDRDebugMode };
+		Context.SetConstantArray(1, sizeof(Constants) / 4, (float*)&consts);
+		Context.Draw(3);
+
+		Context.TransitionResource(g_DisplayBuffers[g_CurrentBuffer], D3D12_RESOURCE_STATE_PRESENT);
+
+		// Close the final context to be executed before frame present.
+		Context.Finish();
 	}
 
 
@@ -377,7 +424,7 @@ namespace GlareEngine
 
 		// Common state 
 		InitializeAllCommonState();
-		//Initialize Persent PSO
+		//Initialize Present PSO
 		InitializePersentPSO();
 
 		g_PreDisplayBuffer.Create(L"PreDisplay Buffer", g_DisplayWidth, g_DisplayHeight, 1, SwapChainFormat);
@@ -523,12 +570,6 @@ namespace GlareEngine
 	{
 		return s_FrameTime == 0.0f ? 0.0f : 1.0f / s_FrameTime;
 	}
-
-
-
-
-
-
 
 }
 

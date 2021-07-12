@@ -156,6 +156,8 @@
     <ClInclude Include="EngineCore\Engine\Public\GameCore.h" />
     <ClInclude Include="EngineCore\Engine\Public\EngineProfiling.h" />
     <ClInclude Include="EngineCore\Engine\Public\EngineLog.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\BufferManager.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\ShadowBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -311,6 +313,24 @@
     <ClCompile Include="EngineCore\Engine\Private\EngineLog.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\BufferManager.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\CommandAllocatorPool.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\GraphicsCore.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\DescriptorHeap.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\ColorBuffer.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\PixelBuffer.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -339,9 +359,6 @@
     <None Include="EngineCore\Graphics\Private\SamplerManager.cpp">
       <Filter>MainSource</Filter>
     </None>
-    <None Include="EngineCore\Graphics\Private\GraphicsCore.cpp">
-      <Filter>MainSource</Filter>
-    </None>
     <None Include="EngineCore\Graphics\Public\GraphicsCore.h" />
     <None Include="EngineCore\Graphics\Public\SamplerManager.h" />
     <None Include="EngineCore\Graphics\Public\GPUBuffer.h" />
@@ -349,24 +366,12 @@
       <Filter>MainSource</Filter>
     </None>
     <None Include="EngineCore\Math\Functions.inl" />
-    <None Include="EngineCore\Graphics\Private\DescriptorHeap.cpp">
-      <Filter>MainSource</Filter>
-    </None>
     <None Include="EngineCore\Graphics\Public\Color.h" />
     <None Include="EngineCore\Graphics\Public\PixelBuffer.h" />
     <None Include="EngineCore\Graphics\Private\Color.cpp">
       <Filter>MainSource</Filter>
     </None>
-    <None Include="EngineCore\Graphics\Private\PixelBuffer.cpp">
-      <Filter>MainSource</Filter>
-    </None>
     <None Include="EngineCore\Graphics\Private\ReadbackBuffer.cpp">
-      <Filter>MainSource</Filter>
-    </None>
-    <None Include="EngineCore\Graphics\Private\CommandAllocatorPool.cpp">
-      <Filter>MainSource</Filter>
-    </None>
-    <None Include="EngineCore\Graphics\Private\ColorBuffer.cpp">
       <Filter>MainSource</Filter>
     </None>
     <None Include="EngineCore\Graphics\Private\DepthBuffer.cpp">
@@ -421,6 +426,9 @@
     <None Include="EngineCore\Graphics\Public\PipelineState.h" />
     <None Include="EngineCore\Graphics\Public\ReadbackBuffer.h" />
     <None Include="EngineCore\Graphics\Public\RootSignature.h" />
+    <None Include="EngineCore\Graphics\Private\ShadowBuffer.cpp">
+      <Filter>MainSource</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GlareEngine.rc">
@@ -439,5 +447,8 @@
     <Library Include="Dependences\lib\assimp-vc140-mt.lib" />
     <Library Include="Dependences\lib\assimp-vc142-mtd.lib" />
     <Library Include="Dependences\lib\IrrXMLd.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\Present\PresentSDRPS.hlsl" />
   </ItemGroup>
 </Project>

@@ -84,12 +84,12 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>.\EngineCore\Engine\Public;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\EngineCore\Graphics\Public;.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\RanderEffects\ShockWaveWater\Public;.\Dependences\include;.\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\EngineMain\Public;.\EngineCore\Public;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\$(Platform)\$(Configuration);.\EngineCore\Engine\Public;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\EngineCore\Graphics\Public;.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\RanderEffects\ShockWaveWater\Public;.\Dependences\include;.\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\EngineMain\Public;.\EngineCore\Public;$(IncludePath)</IncludePath>
     <LibraryPath>.\Dependences\lib\ozz\debug;.\Dependences\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>.\EngineCore\Engine\Public;.\EngineCore\Public;.\EngineCore\Graphics\Public;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\Core\Public;.\EngineMain\Public;.\PSO\Public;.\ShaderSource\Public;.\RanderEffects\HDRSky\Public;.\Water\Public;.\EngineEditor;.\;.\RanderEffects\Shadow\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Water\Public;.\Animation;.\Dependences\include;.\RanderEffects\ShockWaveWater\Public;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\$(Platform)\$(Configuration);.\EngineCore\Engine\Public;.\EngineCore\Public;.\EngineCore\Graphics\Public;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\Core\Public;.\EngineMain\Public;.\PSO\Public;.\ShaderSource\Public;.\RanderEffects\HDRSky\Public;.\Water\Public;.\EngineEditor;.\;.\RanderEffects\Shadow\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Water\Public;.\Animation;.\Dependences\include;.\RanderEffects\ShockWaveWater\Public;$(IncludePath)</IncludePath>
     <LibraryPath>.\Dependences\lib;.\Dependences\lib\ozz\release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -187,6 +187,8 @@
     <None Include="EngineCore\Graphics\Public\PipelineState.h" />
     <None Include="EngineCore\Graphics\Public\ReadbackBuffer.h" />
     <None Include="EngineCore\Graphics\Public\RootSignature.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\BufferManager.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\ShadowBuffer.h" />
     <ClInclude Include="EngineCore\Math\Common.h" />
     <ClInclude Include="EngineCore\Math\Hash.h" />
     <ClInclude Include="EngineCore\Math\Scalar.h" />
@@ -248,11 +250,11 @@
     <ClCompile Include="Animation\AnimEvaluator.cpp" />
     <ClCompile Include="Animation\ModelMesh.cpp" />
     <None Include="EngineCore\Graphics\Private\Color.cpp" />
-    <None Include="EngineCore\Graphics\Private\CommandAllocatorPool.cpp" />
-    <None Include="EngineCore\Graphics\Private\GraphicsCore.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\CommandAllocatorPool.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\GraphicsCore.cpp" />
     <None Include="EngineCore\Graphics\Private\SamplerManager.cpp" />
-    <None Include="EngineCore\Graphics\Private\DescriptorHeap.cpp" />
-    <None Include="EngineCore\Graphics\Private\ColorBuffer.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\DescriptorHeap.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\ColorBuffer.cpp" />
     <None Include="EngineCore\Graphics\Private\CommandListManager.cpp" />
     <ClCompile Include="DXR\D3D12RaytracingHelper.cpp" />
     <None Include="EngineCore\Graphics\Private\CommandSignature.cpp" />
@@ -263,8 +265,9 @@
     <ClCompile Include="EngineCore\Engine\Private\EngineLog.cpp" />
     <ClCompile Include="EngineCore\Engine\Private\GameCore.cpp" />
     <None Include="EngineCore\Graphics\Private\GPUTimeManager.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\BufferManager.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\DDSTextureLoader.cpp" />
-    <None Include="EngineCore\Graphics\Private\PixelBuffer.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\PixelBuffer.cpp" />
     <None Include="EngineCore\Graphics\Private\ReadbackBuffer.cpp" />
     <None Include="EngineCore\Graphics\Private\DepthBuffer.cpp" />
     <None Include="EngineCore\Graphics\Private\RootSignature.cpp">
@@ -275,6 +278,7 @@
     <None Include="EngineCore\Graphics\Private\DynamicUploadBuffer.cpp" />
     <None Include="EngineCore\Graphics\Private\LinearAllocator.cpp" />
     <None Include="EngineCore\Graphics\Private\GraphicsCommon.cpp" />
+    <None Include="EngineCore\Graphics\Private\ShadowBuffer.cpp" />
     <ClCompile Include="EngineCore\Private\L3DBaseApp.cpp" />
     <ClCompile Include="EngineCore\Private\L3DCamera.cpp" />
     <ClCompile Include="EngineCore\Private\L3DGameTimer.cpp" />
@@ -357,6 +361,23 @@
     <Library Include="Dependences\lib\ozz\debug\ozz_geometry_d.lib" />
     <Library Include="Dependences\lib\ozz\debug\ozz_options_d.lib" />
     <Library Include="Dependences\lib\ozz\debug\sample_framework_d.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\Present\PresentSDRPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">g_p%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">g_p%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
