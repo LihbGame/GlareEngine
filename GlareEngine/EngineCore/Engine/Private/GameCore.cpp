@@ -57,7 +57,7 @@ namespace GlareEngine
 			//PostEffects::Render();
 
 			DirectX12Graphics::Present();
-
+			
 			return !Game.IsDone();
 		}
 
@@ -118,6 +118,9 @@ namespace GlareEngine
 			ShowWindow(g_hWnd, SW_SHOW);
 			UpdateWindow(g_hWnd);
 			
+			
+			
+
 			do
 			{
 				MSG msg = {};
@@ -128,6 +131,7 @@ namespace GlareEngine
 				}
 				if (msg.message == WM_QUIT)
 					break;
+				
 			} while (UpdateApplication(app));    // Returns false to quit loop
 
 			DirectX12Graphics::Terminate();
@@ -140,6 +144,8 @@ namespace GlareEngine
 		//--------------------------------------------------------------------------------------
 		LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
+
+			
 			switch (message)
 			{
 			case WM_SIZE:

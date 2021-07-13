@@ -171,7 +171,7 @@ namespace GlareEngine
 			{
 				StaleParams ^= (1 << RootIndex);
 
-				uint32_t MaxSetHandle;
+				uint32_t MaxSetHandle = 0;
 				assert(TRUE == _BitScanReverse((unsigned long*)&MaxSetHandle, m_RootDescriptorTable[RootIndex].AssignedHandlesBitMap),
 					"Root entry marked as stale but has no stale descriptors");
 
@@ -197,7 +197,7 @@ namespace GlareEngine
 				RootIndices[StaleParamCount] = RootIndex;
 				StaleParams ^= (1 << RootIndex);
 
-				uint32_t MaxSetHandle;
+				uint32_t MaxSetHandle=0;
 				assert(TRUE == _BitScanReverse((unsigned long*)&MaxSetHandle, m_RootDescriptorTable[RootIndex].AssignedHandlesBitMap),
 					"Root entry marked as stale but has no stale descriptors");
 

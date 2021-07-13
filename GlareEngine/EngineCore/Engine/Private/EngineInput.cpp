@@ -199,15 +199,17 @@ namespace
 			assert(false, "Mouse CreateDevice failed.");
 		if (FAILED(s_Mouse->SetDataFormat(&c_dfDIMouse2)))
 			assert(false, "Mouse SetDataFormat failed.");
-		if (FAILED(s_Mouse->SetCooperativeLevel(GameCore::g_hWnd, DISCL_FOREGROUND | DISCL_EXCLUSIVE)))
+		if (FAILED(s_Mouse->SetCooperativeLevel(GameCore::g_hWnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE)))
 			assert(false, "Mouse SetCooperativeLevel failed.");
 //#endif
 		ZeroInputs();
+
+		
+		
 	}
 
 	void KMShutdown()
 	{
-//#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 		if (s_Keyboard)
 		{
 			s_Keyboard->Unacquire();
@@ -225,12 +227,10 @@ namespace
 			s_DI->Release();
 			s_DI = nullptr;
 		}
-//#endif
 	}
 
 	void KMUpdate()
 	{
-//#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 		HWND foreground = GetForegroundWindow();
 		bool visible = IsWindowVisible(foreground) != 0;
 
@@ -245,8 +245,9 @@ namespace
 			s_Mouse->GetDeviceState(sizeof(DIMOUSESTATE2), &s_MouseState);
 			s_Keyboard->Acquire();
 			s_Keyboard->GetDeviceState(sizeof(s_Keybuffer), s_Keybuffer);
+			
 		}
-//#endif
+
 	}
 
 
