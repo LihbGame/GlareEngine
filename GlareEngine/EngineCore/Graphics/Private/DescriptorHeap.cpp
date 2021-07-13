@@ -45,7 +45,7 @@ namespace GlareEngine
 			Desc.NodeMask = 1;
 
 			Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> pHeap;
-			assert(DirectX12Graphics::g_Device->CreateDescriptorHeap(&Desc, IID_PPV_ARGS(&pHeap)));
+			ThrowIfFailed(DirectX12Graphics::g_Device->CreateDescriptorHeap(&Desc, IID_PPV_ARGS(&pHeap)));
 			sm_DescriptorHeapPool.emplace_back(pHeap);
 			return pHeap.Get();
 		}

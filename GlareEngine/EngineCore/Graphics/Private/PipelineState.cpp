@@ -12,12 +12,18 @@ using Microsoft::WRL::ComPtr;
 
 static map< size_t, ComPtr<ID3D12PipelineState> > s_GraphicsPSOHashMap;
 static map< size_t, ComPtr<ID3D12PipelineState> > s_ComputePSOHashMap;
-
-void PSO::DestroyAll(void)
+namespace GlareEngine
 {
-	s_GraphicsPSOHashMap.clear();
-	s_ComputePSOHashMap.clear();
+	namespace DirectX12Graphics
+	{
+		void PSO::DestroyAll(void)
+		{
+			s_GraphicsPSOHashMap.clear();
+			s_ComputePSOHashMap.clear();
+		}
+	}
 }
+
 
 GlareEngine::DirectX12Graphics::GraphicsPSO::GraphicsPSO()
 {

@@ -331,6 +331,48 @@
     <ClCompile Include="EngineCore\Graphics\Private\PixelBuffer.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\PipelineState.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\RootSignature.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\GraphicsCommon.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\DynamicDescriptorHeap.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\CommandListManager.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\CommandContext.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\GPUTimeManager.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\LinearAllocator.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\Private\EngineProfiling.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\DepthBuffer.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\ShadowBuffer.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\ReadbackBuffer.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\SamplerManager.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\CommandSignature.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -356,9 +398,6 @@
       <Filter>MainSource</Filter>
     </None>
     <None Include="RanderEffects\ParticleSystem\Public\ParticleSystem.h" />
-    <None Include="EngineCore\Graphics\Private\SamplerManager.cpp">
-      <Filter>MainSource</Filter>
-    </None>
     <None Include="EngineCore\Graphics\Public\GraphicsCore.h" />
     <None Include="EngineCore\Graphics\Public\SamplerManager.h" />
     <None Include="EngineCore\Graphics\Public\GPUBuffer.h" />
@@ -371,43 +410,7 @@
     <None Include="EngineCore\Graphics\Private\Color.cpp">
       <Filter>MainSource</Filter>
     </None>
-    <None Include="EngineCore\Graphics\Private\ReadbackBuffer.cpp">
-      <Filter>MainSource</Filter>
-    </None>
-    <None Include="EngineCore\Graphics\Private\DepthBuffer.cpp">
-      <Filter>MainSource</Filter>
-    </None>
-    <None Include="EngineCore\Graphics\Private\RootSignature.cpp">
-      <Filter>MainSource</Filter>
-    </None>
-    <None Include="EngineCore\Graphics\Private\PipelineState.cpp">
-      <Filter>MainSource</Filter>
-    </None>
-    <None Include="EngineCore\Graphics\Private\DynamicDescriptorHeap.cpp">
-      <Filter>MainSource</Filter>
-    </None>
-    <None Include="EngineCore\Graphics\Private\CommandListManager.cpp">
-      <Filter>MainSource</Filter>
-    </None>
-    <None Include="EngineCore\Graphics\Private\CommandSignature.cpp">
-      <Filter>MainSource</Filter>
-    </None>
     <None Include="EngineCore\Graphics\Private\DynamicUploadBuffer.cpp">
-      <Filter>MainSource</Filter>
-    </None>
-    <None Include="EngineCore\Graphics\Private\LinearAllocator.cpp">
-      <Filter>MainSource</Filter>
-    </None>
-    <None Include="EngineCore\Graphics\Private\GraphicsCommon.cpp">
-      <Filter>MainSource</Filter>
-    </None>
-    <None Include="EngineCore\Graphics\Private\CommandContext.cpp">
-      <Filter>MainSource</Filter>
-    </None>
-    <None Include="EngineCore\Graphics\Private\GPUTimeManager.cpp">
-      <Filter>MainSource</Filter>
-    </None>
-    <None Include="EngineCore\Engine\Private\EngineProfiling.cpp">
       <Filter>MainSource</Filter>
     </None>
     <None Include="EngineCore\Graphics\Public\GPUTimeManager.h" />
@@ -426,9 +429,6 @@
     <None Include="EngineCore\Graphics\Public\PipelineState.h" />
     <None Include="EngineCore\Graphics\Public\ReadbackBuffer.h" />
     <None Include="EngineCore\Graphics\Public\RootSignature.h" />
-    <None Include="EngineCore\Graphics\Private\ShadowBuffer.cpp">
-      <Filter>MainSource</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GlareEngine.rc">
@@ -450,5 +450,7 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Present\PresentSDRPS.hlsl" />
+    <FxCompile Include="Shaders\Misc\ScreenQuadVS.hlsl" />
+    <FxCompile Include="Shaders\Present\BufferCopyPS.hlsl" />
   </ItemGroup>
 </Project>

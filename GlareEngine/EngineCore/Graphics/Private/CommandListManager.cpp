@@ -28,6 +28,26 @@ GlareEngine::DirectX12Graphics::CommandQueue::~CommandQueue()
 
 void GlareEngine::DirectX12Graphics::CommandQueue::Create(ID3D12Device* pDevice)
 {
+	assert(pDevice != nullptr);
+	assert(!IsReady());
+	assert(m_AllocatorPool.Size() == 0);
+
+	D3D12_COMMAND_QUEUE_DESC QueueDesc = {};
+	QueueDesc.Type = m_Type;
+	QueueDesc.NodeMask = 1;
+	pDevice->CreateCommandQueue(&QueueDesc, IID_PPV_ARGS(&m_CommandQueue));
+	m_CommandQueue->SetName(L"CommandListManager::m_CommandQueue");
+
+	ThrowIfFailed(pDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_pFence)));
+	m_pFence->SetName(L"CommandListManager::m_pFence");
+	m_pFence->Signal((uint64_t)m_Type << 56);
+
+	m_FenceEventHandle = CreateEvent(nullptr, false, false, nullptr);
+	assert(m_FenceEventHandle != NULL);
+
+	m_AllocatorPool.Create(pDevice);
+
+	assert(IsReady());
 }
 
 void GlareEngine::DirectX12Graphics::CommandQueue::Shutdown()

@@ -252,33 +252,33 @@
     <None Include="EngineCore\Graphics\Private\Color.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\CommandAllocatorPool.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\GraphicsCore.cpp" />
-    <None Include="EngineCore\Graphics\Private\SamplerManager.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\SamplerManager.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\DescriptorHeap.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\ColorBuffer.cpp" />
-    <None Include="EngineCore\Graphics\Private\CommandListManager.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\CommandListManager.cpp" />
     <ClCompile Include="DXR\D3D12RaytracingHelper.cpp" />
-    <None Include="EngineCore\Graphics\Private\CommandSignature.cpp" />
-    <None Include="EngineCore\Graphics\Private\CommandContext.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\CommandSignature.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\CommandContext.cpp" />
     <ClCompile Include="EngineCore\Engine\Private\EngineAdjust.cpp" />
     <ClCompile Include="EngineCore\Engine\Private\EngineInput.cpp" />
-    <None Include="EngineCore\Engine\Private\EngineProfiling.cpp" />
+    <ClCompile Include="EngineCore\Engine\Private\EngineProfiling.cpp" />
     <ClCompile Include="EngineCore\Engine\Private\EngineLog.cpp" />
     <ClCompile Include="EngineCore\Engine\Private\GameCore.cpp" />
-    <None Include="EngineCore\Graphics\Private\GPUTimeManager.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\GPUTimeManager.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\BufferManager.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\DDSTextureLoader.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\PixelBuffer.cpp" />
-    <None Include="EngineCore\Graphics\Private\ReadbackBuffer.cpp" />
-    <None Include="EngineCore\Graphics\Private\DepthBuffer.cpp" />
-    <None Include="EngineCore\Graphics\Private\RootSignature.cpp">
+    <ClCompile Include="EngineCore\Graphics\Private\ReadbackBuffer.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\DepthBuffer.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\RootSignature.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </None>
-    <None Include="EngineCore\Graphics\Private\PipelineState.cpp" />
-    <None Include="EngineCore\Graphics\Private\DynamicDescriptorHeap.cpp" />
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\PipelineState.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\DynamicDescriptorHeap.cpp" />
     <None Include="EngineCore\Graphics\Private\DynamicUploadBuffer.cpp" />
-    <None Include="EngineCore\Graphics\Private\LinearAllocator.cpp" />
-    <None Include="EngineCore\Graphics\Private\GraphicsCommon.cpp" />
-    <None Include="EngineCore\Graphics\Private\ShadowBuffer.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\LinearAllocator.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\GraphicsCommon.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\ShadowBuffer.cpp" />
     <ClCompile Include="EngineCore\Private\L3DBaseApp.cpp" />
     <ClCompile Include="EngineCore\Private\L3DCamera.cpp" />
     <ClCompile Include="EngineCore\Private\L3DGameTimer.cpp" />
@@ -363,6 +363,36 @@
     <Library Include="Dependences\lib\ozz\debug\sample_framework_d.lib" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Shaders\Misc\ScreenQuadVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.0</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">g_p%(Filename)</VariableName>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">g_p%(Filename)</VariableName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
+      <FileType>Document</FileType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Qembed_debug %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="Shaders\Present\BufferCopyPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">g_p%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Qembed_debug %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
     <FxCompile Include="Shaders\Present\PresentSDRPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
@@ -372,11 +402,12 @@
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\CompiledShaders\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.0</ShaderModel>
       <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">g_p%(Filename)</VariableName>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\CompiledShaders\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -141,6 +141,12 @@ namespace GlareEngine
 			HandleCache.CopyAndBindStaleTables(m_DescriptorType, m_DescriptorSize, Allocate(NeededSize), CmdList, SetFunc);
 		}
 
+		void DynamicDescriptorHeap::UnbindAllValid(void)
+		{
+			m_GraphicsHandleCache.UnbindAllValid();
+			m_ComputeHandleCache.UnbindAllValid();
+		}
+
 		void DynamicDescriptorHeap::DescriptorHandleCache::UnbindAllValid(void)
 		{
 			m_StaleRootParamsBitMap = 0;

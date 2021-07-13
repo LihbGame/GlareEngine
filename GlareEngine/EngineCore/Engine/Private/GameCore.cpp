@@ -29,9 +29,9 @@ namespace GlareEngine
 
 		void InitializeApplication(GameApp& Game)
 		{
-			//DirectX12Graphics::Initialize();
+			DirectX12Graphics::Initialize();
 			EngineInput::Initialize();
-			//EngineAdjust::Initialize();
+			EngineAdjust::Initialize();
 
 			Game.Startup();
 		}
@@ -44,19 +44,19 @@ namespace GlareEngine
 
 		bool UpdateApplication(GameApp& Game)
 		{
-			//EngineProfiling::Update();
+			EngineProfiling::Update();
 
-			//float DeltaTime = DirectX12Graphics::GetFrameTime();
+			float DeltaTime = DirectX12Graphics::GetFrameTime();
 
-			//EngineInput::Update(DeltaTime);
-			//EngineAdjust::Update(DeltaTime);
+			EngineInput::Update(DeltaTime);
+			EngineAdjust::Update(DeltaTime);
 
-			//Game.Update(DeltaTime);
-			//Game.RenderScene();
+			Game.Update(DeltaTime);
+			Game.RenderScene();
 			//Game.RenderUI();
 			//PostEffects::Render();
 
-			//DirectX12Graphics::Present();
+			DirectX12Graphics::Present();
 
 			return !Game.IsDone();
 		}
@@ -130,9 +130,9 @@ namespace GlareEngine
 					break;
 			} while (UpdateApplication(app));    // Returns false to quit loop
 
-			//DirectX12Graphics::Terminate();
+			DirectX12Graphics::Terminate();
 			TerminateApplication(app);
-			//DirectX12Graphics::Shutdown();
+			DirectX12Graphics::Shutdown();
 		}
 
 		//--------------------------------------------------------------------------------------
@@ -162,4 +162,4 @@ namespace GlareEngine
 }
 using namespace GlareEngine::GameCore;
 
-//CREATE_APPLICATION(GameApp);
+CREATE_APPLICATION(GameApp);

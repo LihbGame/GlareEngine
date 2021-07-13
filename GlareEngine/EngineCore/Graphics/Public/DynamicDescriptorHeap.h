@@ -12,7 +12,7 @@ namespace GlareEngine
 	{
 		extern ID3D12Device* g_Device;
 
-
+		class CommandContext;
 		//这个类是一个动态生成描述符表的线性分配系统。 
 		//它在内部缓存CPU描述符句柄，这样当当前堆中没有足够的空间时，
 		//可以将必要的描述符重新复制到新的堆中。

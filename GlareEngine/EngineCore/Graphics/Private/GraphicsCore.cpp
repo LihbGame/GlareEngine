@@ -14,7 +14,8 @@
 
 //Shaders
 #include "CompiledShaders/PresentSDRPS.h"
-
+#include "CompiledShaders/ScreenQuadVS.h"
+#include "CompiledShaders/BufferCopyPS.h"
 
 // 该宏决定是否检测是否有 HDR 显示并启用 HDR10 输出。
 // 目前，在启用 HDR 显示的情况下，像素放大功能被破坏。
@@ -162,7 +163,7 @@ namespace GlareEngine
 		};
 
 		RootSignature s_PresentRS;
-		GraphicsPSO s_BlendUIPSO;
+		GraphicsPSO s_PresentPSO;
 		GraphicsPSO PresentSDRPS;
 		GraphicsPSO PresentHDRPS;
 	}
@@ -212,6 +213,8 @@ namespace GlareEngine
 			ThrowIfFailed(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&pDevice)));
 			g_Device = pDevice.Detach();
 		}
+
+		g_CommandManager.Create(g_Device);
 
 		//Swap Chain
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
@@ -300,21 +303,21 @@ namespace GlareEngine
 		s_PresentRS.InitStaticSampler(1, SamplerPointClampDesc);
 		s_PresentRS.Finalize(L"Present");
 
-		// Initialize PSOs
-		s_BlendUIPSO.SetRootSignature(s_PresentRS);
-		s_BlendUIPSO.SetRasterizerState(RasterizerTwoSided);
-		s_BlendUIPSO.SetBlendState(BlendPreMultiplied);
-		s_BlendUIPSO.SetDepthStencilState(DepthStateDisabled);
-		s_BlendUIPSO.SetSampleMask(0xFFFFFFFF);
-		s_BlendUIPSO.SetInputLayout(0, nullptr);
-		s_BlendUIPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-		s_BlendUIPSO.SetVertexShader(g_pScreenQuadVS, sizeof(g_pScreenQuadVS));
-		s_BlendUIPSO.SetPixelShader(g_pBufferCopyPS, sizeof(g_pBufferCopyPS));
-		s_BlendUIPSO.SetRenderTargetFormat(SwapChainFormat, DXGI_FORMAT_UNKNOWN);
-		s_BlendUIPSO.Finalize();
+		// Initialize Present PSOs
+		s_PresentPSO.SetRootSignature(s_PresentRS);
+		s_PresentPSO.SetRasterizerState(RasterizerTwoSided);
+		s_PresentPSO.SetBlendState(BlendPreMultiplied);
+		s_PresentPSO.SetDepthStencilState(DepthStateDisabled);
+		s_PresentPSO.SetSampleMask(0xFFFFFFFF);
+		s_PresentPSO.SetInputLayout(0, nullptr);
+		s_PresentPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+		s_PresentPSO.SetVertexShader(g_pScreenQuadVS, sizeof(g_pScreenQuadVS));
+		s_PresentPSO.SetPixelShader(g_pBufferCopyPS, sizeof(g_pBufferCopyPS));
+		s_PresentPSO.SetRenderTargetFormat(SwapChainFormat, DXGI_FORMAT_UNKNOWN);
+		s_PresentPSO.Finalize();
 
 		//Create SDR PSO
-		PresentSDRPS = s_BlendUIPSO;
+		PresentSDRPS = s_PresentPSO;
 		PresentSDRPS.SetBlendState(BlendDisable);
 		PresentSDRPS.SetPixelShader(g_pPresentSDRPS, sizeof(g_pPresentSDRPS));
 		PresentSDRPS.Finalize();
@@ -412,8 +415,6 @@ namespace GlareEngine
 		//Check HDR Support
 		CheckHDRSupport();
 
-		g_CommandManager.Create(g_Device);
-
 		
 		for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
 		{
@@ -504,8 +505,6 @@ namespace GlareEngine
 
 		for (UINT i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
 			g_DisplayBuffers[i].Destroy();
-
-		g_PreDisplayBuffer.Destroy();
 
 #if defined(_DEBUG)
 		ID3D12DebugDevice* debugInterface;

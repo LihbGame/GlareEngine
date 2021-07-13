@@ -13,7 +13,7 @@ namespace GlareEngine
 		//ColorBuffer g_OverlayBuffer;
 		//ColorBuffer g_HorizontalBuffer;
 
-		//ShadowBuffer g_ShadowBuffer;
+		ShadowBuffer g_ShadowBuffer;
 
 		//ColorBuffer g_SSAOFullScreen(Color(1.0f, 1.0f, 1.0f));
 		//ColorBuffer g_LinearDepth[2];
