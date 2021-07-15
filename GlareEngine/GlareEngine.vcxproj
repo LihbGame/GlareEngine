@@ -244,6 +244,8 @@
     <ClInclude Include="ShaderSource\Public\SimpleGeometryShadowMapShader.h" />
     <ClInclude Include="RanderEffects\Water\Public\Waves.h" />
     <ClInclude Include="ShaderSource\Public\WaterRefractionMaskShader.h" />
+    <None Include="Shaders\Misc\ColorSpaceUtility.hlsli" />
+    <None Include="Shaders\Misc\ShaderUtility.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animation\Animations.cpp" />
@@ -413,6 +415,9 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ObjectFileOutput>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\Shaders\Misc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\Shaders\Misc</AdditionalIncludeDirectories>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Qembed_debug %(AdditionalOptions)</AdditionalOptions>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -203,9 +203,6 @@ namespace
 			assert(false, "Mouse SetCooperativeLevel failed.");
 //#endif
 		ZeroInputs();
-
-		
-		
 	}
 
 	void KMShutdown()

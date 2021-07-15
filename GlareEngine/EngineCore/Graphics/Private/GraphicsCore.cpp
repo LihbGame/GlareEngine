@@ -319,7 +319,7 @@ namespace GlareEngine
 		//Create SDR PSO
 		PresentSDRPS = s_PresentPSO;
 		PresentSDRPS.SetBlendState(BlendDisable);
-		//PresentSDRPS.SetPixelShader(g_pPresentSDRPS, sizeof(g_pPresentSDRPS));
+		PresentSDRPS.SetPixelShader(g_pPresentSDRPS, sizeof(g_pPresentSDRPS));
 		PresentSDRPS.Finalize();
 
 		//Create HDR PSO

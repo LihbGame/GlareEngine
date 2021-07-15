@@ -13,6 +13,7 @@ namespace GlareEngine
 			Color() : m_value(g_XMOne) {}
 			Color(FXMVECTOR vec);
 			Color(const XMVECTORF32& vec);
+			Color(const Color& vec);
 			Color(float r, float g, float b, float a = 1.0f);
 			Color(uint16_t r, uint16_t g, uint16_t b, uint16_t a = 255, uint16_t bitDepth = 8);
 			explicit Color(uint32_t rgbaLittleEndian);
@@ -70,6 +71,11 @@ using namespace GlareEngine::DirectX12Graphics;
 	inline Color::Color(const XMVECTORF32& vec)
 	{
 		m_value = vec;
+	}
+
+	inline Color::Color(const Color& vec)
+	{
+		this->m_value = vec.m_value;
 	}
 
 	inline Color::Color(float r, float g, float b, float a)

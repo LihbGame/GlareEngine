@@ -35,6 +35,7 @@ namespace GlareEngine
 			const D3D12_CPU_DESCRIPTOR_HANDLE& GetUAV(void) const { return m_UAVHandle[0]; }
 
 			void SetClearColor(Color ClearColor) { m_ClearColor = ClearColor; }
+			
 
 			void SetMsaaMode(uint32_t NumColorSamples, uint32_t NumCoverageSamples)
 			{

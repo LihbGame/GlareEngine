@@ -429,6 +429,8 @@
     <None Include="EngineCore\Graphics\Public\PipelineState.h" />
     <None Include="EngineCore\Graphics\Public\ReadbackBuffer.h" />
     <None Include="EngineCore\Graphics\Public\RootSignature.h" />
+    <None Include="Shaders\Misc\ShaderUtility.hlsli" />
+    <None Include="Shaders\Misc\ColorSpaceUtility.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GlareEngine.rc">

@@ -54,6 +54,7 @@ namespace GlareEngine
 			CreateDerivedViews(DirectX12Graphics::g_Device, Format, ArrayCount, 1);
 		}
 
+
 		void ColorBuffer::GenerateMipMaps(CommandContext& Context)
 		{
 			//if (m_NumMipMaps == 0)

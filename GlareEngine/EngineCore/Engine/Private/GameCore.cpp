@@ -118,9 +118,6 @@ namespace GlareEngine
 			ShowWindow(g_hWnd, SW_SHOW);
 			UpdateWindow(g_hWnd);
 			
-			
-			
-
 			do
 			{
 				MSG msg = {};
@@ -134,8 +131,8 @@ namespace GlareEngine
 				
 			} while (UpdateApplication(app));    // Returns false to quit loop
 
-			DirectX12Graphics::Terminate();
 			TerminateApplication(app);
+			DirectX12Graphics::Terminate();
 			DirectX12Graphics::Shutdown();
 		}
 
@@ -154,6 +151,7 @@ namespace GlareEngine
 
 			case WM_DESTROY:
 				PostQuitMessage(0);
+				exit(0);
 				break;
 
 			default:
