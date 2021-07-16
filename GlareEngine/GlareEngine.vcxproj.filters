@@ -390,9 +390,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini" />
-    <None Include="Dependences\lib\assimp.dll" />
-    <None Include="Dependences\lib\assimp-vc140-mt.dll" />
-    <None Include="Dependences\lib\assimp-vc142-mtd.pdb" />
     <None Include="packages.config" />
     <None Include="RanderEffects\ParticleSystem\Private\ParticleSystem.cpp">
       <Filter>MainSource</Filter>
@@ -445,10 +442,7 @@
     <Library Include="Dependences\lib\ozz\debug\ozz_base_d.lib" />
     <Library Include="Dependences\lib\ozz\debug\ozz_geometry_d.lib" />
     <Library Include="Dependences\lib\ozz\debug\ozz_options_d.lib" />
-    <Library Include="Dependences\lib\assimp.lib" />
-    <Library Include="Dependences\lib\assimp-vc140-mt.lib" />
     <Library Include="Dependences\lib\assimp-vc142-mtd.lib" />
-    <Library Include="Dependences\lib\IrrXMLd.lib" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Present\PresentSDRPS.hlsl" />

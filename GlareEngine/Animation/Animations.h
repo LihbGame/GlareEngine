@@ -1,9 +1,6 @@
 #pragma once
 //assimp head
 #include "AnimEvaluator.h"
-#include <assimp\Importer.hpp>
-#include <assimp\scene.h>
-#include <assimp\postprocess.h>
 #include "L3DUtil.h"
 
 

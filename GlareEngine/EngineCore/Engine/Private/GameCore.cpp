@@ -166,4 +166,4 @@ namespace GlareEngine
 }
 using namespace GlareEngine::GameCore;
 
-CREATE_APPLICATION(GameApp);
+//CREATE_APPLICATION(GameApp);
