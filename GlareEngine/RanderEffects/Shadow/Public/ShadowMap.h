@@ -1,13 +1,13 @@
 #pragma once
 
-#include "L3DUtil.h"
+#include "EngineUtility.h"
 #include "L3DGameTimer.h"
-class L3DTextureManage;
+class TextureManage;
 class ShadowMap
 {
 public:
 	ShadowMap(ID3D12Device* device,
-		UINT width, UINT height, L3DTextureManage* TextureManage);
+		UINT width, UINT height, TextureManage* TextureManage);
 
 	ShadowMap(const ShadowMap& rhs) = delete;
 	ShadowMap& operator=(const ShadowMap& rhs) = delete;
@@ -81,7 +81,7 @@ public:
 	//旋转后光的方向
 	XMFLOAT3 mRotatedLightDirections[3];
 
-	L3DTextureManage* pTextureManage = nullptr;
+	TextureManage* pTextureManage = nullptr;
 
 	int mShadowMapIndex;
 };

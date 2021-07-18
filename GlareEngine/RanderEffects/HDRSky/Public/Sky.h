@@ -1,12 +1,12 @@
 #pragma once
-#include "L3DUtil.h"
-class L3DTextureManage;
+#include "EngineUtility.h"
+class TextureManage;
 class Sky
 {
 public:
 	Sky(ID3D12Device* md3dDevice, ID3D12GraphicsCommandList* CommandList,
 		float radius,int sliceCount,int stackCount, 
-		L3DTextureManage* TextureManage);
+		TextureManage* TextureManage);
 	~Sky();
 
 	void BuildSkyMesh();
@@ -21,7 +21,7 @@ private:
 
 	ID3D12Device* md3dDevice;
 	ID3D12GraphicsCommandList* mCommandList;
-	L3DTextureManage* pTextureManage = nullptr;
+	TextureManage* pTextureManage = nullptr;
 	float mRadius;
 	int mSliceCount;
 	int mStackCount;

@@ -1,11 +1,11 @@
 #include "Grass.h"
 #include "L3DVertex.h"
-#include "L3DTextureManage.h"
+#include "TextureManage.h"
 #include "L3DMaterial.h"
 
 Grass::Grass(ID3D12Device* device, 
 	ID3D12GraphicsCommandList* CommandList,
-	L3DTextureManage* TextureManage,
+	TextureManage* TextureManage,
 	float GrassWidth, float GrassDepth, 
 	int VertRows, int VertCols)
 :mDevice(device),
@@ -58,7 +58,7 @@ void Grass::BuildGrassVB()
 	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
 
 
-	geo->VertexBufferGPU = L3DUtil::CreateDefaultBuffer(mDevice,
+	geo->VertexBufferGPU = EngineUtility::CreateDefaultBuffer(mDevice,
 		mCommandList, vertices.data(), vbByteSize, geo->VertexBufferUploader);
 
 	

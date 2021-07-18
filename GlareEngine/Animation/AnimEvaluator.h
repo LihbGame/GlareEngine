@@ -5,7 +5,7 @@
 #include <assimp\scene.h>
 #include <assimp\postprocess.h>
   
-   
+    
 //从一组动画轨道计算给定时间的转换。不直接用，最好使用AnimPlayer类。
 class AnimEvaluator {
 public:

@@ -2,9 +2,9 @@
 #include "L3DGeometryGenerator.h"
 #include "L3DVertex.h"
 #include "L3DMaterial.h"
-#include "L3DTextureManage.h"
+#include "TextureManage.h"
 using namespace DirectX;
-Sky::Sky(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList,float radius, int sliceCount, int stackCount, L3DTextureManage* TextureManage)
+Sky::Sky(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList,float radius, int sliceCount, int stackCount, TextureManage* TextureManage)
 :md3dDevice(d3dDevice),
 mCommandList(CommandList),
 mRadius(radius),
@@ -43,10 +43,10 @@ void Sky::BuildSkyMesh()
 	ThrowIfFailed(D3DCreateBlob(ibByteSize, &mSkyMesh->IndexBufferCPU));
 	CopyMemory(mSkyMesh->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 	//GPU Buffer
-	mSkyMesh->VertexBufferGPU = L3DUtil::CreateDefaultBuffer(md3dDevice,
+	mSkyMesh->VertexBufferGPU = EngineUtility::CreateDefaultBuffer(md3dDevice,
 		mCommandList, vertices.data(), vbByteSize, mSkyMesh->VertexBufferUploader);
 
-	mSkyMesh->IndexBufferGPU = L3DUtil::CreateDefaultBuffer(md3dDevice,
+	mSkyMesh->IndexBufferGPU = EngineUtility::CreateDefaultBuffer(md3dDevice,
 		mCommandList, indices.data(), ibByteSize, mSkyMesh->IndexBufferUploader);
 
 	mSkyMesh->VertexByteStride = sizeof(L3DVertice::Pos);

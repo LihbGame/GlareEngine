@@ -9,23 +9,23 @@ mDSShaderPath(DSShaderPath)
     //vs shader
     if (mVSShaderPath != L"")
     {
-        mVSShaders = L3DUtil::CompileShader(mVSShaderPath, defines, "VS", "vs_5_1");
+        mVSShaders = EngineUtility::CompileShader(mVSShaderPath, defines, "VS", "vs_5_1");
     }
     if (mPSShaderPath != L"")
     {
-        mPSShaders = L3DUtil::CompileShader(mPSShaderPath, defines, "PS", "ps_5_1");
+        mPSShaders = EngineUtility::CompileShader(mPSShaderPath, defines, "PS", "ps_5_1");
     }
     if (mGSShaderPath != L"")
     {
-        mGSShaders = L3DUtil::CompileShader(mGSShaderPath, defines, "GS", "gs_5_1");
+        mGSShaders = EngineUtility::CompileShader(mGSShaderPath, defines, "GS", "gs_5_1");
     }
 	if (mHSShaderPath != L"")
 	{
-		mHSShaders = L3DUtil::CompileShader(mHSShaderPath, defines, "HS", "hs_5_1");
+		mHSShaders = EngineUtility::CompileShader(mHSShaderPath, defines, "HS", "hs_5_1");
 	}
 	if (mDSShaderPath != L"")
 	{
-		mDSShaders = L3DUtil::CompileShader(mDSShaderPath, defines, "DS", "ds_5_1");
+		mDSShaders = EngineUtility::CompileShader(mDSShaderPath, defines, "DS", "ds_5_1");
 	}
 }
 

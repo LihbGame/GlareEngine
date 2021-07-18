@@ -1,11 +1,11 @@
 #pragma once
-#include "L3DUtil.h"
+#include "EngineUtility.h"
 #include "PipelineState.h"
 #include "DescriptorHeap.h"
 #include "RootSignature.h"
 #include "SamplerManager.h"
 #include "GraphicsCommon.h"
-
+#include "TextureManage.h"
 
 
 namespace GlareEngine
@@ -21,6 +21,7 @@ namespace GlareEngine
 		class ColorBuffer;
 		class DepthBuffer;
 		class GraphicsPSO;
+		class TextureManage;
 
 		void Initialize(void);
 		void Resize(uint32_t width, uint32_t height);
@@ -45,6 +46,10 @@ namespace GlareEngine
 		extern ID3D12Device* g_Device;
 		extern CommandListManager g_CommandManager;
 		extern ContextManager g_ContextManager;
+
+		//Core Features
+		extern TextureManage g_TextureManager;
+
 
 		//FEATURE LEVE 
 		extern D3D_FEATURE_LEVEL g_D3DFeatureLevel;

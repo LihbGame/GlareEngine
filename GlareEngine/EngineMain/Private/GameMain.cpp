@@ -44,9 +44,9 @@ GameApp::GameApp(HINSTANCE hInstance)
 {
 	transforms.resize(96);
 
-	mObjCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
-	mSkinnedCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(SkinnedConstants));
-	mTerrainCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(TerrainConstants));
+	mObjCBByteSize = EngineUtility::CalcConstantBufferByteSize(sizeof(ObjectConstants));
+	mSkinnedCBByteSize = EngineUtility::CalcConstantBufferByteSize(sizeof(SkinnedConstants));
+	mTerrainCBByteSize = EngineUtility::CalcConstantBufferByteSize(sizeof(TerrainConstants));
 
 }
 
@@ -79,7 +79,7 @@ bool GameApp::Initialize()
 	// 获取此堆类型中描述符的增量大小。 这是特定于硬件的，因此我们必须查询此信息。
 	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	//texture manage
-	mTextureManage = std::make_unique<L3DTextureManage>(md3dDevice.Get(), mCommandList.Get(),mCbvSrvDescriptorSize);
+	mTextureManage = std::make_unique<TextureManage>(md3dDevice.Get(), mCommandList.Get(),mCbvSrvDescriptorSize);
 	//pso init
 	mPSOs = std::make_unique<PSO>();
 	//wave :not use
@@ -910,10 +910,10 @@ void GameApp::BuildLandGeometry()
 	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
 	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 
-	geo->VertexBufferGPU = L3DUtil::CreateDefaultBuffer(md3dDevice.Get(),
+	geo->VertexBufferGPU = EngineUtility::CreateDefaultBuffer(md3dDevice.Get(),
 		mCommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader);
 
-	geo->IndexBufferGPU = L3DUtil::CreateDefaultBuffer(md3dDevice.Get(),
+	geo->IndexBufferGPU = EngineUtility::CreateDefaultBuffer(md3dDevice.Get(),
 		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
 
 	geo->VertexByteStride = sizeof(L3DVertice::PosNormalTangentTexc);
@@ -968,7 +968,7 @@ void GameApp::BuildWavesGeometryBuffers()
 	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
 	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 
-	geo->IndexBufferGPU = L3DUtil::CreateDefaultBuffer(md3dDevice.Get(),
+	geo->IndexBufferGPU = EngineUtility::CreateDefaultBuffer(md3dDevice.Get(),
 		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
 
 	geo->VertexByteStride = sizeof(L3DVertice::PosNormalTexc);
@@ -2188,7 +2188,7 @@ void GameApp::DrawSceneToShadowMap(const GameTimer& gr)
 	mCommandList->RSSetViewports(1, &mShadowMap->Viewport());
 	mCommandList->RSSetScissorRects(1, &mShadowMap->ScissorRect());
 
-	UINT passCBByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(PassConstants));
+	UINT passCBByteSize = EngineUtility::CalcConstantBufferByteSize(sizeof(PassConstants));
 
 
 	// Set null render target because we are only going to draw to

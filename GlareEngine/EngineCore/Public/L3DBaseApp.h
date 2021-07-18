@@ -5,7 +5,7 @@
 #include <crtdbg.h>
 #endif
 
-#include "L3DUtil.h"
+#include "EngineUtility.h"
 #include "L3DGameTimer.h"
 
 

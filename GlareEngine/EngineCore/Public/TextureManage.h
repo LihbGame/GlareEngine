@@ -1,5 +1,5 @@
 #pragma once
-#include "L3DUtil.h"
+#include "EngineUtility.h"
 
 enum PBRTextureType
 {
@@ -19,11 +19,11 @@ enum PBRTextureType
 	Count
 };
 
-class L3DTextureManage
+class TextureManage
 {
 public:
-	L3DTextureManage(ID3D12Device* d3dDevice,ID3D12GraphicsCommandList* CommandList,UINT CbvSrvDescriptorSize);
-	~L3DTextureManage();
+	TextureManage(ID3D12Device* d3dDevice,ID3D12GraphicsCommandList* CommandList,UINT CbvSrvDescriptorSize);
+	~TextureManage();
 
 
 	void CreateTexture(std::wstring name, std::wstring filename,bool ForceSRGB=true);

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "L3DUtil.h"
+#include "EngineUtility.h"
 #include "L3DGeometryGenerator.h"
 #include "L3DVertex.h"
 
-class L3DTextureManage;
+class TextureManage;
 enum class  SimpleGeometry : int
 {
     Box = 0,
@@ -17,7 +17,7 @@ enum class  SimpleGeometry : int
 class SimpleGeoInstance
 {
 public:
-    SimpleGeoInstance(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pd3dDevice, L3DTextureManage* TextureManage);
+    SimpleGeoInstance(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pd3dDevice, TextureManage* TextureManage);
 
     ~SimpleGeoInstance();
 
@@ -37,5 +37,5 @@ private:
     ID3D12Device* pd3dDevice;
     std::unique_ptr<MeshGeometry> mSimpleMesh;
     std::vector<wstring> mPBRTextureName;
-    L3DTextureManage* pTextureManage = nullptr;
+    TextureManage* pTextureManage = nullptr;
 };

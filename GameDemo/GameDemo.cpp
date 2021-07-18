@@ -1,5 +1,7 @@
-﻿#include "L3DUtil.h"
+﻿#include "EngineUtility.h"
 #include "GameCore.h"
+#include "GraphicsCore.h"
+#include "CommandContext.h"
 
 //lib
 #pragma comment(lib, "dxgi.lib")
@@ -18,8 +20,8 @@ public:
 
 	//此功能可用于初始化应用程序状态，并将在分配必要的硬件资源后运行。 
 	//不依赖于这些资源的某些状态仍应在构造函数中初始化，例如指针和标志。
-	virtual void Startup(void) {}// = 0;
-	virtual void Cleanup(void) {}// = 0;
+	virtual void Startup(void);// = 0;
+	virtual void Cleanup(void);// = 0;
 
 	//确定您是否要退出该应用。 默认情况下，应用程序继续运行，直到按下“ ESC”键为止。
 	//virtual bool IsDone(void);
@@ -35,4 +37,26 @@ public:
 };
 
 
+//////////////////////////////////////////////////////////////
+
+//Game App entry
 CREATE_APPLICATION(App);
+
+//////////////////////////////////////////////////////////////
+
+
+void App::Startup(void)
+{
+	GraphicsContext& InitializeContext = GraphicsContext::Begin(L"Initialize");
+	
+	
+	
+	
+	
+	
+	InitializeContext.Finish(true);
+}
+
+void App::Cleanup(void)
+{
+}

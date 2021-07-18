@@ -1,12 +1,12 @@
 #pragma once
-#include "L3DUtil.h"
-class L3DTextureManage;
+#include "EngineUtility.h"
+class TextureManage;
 class Grass
 {
 public:
 	Grass(ID3D12Device* device,
 		ID3D12GraphicsCommandList* CommandList,
-		L3DTextureManage* TextureManage,
+		TextureManage* TextureManage,
 		float GrassWidth, float GrassDepth, 
 		int VertRows, int VertCols);
 	~Grass();
@@ -33,7 +33,7 @@ private:
 	float mGrassDepth;
 
 	ID3D12GraphicsCommandList* mCommandList;
-	L3DTextureManage* mTextureManage;
+	TextureManage* mTextureManage;
 
 	std::unique_ptr<MeshGeometry> mGeometries;
 

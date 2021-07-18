@@ -84,12 +84,12 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\$(Platform)\$(Configuration);.\EngineCore\Engine\Public;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\EngineCore\Graphics\Public;.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\RanderEffects\ShockWaveWater\Public;.\Dependences\include;.\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\EngineMain\Public;.\EngineCore\Public;$(IncludePath)</IncludePath>
+    <IncludePath>.\GraphicEffects\Sky\Public;.\GraphicEffects\Misc;$(SolutionDir)\$(Platform)\$(Configuration);.\EngineCore\Engine\Public;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\EngineCore\Graphics\Public;.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\RanderEffects\ShockWaveWater\Public;.\Dependences\include;.\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\EngineMain\Public;.\EngineCore\Public;$(IncludePath)</IncludePath>
     <LibraryPath>.\Dependences\lib\ozz\debug;.\Dependences\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\$(Platform)\$(Configuration);.\EngineCore\Engine\Public;.\EngineCore\Public;.\EngineCore\Graphics\Public;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\Core\Public;.\EngineMain\Public;.\PSO\Public;.\ShaderSource\Public;.\RanderEffects\HDRSky\Public;.\Water\Public;.\EngineEditor;.\;.\RanderEffects\Shadow\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Water\Public;.\Animation;.\Dependences\include;.\RanderEffects\ShockWaveWater\Public;$(IncludePath)</IncludePath>
+    <IncludePath>.\GraphicEffects\Misc;$(SolutionDir)\$(Platform)\$(Configuration);.\EngineCore\Engine\Public;.\EngineCore\Public;.\EngineCore\Graphics\Public;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\Core\Public;.\EngineMain\Public;.\PSO\Public;.\ShaderSource\Public;.\RanderEffects\HDRSky\Public;.\Water\Public;.\EngineEditor;.\;.\RanderEffects\Shadow\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Water\Public;.\Animation;.\Dependences\include;.\RanderEffects\ShockWaveWater\Public;$(IncludePath)</IncludePath>
     <LibraryPath>.\Dependences\lib;.\Dependences\lib\ozz\release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -145,7 +145,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -162,6 +163,8 @@
     <ClInclude Include="Animation\ModelMesh.h" />
     <ClInclude Include="Animation\OzzAnimePlayBack.h" />
     <None Include="EngineCore\Graphics\Public\Color.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\TextureManager.h" />
+    <ClInclude Include="GraphicEffects\Sky\Public\CSky.h" />
     <ClInclude Include="DXR\D3D12RaytracingHelper.h" />
     <ClInclude Include="EngineCore\Engine\Public\EngineAdjust.h" />
     <ClInclude Include="EngineCore\Engine\Public\EngineInput.h" />
@@ -203,9 +206,9 @@
     <ClInclude Include="EngineCore\Public\L3DGeometryGenerator.h" />
     <ClInclude Include="EngineCore\Public\L3DMaterial.h" />
     <ClInclude Include="EngineCore\Public\L3DMathHelper.h" />
-    <ClInclude Include="EngineCore\Public\L3DTextureManage.h" />
+    <ClInclude Include="EngineCore\Public\TextureManage.h" />
     <ClInclude Include="EngineCore\Public\L3DUploadBuffer.h" />
-    <ClInclude Include="EngineCore\Public\L3DUtil.h" />
+    <ClInclude Include="EngineCore\Public\EngineUtility.h" />
     <ClInclude Include="EngineCore\Public\L3DVertex.h" />
     <ClInclude Include="EngineCore\Graphics\Public\WICTextureLoader12.h" />
     <ClInclude Include="EngineEditor\ImgUIEditor\EngineGUI.h" />
@@ -232,6 +235,7 @@
     <ClInclude Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.h" />
     <ClInclude Include="EngineMain\Public\resource.h" />
     <ClInclude Include="RanderEffects\Terrain\Public\HeightmapTerrain.h" />
+    <ClInclude Include="GraphicEffects\Misc\RanderObject.h" />
     <ClInclude Include="ShaderSource\Public\BaseShader.h" />
     <ClInclude Include="ShaderSource\Public\ComplexStaticModelInstanceShader.h" />
     <ClInclude Include="ShaderSource\Public\GrassShader.h" />
@@ -252,6 +256,8 @@
     <ClCompile Include="Animation\AnimEvaluator.cpp" />
     <ClCompile Include="Animation\ModelMesh.cpp" />
     <None Include="EngineCore\Graphics\Private\Color.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\TextureManager.cpp" />
+    <ClCompile Include="GraphicEffects\Sky\Private\CSky.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\CommandAllocatorPool.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\GraphicsCore.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\SamplerManager.cpp" />
@@ -288,8 +294,8 @@
     <ClCompile Include="EngineCore\Private\L3DInputLayout.cpp" />
     <ClCompile Include="EngineCore\Private\L3DMaterial.cpp" />
     <ClCompile Include="EngineCore\Private\L3DMathHelper.cpp" />
-    <ClCompile Include="EngineCore\Private\L3DTextureManage.cpp" />
-    <ClCompile Include="EngineCore\Private\L3DUtil.cpp" />
+    <ClCompile Include="EngineCore\Private\TextureManage.cpp" />
+    <ClCompile Include="EngineCore\Private\EngineUtility.cpp" />
     <ClCompile Include="EngineCore\Private\L3DVertex.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\WICTextureLoader12.cpp" />
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp" />

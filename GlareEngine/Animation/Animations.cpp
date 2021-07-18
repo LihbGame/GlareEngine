@@ -216,7 +216,7 @@ void Animation::SetUpMesh(ID3D12Device* dev, ID3D12GraphicsCommandList* CommandL
     ThrowIfFailed(D3DCreateBlob(vbByteSize, &mBoneGeo.VertexBufferCPU));
     CopyMemory(mBoneGeo.VertexBufferCPU->GetBufferPointer(), bones_id_weights_for_each_vertex.data(), vbByteSize);
 
-    mBoneGeo.VertexBufferGPU = L3DUtil::CreateDefaultBuffer(dev,
+    mBoneGeo.VertexBufferGPU = EngineUtility::CreateDefaultBuffer(dev,
         CommandList, bones_id_weights_for_each_vertex.data(), vbByteSize, mBoneGeo.VertexBufferUploader);
 
     mBoneGeo.VertexByteStride = sizeof(VertexBoneData);
@@ -439,7 +439,7 @@ void AnimationMesh::SetUpMesh(ID3D12Device* dev, ID3D12GraphicsCommandList* Comm
     ThrowIfFailed(D3DCreateBlob(vbByteSize, &mBoneGeo.VertexBufferCPU));
     CopyMemory(mBoneGeo.VertexBufferCPU->GetBufferPointer(), bones_id_weights_for_each_vertex.data(), vbByteSize);
 
-    mBoneGeo.VertexBufferGPU = L3DUtil::CreateDefaultBuffer(dev,
+    mBoneGeo.VertexBufferGPU = EngineUtility::CreateDefaultBuffer(dev,
         CommandList, bones_id_weights_for_each_vertex.data(), vbByteSize, mBoneGeo.VertexBufferUploader);
 
     mBoneGeo.VertexByteStride = sizeof(VertexBoneData);

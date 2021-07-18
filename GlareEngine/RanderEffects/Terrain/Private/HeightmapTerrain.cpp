@@ -8,7 +8,7 @@ using namespace DirectX::PackedVector;
 HeightmapTerrain::HeightmapTerrain(
 	ID3D12Device* device, 
 	ID3D12GraphicsCommandList* CommandList,
-	L3DTextureManage* TextureManage,
+	TextureManage* TextureManage,
 	InitInfo initInfo,
 	ID3D12Resource* RandomTexSRV)
 	:mDevice(device),
@@ -388,10 +388,10 @@ void HeightmapTerrain::BuildQuadPatchGeometry()
 	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
 	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 
-	geo->VertexBufferGPU = L3DUtil::CreateDefaultBuffer(mDevice,
+	geo->VertexBufferGPU = EngineUtility::CreateDefaultBuffer(mDevice,
 		mCommandList, vertices.data(), vbByteSize, geo->VertexBufferUploader);
 
-	geo->IndexBufferGPU = L3DUtil::CreateDefaultBuffer(mDevice,
+	geo->IndexBufferGPU = EngineUtility::CreateDefaultBuffer(mDevice,
 		mCommandList, indices.data(), ibByteSize, geo->IndexBufferUploader);
 
 	geo->VertexByteStride = sizeof(L3DVertice::Terrain);
@@ -426,7 +426,7 @@ void HeightmapTerrain::BuildHeightmapSRV(CD3DX12_CPU_DESCRIPTOR_HANDLE BlendMapD
 	vector<HALF> HalfHeightMapData;
 	HalfHeightMapData.resize(mHeightmap.size());
 	std::transform(mHeightmap.begin(), mHeightmap.end(), HalfHeightMapData.begin(), XMConvertFloatToHalf);
-	mHeightMapSRV = L3DUtil::CreateDefault2DTexture(mDevice,
+	mHeightMapSRV = EngineUtility::CreateDefault2DTexture(mDevice,
 		mCommandList, HalfHeightMapData.data(), sizeof(HALF) * mHeightmap.size(), DXGI_FORMAT_R16_FLOAT, mInfo.HeightmapWidth, mInfo.HeightmapHeight, mHeightMapUploader);
 	
 	D3D12_SHADER_RESOURCE_VIEW_DESC HeightMapDesc = BlendMapDesc;

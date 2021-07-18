@@ -35,11 +35,11 @@ void ModelMesh::SetupMesh()
     CopyMemory(mMeshGeo.IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 
 
-    mMeshGeo.VertexBufferGPU = L3DUtil::CreateDefaultBuffer(dev,
+    mMeshGeo.VertexBufferGPU = EngineUtility::CreateDefaultBuffer(dev,
         pCommandList, vertices.data(), vbByteSize, mMeshGeo.VertexBufferUploader);
 
 
-    mMeshGeo.IndexBufferGPU = L3DUtil::CreateDefaultBuffer(dev,
+    mMeshGeo.IndexBufferGPU = EngineUtility::CreateDefaultBuffer(dev,
         pCommandList, indices.data(), ibByteSize, mMeshGeo.IndexBufferUploader);
 
 

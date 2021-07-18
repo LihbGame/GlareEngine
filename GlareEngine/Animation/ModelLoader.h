@@ -2,14 +2,14 @@
 
 #include "Animations.h"
 #include "ModelMesh.h"
-#include "L3DTextureManage.h"
+#include "TextureManage.h"
 
 
 
 class ModelLoader
 {
 public:
-    ModelLoader(HWND hwnd, ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList,L3DTextureManage* TextureManage);
+    ModelLoader(HWND hwnd, ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList,TextureManage* TextureManage);
     ~ModelLoader();
    
     //load model mesh data
@@ -45,7 +45,7 @@ private:
     string directory;
     string ModelName;
     string AnimeName;
-    L3DTextureManage* pTextureManage;
+    TextureManage* pTextureManage;
 
     //not use
     vector<Texture > Textures;

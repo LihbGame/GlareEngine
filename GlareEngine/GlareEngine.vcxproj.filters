@@ -115,13 +115,7 @@
     <ClInclude Include="EngineCore\Public\L3DMathHelper.h">
       <Filter>Core\Public</Filter>
     </ClInclude>
-    <ClInclude Include="EngineCore\Public\L3DTextureManage.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
     <ClInclude Include="EngineCore\Public\L3DUploadBuffer.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="EngineCore\Public\L3DUtil.h">
       <Filter>Core\Public</Filter>
     </ClInclude>
     <ClInclude Include="EngineCore\Public\L3DVertex.h">
@@ -158,6 +152,11 @@
     <ClInclude Include="EngineCore\Engine\Public\EngineLog.h" />
     <ClInclude Include="EngineCore\Graphics\Public\BufferManager.h" />
     <ClInclude Include="EngineCore\Graphics\Public\ShadowBuffer.h" />
+    <ClInclude Include="GraphicEffects\Misc\RanderObject.h" />
+    <ClInclude Include="GraphicEffects\Sky\Public\CSky.h" />
+    <ClInclude Include="EngineCore\Public\TextureManage.h" />
+    <ClInclude Include="EngineCore\Public\EngineUtility.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\TextureManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
@@ -251,12 +250,6 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Private\L3DMathHelper.cpp">
-      <Filter>Core\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Private\L3DTextureManage.cpp">
-      <Filter>Core\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Private\L3DUtil.cpp">
       <Filter>Core\Private</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Private\L3DVertex.cpp">
@@ -373,6 +366,18 @@
     <ClCompile Include="EngineCore\Graphics\Private\CommandSignature.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
+    <ClCompile Include="GraphicEffects\Sky\Private\CSky.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Private\TextureManage.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Private\EngineUtility.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\TextureManager.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -442,7 +447,6 @@
     <Library Include="Dependences\lib\ozz\debug\ozz_base_d.lib" />
     <Library Include="Dependences\lib\ozz\debug\ozz_geometry_d.lib" />
     <Library Include="Dependences\lib\ozz\debug\ozz_options_d.lib" />
-    <Library Include="Dependences\lib\assimp-vc142-mtd.lib" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Present\PresentSDRPS.hlsl" />

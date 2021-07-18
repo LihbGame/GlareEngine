@@ -11,7 +11,6 @@
 #include "EngineLog.h"
 #include "BufferManager.h"
 
-
 //Shaders
 #include "CompiledShaders/PresentSDRPS.h"
 #include "CompiledShaders/ScreenQuadVS.h"

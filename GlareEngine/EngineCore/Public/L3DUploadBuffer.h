@@ -1,6 +1,6 @@
 #pragma once
 
-#include "L3DUtil.h"
+#include "EngineUtility.h"
 
 template<typename T>
 class UploadBuffer
@@ -19,7 +19,7 @@ public:
         // UINT   SizeInBytes;   // multiple of 256
         // } D3D12_CONSTANT_BUFFER_VIEW_DESC;
         if(isConstantBuffer)
-            mElementByteSize = L3DUtil::CalcConstantBufferByteSize(sizeof(T));
+            mElementByteSize = EngineUtility::CalcConstantBufferByteSize(sizeof(T));
 
         ThrowIfFailed(device->CreateCommittedResource(
             &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),

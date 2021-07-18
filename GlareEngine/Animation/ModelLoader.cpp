@@ -1,7 +1,7 @@
 ﻿#include "ModelLoader.h"
 #include "L3DMaterial.h"
 
-ModelLoader::ModelLoader(HWND hwnd, ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList,L3DTextureManage* TextureManage)
+ModelLoader::ModelLoader(HWND hwnd, ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList,TextureManage* TextureManage)
 :dev(dev),
 hwnd(hwnd),
 pCommandList(CommandList),
@@ -343,7 +343,7 @@ int ModelLoader::GetTextureIndex(aiString* str)
 void ModelLoader::GetTextureFromModel(const aiScene* scene, int textureindex, Texture& texture)
 {
     int* size = reinterpret_cast<int*>(&scene->mTextures[textureindex]->mWidth);
-    L3DUtil::CreateWICTextureFromMemory(dev, pCommandList, texture.Resource.ReleaseAndGetAddressOf(), texture.UploadHeap.ReleaseAndGetAddressOf(), reinterpret_cast<unsigned char*>(scene->mTextures[textureindex]->pcData),*size);
+    EngineUtility::CreateWICTextureFromMemory(dev, pCommandList, texture.Resource.ReleaseAndGetAddressOf(), texture.UploadHeap.ReleaseAndGetAddressOf(), reinterpret_cast<unsigned char*>(scene->mTextures[textureindex]->pcData),*size);
 }
 
 void ModelLoader::LoadPBRTexture(string texturename)
@@ -408,7 +408,7 @@ vector<Texture> ModelLoader::LoadMaterialTextures(aiMaterial* mat, aiTextureType
 
                 filename = directory + filename;
                 wstring filenamews = wstring(filename.begin(), filename.end());
-                L3DUtil::CreateWICTextureFromFile(dev, pCommandList, texture.Resource.ReleaseAndGetAddressOf(), texture.UploadHeap.ReleaseAndGetAddressOf(), filenamews);
+                EngineUtility::CreateWICTextureFromFile(dev, pCommandList, texture.Resource.ReleaseAndGetAddressOf(), texture.UploadHeap.ReleaseAndGetAddressOf(), filenamews);
             }
             texture.type = typeName;
             texture.Filename = str.C_Str();

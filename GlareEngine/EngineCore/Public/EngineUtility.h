@@ -108,7 +108,7 @@ inline std::wstring AnsiToWString(const std::string& str)
 #endif
     */
 
-class L3DUtil
+class EngineUtility
 {
 public:
 

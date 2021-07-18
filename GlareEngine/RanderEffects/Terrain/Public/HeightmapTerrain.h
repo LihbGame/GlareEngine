@@ -1,7 +1,7 @@
 #pragma once
-#include "L3DUtil.h"
+#include "EngineUtility.h"
 #include "L3DCamera.h"
-#include "L3DTextureManage.h"
+#include "TextureManage.h"
 #include "FrameResource.h"
 
 class Grass;
@@ -21,7 +21,7 @@ public:
 	};
 
 public:
-	HeightmapTerrain(ID3D12Device* device, ID3D12GraphicsCommandList* dc, L3DTextureManage* TextureManage, InitInfo initInfo, ID3D12Resource* RandomTexSRV);
+	HeightmapTerrain(ID3D12Device* device, ID3D12GraphicsCommandList* dc, TextureManage* TextureManage, InitInfo initInfo, ID3D12Resource* RandomTexSRV);
 	~HeightmapTerrain();
 
 
@@ -68,7 +68,7 @@ private:
 	void BuildQuadPatchGeometry();
 private:
 
-	L3DTextureManage* pTextureManage = nullptr;
+	TextureManage* pTextureManage = nullptr;
 
 	ID3D12Device* mDevice = nullptr;
 	ID3D12GraphicsCommandList* mCommandList = nullptr;

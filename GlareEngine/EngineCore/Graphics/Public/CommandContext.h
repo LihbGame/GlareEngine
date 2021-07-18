@@ -9,7 +9,7 @@
 #include "CommandListManager.h"
 #include "CommandSignature.h"
 #include "GraphicsCore.h"
-#include "L3DTextureManage.h"
+#include "TextureManage.h"
 #include "GraphicsCommon.h"
 
 namespace GlareEngine
@@ -18,7 +18,7 @@ namespace GlareEngine
 	{
 		class ColorBuffer;
 		class DepthBuffer;
-		class L3DTextureManage;
+		class TextureManage;
 		class GraphicsContext;
 		class ComputeContext;
 
@@ -145,7 +145,7 @@ namespace GlareEngine
 			//Get Graphics Context
 			GraphicsContext& GetGraphicsContext() 
 			{
-				assert(m_Type != D3D12_COMMAND_LIST_TYPE_COMPUTE, "Can not convert async compute context to graphics");
+				assert(m_Type != D3D12_COMMAND_LIST_TYPE_COMPUTE);
 				return reinterpret_cast<GraphicsContext&>(*this);
 			}
 

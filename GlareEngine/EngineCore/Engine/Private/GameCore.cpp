@@ -3,7 +3,7 @@
 #include "GameCore.h"
 #include "L3DGameTimer.h"
 #include "EngineInput.h"
-//#include "BufferManager.h"
+#include "BufferManager.h"
 #include "EngineAdjust.h"
 #include "EngineProfiling.h"
 #include <windowsx.h>
@@ -29,10 +29,12 @@ namespace GlareEngine
 
 		void InitializeApplication(GameApp& Game)
 		{
+			//Core Initialize
 			DirectX12Graphics::Initialize();
 			EngineInput::Initialize();
 			EngineAdjust::Initialize();
 
+			//Game Initialize
 			Game.Startup();
 		}
 

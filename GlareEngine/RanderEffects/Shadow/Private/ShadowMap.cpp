@@ -1,6 +1,6 @@
 #include "ShadowMap.h"
-#include "L3DTextureManage.h"
-ShadowMap::ShadowMap(ID3D12Device* device, UINT width, UINT height, L3DTextureManage* TextureManage)
+#include "TextureManage.h"
+ShadowMap::ShadowMap(ID3D12Device* device, UINT width, UINT height, TextureManage* TextureManage)
 	:pTextureManage(TextureManage)
 {
 	md3dDevice = device;

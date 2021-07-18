@@ -24,7 +24,7 @@
 
 #include "PSOManager.h"
 #include "L3DCamera.h"
-#include "L3DTextureManage.H"
+#include "TextureManage.H"
 #include "Sky.h"
 #include "EngineGUI.h"
 #include "ShadowMap.h"
@@ -245,7 +245,7 @@ private:
 	//Па»ъ
 	Camera mCamera;
 	//TEXTURE MANAGER
-	std::unique_ptr<L3DTextureManage> mTextureManage;
+	std::unique_ptr<TextureManage> mTextureManage;
 	int mSRVSize = 0;
 	std::vector<wstring> mPBRTextureName;
 	//sky

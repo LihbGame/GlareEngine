@@ -1,7 +1,7 @@
 #include "SimpleGeoInstance.h"
 #include "L3DMaterial.h"
-#include "L3DTextureManage.h"
-SimpleGeoInstance::SimpleGeoInstance(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pd3dDevice,L3DTextureManage* TextureManage)
+#include "TextureManage.h"
+SimpleGeoInstance::SimpleGeoInstance(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pd3dDevice,TextureManage* TextureManage)
 {
     this->pd3dDevice = pd3dDevice;
     this->pCommandList = pCommandList;
@@ -94,11 +94,11 @@ void SimpleGeoInstance::BuildSimpleGeometryMesh(SimpleGeometry GeoType)
     CopyMemory(mSimpleMesh->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 
     //GPU Buffer
-    mSimpleMesh->VertexBufferGPU = L3DUtil::CreateDefaultBuffer(pd3dDevice,
+    mSimpleMesh->VertexBufferGPU = EngineUtility::CreateDefaultBuffer(pd3dDevice,
         pCommandList, vertices.data(), vbByteSize, mSimpleMesh->VertexBufferUploader);
 
 
-    mSimpleMesh->IndexBufferGPU = L3DUtil::CreateDefaultBuffer(pd3dDevice,
+    mSimpleMesh->IndexBufferGPU = EngineUtility::CreateDefaultBuffer(pd3dDevice,
         pCommandList, indices.data(), ibByteSize, mSimpleMesh->IndexBufferUploader);
 
     mSimpleMesh->VertexByteStride = sizeof(L3DVertice::PosNormalTangentTexc);

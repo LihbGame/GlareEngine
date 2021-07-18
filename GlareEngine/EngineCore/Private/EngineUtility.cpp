@@ -1,5 +1,5 @@
 
-#include "L3DUtil.h"
+#include "EngineUtility.h"
 #include "Common.h"
 #include <comdef.h>
 #include <fstream>
@@ -15,12 +15,12 @@ DxException::DxException(HRESULT hr, const std::wstring& functionName, const std
 {
 }
 
-bool L3DUtil::IsKeyDown(int vkeyCode)
+bool EngineUtility::IsKeyDown(int vkeyCode)
 {
     return (GetAsyncKeyState(vkeyCode) & 0x8000) != 0;
 }
 
-ComPtr<ID3DBlob> L3DUtil::LoadBinary(const std::wstring& filename)
+ComPtr<ID3DBlob> EngineUtility::LoadBinary(const std::wstring& filename)
 {
     std::ifstream fin(filename, std::ios::binary);
 
@@ -37,7 +37,7 @@ ComPtr<ID3DBlob> L3DUtil::LoadBinary(const std::wstring& filename)
     return blob;
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> L3DUtil::CreateDefaultBuffer(
+Microsoft::WRL::ComPtr<ID3D12Resource> EngineUtility::CreateDefaultBuffer(
     ID3D12Device* device,
     ID3D12GraphicsCommandList* cmdList,
     const void* initData,
@@ -89,7 +89,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> L3DUtil::CreateDefaultBuffer(
     return defaultBuffer;
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> L3DUtil::CreateRandomTexture1DSRV(ID3D12Device* device, 
+Microsoft::WRL::ComPtr<ID3D12Resource> EngineUtility::CreateRandomTexture1DSRV(ID3D12Device* device, 
 	ID3D12GraphicsCommandList* cmdList,
 	Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer)
 {
@@ -157,7 +157,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> L3DUtil::CreateRandomTexture1DSRV(ID3D12D
 
 
 
-Microsoft::WRL::ComPtr<ID3D12Resource> L3DUtil::CreateDefault2DTexture(
+Microsoft::WRL::ComPtr<ID3D12Resource> EngineUtility::CreateDefault2DTexture(
     ID3D12Device* device, ID3D12GraphicsCommandList* cmdList, 
     const void* initData, 
     UINT64 byteSize, DXGI_FORMAT format,
@@ -209,7 +209,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> L3DUtil::CreateDefault2DTexture(
 	return defaultBuffer;
 }
 
-ComPtr<ID3DBlob> L3DUtil::CompileShader(
+ComPtr<ID3DBlob> EngineUtility::CompileShader(
 	const std::wstring& filename,
 	const D3D_SHADER_MACRO* defines,
 	const std::string& entrypoint,
@@ -236,7 +236,7 @@ ComPtr<ID3DBlob> L3DUtil::CompileShader(
 	return byteCode;
 }
 
-void L3DUtil::CreateWICTextureFromFile(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, ID3D12Resource** tex, ID3D12Resource** Uploadtex,wstring filename)
+void EngineUtility::CreateWICTextureFromFile(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, ID3D12Resource** tex, ID3D12Resource** Uploadtex,wstring filename)
 {
     std::unique_ptr<uint8_t[]> decodedData;
     D3D12_SUBRESOURCE_DATA subresource;
@@ -267,7 +267,7 @@ void L3DUtil::CreateWICTextureFromFile(ID3D12Device* d3dDevice, ID3D12GraphicsCo
     CommandList->ResourceBarrier(1, &barrier);
 }
 
-void L3DUtil::CreateWICTextureFromMemory(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, ID3D12Resource** tex, ID3D12Resource** Uploadtex,unsigned char* data,int size)
+void EngineUtility::CreateWICTextureFromMemory(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, ID3D12Resource** tex, ID3D12Resource** Uploadtex,unsigned char* data,int size)
 {
     std::unique_ptr<uint8_t[]> decodedData;
     D3D12_SUBRESOURCE_DATA subresource;

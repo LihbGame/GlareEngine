@@ -1,10 +1,10 @@
 #pragma once
-#include "L3DUtil.h"
-#include "L3DTextureManage.h"
+#include "EngineUtility.h"
+#include "TextureManage.h"
 class ShockWaveWater
 {
 public:
-	ShockWaveWater(ID3D12Device* device, UINT width, UINT height, bool IsMsaa, L3DTextureManage* TextureManage);
+	ShockWaveWater(ID3D12Device* device, UINT width, UINT height, bool IsMsaa, TextureManage* TextureManage);
 	~ShockWaveWater();
 
 	ID3D12Resource* ReflectionSRV()const;
@@ -41,7 +41,7 @@ private:
 	ShockWaveWater& operator=(const ShockWaveWater& rhs);
 private:
 	ID3D12Device* md3dDevice = nullptr;
-	L3DTextureManage* mTextureManage = nullptr;
+	TextureManage* mTextureManage = nullptr;
 	UINT mWidth;
 	UINT mHeight;
 	bool mIs4xMsaa;

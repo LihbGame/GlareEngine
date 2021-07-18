@@ -1,6 +1,6 @@
 #include "ShockWaveWater.h"
 #include "L3DBaseApp.h"
-ShockWaveWater::ShockWaveWater(ID3D12Device* device, UINT width, UINT height,bool Is4xMsaa, L3DTextureManage* TextureManage)
+ShockWaveWater::ShockWaveWater(ID3D12Device* device, UINT width, UINT height,bool Is4xMsaa, TextureManage* TextureManage)
 	: mWidth(width),
 	mHeight(height),
 	mIs4xMsaa(Is4xMsaa),

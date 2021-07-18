@@ -1,17 +1,17 @@
-#include "L3DTextureManage.h"
+#include "TextureManage.h"
 #include "L3DMaterial.h"
-L3DTextureManage::L3DTextureManage(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, UINT CbvSrvDescriptorSize)
+TextureManage::TextureManage(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, UINT CbvSrvDescriptorSize)
 :md3dDevice(d3dDevice),
 mCommandList(CommandList),
 mCbvSrvDescriptorSize(CbvSrvDescriptorSize)
 {
 }
 
-L3DTextureManage::~L3DTextureManage()
+TextureManage::~TextureManage()
 {
 }
 
-void L3DTextureManage::CreateTexture(std::wstring name,std::wstring filename, bool ForceSRGB)
+void TextureManage::CreateTexture(std::wstring name,std::wstring filename, bool ForceSRGB)
 {
 	// Does it already exist?
 	std::unique_ptr<Texture> tex = std::make_unique<Texture>();
@@ -27,7 +27,7 @@ void L3DTextureManage::CreateTexture(std::wstring name,std::wstring filename, bo
 	}
 }
 
-std::unique_ptr<Texture>& L3DTextureManage::GetTexture(std::wstring name, bool ForceSRGB)
+std::unique_ptr<Texture>& TextureManage::GetTexture(std::wstring name, bool ForceSRGB)
 {
 	if (mTextures.find(name) == mTextures.end())
 	{
@@ -36,7 +36,7 @@ std::unique_ptr<Texture>& L3DTextureManage::GetTexture(std::wstring name, bool F
 	return mTextures[name];
 }
 
-std::unique_ptr<Texture>& L3DTextureManage::GetModelTexture(std::wstring name, bool ForceSRGB)
+std::unique_ptr<Texture>& TextureManage::GetModelTexture(std::wstring name, bool ForceSRGB)
 {
 	if (mTextures.find(name) == mTextures.end())
 	{
@@ -45,7 +45,7 @@ std::unique_ptr<Texture>& L3DTextureManage::GetModelTexture(std::wstring name, b
 	return mTextures[name];
 }
 
-void L3DTextureManage::CreatePBRSRVinDescriptorHeap(vector<ID3D12Resource*> TexResource, int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor, wstring MaterialName)
+void TextureManage::CreatePBRSRVinDescriptorHeap(vector<ID3D12Resource*> TexResource, int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor, wstring MaterialName)
 {
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
