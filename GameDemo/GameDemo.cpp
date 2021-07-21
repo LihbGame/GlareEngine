@@ -2,6 +2,8 @@
 #include "GameCore.h"
 #include "GraphicsCore.h"
 #include "CommandContext.h"
+#include "TextureManager.h"
+#include "CSky.h"
 
 //lib
 #pragma comment(lib, "dxgi.lib")
@@ -10,8 +12,9 @@
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib,"dxguid.lib")
 
+using namespace GlareEngine;
 using namespace GlareEngine::GameCore;
-
+using namespace GlareEngine::DirectX12Graphics;
 
 class App :public GameApp
 {
@@ -30,10 +33,16 @@ public:
 	virtual void Update(float deltaT) {}// = 0;
 
 	//rendering pass
-	virtual void RenderScene(void) {}// = 0;
+	virtual void RenderScene(void);// = 0;
 
 	//可选的UI（覆盖）渲染阶段。 这是LDR。 缓冲区已被清除。 
 	virtual void RenderUI() {};
+
+private:
+	//Sky
+	unique_ptr<CSky> mSky;
+
+
 };
 
 
@@ -48,9 +57,12 @@ CREATE_APPLICATION(App);
 void App::Startup(void)
 {
 	GraphicsContext& InitializeContext = GraphicsContext::Begin(L"Initialize");
-	
-	
-	
+
+	ID3D12GraphicsCommandList* CommandList = InitializeContext.GetCommandList();
+
+	g_TextureManager.SetCommandList(CommandList);
+	//Sky Initialize
+	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
 	
 	
 	
@@ -59,4 +71,11 @@ void App::Startup(void)
 
 void App::Cleanup(void)
 {
+}
+
+void App::RenderScene(void)
+{
+	GraphicsContext& RenderContext = GraphicsContext::Begin(L"RenderScene");
+
+	RenderContext.Finish(true);
 }

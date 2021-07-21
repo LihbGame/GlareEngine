@@ -17,7 +17,7 @@ FrameResource::FrameResource(ID3D12Device* device, UINT passCount, UINT Instance
         InstanceSimpleObjectCB.push_back(std::make_unique<UploadBuffer<InstanceConstants>>(device, InstanceCounts, false));
         ReflectionInstanceSimpleObjectCB.push_back(std::make_unique<UploadBuffer<InstanceConstants>>(device, InstanceCounts, false));
     }
-    WavesVB = std::make_unique<UploadBuffer<L3DVertice::PosNormalTexc>>(device, waveVertCount, false);
+    WavesVB = std::make_unique<UploadBuffer<Vertice::PosNormalTexc>>(device, waveVertCount, false);
 }
 
 FrameResource::~FrameResource()

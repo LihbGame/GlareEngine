@@ -1,6 +1,6 @@
 #include "HeightmapTerrain.h"
-#include "L3DGeometryGenerator.h"
-#include "L3DVertex.h"
+#include "GeometryGenerator.h"
+#include "Vertex.h"
 #include "Grass.h"
 #include "L3DMaterial.h"
 using namespace DirectX::PackedVector;
@@ -309,7 +309,7 @@ void HeightmapTerrain::BuildQuadPatchGeometry()
 {
 //Vertices
 #pragma region Vertices data
-	std::vector<L3DVertice::Terrain> patchVertices(mNumPatchVertRows * mNumPatchVertCols);
+	std::vector<Vertice::Terrain> patchVertices(mNumPatchVertRows * mNumPatchVertCols);
 
 	float halfWidth = 0.5f * GetWidth();
 	float halfDepth = 0.5f * GetDepth();
@@ -344,7 +344,7 @@ void HeightmapTerrain::BuildQuadPatchGeometry()
 		}
 	}
 
-	std::vector<L3DVertice::Terrain> vertices(patchVertices.size());
+	std::vector<Vertice::Terrain> vertices(patchVertices.size());
 	for (size_t i = 0; i < patchVertices.size(); ++i)
 	{
 		vertices[i].Pos = patchVertices[i].Pos;
@@ -352,7 +352,7 @@ void HeightmapTerrain::BuildQuadPatchGeometry()
 		vertices[i].BoundsY = patchVertices[i].BoundsY;
 	}
 
-	const UINT vbByteSize = (UINT)vertices.size() * sizeof(L3DVertice::Terrain);
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertice::Terrain);
 #pragma endregion
 
 //Indices
@@ -394,7 +394,7 @@ void HeightmapTerrain::BuildQuadPatchGeometry()
 	geo->IndexBufferGPU = EngineUtility::CreateDefaultBuffer(mDevice,
 		mCommandList, indices.data(), ibByteSize, geo->IndexBufferUploader);
 
-	geo->VertexByteStride = sizeof(L3DVertice::Terrain);
+	geo->VertexByteStride = sizeof(Vertice::Terrain);
 	geo->VertexBufferByteSize = vbByteSize;
 	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
 	geo->IndexBufferByteSize = ibByteSize;

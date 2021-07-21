@@ -1,6 +1,6 @@
 #include "BaseParticle.h"
 #include "PSOManager.h"
-#include "L3DVertex.h"
+#include "Vertex.h"
 BaseParticle::BaseParticle()
 {
 	//≥ı ºªØ
@@ -60,8 +60,8 @@ void BaseParticle::BuildVB(ID3D12Device* device)
 {
 	// The initial particle emitter has type 0 and age 0.  The rest
 	// of the particle attributes do not apply to an emitter.
-	L3DVertice::Particle p;
-	ZeroMemory(&p, sizeof(L3DVertice::Particle));
+	Vertice::Particle p;
+	ZeroMemory(&p, sizeof(Vertice::Particle));
 	p.Age = 0.0f;
 	p.Type = 0;
 }

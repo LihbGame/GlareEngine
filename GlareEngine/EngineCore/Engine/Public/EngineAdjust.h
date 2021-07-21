@@ -8,7 +8,6 @@
 
 namespace GlareEngine
 {
-	class GraphicsContext;
 	class VariableGroup;
 
 

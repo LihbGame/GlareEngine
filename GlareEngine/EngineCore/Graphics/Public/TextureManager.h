@@ -2,17 +2,21 @@
 #include "EngineUtility.h"
 namespace GlareEngine
 {
-	class TextureManager
+	namespace DirectX12Graphics
 	{
-	public:
-		TextureManager() {}
-		~TextureManager() {}
+		class TextureManager
+		{
+		public:
+			TextureManager() {}
+			~TextureManager() {}
 
-		void Initialize();
-		void CreateTexture(std::wstring name, std::wstring filename, bool ForceSRGB = true);
-		std::unique_ptr<Texture>& GetTexture(std::wstring name, bool ForceSRGB = true);
-	private:
-
-	};
-
+			void SetCommandList(ID3D12GraphicsCommandList* pCommandList);
+			void CreateTexture(std::wstring name, std::wstring filename, bool ForceSRGB = true);
+			std::unique_ptr<Texture>& GetTexture(std::wstring name, bool ForceSRGB = true);
+		private:
+			ID3D12GraphicsCommandList* mCommandList = nullptr;
+			std::unordered_map<std::wstring, std::unique_ptr<Texture>> mTextures;
+			std::wstring RootFilePath = L"Textures/";
+		};
+	}
 }

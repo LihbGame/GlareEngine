@@ -1,4 +1,4 @@
-#include "L3DGeometryGenerator.h"
+#include "GeometryGenerator.h"
 #include <algorithm>
 
 using namespace DirectX;

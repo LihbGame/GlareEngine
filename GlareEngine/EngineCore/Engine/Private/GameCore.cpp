@@ -24,9 +24,6 @@ namespace GlareEngine
 {
 	namespace GameCore
 	{
-		
-		using namespace GlareEngine::DirectX12Graphics;
-
 		void InitializeApplication(GameApp& Game)
 		{
 			//Core Initialize

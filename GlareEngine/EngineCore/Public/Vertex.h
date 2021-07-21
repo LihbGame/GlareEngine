@@ -1,7 +1,7 @@
 #pragma once
 #include "EngineUtility.h"
 
-class L3DVertice
+class Vertice
 {
 public:
 	 struct Pos

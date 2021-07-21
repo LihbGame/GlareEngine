@@ -5,11 +5,12 @@
 #include "RootSignature.h"
 #include "SamplerManager.h"
 #include "GraphicsCommon.h"
-#include "TextureManage.h"
+
 
 
 namespace GlareEngine
 {
+
 	namespace DirectX12Graphics
 	{
 		using namespace Microsoft::WRL;
@@ -21,7 +22,7 @@ namespace GlareEngine
 		class ColorBuffer;
 		class DepthBuffer;
 		class GraphicsPSO;
-		class TextureManage;
+		class TextureManager;
 
 		void Initialize(void);
 		void Resize(uint32_t width, uint32_t height);
@@ -48,8 +49,7 @@ namespace GlareEngine
 		extern ContextManager g_ContextManager;
 
 		//Core Features
-		extern TextureManage g_TextureManager;
-
+		extern TextureManager g_TextureManager;
 
 		//FEATURE LEVE 
 		extern D3D_FEATURE_LEVEL g_D3DFeatureLevel;

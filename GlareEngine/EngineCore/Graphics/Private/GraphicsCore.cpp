@@ -10,6 +10,7 @@
 #include "GPUTimeManager.h"
 #include "EngineLog.h"
 #include "BufferManager.h"
+#include "TextureManager.h"
 
 //Shaders
 #include "CompiledShaders/PresentSDRPS.h"
@@ -51,6 +52,8 @@ namespace GlareEngine
 
 	BoolVar s_LimitTo30Hz("Timing/Limit To 30Hz", false);
 
+
+	
 
 	namespace DirectX12Graphics
 	{
@@ -141,6 +144,10 @@ namespace GlareEngine
 		ID3D12Device* g_Device = nullptr;
 		CommandListManager g_CommandManager;
 		ContextManager g_ContextManager;
+
+		//Core Features
+		TextureManager g_TextureManager;
+
 
 		//FEATURE LEVEL 11
 		D3D_FEATURE_LEVEL g_D3DFeatureLevel = D3D_FEATURE_LEVEL_11_0;

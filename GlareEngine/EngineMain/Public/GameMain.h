@@ -4,7 +4,7 @@
 #include "L3DBaseApp.h"
 #include "L3DMathHelper.h"
 #include "L3DUploadBuffer.h"
-#include "L3DGeometryGenerator.h"
+#include "GeometryGenerator.h"
 #include "Waves.h"
 #include "FrameResource.h"
 #include "L3DMaterial.h"

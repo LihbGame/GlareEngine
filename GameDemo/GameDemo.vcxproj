@@ -79,7 +79,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\GlareEngine\EngineCore\Math;..\GlareEngine\EngineCore\Graphics\Public;..\GlareEngine\EngineCore\Public;..\GlareEngine\EngineCore\Engine\Public;$(IncludePath)</IncludePath>
+    <IncludePath>..\GlareEngine\GraphicEffects\Misc;..\GlareEngine\GraphicEffects\Sky\Public;..\GlareEngine\EngineCore\Math;..\GlareEngine\EngineCore\Graphics\Public;..\GlareEngine\EngineCore\Public;..\GlareEngine\EngineCore\Engine\Public;$(IncludePath)</IncludePath>
     <LibraryPath>..\x64\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

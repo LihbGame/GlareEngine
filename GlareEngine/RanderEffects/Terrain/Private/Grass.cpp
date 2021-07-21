@@ -1,5 +1,5 @@
 #include "Grass.h"
-#include "L3DVertex.h"
+#include "Vertex.h"
 #include "TextureManage.h"
 #include "L3DMaterial.h"
 
@@ -25,7 +25,7 @@ Grass::~Grass()
 
 void Grass::BuildGrassVB()
 {
-	std::vector<L3DVertice::Grass> vertices(mNumVertRows * mNumVertCols);
+	std::vector<Vertice::Grass> vertices(mNumVertRows * mNumVertCols);
 	float halfWidth = 0.5f * mGrassWidth;
 	float halfDepth = 0.5f * mGrassDepth;
 
@@ -48,7 +48,7 @@ void Grass::BuildGrassVB()
 		}
 	}
 
-	const UINT vbByteSize = (UINT)vertices.size() * sizeof(L3DVertice::Grass);
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertice::Grass);
 
 
 	auto geo = std::make_unique<MeshGeometry>();
@@ -62,7 +62,7 @@ void Grass::BuildGrassVB()
 		mCommandList, vertices.data(), vbByteSize, geo->VertexBufferUploader);
 
 	
-	geo->VertexByteStride = sizeof(L3DVertice::Grass);
+	geo->VertexByteStride = sizeof(Vertice::Grass);
 	geo->VertexBufferByteSize = vbByteSize;
 
 

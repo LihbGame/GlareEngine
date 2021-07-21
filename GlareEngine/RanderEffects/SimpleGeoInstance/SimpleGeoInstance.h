@@ -1,8 +1,8 @@
 #pragma once
 
 #include "EngineUtility.h"
-#include "L3DGeometryGenerator.h"
-#include "L3DVertex.h"
+#include "GeometryGenerator.h"
+#include "Vertex.h"
 
 class TextureManage;
 enum class  SimpleGeometry : int
