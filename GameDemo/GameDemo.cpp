@@ -3,6 +3,9 @@
 #include "GraphicsCore.h"
 #include "CommandContext.h"
 #include "TextureManager.h"
+#include "ConstantBuffer.h"
+#include "Camera.h"
+
 #include "CSky.h"
 
 //lib
@@ -30,7 +33,11 @@ public:
 	//virtual bool IsDone(void);
 
 	//每帧将调用一次update方法。 状态更新和场景渲染都应使用此方法处理。
-	virtual void Update(float deltaT) {}// = 0;
+	virtual void Update(float deltaT);
+
+	void UpdateMainConstantBuffer(float deltaT);
+
+
 
 	//rendering pass
 	virtual void RenderScene(void);// = 0;
@@ -39,6 +46,11 @@ public:
 	virtual void RenderUI() {};
 
 private:
+	//Main Constant Buffer
+	MainConstants mMainConstants;
+
+
+
 	//Sky
 	unique_ptr<CSky> mSky;
 
@@ -71,6 +83,18 @@ void App::Startup(void)
 
 void App::Cleanup(void)
 {
+}
+
+void App::Update(float deltaT)
+{
+	UpdateMainConstantBuffer(deltaT);
+
+
+}
+
+void App::UpdateMainConstantBuffer(float deltaT)
+{
+
 }
 
 void App::RenderScene(void)

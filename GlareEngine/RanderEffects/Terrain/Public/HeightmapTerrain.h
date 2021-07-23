@@ -1,6 +1,6 @@
 #pragma once
 #include "EngineUtility.h"
-#include "L3DCamera.h"
+#include "Camera.h"
 #include "TextureManage.h"
 #include "FrameResource.h"
 

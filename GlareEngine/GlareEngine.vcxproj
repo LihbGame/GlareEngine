@@ -201,7 +201,7 @@
     <ClInclude Include="EngineCore\Public\d3dx12.h" />
     <ClInclude Include="EngineCore\Graphics\Public\DDSTextureLoader.h" />
     <ClInclude Include="EngineCore\Public\L3DBaseApp.h" />
-    <ClInclude Include="EngineCore\Public\L3DCamera.h" />
+    <ClInclude Include="EngineCore\Public\Camera.h" />
     <ClInclude Include="EngineCore\Public\L3DGameTimer.h" />
     <ClInclude Include="EngineCore\Public\GeometryGenerator.h" />
     <ClInclude Include="EngineCore\Public\L3DMaterial.h" />
@@ -288,7 +288,7 @@
     <ClCompile Include="EngineCore\Graphics\Private\GraphicsCommon.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\ShadowBuffer.cpp" />
     <ClCompile Include="EngineCore\Private\L3DBaseApp.cpp" />
-    <ClCompile Include="EngineCore\Private\L3DCamera.cpp" />
+    <ClCompile Include="EngineCore\Private\Camera.cpp" />
     <ClCompile Include="EngineCore\Private\L3DGameTimer.cpp" />
     <ClCompile Include="EngineCore\Private\GeometryGenerator.cpp" />
     <ClCompile Include="EngineCore\Private\L3DInputLayout.cpp" />

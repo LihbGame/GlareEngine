@@ -1,4 +1,4 @@
-#include "L3DCamera.h"
+#include "Camera.h"
 #include "TextureManage.h"
 
 using namespace DirectX;

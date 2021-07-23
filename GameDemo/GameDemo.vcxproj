@@ -153,6 +153,7 @@
     <None Include="Textures\ICONS\Arrow.cur" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
