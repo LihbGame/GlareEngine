@@ -24,6 +24,15 @@ namespace GlareEngine
 {
 	namespace GameCore
 	{
+		GameApp* GameApp::mGameApp = nullptr;
+		HWND g_hWnd = nullptr;
+
+		LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+		{
+			//转发hwnd因为我们可以在CreateWindow返回之前获取消息(例如，WM_CREATE)。
+			return GameApp::GetApp()->MsgProc(hwnd, msg, wParam, lParam);
+		}
+
 		void InitializeApplication(GameApp& Game)
 		{
 			//Core Initialize
@@ -61,14 +70,24 @@ namespace GlareEngine
 		}
 
 
+		GameApp::GameApp()
+		{
+			// Only one GameApp can be constructed.
+			assert(mGameApp == nullptr);
+			mGameApp = this;
+		}
+
 		// Default implementation to be overridden by the application
 		bool GameApp::IsDone(void)
 		{
 			return EngineInput::IsFirstPressed(EngineInput::kKey_Escape);
 		}
 
+		float GameApp::AspectRatio() const
+		{
+			return static_cast<float>(mClientWidth) / mClientHeight;
+		}
 
-		HWND g_hWnd = nullptr;
 
 		//void InitWindow(const wchar_t* className);
 		LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -87,7 +106,7 @@ namespace GlareEngine
 			WNDCLASSEX wcex;
 			wcex.cbSize = sizeof(WNDCLASSEX);
 			wcex.style = CS_HREDRAW | CS_VREDRAW;
-			wcex.lpfnWndProc = WndProc;
+			wcex.lpfnWndProc = MainWndProc;
 			wcex.cbClsExtra = 0;
 			wcex.cbWndExtra = 0;
 			wcex.hInstance = hInst;
@@ -104,7 +123,7 @@ namespace GlareEngine
 				return ;
 			}
 			// Create window
-			RECT rc = { 0, 0,1600,900/* (LONG)g_DisplayWidth, (LONG)g_DisplayHeight*/ };
+			RECT rc = { 0, 0,(LONG)g_DisplayWidth, (LONG)g_DisplayHeight};
 			AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
 			g_hWnd = CreateWindow(className, className, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
@@ -138,14 +157,16 @@ namespace GlareEngine
 		//--------------------------------------------------------------------------------------
 		// Called every time the application receives a message
 		//--------------------------------------------------------------------------------------
-		LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+		LRESULT GameApp::MsgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
-
-			
 			switch (message)
 			{
 			case WM_SIZE:
-				//DirectX12Graphics::Resize((UINT)(UINT64)lParam & 0xFFFF, (UINT)(UINT64)lParam >> 16);
+				// Save the new client area dimensions.
+				mClientWidth = LOWORD(lParam);
+				mClientHeight = HIWORD(lParam);
+				OnResize(mClientWidth, mClientHeight);
+
 				break;
 
 			case WM_DESTROY:
@@ -163,6 +184,3 @@ namespace GlareEngine
 
 	}
 }
-using namespace GlareEngine::GameCore;
-
-//CREATE_APPLICATION(GameApp);

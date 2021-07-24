@@ -35,6 +35,9 @@ public:
 	//每帧将调用一次update方法。 状态更新和场景渲染都应使用此方法处理。
 	virtual void Update(float deltaT);
 
+public:
+	void UpdateCamera(float deltaT);
+
 	void UpdateMainConstantBuffer(float deltaT);
 
 
@@ -45,12 +48,13 @@ public:
 	//可选的UI（覆盖）渲染阶段。 这是LDR。 缓冲区已被清除。 
 	virtual void RenderUI() {};
 
+	virtual void OnResize(uint32_t width, uint32_t height);
+
 private:
 	//Main Constant Buffer
 	MainConstants mMainConstants;
-
-
-
+	//Main Camera
+	unique_ptr<Camera> mCamera;
 	//Sky
 	unique_ptr<CSky> mSky;
 
@@ -73,6 +77,8 @@ void App::Startup(void)
 	ID3D12GraphicsCommandList* CommandList = InitializeContext.GetCommandList();
 
 	g_TextureManager.SetCommandList(CommandList);
+	//Main Camera
+	mCamera = make_unique<Camera>();
 	//Sky Initialize
 	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
 	
@@ -87,9 +93,14 @@ void App::Cleanup(void)
 
 void App::Update(float deltaT)
 {
+	UpdateCamera(deltaT);
 	UpdateMainConstantBuffer(deltaT);
 
 
+}
+
+void App::UpdateCamera(float deltaT)
+{
 }
 
 void App::UpdateMainConstantBuffer(float deltaT)
@@ -102,4 +113,15 @@ void App::RenderScene(void)
 	GraphicsContext& RenderContext = GraphicsContext::Begin(L"RenderScene");
 
 	RenderContext.Finish(true);
+}
+
+void App::OnResize(uint32_t width, uint32_t height)
+{
+
+	DirectX12Graphics::Resize(width, height);
+
+	//窗口调整大小，因此更新宽高比并重新计算投影矩阵;
+	mCamera->SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 40000.0f);
+
+
 }
