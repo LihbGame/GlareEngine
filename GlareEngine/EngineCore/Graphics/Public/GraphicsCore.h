@@ -48,6 +48,8 @@ namespace GlareEngine
 		extern CommandListManager g_CommandManager;
 		extern ContextManager g_ContextManager;
 
+		extern DXGI_FORMAT g_SwapChainFormat;
+
 		//Core Features
 		extern TextureManager g_TextureManager;
 

@@ -4,8 +4,9 @@
 #include "CommandContext.h"
 #include "TextureManager.h"
 #include "ConstantBuffer.h"
-#include "Camera.h"
+#include "EngineInput.h"
 
+#include "Camera.h"
 #include "CSky.h"
 
 //lib
@@ -18,6 +19,7 @@
 using namespace GlareEngine;
 using namespace GlareEngine::GameCore;
 using namespace GlareEngine::DirectX12Graphics;
+using namespace GlareEngine::EngineInput;
 
 class App :public GameApp
 {
@@ -33,14 +35,7 @@ public:
 	//virtual bool IsDone(void);
 
 	//每帧将调用一次update方法。 状态更新和场景渲染都应使用此方法处理。
-	virtual void Update(float deltaT);
-
-public:
-	void UpdateCamera(float deltaT);
-
-	void UpdateMainConstantBuffer(float deltaT);
-
-
+	virtual void Update(float DeltaTime);
 
 	//rendering pass
 	virtual void RenderScene(void);// = 0;
@@ -50,6 +45,18 @@ public:
 
 	virtual void OnResize(uint32_t width, uint32_t height);
 
+public:
+	void BuildRootSignature();
+
+	void BuildPSO();
+
+	void UpdateCamera(float DeltaTime);
+
+	void UpdateMainConstantBuffer(float DeltaTime);
+
+
+
+
 private:
 	//Main Constant Buffer
 	MainConstants mMainConstants;
@@ -57,8 +64,11 @@ private:
 	unique_ptr<Camera> mCamera;
 	//Sky
 	unique_ptr<CSky> mSky;
+	//Root Signature
+	RootSignature mRootSignature;
 
 
+	float mCameraSpeed = 100.0f;
 };
 
 
@@ -81,9 +91,14 @@ void App::Startup(void)
 	mCamera = make_unique<Camera>();
 	//Sky Initialize
 	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
+
+
+
+	BuildRootSignature();
+	BuildPSO();
 	
-	
-	
+
+
 	InitializeContext.Finish(true);
 }
 
@@ -91,21 +106,80 @@ void App::Cleanup(void)
 {
 }
 
-void App::Update(float deltaT)
+void App::Update(float DeltaTime)
 {
-	UpdateCamera(deltaT);
-	UpdateMainConstantBuffer(deltaT);
+	UpdateCamera(DeltaTime);
+	UpdateMainConstantBuffer(DeltaTime);
 
 
 }
 
-void App::UpdateCamera(float deltaT)
+void App::BuildRootSignature()
 {
+	mRootSignature.Reset(2, 2);
+	mRootSignature[0].InitAsBufferSRV(0, D3D12_SHADER_VISIBILITY_PIXEL);
+	mRootSignature[1].InitAsConstantBuffer(0);
+	mRootSignature.InitStaticSampler(0, SamplerLinearClampDesc);
+	mRootSignature.InitStaticSampler(1, SamplerPointClampDesc);
+	mRootSignature.Finalize(L"Render");
 }
 
-void App::UpdateMainConstantBuffer(float deltaT)
+void App::BuildPSO()
 {
+	mSky->BuildPSO(mRootSignature);
+}
 
+void App::UpdateCamera(float DeltaTime)
+{
+	if (EngineInput::IsPressed(GInput::kKey_W))
+	{
+		mCamera->Walk(mCameraSpeed * DeltaTime);
+	}
+
+	if (EngineInput::IsPressed(GInput::kKey_S))
+	{
+		mCamera->Walk(-mCameraSpeed * DeltaTime);
+	}
+
+	if (EngineInput::IsPressed(GInput::kKey_A))
+	{
+		mCamera->Strafe(-mCameraSpeed * DeltaTime);
+	}
+
+	if (EngineInput::IsPressed(GInput::kKey_D))
+	{
+		mCamera->Strafe(mCameraSpeed * DeltaTime);
+	}
+
+	//update camera matrix
+	mCamera->UpdateViewMatrix();
+}
+
+void App::UpdateMainConstantBuffer(float DeltaTime)
+{
+	XMMATRIX View = XMLoadFloat4x4(&mCamera->GetView4x4f());
+	XMMATRIX Proj = XMLoadFloat4x4(&mCamera->GetProj4x4f());
+
+	XMMATRIX ViewProj = XMMatrixMultiply(View, Proj);
+	XMMATRIX InvView = XMMatrixInverse(&XMMatrixDeterminant(View), View);
+	XMMATRIX InvProj = XMMatrixInverse(&XMMatrixDeterminant(Proj), Proj);
+	XMMATRIX InvViewProj = XMMatrixInverse(&XMMatrixDeterminant(ViewProj), ViewProj);
+
+	XMStoreFloat4x4(&mMainConstants.View, XMMatrixTranspose(View));
+	XMStoreFloat4x4(&mMainConstants.InvView, XMMatrixTranspose(InvView));
+	XMStoreFloat4x4(&mMainConstants.Proj, XMMatrixTranspose(Proj));
+	XMStoreFloat4x4(&mMainConstants.InvProj, XMMatrixTranspose(InvProj));
+	XMStoreFloat4x4(&mMainConstants.ViewProj, XMMatrixTranspose(ViewProj));
+	XMStoreFloat4x4(&mMainConstants.InvViewProj, XMMatrixTranspose(InvViewProj));
+	//XMStoreFloat4x4(&mMainConstants.ShadowTransform, XMMatrixTranspose(XMLoadFloat4x4(&mShadowMap->mShadowTransform)));
+
+	mMainConstants.EyePosW = mCamera->GetPosition3f();
+	mMainConstants.RenderTargetSize = XMFLOAT2((float)mClientWidth, (float)mClientHeight);
+	mMainConstants.InvRenderTargetSize = XMFLOAT2(1.0f / mClientWidth, 1.0f / mClientHeight);
+	mMainConstants.NearZ = 1.0f;
+	mMainConstants.FarZ = 1000.0f;
+	mMainConstants.TotalTime = GameTimer::TotalTime();
+	mMainConstants.DeltaTime = DeltaTime;
 }
 
 void App::RenderScene(void)
@@ -117,7 +191,6 @@ void App::RenderScene(void)
 
 void App::OnResize(uint32_t width, uint32_t height)
 {
-
 	DirectX12Graphics::Resize(width, height);
 
 	//窗口调整大小，因此更新宽高比并重新计算投影矩阵;

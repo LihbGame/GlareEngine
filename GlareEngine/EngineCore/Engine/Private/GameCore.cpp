@@ -39,6 +39,7 @@ namespace GlareEngine
 			DirectX12Graphics::Initialize();
 			EngineInput::Initialize();
 			EngineAdjust::Initialize();
+			GameTimer::Reset();
 
 			//Game Initialize
 			Game.Startup();
@@ -53,6 +54,7 @@ namespace GlareEngine
 		bool UpdateApplication(GameApp& Game)
 		{
 			EngineProfiling::Update();
+			GameTimer::Tick();
 
 			float DeltaTime = DirectX12Graphics::GetFrameTime();
 
@@ -131,8 +133,9 @@ namespace GlareEngine
 
 			assert(g_hWnd != 0);
 
+			//≥ı ºªØ
 			InitializeApplication(app);
-			
+
 			ShowWindow(g_hWnd, SW_SHOW);
 			UpdateWindow(g_hWnd);
 			

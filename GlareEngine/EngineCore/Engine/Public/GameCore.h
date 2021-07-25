@@ -21,7 +21,7 @@ namespace GlareEngine
 			virtual bool IsDone(void);
 
 			//每帧将调用一次update方法。 状态更新和场景渲染都应使用此方法处理。
-			virtual void Update(float deltaT) = 0;
+			virtual void Update(float DeltaTime) = 0;
 
 			//rendering pass
 			virtual void RenderScene(void) = 0;
@@ -42,8 +42,8 @@ namespace GlareEngine
 		protected:
 			static GameApp* mGameApp;
 
-			uint32_t mClientWidth;
-			uint32_t mClientHeight;
+			uint32_t mClientWidth = 1600;
+			uint32_t mClientHeight = 900;
 		};
 
 		void RunApplication(GameApp& app, const wchar_t* className,HINSTANCE HAND);

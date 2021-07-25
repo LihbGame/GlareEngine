@@ -32,9 +32,6 @@
 #include <winreg.h>        // To read the registry
 
 
-DXGI_FORMAT SwapChainFormat = DXGI_FORMAT_R10G10B10A2_UNORM;
-
-
 
 namespace GlareEngine
 {
@@ -57,6 +54,7 @@ namespace GlareEngine
 
 	namespace DirectX12Graphics
 	{
+		
 		void CreateD3DDevice();
 		void CheckUAVFormatSupport();
 		void CheckHDRSupport();
@@ -145,9 +143,13 @@ namespace GlareEngine
 		CommandListManager g_CommandManager;
 		ContextManager g_ContextManager;
 
+		//SwapChainFormat
+		DXGI_FORMAT g_SwapChainFormat = DXGI_FORMAT_R10G10B10A2_UNORM;
+
 		//Core Features
 		TextureManager g_TextureManager;
 
+		
 
 		//FEATURE LEVEL 11
 		D3D_FEATURE_LEVEL g_D3DFeatureLevel = D3D_FEATURE_LEVEL_11_0;
@@ -226,7 +228,7 @@ namespace GlareEngine
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 		swapChainDesc.Width = g_DisplayWidth;
 		swapChainDesc.Height = g_DisplayHeight;
-		swapChainDesc.Format = SwapChainFormat;
+		swapChainDesc.Format = g_SwapChainFormat;
 		swapChainDesc.Scaling = DXGI_SCALING_NONE;
 		swapChainDesc.SampleDesc.Quality = 0;
 		swapChainDesc.SampleDesc.Count = 1;
@@ -319,7 +321,7 @@ namespace GlareEngine
 		s_PresentPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 		s_PresentPSO.SetVertexShader(g_pScreenQuadVS, sizeof(g_pScreenQuadVS));
 		s_PresentPSO.SetPixelShader(g_pBufferCopyPS, sizeof(g_pBufferCopyPS));
-		s_PresentPSO.SetRenderTargetFormat(SwapChainFormat, DXGI_FORMAT_UNKNOWN);
+		s_PresentPSO.SetRenderTargetFormat(g_SwapChainFormat, DXGI_FORMAT_UNKNOWN);
 		s_PresentPSO.Finalize();
 
 		//Create SDR PSO
@@ -434,7 +436,7 @@ namespace GlareEngine
 		//Initialize Present PSO
 		InitializePersentPSO();
 
-		g_PreDisplayBuffer.Create(L"PreDisplay Buffer", g_DisplayWidth, g_DisplayHeight, 1, SwapChainFormat);
+		g_PreDisplayBuffer.Create(L"PreDisplay Buffer", g_DisplayWidth, g_DisplayHeight, 1, g_SwapChainFormat);
 
 		GPUTimeManager::Initialize(4096);
 		SetNativeResolution();
@@ -461,14 +463,14 @@ namespace GlareEngine
 		g_DisplayWidth = width;
 		g_DisplayHeight = height;
 
-		g_PreDisplayBuffer.Create(L"PreDisplay Buffer", width, height, 1, SwapChainFormat);
+		g_PreDisplayBuffer.Create(L"PreDisplay Buffer", width, height, 1, g_SwapChainFormat);
 
 		//Destroy old display buffers
 		for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
 			g_DisplayBuffers[i].Destroy();
 
 		//Resize Swap Chain 
-		ThrowIfFailed(s_SwapChain1->ResizeBuffers(SWAP_CHAIN_BUFFER_COUNT, width, height, SwapChainFormat, 0));
+		ThrowIfFailed(s_SwapChain1->ResizeBuffers(SWAP_CHAIN_BUFFER_COUNT, width, height, g_SwapChainFormat, 0));
 
 		for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
 		{
