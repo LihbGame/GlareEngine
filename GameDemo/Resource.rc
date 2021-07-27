@@ -50,7 +50,7 @@ END
 // Cursor
 //
 
-IDC_CURSOR1             CURSOR                  "Textures\\ICONS\\Arrow.cur"
+IDC_CURSOR1             CURSOR                  "..\\Resource\\Textures\\ICONS\\Arrow.cur"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -60,11 +60,11 @@ IDC_CURSOR1             CURSOR                  "Textures\\ICONS\\Arrow.cur"
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON1               ICON                    "Textures\\ICONS\\gamecontroller_128px_1180532_easyicon.net.ico"
+IDI_ICON1               ICON                    "..\\Resource\\Textures\\ICONS\\gamecontroller_128px_1180532_easyicon.net.ico"
 
-IDI_ICON3               ICON                    "Textures\\ICONS\\gameicon.ico"
+IDI_ICON3               ICON                    "..\\Resource\\Textures\\ICONS\\gameicon.ico"
 
-IDI_ICON2               ICON                    "Textures\\ICONS\\GAME_128px_1199103_easyicon.net.ico"
+IDI_ICON2               ICON                    "..\\Resource\\Textures\\ICONS\\GAME_128px_1199103_easyicon.net.ico"
 
 #endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////

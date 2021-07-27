@@ -136,6 +136,14 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>sample_framework_d.lib;ozz_geometry_d.lib;ozz_animation_d.lib;ozz_base_d.lib;ozz_options_d.lib;ozz_animation_tools_d.lib;ozz_animation_offline_d.lib;assimp-vc142-mtd.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <FxCompile>
+      <ShaderModel>6.0</ShaderModel>
+      <AdditionalOptions>-Qembed_debug %(AdditionalOptions)</AdditionalOptions>
+      <VariableName>g_p%(Filename)</VariableName>
+      <HeaderFileOutput>$(SolutionDir)\$(Platform)\$(Configuration)\CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput />
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -200,7 +208,6 @@
     <ClInclude Include="EngineCore\Public\L3DInputLayout.h" />
     <ClInclude Include="EngineCore\Public\d3dx12.h" />
     <ClInclude Include="EngineCore\Graphics\Public\DDSTextureLoader.h" />
-    <ClInclude Include="EngineCore\Public\L3DBaseApp.h" />
     <ClInclude Include="EngineCore\Public\Camera.h" />
     <ClInclude Include="EngineCore\Public\L3DGameTimer.h" />
     <ClInclude Include="EngineCore\Public\GeometryGenerator.h" />
@@ -220,21 +227,8 @@
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_rectpack.h" />
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_textedit.h" />
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_truetype.h" />
-    <ClInclude Include="EngineMain\Public\FrameResource.h" />
-    <ClInclude Include="EngineMain\Public\GameMain.h" />
     <None Include="EngineCore\Math\Functions.inl" />
-    <None Include="RanderEffects\ParticleSystem\Public\ParticleSystem.h" />
     <None Include="EngineCore\Graphics\Public\GPUBuffer.h" />
-    <ClInclude Include="RanderEffects\ParticleSystem\Public\BaseParticle.h" />
-    <ClInclude Include="RanderEffects\ParticleSystem\Public\ParticleGroup.h" />
-    <ClInclude Include="RanderEffects\Terrain\Public\Grass.h" />
-    <ClInclude Include="EngineCore\Public\PSOManager.h" />
-    <ClInclude Include="RanderEffects\HDRSky\Public\Sky.h" />
-    <ClInclude Include="RanderEffects\Shadow\Public\ShadowMap.h" />
-    <ClInclude Include="RanderEffects\ShockWaveWater\Public\ShockWaveWater.h" />
-    <ClInclude Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.h" />
-    <ClInclude Include="EngineMain\Public\resource.h" />
-    <ClInclude Include="RanderEffects\Terrain\Public\HeightmapTerrain.h" />
     <ClInclude Include="GraphicEffects\Misc\RanderObject.h" />
     <ClInclude Include="ShaderSource\Public\BaseShader.h" />
     <ClInclude Include="ShaderSource\Public\ComplexStaticModelInstanceShader.h" />
@@ -246,9 +240,9 @@
     <ClInclude Include="ShaderSource\Public\SkinAnimeShader.h" />
     <ClInclude Include="ShaderSource\Public\SkyShader.h" />
     <ClInclude Include="ShaderSource\Public\SimpleGeometryShadowMapShader.h" />
-    <ClInclude Include="RanderEffects\Water\Public\Waves.h" />
     <ClInclude Include="ShaderSource\Public\WaterRefractionMaskShader.h" />
     <None Include="Shaders\Misc\ColorSpaceUtility.hlsli" />
+    <None Include="Shaders\Misc\CommonResource.hlsli" />
     <None Include="Shaders\Misc\ShaderUtility.hlsli" />
   </ItemGroup>
   <ItemGroup>
@@ -287,7 +281,6 @@
     <ClCompile Include="EngineCore\Graphics\Private\LinearAllocator.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\GraphicsCommon.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\ShadowBuffer.cpp" />
-    <ClCompile Include="EngineCore\Private\L3DBaseApp.cpp" />
     <ClCompile Include="EngineCore\Private\Camera.cpp" />
     <ClCompile Include="EngineCore\Private\L3DGameTimer.cpp" />
     <ClCompile Include="EngineCore\Private\GeometryGenerator.cpp" />
@@ -305,35 +298,8 @@
     <ClCompile Include="EngineEditor\ImgUIEditor\imgui_impl_dx12.cpp" />
     <ClCompile Include="EngineEditor\ImgUIEditor\imgui_impl_win32.cpp" />
     <ClCompile Include="EngineEditor\ImgUIEditor\imgui_widgets.cpp" />
-    <ClCompile Include="EngineMain\Private\FrameResource.cpp" />
-    <ClCompile Include="EngineMain\Private\GameMain.cpp" />
     <ClCompile Include="Animation\ModelLoader.cpp" />
-    <None Include="RanderEffects\ParticleSystem\Private\ParticleSystem.cpp" />
     <None Include="EngineCore\Graphics\Private\GPUBuffer.cpp" />
-    <ClCompile Include="RanderEffects\ParticleSystem\Private\BaseParticle.cpp" />
-    <ClCompile Include="RanderEffects\ParticleSystem\Private\ParticleGroup.cpp" />
-    <ClCompile Include="RanderEffects\Terrain\Private\Grass.cpp" />
-    <ClCompile Include="EngineCore\Private\PSOManager.cpp" />
-    <ClCompile Include="RanderEffects\HDRSky\Private\Sky.cpp" />
-    <ClCompile Include="RanderEffects\Shadow\Private\ShadowMap.cpp" />
-    <ClCompile Include="RanderEffects\ShockWaveWater\Private\ShockWaveWater.cpp" />
-    <ClCompile Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.cpp" />
-    <ClCompile Include="RanderEffects\Terrain\Private\HeightmapTerrain.cpp" />
-    <ClCompile Include="ShaderSource\Private\BaseShader.cpp" />
-    <ClCompile Include="ShaderSource\Private\ComplexStaticModelInstanceShader.cpp" />
-    <ClCompile Include="ShaderSource\Private\GrassShader.cpp" />
-    <ClCompile Include="ShaderSource\Private\HeightMapTerrainShader.cpp" />
-    <ClCompile Include="ShaderSource\Private\ShockWaveWaterShader.cpp" />
-    <ClCompile Include="ShaderSource\Private\SimpleGeometryInstanceShader.cpp" />
-    <ClCompile Include="ShaderSource\Private\GerstnerWaveShader.cpp" />
-    <ClCompile Include="ShaderSource\Private\SkinAnimeShader.cpp" />
-    <ClCompile Include="ShaderSource\Private\SkyShader.cpp" />
-    <ClCompile Include="ShaderSource\Private\SimpleGeometryShadowMapShader.cpp" />
-    <ClCompile Include="RanderEffects\Water\Private\Waves.cpp" />
-    <ClCompile Include="ShaderSource\Private\WaterRefractionMaskShader.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="GlareEngine.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\gamecontroller_128px_1180532_easyicon.net.ico" />
@@ -350,9 +316,6 @@
   <ItemGroup>
     <None Include="packages.config" />
     <Image Include="Textures\ICONS\Arrow.cur" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="imgui.ini" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Dependences\lib\ozz\debug\ozz_animation_d.lib" />
@@ -414,9 +377,27 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ObjectFileOutput>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\Shaders\Misc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\Shaders\Misc</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Qembed_debug %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="Shaders\Sky\SkyPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalIncludeDirectories>
+    </FxCompile>
+    <FxCompile Include="Shaders\Sky\SkyVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <FileType>Document</FileType>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalIncludeDirectories>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

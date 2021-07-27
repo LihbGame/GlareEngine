@@ -2,13 +2,24 @@
 #include "GraphicsCore.h"
 #include "GeometryGenerator.h"
 #include "TextureManager.h"
+#include "CommandContext.h"
 #include "Vertex.h"
+#include "L3DInputLayout.h"
+//shader
+#include "CompiledShaders/SkyVS.h"
+#include "CompiledShaders/SkyPS.h"
 
+using namespace GlareEngine::DirectX12Graphics;
 CSky::CSky(ID3D12GraphicsCommandList* CommandList,
 	float radius, int sliceCount, int stackCount)
 {
 	BuildSkyMesh(CommandList, radius, sliceCount, stackCount);
 	BuildSkySRV();
+
+	//world mat
+	XMStoreFloat4x4(&mWorld, XMMatrixScaling(5000.0f, 5000.0f, 5000.0f));
+
+
 }
 
 CSky::~CSky()
@@ -63,7 +74,8 @@ void CSky::BuildSkyMesh(ID3D12GraphicsCommandList* CommandList, float radius, in
 
 void CSky::BuildSkySRV()
 {
-	auto SkyTex = g_TextureManager.GetTexture(L"HDRSky\\Sky")->Resource;
+	auto SkyTex = g_TextureManager.GetTexture(L"HDRSky\\Sky",false)->Resource;
+	m_Descriptor= AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC SkysrvDesc = {};
 	SkysrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -72,29 +84,34 @@ void CSky::BuildSkySRV()
 	SkysrvDesc.TextureCube.MipLevels = SkyTex->GetDesc().MipLevels;
 	SkysrvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
 	SkysrvDesc.Format = SkyTex->GetDesc().Format;
-	g_Device->CreateShaderResourceView(SkyTex.Get(), &SkysrvDesc, *m_pDescriptor);
+	g_Device->CreateShaderResourceView(SkyTex.Get(), &SkysrvDesc, m_Descriptor);
 }
 
-void CSky::Draw()
+void CSky::Draw(GraphicsContext& Context)
 {
-
-
+	Context.SetPipelineState(mSkyPSO);
+	Context.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	Context.SetDynamicDescriptor(2, 0, m_Descriptor);
+	Context.SetIndexBuffer(mSkyMesh->IndexBufferView());
+	Context.SetVertexBuffer(0,mSkyMesh->VertexBufferView());
+	Context.SetDynamicConstantBufferView(1, sizeof(mWorld), &mWorld);
+	Context.DrawIndexed(mSkyMesh->DrawArgs["Sky"].IndexCount, mSkyMesh->DrawArgs["Sky"].StartIndexLocation, mSkyMesh->DrawArgs["Sky"].BaseVertexLocation);
 }
 
 void CSky::BuildPSO(const RootSignature& rootSignature)
 {
 	D3D12_DEPTH_STENCIL_DESC  DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-	DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+	DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
 
 	mSkyPSO.SetRootSignature(rootSignature);
-	mSkyPSO.SetRasterizerState(RasterizerDefaultCw);
+	mSkyPSO.SetRasterizerState(RasterizerDefault);
 	mSkyPSO.SetBlendState(BlendDisable);
 	mSkyPSO.SetDepthStencilState(DepthStencilState);
 	mSkyPSO.SetSampleMask(0xFFFFFFFF);
-	mSkyPSO.SetInputLayout(0, nullptr);
+	mSkyPSO.SetInputLayout(L3DInputLayout::Pos.size(), L3DInputLayout::Pos.data());
 	mSkyPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-	mSkyPSO.SetVertexShader(g_pScreenQuadVS, sizeof(g_pScreenQuadVS));
-	mSkyPSO.SetPixelShader(g_pBufferCopyPS, sizeof(g_pBufferCopyPS));
+	mSkyPSO.SetVertexShader(g_pSkyVS, sizeof(g_pSkyVS));
+	mSkyPSO.SetPixelShader(g_pSkyPS, sizeof(g_pSkyPS));
 	mSkyPSO.SetRenderTargetFormat(g_SwapChainFormat, DXGI_FORMAT_UNKNOWN);
 	mSkyPSO.Finalize();
 

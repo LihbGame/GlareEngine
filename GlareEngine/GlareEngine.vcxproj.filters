@@ -67,19 +67,7 @@
     </ClInclude>
     <ClInclude Include="ShaderSource\Public\SkyShader.h" />
     <ClInclude Include="ShaderSource\Public\SimpleGeometryInstanceShader.h" />
-    <ClInclude Include="RanderEffects\HDRSky\Public\Sky.h" />
-    <ClInclude Include="RanderEffects\Shadow\Public\ShadowMap.h" />
     <ClInclude Include="ShaderSource\Public\SimpleGeometryShadowMapShader.h" />
-    <ClInclude Include="EngineMain\Public\FrameResource.h">
-      <Filter>MainSource\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="EngineMain\Public\GameMain.h">
-      <Filter>MainSource\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.h" />
-    <ClInclude Include="RanderEffects\Water\Public\Waves.h">
-      <Filter>Water\Public</Filter>
-    </ClInclude>
     <ClInclude Include="Animation\ModelMesh.h" />
     <ClInclude Include="Animation\ModelLoader.h" />
     <ClInclude Include="ShaderSource\Public\ComplexStaticModelInstanceShader.h" />
@@ -87,27 +75,14 @@
     <ClInclude Include="Animation\AnimEvaluator.h" />
     <ClInclude Include="Animation\Animations.h" />
     <ClInclude Include="Animation\OzzAnimePlayBack.h" />
-    <ClInclude Include="RanderEffects\ShockWaveWater\Public\ShockWaveWater.h" />
     <ClInclude Include="ShaderSource\Public\WaterRefractionMaskShader.h" />
     <ClInclude Include="ShaderSource\Public\ShockWaveWaterShader.h" />
-    <ClInclude Include="EngineMain\Public\resource.h" />
-    <ClInclude Include="RanderEffects\Terrain\Public\HeightmapTerrain.h" />
     <ClInclude Include="ShaderSource\Public\HeightMapTerrainShader.h" />
-    <ClInclude Include="RanderEffects\Terrain\Public\Grass.h" />
     <ClInclude Include="ShaderSource\Public\GrassShader.h" />
     <ClInclude Include="EngineCore\Public\d3dx12.h">
       <Filter>Core\Public</Filter>
     </ClInclude>
-    <ClInclude Include="EngineCore\Public\L3DBaseApp.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="EngineCore\Public\L3DCamera.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
     <ClInclude Include="EngineCore\Public\L3DGameTimer.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="EngineCore\Public\L3DGeometryGenerator.h">
       <Filter>Core\Public</Filter>
     </ClInclude>
     <ClInclude Include="EngineCore\Public\L3DInputLayout.h" />
@@ -117,14 +92,6 @@
     </ClInclude>
     <ClInclude Include="EngineCore\Public\L3DUploadBuffer.h">
       <Filter>Core\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="EngineCore\Public\L3DVertex.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="RanderEffects\ParticleSystem\Public\BaseParticle.h" />
-    <ClInclude Include="RanderEffects\ParticleSystem\Public\ParticleGroup.h" />
-    <ClInclude Include="EngineCore\Public\PSOManager.h">
-      <Filter>PSO\Public</Filter>
     </ClInclude>
     <ClInclude Include="EngineCore\Math\Common.h" />
     <ClInclude Include="EngineCore\Math\Scalar.h" />
@@ -157,51 +124,15 @@
     <ClInclude Include="EngineCore\Public\TextureManage.h" />
     <ClInclude Include="EngineCore\Public\EngineUtility.h" />
     <ClInclude Include="EngineCore\Graphics\Public\TextureManager.h" />
+    <ClInclude Include="EngineCore\Public\Camera.h" />
+    <ClInclude Include="EngineCore\Public\GeometryGenerator.h" />
+    <ClInclude Include="EngineCore\Public\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
-      <Filter>ShaderSource\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\GerstnerWaveShader.cpp">
-      <Filter>ShaderSource\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\SkyShader.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\SimpleGeometryInstanceShader.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="RanderEffects\HDRSky\Private\Sky.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="RanderEffects\Shadow\Private\ShadowMap.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\SimpleGeometryShadowMapShader.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineMain\Private\FrameResource.cpp">
-      <Filter>MainSource\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineMain\Private\GameMain.cpp">
-      <Filter>MainSource\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="RanderEffects\SimpleGeoInstance\SimpleGeoInstance.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="RanderEffects\Water\Private\Waves.cpp">
-      <Filter>Water\Private</Filter>
-    </ClCompile>
     <ClCompile Include="Animation\ModelMesh.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="Animation\ModelLoader.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\ComplexStaticModelInstanceShader.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\SkinAnimeShader.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="Animation\AnimEvaluator.cpp">
@@ -210,37 +141,7 @@
     <ClCompile Include="Animation\Animations.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="RanderEffects\ShockWaveWater\Private\ShockWaveWater.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\WaterRefractionMaskShader.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\ShockWaveWaterShader.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="RanderEffects\Terrain\Private\HeightmapTerrain.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\HeightMapTerrainShader.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="RanderEffects\Terrain\Private\Grass.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\GrassShader.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Private\L3DBaseApp.cpp">
-      <Filter>Core\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Private\L3DCamera.cpp">
-      <Filter>Core\Private</Filter>
-    </ClCompile>
     <ClCompile Include="EngineCore\Private\L3DGameTimer.cpp">
-      <Filter>Core\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Private\L3DGeometryGenerator.cpp">
       <Filter>Core\Private</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Private\L3DInputLayout.cpp">
@@ -251,18 +152,6 @@
     </ClCompile>
     <ClCompile Include="EngineCore\Private\L3DMathHelper.cpp">
       <Filter>Core\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Private\L3DVertex.cpp">
-      <Filter>Core\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="RanderEffects\ParticleSystem\Private\BaseParticle.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="RanderEffects\ParticleSystem\Private\ParticleGroup.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Private\PSOManager.cpp">
-      <Filter>PSO\Private</Filter>
     </ClCompile>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
       <Filter>MainSource</Filter>
@@ -378,6 +267,15 @@
     <ClCompile Include="EngineCore\Graphics\Private\TextureManager.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
+    <ClCompile Include="EngineCore\Private\Camera.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Private\GeometryGenerator.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Private\Vertex.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -394,12 +292,7 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="imgui.ini" />
     <None Include="packages.config" />
-    <None Include="RanderEffects\ParticleSystem\Private\ParticleSystem.cpp">
-      <Filter>MainSource</Filter>
-    </None>
-    <None Include="RanderEffects\ParticleSystem\Public\ParticleSystem.h" />
     <None Include="EngineCore\Graphics\Public\GraphicsCore.h" />
     <None Include="EngineCore\Graphics\Public\SamplerManager.h" />
     <None Include="EngineCore\Graphics\Public\GPUBuffer.h" />
@@ -433,11 +326,7 @@
     <None Include="EngineCore\Graphics\Public\RootSignature.h" />
     <None Include="Shaders\Misc\ShaderUtility.hlsli" />
     <None Include="Shaders\Misc\ColorSpaceUtility.hlsli" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="GlareEngine.rc">
-      <Filter>资源文件</Filter>
-    </ResourceCompile>
+    <None Include="Shaders\Misc\CommonResource.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Dependences\lib\ozz\debug\ozz_animation_d.lib" />
@@ -452,5 +341,7 @@
     <FxCompile Include="Shaders\Present\PresentSDRPS.hlsl" />
     <FxCompile Include="Shaders\Misc\ScreenQuadVS.hlsl" />
     <FxCompile Include="Shaders\Present\BufferCopyPS.hlsl" />
+    <FxCompile Include="Shaders\Sky\SkyPS.hlsl" />
+    <FxCompile Include="Shaders\Sky\SkyVS.hlsl" />
   </ItemGroup>
 </Project>

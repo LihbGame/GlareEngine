@@ -5,6 +5,7 @@
 #include "TextureManager.h"
 #include "ConstantBuffer.h"
 #include "EngineInput.h"
+#include "BufferManager.h"
 
 #include "Camera.h"
 #include "CSky.h"
@@ -67,7 +68,10 @@ private:
 	//Root Signature
 	RootSignature mRootSignature;
 
-
+	//Viewport and Scissor
+	D3D12_VIEWPORT m_MainViewport;
+	D3D12_RECT m_MainScissor;
+	
 	float mCameraSpeed = 100.0f;
 };
 
@@ -116,12 +120,13 @@ void App::Update(float DeltaTime)
 
 void App::BuildRootSignature()
 {
-	mRootSignature.Reset(2, 2);
-	mRootSignature[0].InitAsBufferSRV(0, D3D12_SHADER_VISIBILITY_PIXEL);
-	mRootSignature[1].InitAsConstantBuffer(0);
-	mRootSignature.InitStaticSampler(0, SamplerLinearClampDesc);
-	mRootSignature.InitStaticSampler(1, SamplerPointClampDesc);
-	mRootSignature.Finalize(L"Render");
+	mRootSignature.Reset(3, 2);
+	mRootSignature[0].InitAsConstantBuffer(0);
+	mRootSignature[1].InitAsConstantBuffer(1);
+	mRootSignature[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1);
+	mRootSignature.InitStaticSampler(0, SamplerLinearWrapDesc);
+	mRootSignature.InitStaticSampler(1, SamplerLinearClampDesc);
+	mRootSignature.Finalize(L"Render", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 }
 
 void App::BuildPSO()
@@ -186,6 +191,21 @@ void App::RenderScene(void)
 {
 	GraphicsContext& RenderContext = GraphicsContext::Begin(L"RenderScene");
 
+	RenderContext.SetViewportAndScissor(m_MainViewport, m_MainScissor);
+
+	RenderContext.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+	RenderContext.ClearRenderTarget(g_SceneColorBuffer);
+
+	RenderContext.SetRootSignature(mRootSignature);
+	//set render target
+	RenderContext.SetRenderTarget(g_SceneColorBuffer.GetRTV());
+	//set main constant buffer
+	RenderContext.SetDynamicConstantBufferView(0, sizeof(mMainConstants), &mMainConstants);
+
+	//draw sky
+	mSky->Draw(RenderContext);
+
+
 	RenderContext.Finish(true);
 }
 
@@ -196,5 +216,14 @@ void App::OnResize(uint32_t width, uint32_t height)
 	//窗口调整大小，因此更新宽高比并重新计算投影矩阵;
 	mCamera->SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 40000.0f);
 
+	m_MainViewport.Width = (float)g_SceneColorBuffer.GetWidth();
+	m_MainViewport.Height = (float)g_SceneColorBuffer.GetHeight();
+	m_MainViewport.MinDepth = 0.0f;
+	m_MainViewport.MaxDepth = 1.0f;
+
+	m_MainScissor.left = 0;
+	m_MainScissor.top = 0;
+	m_MainScissor.right = (LONG)g_SceneColorBuffer.GetWidth();
+	m_MainScissor.bottom = (LONG)g_SceneColorBuffer.GetHeight();
 
 }

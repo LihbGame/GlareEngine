@@ -21,9 +21,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Textures\ICONS\Arrow.cur">
-      <Filter>资源文件</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -37,16 +34,5 @@
     <ResourceCompile Include="Resource.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Textures\ICONS\gamecontroller_128px_1180532_easyicon.net.ico">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="Textures\ICONS\gameicon.ico">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
-      <Filter>资源文件</Filter>
-    </Image>
   </ItemGroup>
 </Project>

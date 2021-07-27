@@ -7,7 +7,7 @@
 /GlareEngine/Debug/
 /GlareEngine/x64/
 /GlareEngine/Release/
-/GlareEngine/Textures/HDRSky/
+/Resource/Textures/HDRSky/
 /GlareEngine/Dependences/lib/assimp-vc142-mt.lib
 /GlareEngine/EngineEditor/NoesisUIEditor/Data/.vs/
 /GlareEngine/EngineEditor/NoesisUIEditor/Data/bin/
@@ -17,4 +17,7 @@
 /GameDemo/x64/
 /GameDemo/Release/
 /GameDemo/.vs/
-/GameDemo/Textures/HDRSky/
+/EngineDemo(Old Framework)/Debug/
+/EngineDemo(Old Framework)/x64/
+/EngineDemo(Old Framework)/Release/
+/EngineDemo(Old Framework)/.vs/

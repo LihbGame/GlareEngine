@@ -18,7 +18,7 @@ ModelLoader::~ModelLoader()
 
 bool ModelLoader::LoadModel(string filename)
 {
-    directory = "Model/";
+    directory = "../Resource/Model/";
 
     string FullName= directory + filename;
     const aiScene* pScene = importer.ReadFile(FullName,

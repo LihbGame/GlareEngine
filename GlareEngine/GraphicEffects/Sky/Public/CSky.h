@@ -2,6 +2,7 @@
 #include "RanderObject.h"
 #include "PipelineState.h"
 
+
 class CSky :
     public RanderObject
 {
@@ -17,15 +18,18 @@ public:
     void BuildSkySRV();
 
 
-    virtual void Draw();
+    virtual void Draw(GraphicsContext& Context);
     virtual void BuildPSO(const RootSignature& rootSignature);
 
 private:
+	//World mat
+	XMFLOAT4X4 mWorld = MathHelper::Identity4x4();
     //Sky Cube Mesh
     std::unique_ptr<MeshGeometry> mSkyMesh;
     //Sky SRV Descriptor
-    CD3DX12_CPU_DESCRIPTOR_HANDLE* m_pDescriptor=nullptr;
+    CD3DX12_CPU_DESCRIPTOR_HANDLE m_Descriptor;
     //Sky PSO
     GraphicsPSO mSkyPSO;
+
 };
 

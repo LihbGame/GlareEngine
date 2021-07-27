@@ -51,7 +51,7 @@ void EngineGUI::InitGUI(HWND GameWnd,ID3D12DescriptorHeap* GUISrvDescriptorHeap)
    // - Read 'docs/FONTS.txt' for more instructions and details.
    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
    //io.Fonts->AddFontDefault();
-   io.Fonts->AddFontFromFileTTF("UImisc/fonts/Roboto-Medium.ttf", 16.0f);
+   io.Fonts->AddFontFromFileTTF("../GlareEngine/UImisc/fonts/Roboto-Medium.ttf", 16.0f);
    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
 	//io.Fonts->AddFontFromFileTTF("UImisc/fonts/DroidSans.ttf", 16.0f);
 	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);

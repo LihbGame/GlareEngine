@@ -479,7 +479,7 @@ namespace GlareEngine
 
 		inline void GraphicsContext::SetDynamicConstantBufferView(UINT RootIndex, size_t BufferSize, const void* BufferData)
 		{
-			assert(BufferData != nullptr && Math::IsAligned(BufferData, 16));
+			assert(BufferData != nullptr && Math::IsAligned(BufferSize, 16));
 			DynamicAlloc cb = m_CPULinearAllocator.Allocate(BufferSize);
 			memcpy(cb.DataPtr, BufferData, BufferSize);
 			m_CommandList->SetGraphicsRootConstantBufferView(RootIndex, cb.GPUAddress);

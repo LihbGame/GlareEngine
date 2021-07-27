@@ -150,7 +150,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Textures\ICONS\Arrow.cur" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConstantBuffer.h" />
@@ -158,11 +157,6 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Textures\ICONS\gamecontroller_128px_1180532_easyicon.net.ico" />
-    <Image Include="Textures\ICONS\gameicon.ico" />
-    <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

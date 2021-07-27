@@ -41,7 +41,7 @@ private:
 	ID3D12Device * md3dDevice;
 	ID3D12GraphicsCommandList *mCommandList;
 	std::unordered_map<std::wstring, std::unique_ptr<Texture>> mTextures;
-	std::wstring RootFilePath = L"Textures/";
+	std::wstring RootFilePath = L"../Resource/Textures/";
 	UINT mCbvSrvDescriptorSize;
 };
 

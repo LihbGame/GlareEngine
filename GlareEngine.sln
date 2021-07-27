@@ -6,6 +6,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GlareEngine", "GlareEngine\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameDemo", "GameDemo\GameDemo.vcxproj", "{A0BBF2F5-5EE7-46AB-8B74-2779591EC727}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EngineDemo(Old Framework)", "EngineDemo(Old Framework)\EngineDemo(Old Framework).vcxproj", "{D45CF84C-7CDB-4F17-8995-A7F55D58BF79}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,6 +38,16 @@ Global
 		{A0BBF2F5-5EE7-46AB-8B74-2779591EC727}.Release|x64.Build.0 = Release|x64
 		{A0BBF2F5-5EE7-46AB-8B74-2779591EC727}.Release|x86.ActiveCfg = Release|Win32
 		{A0BBF2F5-5EE7-46AB-8B74-2779591EC727}.Release|x86.Build.0 = Release|Win32
+		{D45CF84C-7CDB-4F17-8995-A7F55D58BF79}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{D45CF84C-7CDB-4F17-8995-A7F55D58BF79}.Debug|x64.ActiveCfg = Debug|x64
+		{D45CF84C-7CDB-4F17-8995-A7F55D58BF79}.Debug|x64.Build.0 = Debug|x64
+		{D45CF84C-7CDB-4F17-8995-A7F55D58BF79}.Debug|x86.ActiveCfg = Debug|Win32
+		{D45CF84C-7CDB-4F17-8995-A7F55D58BF79}.Debug|x86.Build.0 = Debug|Win32
+		{D45CF84C-7CDB-4F17-8995-A7F55D58BF79}.Release|Any CPU.ActiveCfg = Release|Win32
+		{D45CF84C-7CDB-4F17-8995-A7F55D58BF79}.Release|x64.ActiveCfg = Release|x64
+		{D45CF84C-7CDB-4F17-8995-A7F55D58BF79}.Release|x64.Build.0 = Release|x64
+		{D45CF84C-7CDB-4F17-8995-A7F55D58BF79}.Release|x86.ActiveCfg = Release|Win32
+		{D45CF84C-7CDB-4F17-8995-A7F55D58BF79}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

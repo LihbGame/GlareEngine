@@ -1,4 +1,4 @@
-#include "ShaderUtility.hlsli"
+#include "../Misc/ShaderUtility.hlsli"
 
 Texture2D<float3> ColorTex : register(t0);
 
