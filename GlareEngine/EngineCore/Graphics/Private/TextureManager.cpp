@@ -34,5 +34,14 @@ namespace GlareEngine
 			}
 			return mTextures[name];
 		}
+
+		void TextureManager::ShutDown()
+		{
+			for (auto &e:mTextures)
+			{
+				e.second->Shutdown();
+			}
+
+		}
 	}
 }

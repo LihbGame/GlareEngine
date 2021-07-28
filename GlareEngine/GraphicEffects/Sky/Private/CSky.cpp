@@ -3,6 +3,7 @@
 #include "GeometryGenerator.h"
 #include "TextureManager.h"
 #include "CommandContext.h"
+#include "BufferManager.h"
 #include "Vertex.h"
 #include "L3DInputLayout.h"
 //shader
@@ -24,6 +25,12 @@ CSky::CSky(ID3D12GraphicsCommandList* CommandList,
 
 CSky::~CSky()
 {
+
+}
+
+void CSky::ShutDown()
+{
+	mSkyMesh->ShutDown();
 }
 
 void CSky::BuildSkyMesh(ID3D12GraphicsCommandList* CommandList, float radius, int sliceCount, int stackCount)
@@ -112,7 +119,7 @@ void CSky::BuildPSO(const RootSignature& rootSignature)
 	mSkyPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 	mSkyPSO.SetVertexShader(g_pSkyVS, sizeof(g_pSkyVS));
 	mSkyPSO.SetPixelShader(g_pSkyPS, sizeof(g_pSkyPS));
-	mSkyPSO.SetRenderTargetFormat(g_SwapChainFormat, DXGI_FORMAT_UNKNOWN);
+	mSkyPSO.SetRenderTargetFormat(DefaultHDRColorFormat, DXGI_FORMAT_UNKNOWN);
 	mSkyPSO.Finalize();
 
 }

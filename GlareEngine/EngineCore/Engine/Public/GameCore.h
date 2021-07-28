@@ -4,7 +4,7 @@ namespace GlareEngine
 {
 	namespace GameCore
 	{
-
+		extern HWND g_hWnd;
 		class GameApp
 		{
 		public:
@@ -38,7 +38,12 @@ namespace GlareEngine
 			static GameApp* GetApp() { return mGameApp; }
 
 			float AspectRatio() const;
-		
+		protected:
+			// 处理鼠标输入的重载函数
+			virtual void OnMouseDown(WPARAM btnState, int x, int y) {}
+			virtual void OnMouseUp(WPARAM btnState, int x, int y) {}
+			virtual void OnMouseMove(WPARAM btnState, int x, int y) {}
+
 		protected:
 			static GameApp* mGameApp;
 

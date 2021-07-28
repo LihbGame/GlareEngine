@@ -68,6 +68,9 @@ namespace GlareEngine
 		//extern ByteAddressBuffer g_FXAAWorkQueue;
 		//extern TypedBuffer g_FXAAColorQueue;
 
+
+		extern DXGI_FORMAT DefaultHDRColorFormat;
+
 		void InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t NativeHeight);
 		void ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t NativeHeight);
 		void DestroyRenderingBuffers();

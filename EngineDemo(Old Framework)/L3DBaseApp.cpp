@@ -162,8 +162,8 @@ void D3DApp::OnResize()
 	//更新视口转换以覆盖客户端区域。
 	mScreenViewport.TopLeftX = 0;// mClientWidth * 1.0f / 6.0f;
 	mScreenViewport.TopLeftY = 0;// MainMenuBarHeight;
-	mScreenViewport.Width = mClientWidth;// static_cast<float>(mClientWidth * 2.0f / 3.0f);
-	mScreenViewport.Height = mClientHeight;// static_cast<float>(mClientHeight * 0.75f - MainMenuBarHeight);
+	mScreenViewport.Width = static_cast<float>(mClientWidth);// static_cast<float>(mClientWidth * 2.0f / 3.0f);
+	mScreenViewport.Height = static_cast<float>(mClientHeight);// static_cast<float>(mClientHeight * 0.75f - MainMenuBarHeight);
 	mScreenViewport.MinDepth = 0.0f;
 	mScreenViewport.MaxDepth = 1.0f;
 	mScissorRect = {  static_cast<LONG>(mClientWidth * 1.0f / 6.0f-10.0f),

@@ -16,7 +16,7 @@ public:
         float radius, int sliceCount, int stackCount);
 
     void BuildSkySRV();
-
+    void ShutDown();
 
     virtual void Draw(GraphicsContext& Context);
     virtual void BuildPSO(const RootSignature& rootSignature);

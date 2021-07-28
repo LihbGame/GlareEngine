@@ -355,7 +355,7 @@ namespace GlareEngine
 		Context.SetPipelineState(PresentSDRPS);
 		Context.TransitionResource(g_DisplayBuffers[g_CurrentBuffer], D3D12_RESOURCE_STATE_RENDER_TARGET);
 		Context.SetRenderTarget(g_DisplayBuffers[g_CurrentBuffer].GetRTV());
-		Context.SetViewportAndScissor(0, 0, g_NativeWidth, g_NativeHeight);
+		Context.SetViewportAndScissor(0, 0, g_DisplayWidth, g_DisplayHeight);
 		Context.Draw(3);
 
 		Context.TransitionResource(g_DisplayBuffers[g_CurrentBuffer], D3D12_RESOURCE_STATE_PRESENT);
@@ -436,7 +436,7 @@ namespace GlareEngine
 		//Initialize Present PSO
 		InitializePersentPSO();
 
-		g_PreDisplayBuffer.Create(L"PreDisplay Buffer", g_DisplayWidth, g_DisplayHeight, 1, g_SwapChainFormat);
+		//g_PreDisplayBuffer.Create(L"PreDisplay Buffer", g_DisplayWidth, g_DisplayHeight, 1, g_SwapChainFormat);
 
 		GPUTimeManager::Initialize(4096);
 		SetNativeResolution();
@@ -463,7 +463,7 @@ namespace GlareEngine
 		g_DisplayWidth = width;
 		g_DisplayHeight = height;
 
-		g_PreDisplayBuffer.Create(L"PreDisplay Buffer", width, height, 1, g_SwapChainFormat);
+		//g_PreDisplayBuffer.Create(L"PreDisplay Buffer", width, height, 1, g_SwapChainFormat);
 
 		//Destroy old display buffers
 		for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
@@ -483,7 +483,7 @@ namespace GlareEngine
 		g_CurrentBuffer = 0;
 		g_CommandManager.IdleGPU();
 
-		ResizeDisplayDependentBuffers(g_NativeWidth, g_NativeHeight);
+		ResizeDisplayDependentBuffers(width, height);
 	}
 
 	void DirectX12Graphics::Terminate(void)
@@ -509,7 +509,6 @@ namespace GlareEngine
 		//PostEffects::Shutdown();
 		//SSAO::Shutdown();
 		//ParticleEffects::Shutdown();
-		//TextureManager::Shutdown();
 
 		for (UINT i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
 			g_DisplayBuffers[i].Destroy();
@@ -518,6 +517,7 @@ namespace GlareEngine
 		ID3D12DebugDevice* debugInterface;
 		if (SUCCEEDED(g_Device->QueryInterface(&debugInterface)))
 		{
+			
 			debugInterface->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL | D3D12_RLDO_IGNORE_INTERNAL);
 			debugInterface->Release();
 		}

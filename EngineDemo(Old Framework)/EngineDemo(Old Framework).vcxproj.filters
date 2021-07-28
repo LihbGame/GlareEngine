@@ -180,9 +180,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="small.ico">
-      <Filter>资源文件</Filter>
-    </Image>
     <Image Include="..\Resource\Textures\ICONS\gamecontroller_128px_1180532_easyicon.net.ico">
       <Filter>资源文件</Filter>
     </Image>

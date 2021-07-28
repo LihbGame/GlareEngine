@@ -54,8 +54,11 @@ public:
 	void UpdateCamera(float DeltaTime);
 
 	void UpdateMainConstantBuffer(float DeltaTime);
-
-
+protected:
+	// 处理鼠标输入的重载函数
+	virtual void OnMouseDown(WPARAM btnState, int x, int y);
+	virtual void OnMouseUp(WPARAM btnState, int x, int y);
+	virtual void OnMouseMove(WPARAM btnState, int x, int y);
 
 
 private:
@@ -73,6 +76,8 @@ private:
 	D3D12_RECT m_MainScissor;
 	
 	float mCameraSpeed = 100.0f;
+
+	POINT mLastMousePos;
 };
 
 
@@ -108,6 +113,8 @@ void App::Startup(void)
 
 void App::Cleanup(void)
 {
+	g_TextureManager.ShutDown();
+	mSky->ShutDown();
 }
 
 void App::Update(float DeltaTime)
@@ -226,4 +233,31 @@ void App::OnResize(uint32_t width, uint32_t height)
 	m_MainScissor.right = (LONG)g_SceneColorBuffer.GetWidth();
 	m_MainScissor.bottom = (LONG)g_SceneColorBuffer.GetHeight();
 
+}
+
+
+void App::OnMouseDown(WPARAM btnState, int x, int y)
+{
+	mLastMousePos.x = x;
+	mLastMousePos.y = y;
+	SetCapture(g_hWnd);
+}
+
+void App::OnMouseUp(WPARAM btnState, int x, int y)
+{
+	ReleaseCapture();
+}
+
+void App::OnMouseMove(WPARAM btnState, int x, int y)
+{
+	if ((btnState & MK_LBUTTON) != 0)
+	{
+		float dx = XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
+		float dy = XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
+		mCamera->Pitch(dy);
+		mCamera->RotateY(dx);
+		mLastMousePos.x = x;
+		mLastMousePos.y = y;
+
+	}
 }

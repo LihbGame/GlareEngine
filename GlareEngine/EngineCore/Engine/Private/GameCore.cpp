@@ -133,6 +133,7 @@ namespace GlareEngine
 
 			assert(g_hWnd != 0);
 
+
 			//≥ı ºªØ
 			InitializeApplication(app);
 
@@ -165,14 +166,30 @@ namespace GlareEngine
 			switch (message)
 			{
 			case WM_SIZE:
+			{
 				// Save the new client area dimensions.
 				mClientWidth = LOWORD(lParam);
 				mClientHeight = HIWORD(lParam);
 				OnResize(mClientWidth, mClientHeight);
-
 				break;
-
+			}
+			case WM_LBUTTONDOWN:
+			case WM_MBUTTONDOWN:
+			case WM_RBUTTONDOWN:
+				OnMouseDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				break;
+			case WM_LBUTTONUP:
+			case WM_MBUTTONUP:
+			case WM_RBUTTONUP:
+				OnMouseUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				break;
+			case WM_MOUSEMOVE:
+				OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				break;
 			case WM_DESTROY:
+				TerminateApplication(*mGameApp);
+				DirectX12Graphics::Terminate();
+				DirectX12Graphics::Shutdown();
 				PostQuitMessage(0);
 				exit(0);
 				break;

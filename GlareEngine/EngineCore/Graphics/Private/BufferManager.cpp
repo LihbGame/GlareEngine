@@ -197,6 +197,8 @@ void GlareEngine::DirectX12Graphics::InitializeRenderingBuffers(uint32_t NativeW
 
 void GlareEngine::DirectX12Graphics::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t NativeHeight)
 {
+	//resize display buffer
+	g_SceneColorBuffer.Create(L"Main Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 }
 
 void GlareEngine::DirectX12Graphics::DestroyRenderingBuffers()

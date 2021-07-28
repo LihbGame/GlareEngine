@@ -9,7 +9,6 @@
 #define IDM_ABOUT                       104
 #define IDM_EXIT                        105
 #define IDI_ENGINEDEMOOLDFRAMEWORK      107
-#define IDI_SMALL                       108
 #define IDC_ENGINEDEMOOLDFRAMEWORK      109
 #define IDR_MAINFRAME                   128
 #define IDI_ICON1                       130
