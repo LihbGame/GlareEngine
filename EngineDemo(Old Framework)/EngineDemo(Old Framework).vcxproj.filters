@@ -24,9 +24,6 @@
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="EngineDemo(Old Framework).h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="FrameResource.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -96,11 +93,11 @@
     <ClInclude Include="RanderEffects\Water\Public\Waves.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="EngineDemo.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="EngineDemo(Old Framework).cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="FrameResource.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -171,6 +168,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="PSOManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineDemo.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

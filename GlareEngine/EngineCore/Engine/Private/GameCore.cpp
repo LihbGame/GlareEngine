@@ -63,7 +63,6 @@ namespace GlareEngine
 
 			Game.Update(DeltaTime);
 			Game.RenderScene();
-			//Game.RenderUI();
 			//PostEffects::Render();
 
 			DirectX12Graphics::Present();
@@ -93,9 +92,16 @@ namespace GlareEngine
 
 		//void InitWindow(const wchar_t* className);
 		LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+		static bool gExit = false;
 
-		void RunApplication(GameApp& app, const wchar_t* className,HINSTANCE hand)
+		void RunApplication(GameApp& app, const wchar_t* className, HINSTANCE hand)
 		{
+			// Enable run-time memory check for debug builds.
+//#if defined(DEBUG) | defined(_DEBUG)
+//			_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+//#endif
+
+
 			//ASSERT_SUCCEEDED(CoInitializeEx(nullptr, COINITBASE_MULTITHREADED));
 			Microsoft::WRL::Wrappers::RoInitializeWrapper InitializeWinRT(RO_INIT_MULTITHREADED);
 			ThrowIfFailed(InitializeWinRT);
@@ -122,10 +128,10 @@ namespace GlareEngine
 			{
 				DWORD dwerr = GetLastError();
 				MessageBox(0, L"RegisterClass Failed.", 0, 0);
-				return ;
+				return;
 			}
 			// Create window
-			RECT rc = { 0, 0,(LONG)g_DisplayWidth, (LONG)g_DisplayHeight};
+			RECT rc = { 0, 0,(LONG)g_DisplayWidth, (LONG)g_DisplayHeight };
 			AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
 			g_hWnd = CreateWindow(className, className, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
@@ -139,23 +145,24 @@ namespace GlareEngine
 
 			ShowWindow(g_hWnd, SW_SHOW);
 			UpdateWindow(g_hWnd);
-			
+
 			do
 			{
 				MSG msg = {};
-				while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+				while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 				{
 					TranslateMessage(&msg);
 					DispatchMessage(&msg);
 				}
 				if (msg.message == WM_QUIT)
 					break;
-				
-			} while (UpdateApplication(app));    // Returns false to quit loop
 
-			TerminateApplication(app);
+			} while (UpdateApplication(app) && !gExit);    // Returns false to quit loop
+			
 			DirectX12Graphics::Terminate();
+			TerminateApplication(app);
 			DirectX12Graphics::Shutdown();
+
 		}
 
 		//--------------------------------------------------------------------------------------
@@ -187,13 +194,11 @@ namespace GlareEngine
 				OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				break;
 			case WM_DESTROY:
-				TerminateApplication(*mGameApp);
-				DirectX12Graphics::Terminate();
-				DirectX12Graphics::Shutdown();
-				PostQuitMessage(0);
-				exit(0);
+			{
+				PostQuitMessage(0); 
+				gExit = true;
 				break;
-
+			}
 			default:
 				return DefWindowProc(hWnd, message, wParam, lParam);
 			}

@@ -120,13 +120,13 @@
     <ClInclude Include="EngineCore\Graphics\Public\BufferManager.h" />
     <ClInclude Include="EngineCore\Graphics\Public\ShadowBuffer.h" />
     <ClInclude Include="GraphicEffects\Misc\RanderObject.h" />
-    <ClInclude Include="GraphicEffects\Sky\Public\CSky.h" />
     <ClInclude Include="EngineCore\Public\TextureManage.h" />
     <ClInclude Include="EngineCore\Public\EngineUtility.h" />
     <ClInclude Include="EngineCore\Graphics\Public\TextureManager.h" />
     <ClInclude Include="EngineCore\Public\Camera.h" />
     <ClInclude Include="EngineCore\Public\GeometryGenerator.h" />
     <ClInclude Include="EngineCore\Public\Vertex.h" />
+    <ClInclude Include="GraphicEffects\Sky\Public\Sky.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animation\ModelMesh.cpp">
@@ -255,9 +255,6 @@
     <ClCompile Include="EngineCore\Graphics\Private\CommandSignature.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicEffects\Sky\Private\CSky.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
     <ClCompile Include="EngineCore\Private\TextureManage.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
@@ -274,6 +271,9 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Private\Vertex.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicEffects\Sky\Private\Sky.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>

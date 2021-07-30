@@ -227,13 +227,6 @@ struct MeshGeometry
     // the Submeshes individually.
     std::unordered_map<std::string, SubmeshGeometry> DrawArgs;
 
-    void ShutDown()
-    {
-        if (VertexBufferGPU) VertexBufferGPU->Release();
-        if (IndexBufferGPU) IndexBufferGPU->Release();
-        if (VertexBufferUploader) VertexBufferUploader->Release();
-        if (IndexBufferUploader) IndexBufferUploader->Release();
-    }
 
 
     D3D12_VERTEX_BUFFER_VIEW VertexBufferView()const
@@ -325,13 +318,6 @@ struct Texture
     Microsoft::WRL::ComPtr<ID3D12Resource> Resource = nullptr;
     Microsoft::WRL::ComPtr<ID3D12Resource> UploadHeap = nullptr;
 
-    void Shutdown()
-    {
-        if (Resource)
-            Resource->Release();
-        if (UploadHeap)
-            UploadHeap->Release();
-    }
 };
 
 

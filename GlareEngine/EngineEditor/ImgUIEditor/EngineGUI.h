@@ -7,18 +7,18 @@
 #include "EngineUtility.h"
 
 #define MainMenuBarHeight  25.0f
+#define CLIENT_FROMLEFT 0.166667f
+#define CLIENT_HEIGHT 0.75f
 
 extern bool gFullSreenMode;
 class EngineGUI
 {
 public:
-	EngineGUI(ID3D12Device* d3dDevice);
+	EngineGUI(HWND GameWnd,ID3D12Device* d3dDevice);
 	~EngineGUI();
-
-	void InitGUI(HWND GameWnd,ID3D12DescriptorHeap* GUISrvDescriptorHeap);
-	void CreateUIDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& DescriptorHeap);
-	void DrawUI(ID3D12GraphicsCommandList* d3dCommandList);
-
+public:
+	void Draw(ID3D12GraphicsCommandList* d3dCommandList);
+	void ShutDown();
 
 	bool IsShowShadow()const { return show_shadow; }
 	bool IsShowModel()const { return show_model; }
@@ -47,6 +47,8 @@ public:
 
 	static bool mWindowMaxSize;
 private:
+	void InitGUI(HWND GameWnd);
+	void CreateUIDescriptorHeap();
 	void SetWindowStyles();
 private:
 

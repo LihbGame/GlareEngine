@@ -173,7 +173,7 @@
     <ClInclude Include="Animation\OzzAnimePlayBack.h" />
     <None Include="EngineCore\Graphics\Public\Color.h" />
     <ClInclude Include="EngineCore\Graphics\Public\TextureManager.h" />
-    <ClInclude Include="GraphicEffects\Sky\Public\CSky.h" />
+    <ClInclude Include="GraphicEffects\Sky\Public\Sky.h" />
     <ClInclude Include="DXR\D3D12RaytracingHelper.h" />
     <ClInclude Include="EngineCore\Engine\Public\EngineAdjust.h" />
     <ClInclude Include="EngineCore\Engine\Public\EngineInput.h" />
@@ -252,7 +252,7 @@
     <ClCompile Include="Animation\ModelMesh.cpp" />
     <None Include="EngineCore\Graphics\Private\Color.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\TextureManager.cpp" />
-    <ClCompile Include="GraphicEffects\Sky\Private\CSky.cpp" />
+    <ClCompile Include="GraphicEffects\Sky\Private\Sky.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\CommandAllocatorPool.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\GraphicsCore.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\SamplerManager.cpp" />

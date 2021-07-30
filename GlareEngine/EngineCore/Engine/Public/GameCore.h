@@ -33,7 +33,7 @@ namespace GlareEngine
 			virtual void OnResize(uint32_t width, uint32_t height) = 0;
 
 			//Msg 
-			virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+			virtual LRESULT  MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 			static GameApp* GetApp() { return mGameApp; }
 
@@ -46,6 +46,7 @@ namespace GlareEngine
 
 		protected:
 			static GameApp* mGameApp;
+			
 
 			uint32_t mClientWidth = 1600;
 			uint32_t mClientHeight = 900;

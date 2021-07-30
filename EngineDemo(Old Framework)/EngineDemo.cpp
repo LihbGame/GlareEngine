@@ -1,4 +1,4 @@
-﻿#include "EngineDemo(Old Framework).h"
+﻿#include "EngineDemo.h"
 #include "Grass.h"
 
 //lib
@@ -75,7 +75,7 @@ bool GameApp::Initialize()
 
 
 	//init UI
-	mEngineUI = make_unique<EngineGUI>(md3dDevice.Get());
+	mEngineUI = make_unique<EngineGUI>(mhMainWnd, md3dDevice.Get());
 	// 获取此堆类型中描述符的增量大小。 这是特定于硬件的，因此我们必须查询此信息。
 	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	//texture manage
@@ -114,8 +114,6 @@ bool GameApp::Initialize()
 		BuildPSOs();
 	}
 
-	//init UI
-	mEngineUI->InitGUI(mhMainWnd, mGUISrvDescriptorHeap.Get());
 
 	//Wire Frame State
 	mOldWireFrameState = mEngineUI->IsWireframe();
@@ -362,7 +360,7 @@ void GameApp::Draw(const GameTimer& gt)
 
 		//Draw UI
 		PIXBeginEvent(mCommandList.Get(), 0, "Draw UI");
-		mEngineUI->DrawUI(mCommandList.Get());
+		mEngineUI->Draw(mCommandList.Get());
 		PIXEndEvent(mCommandList.Get());
 
 		mCommandList->ResourceBarrier(2, barriers);
@@ -453,9 +451,6 @@ void GameApp::CreateDescriptorHeaps()
 	mSky->FillSRVDescriptorHeap(&SRVIndex, &hDescriptor);
 #pragma endregion
 
-#pragma region GUI
-	mEngineUI->CreateUIDescriptorHeap(mGUISrvDescriptorHeap);
-#pragma endregion
 }
 
 void GameApp::OnMouseDown(WPARAM btnState, int x, int y)

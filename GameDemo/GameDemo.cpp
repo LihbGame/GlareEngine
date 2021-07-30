@@ -6,9 +6,11 @@
 #include "ConstantBuffer.h"
 #include "EngineInput.h"
 #include "BufferManager.h"
+#include "EngineGUI.h"
+
 
 #include "Camera.h"
-#include "CSky.h"
+#include "Sky.h"
 
 //lib
 #pragma comment(lib, "dxgi.lib")
@@ -21,6 +23,9 @@ using namespace GlareEngine;
 using namespace GlareEngine::GameCore;
 using namespace GlareEngine::DirectX12Graphics;
 using namespace GlareEngine::EngineInput;
+
+
+const int gNumFrameResources = 3;
 
 class App :public GameApp
 {
@@ -46,6 +51,9 @@ public:
 
 	virtual void OnResize(uint32_t width, uint32_t height);
 
+	//Msg 
+	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 public:
 	void BuildRootSignature();
 
@@ -70,6 +78,8 @@ private:
 	unique_ptr<CSky> mSky;
 	//Root Signature
 	RootSignature mRootSignature;
+	//UI
+	unique_ptr<EngineGUI> mEngineUI;
 
 	//Viewport and Scissor
 	D3D12_VIEWPORT m_MainViewport;
@@ -78,6 +88,8 @@ private:
 	float mCameraSpeed = 100.0f;
 
 	POINT mLastMousePos;
+
+	D3D12_RECT mClientRect;
 };
 
 
@@ -100,21 +112,20 @@ void App::Startup(void)
 	mCamera = make_unique<Camera>();
 	//Sky Initialize
 	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
-
+	//UI Init
+	mEngineUI = make_unique<EngineGUI>(g_hWnd, g_Device);
 
 
 	BuildRootSignature();
-	BuildPSO();
+	BuildPSO(); 
 	
-
 
 	InitializeContext.Finish(true);
 }
 
 void App::Cleanup(void)
 {
-	g_TextureManager.ShutDown();
-	mSky->ShutDown();
+	mEngineUI->ShutDown();
 }
 
 void App::Update(float DeltaTime)
@@ -209,12 +220,16 @@ void App::RenderScene(void)
 	//set main constant buffer
 	RenderContext.SetDynamicConstantBufferView(0, sizeof(mMainConstants), &mMainConstants);
 
-	//draw sky
+	//Draw sky
 	mSky->Draw(RenderContext);
+	
+	//Draw UI
+	mEngineUI->Draw(RenderContext.GetCommandList());
 
 
 	RenderContext.Finish(true);
 }
+
 
 void App::OnResize(uint32_t width, uint32_t height)
 {
@@ -233,6 +248,25 @@ void App::OnResize(uint32_t width, uint32_t height)
 	m_MainScissor.right = (LONG)g_SceneColorBuffer.GetWidth();
 	m_MainScissor.bottom = (LONG)g_SceneColorBuffer.GetHeight();
 
+
+	//Client Rect
+	mClientRect = { static_cast<LONG>(mClientWidth * CLIENT_FROMLEFT),
+		static_cast<LONG>(MainMenuBarHeight),
+		static_cast<LONG>(static_cast<float>(mClientWidth *(1-CLIENT_FROMLEFT))),
+		static_cast<LONG>(static_cast<float>(mClientHeight * CLIENT_HEIGHT))
+	};
+
+}
+
+
+// Forward declare message handler from imgui_impl_win32.cpp
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+LRESULT App::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	//UI MSG
+	ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam);
+	return GameApp::MsgProc(hwnd, msg, wParam, lParam);
 }
 
 
@@ -252,12 +286,16 @@ void App::OnMouseMove(WPARAM btnState, int x, int y)
 {
 	if ((btnState & MK_LBUTTON) != 0)
 	{
-		float dx = XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
-		float dy = XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
-		mCamera->Pitch(dy);
-		mCamera->RotateY(dx);
-		mLastMousePos.x = x;
-		mLastMousePos.y = y;
-
+		if (x >= mClientRect.left && y >= mClientRect.top
+			&& y <= (mClientRect.top + (mClientRect.bottom - mClientRect.top))
+			&& x <= (mClientRect.left + (mClientRect.right - mClientRect.left)))
+		{
+			float dx = XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
+			float dy = XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
+			mCamera->Pitch(dy);
+			mCamera->RotateY(dx);
+			mLastMousePos.x = x;
+			mLastMousePos.y = y;
+		}
 	}
 }

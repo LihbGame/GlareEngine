@@ -13,8 +13,7 @@ namespace GlareEngine
 			void SetCommandList(ID3D12GraphicsCommandList* pCommandList);
 			void CreateTexture(std::wstring name, std::wstring filename, bool ForceSRGB = true);
 			std::unique_ptr<Texture>& GetTexture(std::wstring name, bool ForceSRGB = true);
-		
-			void ShutDown();
+
 		private:
 			ID3D12GraphicsCommandList* mCommandList = nullptr;
 			std::unordered_map<std::wstring, std::unique_ptr<Texture>> mTextures;

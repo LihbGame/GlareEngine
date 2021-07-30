@@ -6,30 +6,27 @@
 using Microsoft::WRL::ComPtr;
 bool gFullSreenMode = false;
 bool EngineGUI::mWindowMaxSize = false;
-EngineGUI::EngineGUI(ID3D12Device* d3dDevice)
+EngineGUI::EngineGUI(HWND GameWnd, ID3D12Device* d3dDevice)
 {
 	pd3dDevice = d3dDevice;
+	CreateUIDescriptorHeap();
+	InitGUI(GameWnd);
 }
 
 EngineGUI::~EngineGUI()
 {
-	ImGui_ImplDX12_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
+
 }
 
-void EngineGUI::InitGUI(HWND GameWnd,ID3D12DescriptorHeap* GUISrvDescriptorHeap)
+void EngineGUI::InitGUI(HWND GameWnd)
 {
-	mGUISrvDescriptorHeap = GUISrvDescriptorHeap;
-
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
-
+	
 
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
@@ -37,9 +34,9 @@ void EngineGUI::InitGUI(HWND GameWnd,ID3D12DescriptorHeap* GUISrvDescriptorHeap)
 	 // Setup Platform/Renderer bindings
 	ImGui_ImplWin32_Init(GameWnd);
 	ImGui_ImplDX12_Init(pd3dDevice, gNumFrameResources,
-		DXGI_FORMAT_R8G8B8A8_UNORM, GUISrvDescriptorHeap,
-		GUISrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-		GUISrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+		DXGI_FORMAT_R11G11B10_FLOAT, mGUISrvDescriptorHeap,
+		mGUISrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
+		mGUISrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 
 
@@ -64,17 +61,16 @@ void EngineGUI::InitGUI(HWND GameWnd,ID3D12DescriptorHeap* GUISrvDescriptorHeap)
 	 SetWindowStyles();
 }
 
-void EngineGUI::CreateUIDescriptorHeap(ComPtr<ID3D12DescriptorHeap>& DescriptorHeap)
+void EngineGUI::CreateUIDescriptorHeap()
 {
-	
 	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	desc.NumDescriptors = 1;
 	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	ThrowIfFailed(pd3dDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(DescriptorHeap.GetAddressOf())));
+	ThrowIfFailed(pd3dDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&mGUISrvDescriptorHeap)));
 }
 
-void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
+void EngineGUI::Draw(ID3D12GraphicsCommandList* d3dCommandList)
 {
 	//DRAW GUI
 	{
@@ -232,25 +228,35 @@ void EngineGUI::DrawUI(ID3D12GraphicsCommandList* d3dCommandList)
 	}
 }
 
+void EngineGUI::ShutDown()
+{
+	ImGui_ImplDX12_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+
+	if(mGUISrvDescriptorHeap)
+	mGUISrvDescriptorHeap->Release();
+}
+
 void EngineGUI::SetWindowStyles()
 {
 	ImGuiStyle& style = ImGui::GetStyle();
 
-	style.Colors[ImGuiCol_Text] = ImVec4(0.447, 0.488, 0.488, 1);
-	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.05, 0.05, 0.05, 1);
-	style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.128, 0.061, 0.061, 1);
+	style.Colors[ImGuiCol_Text] = ImVec4(0.247, 0.288, 0.288, 1);
+	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.005, 0.005, 0.005, 1);
+	style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.0028, 0.0061, 0.0061, 1);
 	style.Colors[ImGuiCol_CheckMark] = ImVec4(0, 0, 0, 1);
-	style.Colors[ImGuiCol_Header] = ImVec4(0.19, 0.233, 0.284, 0.8);
-	style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.101, 0.150, 0.205, 1);
-	style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.101, 0.050, 0.075, 1);
-	style.Colors[ImGuiCol_FrameBg] = ImVec4(0.101, 0.150, 0.215, 0.5);
-	style.Colors[ImGuiCol_Border] = ImVec4(0.1, 0.1, 0.1, 1);
-	style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.101, 0.050, 0.075, 1);
-	style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.101, 0.050, 0.075, 1);
-	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.215, 0.347, 0.517, 1);
+	style.Colors[ImGuiCol_Header] = ImVec4(0.09, 0.0133, 0.0184, 0.8);
+	style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.01, 0.50, 0.105, 1);
+	style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.001, 0.050, 0.075, 1);
+	style.Colors[ImGuiCol_FrameBg] = ImVec4(0.001, 0.050, 0.015, 0.5);
+	style.Colors[ImGuiCol_Border] = ImVec4(0.01, 0.01, 0.01, 1);
+	style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.001, 0.0050, 0.0075, 1);
+	style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.001, 0.0050, 0.0075, 1);
+	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.0115, 0.0247, 0.0417, 1);
 	style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.05, 0.07, 0.07, 1);
-	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.05, 0.17, 0.17, 1);
-	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.15, 0.27, 0.27, 1);
-	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.15, 0.27, 0.27, 1);
+	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.005, 0.017, 0.017, 1);
+	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.015, 0.027, 0.027, 1);
+	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.015, 0.027, 0.027, 1);
 }
 

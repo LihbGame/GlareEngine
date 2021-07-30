@@ -1,4 +1,4 @@
-#include "CSky.h"
+#include "Sky.h"
 #include "GraphicsCore.h"
 #include "GeometryGenerator.h"
 #include "TextureManager.h"
@@ -25,13 +25,8 @@ CSky::CSky(ID3D12GraphicsCommandList* CommandList,
 
 CSky::~CSky()
 {
-
 }
 
-void CSky::ShutDown()
-{
-	mSkyMesh->ShutDown();
-}
 
 void CSky::BuildSkyMesh(ID3D12GraphicsCommandList* CommandList, float radius, int sliceCount, int stackCount)
 {

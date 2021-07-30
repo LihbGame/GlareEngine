@@ -1,6 +1,6 @@
 #pragma once
 
-#include "D:/GlareEngine/EngineDemo(Old Framework)/resource.h"
+#include "resource.h"
 #include "L3DBaseApp.h"
 #include "L3DMathHelper.h"
 #include "L3DUploadBuffer.h"

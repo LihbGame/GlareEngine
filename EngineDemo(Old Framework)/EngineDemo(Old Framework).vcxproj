@@ -143,7 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="EngineDemo(Old Framework).h" />
+    <ClInclude Include="EngineDemo.h" />
     <ClInclude Include="FrameResource.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="L3DBaseApp.h" />
@@ -172,7 +172,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="EngineDemo(Old Framework).cpp" />
+    <ClCompile Include="EngineDemo.cpp" />
     <ClCompile Include="FrameResource.cpp" />
     <ClCompile Include="L3DBaseApp.cpp" />
     <ClCompile Include="PSOManager.cpp" />
