@@ -11,5 +11,5 @@ HeightMapTerrainShader::~HeightMapTerrainShader()
 
 std::vector<D3D12_INPUT_ELEMENT_DESC> HeightMapTerrainShader::GetInputLayout()
 {
-	return L3DInputLayout::HeightMapTerrain;
+	return InputLayout::HeightMapTerrain;
 }

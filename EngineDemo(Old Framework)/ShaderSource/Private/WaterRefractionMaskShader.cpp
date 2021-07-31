@@ -10,5 +10,5 @@ WaterRefractionMaskShader::~WaterRefractionMaskShader()
 
 std::vector<D3D12_INPUT_ELEMENT_DESC> WaterRefractionMaskShader::GetInputLayout()
 {
-	return L3DInputLayout::Pos;
+	return InputLayout::Pos;
 }

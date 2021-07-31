@@ -1,7 +1,7 @@
 #pragma once
 
 #include "EngineUtility.h"
-#include "L3DGameTimer.h"
+#include "GameTimer.h"
 class TextureManage;
 class ShadowMap
 {

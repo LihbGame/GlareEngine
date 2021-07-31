@@ -1,4 +1,4 @@
-#include "L3DMathHelper.h"
+#include "MathHelper.h"
 #include <float.h>
 #include <cmath>
 

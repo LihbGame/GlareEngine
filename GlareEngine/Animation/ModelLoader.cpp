@@ -1,5 +1,5 @@
 ﻿#include "ModelLoader.h"
-#include "L3DMaterial.h"
+#include "Material.h"
 
 ModelLoader::ModelLoader(HWND hwnd, ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList,TextureManage* TextureManage)
 :dev(dev),
@@ -117,7 +117,7 @@ void ModelLoader::BuildMaterials()
     XMFLOAT4X4  MatTransform = MathHelper::Identity4x4();
 	for (auto e : ModelTextures)
 	{
-        L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
+        Materials::GetMaterialInstance()->BuildMaterials(
 			wstring(e.first.begin(), e.first.end()),
 			0.09f,
 			XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),

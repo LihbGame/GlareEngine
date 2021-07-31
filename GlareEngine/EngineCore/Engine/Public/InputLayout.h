@@ -1,6 +1,6 @@
 #pragma once
 #include "EngineUtility.h"
-class L3DInputLayout
+class InputLayout
 {
 public:
 	static std::vector<D3D12_INPUT_ELEMENT_DESC> Pos;

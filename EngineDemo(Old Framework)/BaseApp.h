@@ -6,7 +6,7 @@
 #endif
 
 #include "EngineUtility.h"
-#include "L3DGameTimer.h"
+#include "GameTimer.h"
 
 
 // Link necessary d3d12 libraries.

@@ -5,7 +5,7 @@
 #include "CommandContext.h"
 #include "BufferManager.h"
 #include "Vertex.h"
-#include "L3DInputLayout.h"
+#include "InputLayout.h"
 //shader
 #include "CompiledShaders/SkyVS.h"
 #include "CompiledShaders/SkyPS.h"
@@ -110,7 +110,7 @@ void CSky::BuildPSO(const RootSignature& rootSignature)
 	mSkyPSO.SetBlendState(BlendDisable);
 	mSkyPSO.SetDepthStencilState(DepthStencilState);
 	mSkyPSO.SetSampleMask(0xFFFFFFFF);
-	mSkyPSO.SetInputLayout(L3DInputLayout::Pos.size(), L3DInputLayout::Pos.data());
+	mSkyPSO.SetInputLayout(InputLayout::Pos.size(), InputLayout::Pos.data());
 	mSkyPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 	mSkyPSO.SetVertexShader(g_pSkyVS, sizeof(g_pSkyVS));
 	mSkyPSO.SetPixelShader(g_pSkyPS, sizeof(g_pSkyPS));

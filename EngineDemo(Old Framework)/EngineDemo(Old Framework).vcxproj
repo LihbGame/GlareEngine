@@ -83,6 +83,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>.\;.\RanderEffects\ParticleSystem\Public;.\ShaderSource\Public;..\GlareEngine\EngineCore\Engine\Public;..\GlareEngine\EngineCore\Graphics\Public;..\GlareEngine\EngineCore\Public;.\RanderEffects\Terrain\Public;.\RenderEffects\Sky\Public;..\GlareEngine\EngineEditor\ImgUIEditor;..\GlareEngine\EngineCore\Math;.\RanderEffects\ShockWaveWater\Public;..\GlareEngine\Dependences\include;..\GlareEngine\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;..\GlareEngine\EngineEditor;.\RanderEffects\HDRSky\Public;..\GlareEngine\EngineMain\Public;$(IncludePath)</IncludePath>
+    <LibraryPath>..\x64\Release;..\GlareEngine\Dependences\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -133,20 +135,21 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>GlareEngine.lib;assimp-vc140-mt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="EngineDemo.h" />
     <ClInclude Include="FrameResource.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="L3DBaseApp.h" />
+    <ClInclude Include="BaseApp.h" />
     <ClInclude Include="RanderEffects\HDRSky\Public\Sky.h" />
     <ClInclude Include="RanderEffects\ParticleSystem\Public\BaseParticle.h" />
     <ClInclude Include="RanderEffects\ParticleSystem\Public\ParticleGroup.h" />
@@ -170,11 +173,13 @@
     <ClInclude Include="ShaderSource\Public\SkyShader.h" />
     <ClInclude Include="ShaderSource\Public\WaterRefractionMaskShader.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="TextureManage.h" />
+    <ClInclude Include="UploadBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineDemo.cpp" />
     <ClCompile Include="FrameResource.cpp" />
-    <ClCompile Include="L3DBaseApp.cpp" />
+    <ClCompile Include="BaseApp.cpp" />
     <ClCompile Include="PSOManager.cpp" />
     <ClCompile Include="RanderEffects\HDRSky\Private\Sky.cpp" />
     <ClCompile Include="RanderEffects\ParticleSystem\Private\BaseParticle.cpp" />
@@ -197,6 +202,7 @@
     <ClCompile Include="ShaderSource\Private\SkinAnimeShader.cpp" />
     <ClCompile Include="ShaderSource\Private\SkyShader.cpp" />
     <ClCompile Include="ShaderSource\Private\WaterRefractionMaskShader.cpp" />
+    <ClCompile Include="TextureManage.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EngineDemo(Old Framework).rc" />

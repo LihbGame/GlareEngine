@@ -7,7 +7,7 @@
 #include "EngineInput.h"
 #include "BufferManager.h"
 #include "EngineGUI.h"
-
+#include "./resource.h"
 
 #include "Camera.h"
 #include "Sky.h"

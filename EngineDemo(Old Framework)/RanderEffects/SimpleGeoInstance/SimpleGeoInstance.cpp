@@ -1,5 +1,5 @@
 #include "SimpleGeoInstance.h"
-#include "L3DMaterial.h"
+#include "Material.h"
 #include "TextureManage.h"
 SimpleGeoInstance::SimpleGeoInstance(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pd3dDevice,TextureManage* TextureManage)
 {
@@ -129,7 +129,7 @@ void SimpleGeoInstance::BuildMaterials()
 {
     XMFLOAT4X4  MatTransform = MathHelper::Identity4x4();
 
-    L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
+    Materials::GetMaterialInstance()->BuildMaterials(
         L"PBRwhite_spruce_tree_bark",
         0.09f,
         XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
@@ -139,7 +139,7 @@ void SimpleGeoInstance::BuildMaterials()
     mPBRTextureName.push_back(L"PBRwhite_spruce_tree_bark");
 
 	//PBRharshbricks Material
-    L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
+    Materials::GetMaterialInstance()->BuildMaterials(
 		L"PBRharshbricks",
 		0.05f,
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
@@ -149,7 +149,7 @@ void SimpleGeoInstance::BuildMaterials()
     mPBRTextureName.push_back(L"PBRharshbricks");
 
 	//PBRrocky_shoreline1 Material
-    L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
+    Materials::GetMaterialInstance()->BuildMaterials(
 		L"PBRrocky_shoreline1",
 		0.05f,
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
@@ -159,7 +159,7 @@ void SimpleGeoInstance::BuildMaterials()
     mPBRTextureName.push_back(L"PBRrocky_shoreline1");
 
 	//PBRstylized_grass1 Material
-    L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
+    Materials::GetMaterialInstance()->BuildMaterials(
 		L"PBRstylized_grass1",
 		0.09f,
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
@@ -169,7 +169,7 @@ void SimpleGeoInstance::BuildMaterials()
     mPBRTextureName.push_back(L"PBRstylized_grass1");
 
 	//PBRIndustrial_narrow_brick Material
-    L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
+    Materials::GetMaterialInstance()->BuildMaterials(
 		L"PBRIndustrial_narrow_brick",
 		0.05f,
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
@@ -180,7 +180,7 @@ void SimpleGeoInstance::BuildMaterials()
 
 	//PBRBrass Material
 	XMStoreFloat4x4(&MatTransform, XMMatrixScaling(0.1f, 0.1f, 0.1f));
-    L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
+    Materials::GetMaterialInstance()->BuildMaterials(
 		L"PBRBrass",
 		0.01f,
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),

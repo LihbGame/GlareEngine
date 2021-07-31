@@ -12,5 +12,5 @@ SimpleGeometryInstanceShader::~SimpleGeometryInstanceShader()
 
 std::vector<D3D12_INPUT_ELEMENT_DESC> SimpleGeometryInstanceShader::GetInputLayout()
 {
-	return L3DInputLayout::InstancePosNormalTangentTexc;
+	return InputLayout::InstancePosNormalTangentTexc;
 }

@@ -10,5 +10,5 @@ ComplexStaticModelInstanceShader::~ComplexStaticModelInstanceShader()
 
 std::vector<D3D12_INPUT_ELEMENT_DESC> ComplexStaticModelInstanceShader::GetInputLayout()
 {
-	return L3DInputLayout::PosNormalTangentTexc;
+	return InputLayout::PosNormalTangentTexc;
 }

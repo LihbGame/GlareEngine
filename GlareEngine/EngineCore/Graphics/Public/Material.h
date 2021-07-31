@@ -10,13 +10,13 @@ enum class MaterialType : int
 	Count
 };
 
-class L3DMaterial
+class Materials
 {
 public:
 	
-	~L3DMaterial();
+	~Materials();
 
-	static L3DMaterial* GetL3DMaterialInstance();
+	static Materials* GetMaterialInstance();
 
 	static int GetMaterialSize() { return MatCBIndex; }
 
@@ -34,9 +34,9 @@ public:
 
 	std::unordered_map<std::wstring, std::unique_ptr<Material>>& GetAllMaterial() { return mMaterials; };
 private:
-	L3DMaterial();
+	Materials();
 	
-	static  L3DMaterial* MaterialInstance;
+	static  Materials* MaterialInstance;
 
 	static int MatCBIndex;
 

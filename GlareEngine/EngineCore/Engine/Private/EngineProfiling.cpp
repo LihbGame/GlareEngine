@@ -2,7 +2,7 @@
 #include <unordered_map>
 #include <array>
 #include "EngineProfiling.h"
-#include "L3DGameTimer.h"
+#include "GameTimer.h"
 #include "GraphicsCore.h"
 #include "EngineInput.h"
 #include "GPUTimeManager.h"

@@ -79,20 +79,6 @@
     <ClInclude Include="ShaderSource\Public\ShockWaveWaterShader.h" />
     <ClInclude Include="ShaderSource\Public\HeightMapTerrainShader.h" />
     <ClInclude Include="ShaderSource\Public\GrassShader.h" />
-    <ClInclude Include="EngineCore\Public\d3dx12.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="EngineCore\Public\L3DGameTimer.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="EngineCore\Public\L3DInputLayout.h" />
-    <ClInclude Include="EngineCore\Public\L3DMaterial.h" />
-    <ClInclude Include="EngineCore\Public\L3DMathHelper.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="EngineCore\Public\L3DUploadBuffer.h">
-      <Filter>Core\Public</Filter>
-    </ClInclude>
     <ClInclude Include="EngineCore\Math\Common.h" />
     <ClInclude Include="EngineCore\Math\Scalar.h" />
     <ClInclude Include="EngineCore\Math\Vector.h" />
@@ -120,13 +106,23 @@
     <ClInclude Include="EngineCore\Graphics\Public\BufferManager.h" />
     <ClInclude Include="EngineCore\Graphics\Public\ShadowBuffer.h" />
     <ClInclude Include="GraphicEffects\Misc\RanderObject.h" />
-    <ClInclude Include="EngineCore\Public\TextureManage.h" />
-    <ClInclude Include="EngineCore\Public\EngineUtility.h" />
     <ClInclude Include="EngineCore\Graphics\Public\TextureManager.h" />
-    <ClInclude Include="EngineCore\Public\Camera.h" />
-    <ClInclude Include="EngineCore\Public\GeometryGenerator.h" />
-    <ClInclude Include="EngineCore\Public\Vertex.h" />
     <ClInclude Include="GraphicEffects\Sky\Public\Sky.h" />
+    <ClInclude Include="EngineCore\Engine\Public\Camera.h" />
+    <ClInclude Include="EngineCore\Engine\Public\Vertex.h" />
+    <ClInclude Include="EngineCore\Engine\Public\GeometryGenerator.h" />
+    <ClInclude Include="EngineCore\Engine\Public\EngineUtility.h" />
+    <ClInclude Include="EngineCore\Engine\Public\d3dx12.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Math\MathHelper.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Engine\Public\GameTimer.h">
+      <Filter>Core\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Engine\Public\InputLayout.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\Material.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animation\ModelMesh.cpp">
@@ -140,18 +136,6 @@
     </ClCompile>
     <ClCompile Include="Animation\Animations.cpp">
       <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Private\L3DGameTimer.cpp">
-      <Filter>Core\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Private\L3DInputLayout.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Private\L3DMaterial.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Private\L3DMathHelper.cpp">
-      <Filter>Core\Private</Filter>
     </ClCompile>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
       <Filter>MainSource</Filter>
@@ -255,25 +239,34 @@
     <ClCompile Include="EngineCore\Graphics\Private\CommandSignature.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\Private\TextureManage.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Private\EngineUtility.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
     <ClCompile Include="EngineCore\Graphics\Private\TextureManager.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\Private\Camera.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Private\GeometryGenerator.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Private\Vertex.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
     <ClCompile Include="GraphicEffects\Sky\Private\Sky.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\Private\Camera.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\Private\EngineUtility.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\Private\GeometryGenerator.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\Private\Vertex.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Math\MathHelper.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\Private\InputLayout.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\Private\GameTimer.cpp">
+      <Filter>Core\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Private\Material.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>

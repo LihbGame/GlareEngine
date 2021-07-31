@@ -10,5 +10,5 @@ SkyShader::~SkyShader()
 
 std::vector<D3D12_INPUT_ELEMENT_DESC> SkyShader::GetInputLayout()
 {
-	return L3DInputLayout::Pos;
+	return InputLayout::Pos;
 }

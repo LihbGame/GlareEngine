@@ -1,10 +1,10 @@
-#include "L3DMaterial.h"
+#include "Material.h"
 
-//init L3DMaterial
-L3DMaterial* L3DMaterial::MaterialInstance=new L3DMaterial;
-int L3DMaterial::MatCBIndex = 0;
+//init Material
+Materials* Materials::MaterialInstance=new Materials;
+int Materials::MatCBIndex = 0;
 
-void L3DMaterial::BuildMaterials(wstring name, float Height_Scale, XMFLOAT4 DiffuseAlbedo, XMFLOAT3 FresnelR0, XMFLOAT4X4 MatTransform, MaterialType MatType)
+void Materials::BuildMaterials(wstring name, float Height_Scale, XMFLOAT4 DiffuseAlbedo, XMFLOAT3 FresnelR0, XMFLOAT4X4 MatTransform, MaterialType MatType)
 {
 	if (mMaterials.find(name) == mMaterials.end())
 	{
@@ -29,16 +29,16 @@ void L3DMaterial::BuildMaterials(wstring name, float Height_Scale, XMFLOAT4 Diff
 	}
 }
 
-L3DMaterial::L3DMaterial()
+Materials::Materials()
 {
 }
 
-L3DMaterial::~L3DMaterial()
+Materials::~Materials()
 {
 	delete MaterialInstance;
 }
 
-L3DMaterial* L3DMaterial::GetL3DMaterialInstance()
+Materials* Materials::GetMaterialInstance()
 {
 	return MaterialInstance;
 }

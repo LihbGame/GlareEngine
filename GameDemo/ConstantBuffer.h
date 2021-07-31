@@ -1,6 +1,6 @@
 #pragma once
 #include "EngineUtility.h"
-#include "L3DMathHelper.h"
+#include "MathHelper.h"
 #include "Vertex.h"
 
 struct MainConstants

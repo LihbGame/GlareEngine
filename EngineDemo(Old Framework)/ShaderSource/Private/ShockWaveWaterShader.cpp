@@ -10,6 +10,6 @@ ShockWaveWaterShader::~ShockWaveWaterShader()
 
 std::vector<D3D12_INPUT_ELEMENT_DESC> ShockWaveWaterShader::GetInputLayout()
 {
-	return L3DInputLayout::PosNormalTangentTexc;
+	return InputLayout::PosNormalTangentTexc;
 }
 

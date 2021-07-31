@@ -223,7 +223,7 @@ void GameApp::Draw(const GameTimer& gt)
 		// If we wanted to use "local" cube maps, we would have to change them per-object, or dynamically
 		// index into an array of cube maps.
 		CD3DX12_GPU_DESCRIPTOR_HANDLE skyTexDescriptor(mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-		skyTexDescriptor.Offset(L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"sky")->PBRSrvHeapIndex[PBRTextureType::DiffuseSrvHeapIndex], mCbvSrvDescriptorSize);
+		skyTexDescriptor.Offset(Materials::GetMaterialInstance()->GetMaterial(L"sky")->PBRSrvHeapIndex[PBRTextureType::DiffuseSrvHeapIndex], mCbvSrvDescriptorSize);
 		mCommandList->SetGraphicsRootDescriptorTable(5, skyTexDescriptor);
 
 
@@ -630,7 +630,7 @@ void GameApp::UpdateInstanceCBs(const GameTimer& gt)
 					XMStoreFloat4x4(&data.World, XMMatrixTranspose(world));
 					XMStoreFloat4x4(&data.TexTransform, XMMatrixTranspose(texTransform));
 
-					data.MaterialIndex = L3DMaterial::GetL3DMaterialInstance()->GetMaterial(std::wstring(ModelTextureNames[matNum].begin(), ModelTextureNames[matNum].end()))->MatCBIndex;
+					data.MaterialIndex = Materials::GetMaterialInstance()->GetMaterial(std::wstring(ModelTextureNames[matNum].begin(), ModelTextureNames[matNum].end()))->MatCBIndex;
 
 					InstanceConstants Reflectiondata = data;
 					XMStoreFloat4x4(&Reflectiondata.World, XMMatrixTranspose(ReflectionWorld));
@@ -650,7 +650,7 @@ void GameApp::UpdateInstanceCBs(const GameTimer& gt)
 void GameApp::UpdateMaterialCBs(const GameTimer& gt)
 {
 	auto currMaterialBuffer = mCurrFrameResource->MaterialBuffer.get();
-	for (auto& e : L3DMaterial::GetL3DMaterialInstance()->GetAllMaterial())
+	for (auto& e : Materials::GetMaterialInstance()->GetAllMaterial())
 	{
 		// Only update the cbuffer data if the constants have changed.  If the cbuffer
 		// data changes, it needs to be updated for each FrameResource.
@@ -1427,7 +1427,7 @@ void GameApp::BuildFrameResources()
 	for (int i = 0; i < gNumFrameResources; ++i)
 	{
 		mFrameResources.push_back(std::make_unique<FrameResource>(md3dDevice.Get(),
-			2, (UINT)mModelLoder->GetModelMesh("Blue_Tree_02a").size(), 1, (UINT)mAllRitems.size(), (UINT)L3DMaterial::GetMaterialSize(), mWaves->VertexCount()));
+			2, (UINT)mModelLoder->GetModelMesh("Blue_Tree_02a").size(), 1, (UINT)mAllRitems.size(), (UINT)Materials::GetMaterialSize(), mWaves->VertexCount()));
 	}
 }
 
@@ -1452,7 +1452,7 @@ void GameApp::BuildRenderItems()
 		XMStoreFloat4x4(&LandRitem.World, XMMatrixTranslation(0.0f, 1.0f, 0.0f) * XMMatrixScaling(1.0, 1.0, 1.0));
 		XMStoreFloat4x4(&LandRitem.TexTransform, XMMatrixScaling(2.0, 2.0, 2.0));
 		LandRitem.ObjCBIndex = ObjCBIndex++;
-		LandRitem.Mat = L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"Terrain/grass");
+		LandRitem.Mat = Materials::GetMaterialInstance()->GetMaterial(L"Terrain/grass");
 		LandRitem.Geo.push_back(mGeometries["landGeo"].get());
 		LandRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 		LandRitem.IndexCount.push_back(LandRitem.Geo[0]->DrawArgs["grid"].IndexCount);
@@ -1483,7 +1483,7 @@ void GameApp::BuildRenderItems()
 		XMStoreFloat4x4(&TerrainRitem.World, XMMatrixTranslation(0.0f, 0.0f, 0.0f) * XMMatrixScaling(1.0, 1.0, 1.0));
 		XMStoreFloat4x4(&TerrainRitem.TexTransform, XMMatrixScaling(1.0, 1.0, 1.0));
 		TerrainRitem.ObjCBIndex = ObjCBIndex++;
-		TerrainRitem.Mat = L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"Terrain/grass");
+		TerrainRitem.Mat = Materials::GetMaterialInstance()->GetMaterial(L"Terrain/grass");
 		TerrainRitem.Geo.push_back(mHeightMapTerrain->GetMeshGeometry());
 		TerrainRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST;
 		TerrainRitem.IndexCount.push_back(TerrainRitem.Geo[0]->DrawArgs["HeightMapTerrain"].IndexCount);
@@ -1513,7 +1513,7 @@ void GameApp::BuildRenderItems()
 		XMStoreFloat4x4(&GrassRitem.World, XMMatrixScaling(1.0, 1.0, 1.0));
 		XMStoreFloat4x4(&GrassRitem.TexTransform, XMMatrixScaling(1.0, 1.0, 1.0));
 		GrassRitem.ObjCBIndex = ObjCBIndex++;
-		GrassRitem.Mat = L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"PBRGrass");
+		GrassRitem.Mat = Materials::GetMaterialInstance()->GetMaterial(L"PBRGrass");
 		GrassRitem.Geo.push_back(mHeightMapTerrain->GetGrass()->GetMeshGeometry());
 		GrassRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
 		GrassRitem.IndexCount.push_back(GrassRitem.Geo[0]->DrawArgs["Grass"].IndexCount);
@@ -1545,7 +1545,7 @@ void GameApp::BuildRenderItems()
 		XMStoreFloat4x4(&ShockWaveWaterRitem.World, XMMatrixScaling(20.48f, 1.0f, 20.48f));
 		XMStoreFloat4x4(&ShockWaveWaterRitem.TexTransform, XMMatrixScaling(5.0f, 5.0f, 5.0f));
 		ShockWaveWaterRitem.ObjCBIndex = ObjCBIndex++;
-		ShockWaveWaterRitem.Mat = L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"PBRharshbricks");
+		ShockWaveWaterRitem.Mat = Materials::GetMaterialInstance()->GetMaterial(L"PBRharshbricks");
 		ShockWaveWaterRitem.Geo.push_back(mGeometries["landGeo"].get());
 		ShockWaveWaterRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 		ShockWaveWaterRitem.IndexCount.push_back(ShockWaveWaterRitem.Geo[0]->DrawArgs["grid"].IndexCount);
@@ -1564,7 +1564,7 @@ void GameApp::BuildRenderItems()
 		XMStoreFloat4x4(&skyRitem.World, XMMatrixScaling(5000.0f, 5000.0f, 5000.0f));
 		skyRitem.TexTransform = MathHelper::Identity4x4();
 		skyRitem.ObjCBIndex = ObjCBIndex++;
-		skyRitem.Mat = L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"sky");
+		skyRitem.Mat = Materials::GetMaterialInstance()->GetMaterial(L"sky");
 		skyRitem.Geo.push_back(mGeometries["Sky"].get());
 		skyRitem.PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 		skyRitem.IndexCount.push_back(skyRitem.Geo[0]->DrawArgs["Sphere"].IndexCount);

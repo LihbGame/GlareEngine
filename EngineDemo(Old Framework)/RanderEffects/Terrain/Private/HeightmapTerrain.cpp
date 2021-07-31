@@ -2,7 +2,7 @@
 #include "GeometryGenerator.h"
 #include "Vertex.h"
 #include "Grass.h"
-#include "L3DMaterial.h"
+#include "Material.h"
 using namespace DirectX::PackedVector;
 
 HeightmapTerrain::HeightmapTerrain(
@@ -123,7 +123,7 @@ void HeightmapTerrain::BuildMaterials()
 	XMFLOAT4X4  MatTransform = MathHelper::Identity4x4();
 	for (auto e : TerrainTextures)
 	{
-		L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
+		Materials::GetMaterialInstance()->BuildMaterials(
 			wstring(e.first.begin(), e.first.end()),
 			0.08f,
 			XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),

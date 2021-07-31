@@ -10,5 +10,5 @@ GerstnerWaveShader::~GerstnerWaveShader()
 
 std::vector<D3D12_INPUT_ELEMENT_DESC> GerstnerWaveShader::GetInputLayout()
 {
-	return L3DInputLayout::PosNormalTangentTexc;
+	return InputLayout::PosNormalTangentTexc;
 }

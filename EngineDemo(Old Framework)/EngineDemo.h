@@ -1,13 +1,13 @@
 #pragma once
 
 #include "resource.h"
-#include "L3DBaseApp.h"
-#include "L3DMathHelper.h"
-#include "L3DUploadBuffer.h"
+#include "BaseApp.h"
+#include "MathHelper.h"
+#include "UploadBuffer.h"
 #include "GeometryGenerator.h"
 #include "Waves.h"
 #include "FrameResource.h"
-#include "L3DMaterial.h"
+#include "Material.h"
 
 //shader head files
 #include "BaseShader.h"

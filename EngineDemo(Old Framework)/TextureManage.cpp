@@ -1,5 +1,5 @@
 #include "TextureManage.h"
-#include "L3DMaterial.h"
+#include "Material.h"
 TextureManage::TextureManage(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, UINT CbvSrvDescriptorSize)
 :md3dDevice(d3dDevice),
 mCommandList(CommandList),
@@ -58,7 +58,7 @@ void TextureManage::CreatePBRSRVinDescriptorHeap(vector<ID3D12Resource*> TexReso
 		srvDesc.Format = TexResource[i]->GetDesc().Format;
 		srvDesc.Texture2D.MipLevels = TexResource[i]->GetDesc().MipLevels;
 		md3dDevice->CreateShaderResourceView(TexResource[i], &srvDesc, *hDescriptor);
-		L3DMaterial::GetL3DMaterialInstance()->GetMaterial(MaterialName)->PBRSrvHeapIndex[i] = (*SRVIndex)++;
+		Materials::GetMaterialInstance()->GetMaterial(MaterialName)->PBRSrvHeapIndex[i] = (*SRVIndex)++;
 		// next descriptor
 		hDescriptor->Offset(1, mCbvSrvDescriptorSize);
 	}

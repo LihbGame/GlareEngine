@@ -1,7 +1,7 @@
 #pragma once
-#include "L3DBaseApp.h"
-#include "L3DMathHelper.h"
-#include "L3DInputLayout.h"
+#include "BaseApp.h"
+#include "MathHelper.h"
+#include "InputLayout.h"
 class BaseShader
 {
 public:

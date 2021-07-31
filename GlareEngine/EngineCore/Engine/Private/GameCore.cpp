@@ -1,7 +1,7 @@
 #include "CommandContext.h"
 #include "GraphicsCore.h"
 #include "GameCore.h"
-#include "L3DGameTimer.h"
+#include "GameTimer.h"
 #include "EngineInput.h"
 #include "BufferManager.h"
 #include "EngineAdjust.h"
@@ -154,8 +154,6 @@ namespace GlareEngine
 					TranslateMessage(&msg);
 					DispatchMessage(&msg);
 				}
-				if (msg.message == WM_QUIT)
-					break;
 
 			} while (UpdateApplication(app) && !gExit);    // Returns false to quit loop
 			
@@ -167,7 +165,7 @@ namespace GlareEngine
 
 		//--------------------------------------------------------------------------------------
 		// Called every time the application receives a message
-		//--------------------------------------------------------------------------------------
+		//--------------------------------------------------------------------------------------6
 		LRESULT GameApp::MsgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			switch (message)

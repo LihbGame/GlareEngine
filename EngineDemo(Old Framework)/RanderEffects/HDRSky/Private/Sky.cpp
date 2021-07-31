@@ -1,7 +1,7 @@
 #include "Sky.h"
 #include "GeometryGenerator.h"
 #include "Vertex.h"
-#include "L3DMaterial.h"
+#include "Material.h"
 #include "TextureManage.h"
 using namespace DirectX;
 Sky::Sky(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList,float radius, int sliceCount, int stackCount, TextureManage* TextureManage)
@@ -71,7 +71,7 @@ std::unique_ptr<MeshGeometry>& Sky::GetSkyMesh()
 
 void Sky::BuildMaterials()
 {
-	L3DMaterial::GetL3DMaterialInstance()->BuildMaterials(
+	Materials::GetMaterialInstance()->BuildMaterials(
 		L"sky",
 		0.0f,
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
@@ -92,7 +92,7 @@ void Sky::FillSRVDescriptorHeap(int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hD
 	SkysrvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
 	SkysrvDesc.Format = SkyTex->GetDesc().Format;
 	md3dDevice->CreateShaderResourceView(SkyTex.Get(), &SkysrvDesc, *hDescriptor);
-	L3DMaterial::GetL3DMaterialInstance()->GetMaterial(L"sky")->PBRSrvHeapIndex[PBRTextureType::DiffuseSrvHeapIndex] = (*SRVIndex)++;
+	Materials::GetMaterialInstance()->GetMaterial(L"sky")->PBRSrvHeapIndex[PBRTextureType::DiffuseSrvHeapIndex] = (*SRVIndex)++;
 	// next descriptor
 	(*hDescriptor).Offset(1, pTextureManage->GetCbvSrvDescriptorSize());
 }

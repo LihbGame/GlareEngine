@@ -10,5 +10,5 @@ SimpleGeometryShadowMapShader::~SimpleGeometryShadowMapShader()
 
 std::vector<D3D12_INPUT_ELEMENT_DESC> SimpleGeometryShadowMapShader::GetInputLayout()
 {
-	return L3DInputLayout::InstancePosNormalTangentTexc;
+	return InputLayout::InstancePosNormalTangentTexc;
 }

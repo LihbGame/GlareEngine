@@ -27,9 +27,6 @@
     <ClInclude Include="FrameResource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="L3DBaseApp.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="ShaderSource\Public\BaseShader.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -96,12 +93,18 @@
     <ClInclude Include="EngineDemo.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="BaseApp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="UploadBuffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureManage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FrameResource.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="L3DBaseApp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="RanderEffects\HDRSky\Private\Sky.cpp">
@@ -171,6 +174,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="EngineDemo.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseApp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureManage.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

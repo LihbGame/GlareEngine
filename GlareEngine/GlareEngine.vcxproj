@@ -84,12 +84,12 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>.\GraphicEffects\Sky\Public;.\GraphicEffects\Misc;$(SolutionDir)\$(Platform)\$(Configuration);.\EngineCore\Engine\Public;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\EngineCore\Graphics\Public;.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\RanderEffects\ShockWaveWater\Public;.\Dependences\include;.\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;.\;.\EngineEditor;.\Water\Public;.\RanderEffects\HDRSky\Public;.\ShaderSource\Public;.\PSO\Public;.\EngineMain\Public;.\EngineCore\Public;$(IncludePath)</IncludePath>
+    <IncludePath>.\;..\x64\Debug;.\GraphicEffects\Sky\Public;.\GraphicEffects\Misc;.\EngineCore\Engine\Public;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\EngineCore\Graphics\Public;.\Dependences\include;.\Animation;.\EngineCore\Public;$(IncludePath)</IncludePath>
     <LibraryPath>.\Dependences\lib\ozz\debug;.\Dependences\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>.\GraphicEffects\Misc;$(SolutionDir)\$(Platform)\$(Configuration);.\EngineCore\Engine\Public;.\EngineCore\Public;.\EngineCore\Graphics\Public;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\RanderEffects\ParticleSystem\Public;.\RanderEffects\Terrain\Public;.\Core\Public;.\EngineMain\Public;.\PSO\Public;.\ShaderSource\Public;.\RanderEffects\HDRSky\Public;.\Water\Public;.\EngineEditor;.\;.\RanderEffects\Shadow\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Water\Public;.\Animation;.\Dependences\include;.\RanderEffects\ShockWaveWater\Public;$(IncludePath)</IncludePath>
+    <IncludePath>.\;..\x64\Release;.\GraphicEffects\Sky\Public;..\EngineDemo%28Old Framework%29;.\GraphicEffects\Misc;.\EngineCore\Engine\Public;.\EngineCore\Graphics\Public;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\Animation;.\Dependences\include;$(IncludePath)</IncludePath>
     <LibraryPath>.\Dependences\lib;.\Dependences\lib\ozz\release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -164,6 +164,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>ozz_geometry_r.lib;ozz_animation_r.lib;ozz_base_r.lib;ozz_options_r.lib;ozz_animation_tools_r.lib;ozz_animation_offline_r.lib;assimp-vc142-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <FxCompile>
+      <VariableName>g_p%(Filename)</VariableName>
+      <HeaderFileOutput>$(SolutionDir)\$(Platform)\$(Configuration)\CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput />
+      <ShaderModel>6.0</ShaderModel>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Animation\Animations.h" />
@@ -206,18 +212,16 @@
     <ClInclude Include="EngineCore\Math\Scalar.h" />
     <ClInclude Include="EngineCore\Math\Vector.h" />
     <ClInclude Include="EngineCore\Math\VectorMath.h" />
-    <ClInclude Include="EngineCore\Public\L3DInputLayout.h" />
-    <ClInclude Include="EngineCore\Public\d3dx12.h" />
+    <ClInclude Include="EngineCore\Engine\Public\InputLayout.h" />
+    <ClInclude Include="EngineCore\Engine\Public\d3dx12.h" />
     <ClInclude Include="EngineCore\Graphics\Public\DDSTextureLoader.h" />
-    <ClInclude Include="EngineCore\Public\Camera.h" />
-    <ClInclude Include="EngineCore\Public\L3DGameTimer.h" />
-    <ClInclude Include="EngineCore\Public\GeometryGenerator.h" />
-    <ClInclude Include="EngineCore\Public\L3DMaterial.h" />
-    <ClInclude Include="EngineCore\Public\L3DMathHelper.h" />
-    <ClInclude Include="EngineCore\Public\TextureManage.h" />
-    <ClInclude Include="EngineCore\Public\L3DUploadBuffer.h" />
-    <ClInclude Include="EngineCore\Public\EngineUtility.h" />
-    <ClInclude Include="EngineCore\Public\Vertex.h" />
+    <ClInclude Include="EngineCore\Engine\Public\Camera.h" />
+    <ClInclude Include="EngineCore\Engine\Public\GameTimer.h" />
+    <ClInclude Include="EngineCore\Engine\Public\GeometryGenerator.h" />
+    <ClInclude Include="EngineCore\Graphics\Public\Material.h" />
+    <ClInclude Include="EngineCore\Math\MathHelper.h" />
+    <ClInclude Include="EngineCore\Engine\Public\EngineUtility.h" />
+    <ClInclude Include="EngineCore\Engine\Public\Vertex.h" />
     <ClInclude Include="EngineCore\Graphics\Public\WICTextureLoader12.h" />
     <ClInclude Include="EngineEditor\ImgUIEditor\EngineGUI.h" />
     <ClInclude Include="EngineEditor\ImgUIEditor\imconfig.h" />
@@ -282,15 +286,14 @@
     <ClCompile Include="EngineCore\Graphics\Private\LinearAllocator.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\GraphicsCommon.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\ShadowBuffer.cpp" />
-    <ClCompile Include="EngineCore\Private\Camera.cpp" />
-    <ClCompile Include="EngineCore\Private\L3DGameTimer.cpp" />
-    <ClCompile Include="EngineCore\Private\GeometryGenerator.cpp" />
-    <ClCompile Include="EngineCore\Private\L3DInputLayout.cpp" />
-    <ClCompile Include="EngineCore\Private\L3DMaterial.cpp" />
-    <ClCompile Include="EngineCore\Private\L3DMathHelper.cpp" />
-    <ClCompile Include="EngineCore\Private\TextureManage.cpp" />
-    <ClCompile Include="EngineCore\Private\EngineUtility.cpp" />
-    <ClCompile Include="EngineCore\Private\Vertex.cpp" />
+    <ClCompile Include="EngineCore\Engine\Private\Camera.cpp" />
+    <ClCompile Include="EngineCore\Engine\Private\GameTimer.cpp" />
+    <ClCompile Include="EngineCore\Engine\Private\GeometryGenerator.cpp" />
+    <ClCompile Include="EngineCore\Engine\Private\InputLayout.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Private\Material.cpp" />
+    <ClCompile Include="EngineCore\Math\MathHelper.cpp" />
+    <ClCompile Include="EngineCore\Engine\Private\EngineUtility.cpp" />
+    <ClCompile Include="EngineCore\Engine\Private\Vertex.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\WICTextureLoader12.cpp" />
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp" />
     <ClCompile Include="EngineEditor\ImgUIEditor\imgui.cpp" />

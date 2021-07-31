@@ -247,16 +247,21 @@ void EngineGUI::SetWindowStyles()
 	style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.0028, 0.0061, 0.0061, 1);
 	style.Colors[ImGuiCol_CheckMark] = ImVec4(0, 0, 0, 1);
 	style.Colors[ImGuiCol_Header] = ImVec4(0.09, 0.0133, 0.0184, 0.8);
-	style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.01, 0.50, 0.105, 1);
-	style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.001, 0.050, 0.075, 1);
-	style.Colors[ImGuiCol_FrameBg] = ImVec4(0.001, 0.050, 0.015, 0.5);
+	style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.001, 0.005, 0.005, 1);
+	style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.05, 0.05, 0.05, 1);
+	style.Colors[ImGuiCol_FrameBg] = ImVec4(0.01, 0.01, 0.01, 0.5);
 	style.Colors[ImGuiCol_Border] = ImVec4(0.01, 0.01, 0.01, 1);
-	style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.001, 0.0050, 0.0075, 1);
-	style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.001, 0.0050, 0.0075, 1);
-	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.0115, 0.0247, 0.0417, 1);
-	style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.05, 0.07, 0.07, 1);
-	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.005, 0.017, 0.017, 1);
-	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.015, 0.027, 0.027, 1);
-	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.015, 0.027, 0.027, 1);
+	style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.01, 0.050, 0.075, 1);
+	style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.01, 0.050, 0.075, 1);
+
+	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.115, 0.0247, 0.0417, 1);
+	style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.005, 0.007, 0.007, 1);
+	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.005, 0.0017, 0.017, 1);
+	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.0015, 0.0027, 0.0027, 1);
+	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.0015, 0.0027, 0.0027, 1);
+	style.Colors[ImGuiCol_Button] = ImVec4(0.09, 0.0133, 0.0184, 0.8);
+	style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.05, 0.05, 0.05, 1);
+	style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.05, 0.05, 0.05, 1);
+	style.Colors[ImGuiCol_Separator] = ImVec4(0.02, 0.02, 0.02, 1);
 }
 

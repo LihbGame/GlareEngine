@@ -1,5 +1,5 @@
 #include <windows.h>
-#include "L3DGameTimer.h"
+#include "GameTimer.h"
 
 
 double GameTimer::mSecondsPerCount=0.0f;

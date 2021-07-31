@@ -1,8 +1,8 @@
 #pragma once
 
 #include "EngineUtility.h"
-#include "L3DMathHelper.h"
-#include "L3DUploadBuffer.h"
+#include "MathHelper.h"
+#include "UploadBuffer.h"
 #include "Vertex.h"
 #define InstanceCounts 25
 #define MAXSubMesh 10

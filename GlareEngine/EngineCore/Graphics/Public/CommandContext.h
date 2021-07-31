@@ -9,7 +9,7 @@
 #include "CommandListManager.h"
 #include "CommandSignature.h"
 #include "GraphicsCore.h"
-#include "TextureManage.h"
+#include "TextureManager.h"
 #include "GraphicsCommon.h"
 
 namespace GlareEngine

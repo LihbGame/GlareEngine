@@ -1,5 +1,4 @@
 #include "Camera.h"
-#include "TextureManage.h"
 
 using namespace DirectX;
 

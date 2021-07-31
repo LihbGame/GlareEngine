@@ -10,5 +10,5 @@ SkinAnimeShader::~SkinAnimeShader()
 
 std::vector<D3D12_INPUT_ELEMENT_DESC> SkinAnimeShader::GetInputLayout()
 {
-	return L3DInputLayout::SkinAnimeVertex;
+	return InputLayout::SkinAnimeVertex;
 }
