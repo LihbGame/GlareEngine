@@ -239,6 +239,8 @@ namespace GlareEngine
 
 		ThrowIfFailed(dxgiFactory->CreateSwapChainForHwnd(g_CommandManager.GetCommandQueue(), GameCore::g_hWnd, &swapChainDesc, nullptr, nullptr, &s_SwapChain1));
 
+		//½ûÖ¹ alt+enter È«ÆÁ
+		dxgiFactory->MakeWindowAssociation(GameCore::g_hWnd, DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
 	}
 
 	void DirectX12Graphics::CheckUAVFormatSupport()

@@ -46,10 +46,17 @@ namespace GlareEngine
 
 		protected:
 			static GameApp* mGameApp;
-			
+
+			bool      mAppPaused = false;  // is the application paused?
+			bool      mMinimized = false;  // is the application minimized?
+			bool      mMaximized = false;  // is the application maximized?
+			bool      mResizing = false;
 
 			uint32_t mClientWidth = 1600;
 			uint32_t mClientHeight = 900;
+
+
+
 		};
 
 		void RunApplication(GameApp& app, const wchar_t* className,HINSTANCE HAND);

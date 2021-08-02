@@ -6,6 +6,8 @@
 #include "BufferManager.h"
 #include "EngineAdjust.h"
 #include "EngineProfiling.h"
+#include "EngineGUI.h"
+
 #include <windowsx.h>
 #include "resource.h"
 #pragma comment(lib, "runtimeobject.lib")
@@ -175,9 +177,61 @@ namespace GlareEngine
 				// Save the new client area dimensions.
 				mClientWidth = LOWORD(lParam);
 				mClientHeight = HIWORD(lParam);
-				OnResize(mClientWidth, mClientHeight);
+
+				if (wParam == SIZE_MINIMIZED)
+				{
+					mAppPaused = true;
+					mMinimized = true;
+					mMaximized = false;
+					EngineGUI::mWindowMaxSize = false;
+				}
+				else if (wParam == SIZE_MAXIMIZED)
+				{
+					mAppPaused = false;
+					mMinimized = false;
+					mMaximized = true;
+					EngineGUI::mWindowMaxSize = true;
+					OnResize(mClientWidth, mClientHeight);
+				}
+				else if (wParam == SIZE_RESTORED)
+				{
+					// Restoring from minimized state?
+					if (mMinimized)
+					{
+						mAppPaused = false;
+						mMinimized = false;
+						OnResize(mClientWidth, mClientHeight);
+					}
+					// Restoring from maximized state?
+					else if (mMaximized)
+					{
+						mAppPaused = false;
+						mMaximized = false;
+						EngineGUI::mWindowMaxSize = false;
+						OnResize(mClientWidth, mClientHeight);
+					}
+					else if (mResizing)//正在调整大小
+					{
+						//如果用户正在拖动调整大小条，我们不会在此处调整缓冲区的大小，
+						//因为当用户不断拖动调整大小条时，会向窗口发送一个WM_SIZE消息流，
+						//并且为每个WM_SIZE调整大小是没有意义的（并且很慢） 通过拖动调整大小条收到的消息。
+						//因此，我们在用户完成窗口大小调整后释放调整大小条，然后发送WM_EXITSIZEMOVE消息。
+					}
+					else // API call such as SetWindowPos or mSwapChain->SetFullscreenState.
+					{
+						OnResize(mClientWidth, mClientHeight);
+					}
+				}
 				break;
 			}
+			// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
+	        // Here we reset everything based on the new window dimensions.
+			case WM_EXITSIZEMOVE:
+				mAppPaused = false;
+				mResizing = false;
+				GameTimer::Start();
+				OnResize(mClientWidth, mClientHeight);
+				break;
 			case WM_LBUTTONDOWN:
 			case WM_MBUTTONDOWN:
 			case WM_RBUTTONDOWN:
@@ -190,6 +244,11 @@ namespace GlareEngine
 				break;
 			case WM_MOUSEMOVE:
 				OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				break;
+			// 抓住此消息以防止窗口变得太小。
+			case WM_GETMINMAXINFO:
+				((MINMAXINFO*)lParam)->ptMinTrackSize.x = 1280;
+				((MINMAXINFO*)lParam)->ptMinTrackSize.y = 720;
 				break;
 			case WM_DESTROY:
 			{

@@ -91,7 +91,6 @@ void EngineGUI::Draw(ID3D12GraphicsCommandList* d3dCommandList)
 			ImGui::SetNextWindowPos(ImVec2(g->IO.DisplaySize.x * 5.0f / 6.0f, 0.0f));
 			ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * 1.0f/6.0f, g->IO.DisplaySize.y * 0.75f));
 			ImGui::ShowDemoWindow(&show_demo_window,&mWindowMaxSize);
-
 		}
 		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
 		{

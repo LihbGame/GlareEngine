@@ -7,7 +7,7 @@
 #include "EngineInput.h"
 #include "BufferManager.h"
 #include "EngineGUI.h"
-#include "./resource.h"
+#include "resource.h"
 
 #include "Camera.h"
 #include "Sky.h"
@@ -130,9 +130,18 @@ void App::Cleanup(void)
 
 void App::Update(float DeltaTime)
 {
+	if (EngineGUI::mWindowMaxSize && !mMaximized)
+	{
+		SendMessage(g_hWnd, WM_SYSCOMMAND, SC_MAXIMIZE, NULL);
+	}
+	if (!EngineGUI::mWindowMaxSize && mMaximized)
+	{
+		SendMessage(g_hWnd, WM_SYSCOMMAND, SC_RESTORE, NULL);
+	}
+
+
 	UpdateCamera(DeltaTime);
 	UpdateMainConstantBuffer(DeltaTime);
-
 
 }
 
@@ -234,6 +243,7 @@ void App::RenderScene(void)
 void App::OnResize(uint32_t width, uint32_t height)
 {
 	DirectX12Graphics::Resize(width, height);
+
 
 	//窗口调整大小，因此更新宽高比并重新计算投影矩阵;
 	mCamera->SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 40000.0f);

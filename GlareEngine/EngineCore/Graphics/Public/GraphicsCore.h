@@ -47,6 +47,8 @@ namespace GlareEngine
 		extern ID3D12Device* g_Device;
 		extern CommandListManager g_CommandManager;
 		extern ContextManager g_ContextManager;
+		//Swap Chain
+		extern IDXGISwapChain1* s_SwapChain1;
 
 		extern DXGI_FORMAT g_SwapChainFormat;
 
