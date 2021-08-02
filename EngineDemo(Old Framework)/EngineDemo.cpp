@@ -838,7 +838,7 @@ void GameApp::BuildShadersAndInputLayout()
 		NULL, NULL
 	};
 
-	wstring ShaderPath = L"..\\GlareEngine\\Shaders\\";
+	wstring ShaderPath = L"Shaders\\";
 
 	mShaders["GerstnerWave"] = new GerstnerWaveShader(ShaderPath+L"DefaultVS.hlsl", ShaderPath + L"DefaultPS.hlsl");
 
