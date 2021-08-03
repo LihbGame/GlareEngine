@@ -195,13 +195,15 @@ namespace GlareEngine
 
 			if (m_Type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
 			{
-				assert((OldState & VALID_COMPUTE_QUEUE_RESOURCE_STATES) == OldState, "This is not Compute States!");
-				assert((NewState & VALID_COMPUTE_QUEUE_RESOURCE_STATES) == NewState, "This is not Compute States!");
+				//This is not Compute States!
+				assert((OldState & VALID_COMPUTE_QUEUE_RESOURCE_STATES) == OldState);
+				assert((NewState & VALID_COMPUTE_QUEUE_RESOURCE_STATES) == NewState);
 			}
 
 			if (OldState != NewState)
 			{
-				assert(m_NumBarriersToFlush < 16, "The arbitrary limit of the buffer barrier is exceeded.");
+				//The arbitrary limit of the buffer barrier is exceeded.
+				assert(m_NumBarriersToFlush < 16);
 				D3D12_RESOURCE_BARRIER& BarrierDesc = m_ResourceBarrierBuffer[m_NumBarriersToFlush++];
 
 				BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -239,7 +241,8 @@ namespace GlareEngine
 
 			if (OldState != NewState)
 			{
-				assert(m_NumBarriersToFlush < 16, "Exceeded arbitrary limit on buffered barriers");
+				//Exceeded arbitrary limit on buffered barriers
+				assert(m_NumBarriersToFlush < 16);
 				D3D12_RESOURCE_BARRIER& BarrierDesc = m_ResourceBarrierBuffer[m_NumBarriersToFlush++];
 
 				BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -259,7 +262,8 @@ namespace GlareEngine
 
 		void CommandContext::InsertUAVBarrier(GPUResource& Resource, bool FlushImmediate)
 		{
-			assert(m_NumBarriersToFlush < 16, "Exceeded arbitrary limit on buffered barriers");
+			//Exceeded arbitrary limit on buffered barriers
+			assert(m_NumBarriersToFlush < 16);
 			D3D12_RESOURCE_BARRIER& BarrierDesc = m_ResourceBarrierBuffer[m_NumBarriersToFlush++];
 
 			BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
@@ -272,7 +276,8 @@ namespace GlareEngine
 
 		void CommandContext::InsertAliasBarrier(GPUResource& Before, GPUResource& After, bool FlushImmediate)
 		{
-			assert(m_NumBarriersToFlush < 16, "Exceeded arbitrary limit on buffered barriers");
+			//Exceeded arbitrary limit on buffered barriers
+			assert(m_NumBarriersToFlush < 16);
 			D3D12_RESOURCE_BARRIER& BarrierDesc = m_ResourceBarrierBuffer[m_NumBarriersToFlush++];
 
 			BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_ALIASING;

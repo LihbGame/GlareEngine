@@ -82,7 +82,7 @@ namespace GlareEngine
 	{
 		for (int32_t i = 0; i < s_UnregisteredCount; ++i)
 		{
-			assert(strlen(s_UnregisteredPath[i]) > 0, "Register = %d\n", i);
+			assert(strlen(s_UnregisteredPath[i]) > 0);
 			assert(s_UnregisteredVariable[i] != nullptr);
 			AddToVariableGraph(s_UnregisteredPath[i], *s_UnregisteredVariable[i]);
 		}
@@ -144,7 +144,8 @@ namespace GlareEngine
 			else
 			{
 				nextGroup = dynamic_cast<VariableGroup*>(node);
-				assert(nextGroup != nullptr, "Attempted to trash the tweak graph");
+				//Attempted to trash the tweak graph
+				assert(nextGroup != nullptr);
 				group = nextGroup;
 			}
 		}
@@ -197,8 +198,8 @@ namespace GlareEngine
 			if (currentVariable == iter->second)
 				break;
 		}
-
-		assert(iter != m_Children.end(), "Do not find engine variable in its designated group");
+		//Do not find engine variable in its designated group
+		assert(iter != m_Children.end());
 
 		auto nextIter = iter;
 		++nextIter;
@@ -217,8 +218,8 @@ namespace GlareEngine
 			if (currentVariable == iter->second)
 				break;
 		}
-
-		assert(iter != m_Children.end(), "Did not find engine variable in its designated group");
+		//Did not find engine variable in its designated group
+		assert(iter != m_Children.end());
 
 		if (iter == m_Children.begin())
 			return this;

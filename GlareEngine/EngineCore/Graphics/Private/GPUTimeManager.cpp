@@ -118,8 +118,10 @@ void GPUTimeManager::EndReadBack(void)
 
 float GPUTimeManager::GetTime(uint32_t TimerIdx)
 {
-	assert(sm_TimeStampBuffer != nullptr, "Time stamp readback buffer is not mapped");
-	assert(TimerIdx < sm_NumTimers, "Invalid GPU timer index");
+	//Time stamp readback buffer is not mapped
+	assert(sm_TimeStampBuffer != nullptr);
+	//Invalid GPU timer index
+	assert(TimerIdx < sm_NumTimers);
 
 	uint64_t TimeStamp1 = sm_TimeStampBuffer[TimerIdx * 2];
 	uint64_t TimeStamp2 = sm_TimeStampBuffer[TimerIdx * 2 + 1];

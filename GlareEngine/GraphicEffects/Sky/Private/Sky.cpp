@@ -110,7 +110,7 @@ void CSky::BuildPSO(const RootSignature& rootSignature)
 	mSkyPSO.SetBlendState(BlendDisable);
 	mSkyPSO.SetDepthStencilState(DepthStencilState);
 	mSkyPSO.SetSampleMask(0xFFFFFFFF);
-	mSkyPSO.SetInputLayout(InputLayout::Pos.size(), InputLayout::Pos.data());
+	mSkyPSO.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
 	mSkyPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 	mSkyPSO.SetVertexShader(g_pSkyVS, sizeof(g_pSkyVS));
 	mSkyPSO.SetPixelShader(g_pSkyPS, sizeof(g_pSkyPS));

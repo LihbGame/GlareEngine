@@ -409,7 +409,7 @@ namespace GlareEngine
 
 	void DirectX12Graphics::Initialize(void)
 	{
-		assert(s_SwapChain1 == nullptr, "Graphics has already been initialized");
+		assert(s_SwapChain1 == nullptr);
 
 #if _DEBUG
 		Microsoft::WRL::ComPtr<ID3D12Debug> debugInterface;
@@ -556,7 +556,7 @@ namespace GlareEngine
 			s_FrameTime = CurrentTick-s_FrameStartTick;
 		}
 
-		s_FrameStartTick = CurrentTick;
+		s_FrameStartTick = (int64_t)CurrentTick;
 
 		++s_FrameIndex;
 		//TemporalEffects::Update((uint32_t)s_FrameIndex);

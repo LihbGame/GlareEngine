@@ -117,7 +117,8 @@ namespace GlareEngine
 
 		void ColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format, uint32_t ArraySize, uint32_t NumMips)
 		{
-			assert(ArraySize == 1 || NumMips == 1, "We don't support auto-mips on texture arrays");
+			//We don't support auto-mips on texture arrays
+			assert(ArraySize == 1 || NumMips == 1);
 
 			m_NumMipMaps = NumMips - 1;
 

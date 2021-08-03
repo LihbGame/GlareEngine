@@ -8,7 +8,7 @@
 #include "GPUTimeManager.h"
 #include "CommandContext.h"
 #include "EngineAdjust.h"
-
+#include "EngineLog.h"
 
 
 using namespace GlareEngine;
@@ -206,13 +206,13 @@ namespace GlareEngine
 				}
 			}
 
-			ERROR("All attempts to find a previous timing sample failed");
+			EngineLog::AddLog(L"Error: All attempts to find a previous timing sample failed");
 			return nullptr;
 		}
 
 		void StartTiming(DirectX12Graphics::CommandContext* Context)
 		{
-			m_StartTick = GameTimer::TotalTime();
+			m_StartTick = (int64_t)GameTimer::TotalTime();
 			if (Context == nullptr)
 				return;
 
@@ -223,7 +223,7 @@ namespace GlareEngine
 
 		void StopTiming(DirectX12Graphics::CommandContext* Context)
 		{
-			m_EndTick = GameTimer::TotalTime();
+			m_EndTick = (int64_t)GameTimer::TotalTime();
 			if (Context == nullptr)
 				return;
 

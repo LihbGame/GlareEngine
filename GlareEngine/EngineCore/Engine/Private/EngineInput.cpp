@@ -176,15 +176,18 @@ namespace
 	{
 		BuildKeyMapping();
 
-//#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 		if (FAILED(DirectInput8Create(GetModuleHandle(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&s_DI, nullptr)))
-			assert(false, "DirectInput8 initialization failed.");
+			//DirectInput8 initialization failed.
+			assert(false);
 		if (FAILED(s_DI->CreateDevice(GUID_SysKeyboard, &s_Keyboard, nullptr)))
-			assert(false, "Keyboard CreateDevice failed.");
+			//Keyboard CreateDevice failed.
+			assert(false);
 		if (FAILED(s_Keyboard->SetDataFormat(&c_dfDIKeyboard)))
-			assert(false, "Keyboard SetDataFormat failed.");
+			//Keyboard SetDataFormat failed.
+			assert(false);
 		if (FAILED(s_Keyboard->SetCooperativeLevel(GameCore::g_hWnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE)))
-			assert(false, "Keyboard SetCooperativeLevel failed.");
+			//Keyboard SetCooperativeLevel failed.
+			assert(false);
 
 		DIPROPDWORD dipdw;
 		dipdw.diph.dwSize = sizeof(DIPROPDWORD);
@@ -193,15 +196,19 @@ namespace
 		dipdw.diph.dwHow = DIPH_DEVICE;
 		dipdw.dwData = 10;
 		if (FAILED(s_Keyboard->SetProperty(DIPROP_BUFFERSIZE, &dipdw.diph)))
-			assert(false, "Keyboard set buffer size failed.");
+			//Keyboard set buffer size failed.
+			assert(false);
 
 		if (FAILED(s_DI->CreateDevice(GUID_SysMouse, &s_Mouse, nullptr)))
-			assert(false, "Mouse CreateDevice failed.");
+			//Mouse CreateDevice failed.
+			assert(false);
 		if (FAILED(s_Mouse->SetDataFormat(&c_dfDIMouse2)))
-			assert(false, "Mouse SetDataFormat failed.");
+			//Mouse SetDataFormat failed.
+			assert(false);
 		if (FAILED(s_Mouse->SetCooperativeLevel(GameCore::g_hWnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE)))
-			assert(false, "Mouse SetCooperativeLevel failed.");
-//#endif
+			//Mouse SetCooperativeLevel failed.
+			assert(false);
+
 		ZeroInputs();
 	}
 

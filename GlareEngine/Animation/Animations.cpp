@@ -194,10 +194,10 @@ void Animation::UpadateBoneTransform(double time_in_sec, vector<XMFLOAT4X4>& tra
     aiMatrix4x4 identity_matrix; // = mat4(1.0f);
 
     double time_in_ticks = time_in_sec * ticks_per_second;
-    float animation_time = fmod(time_in_ticks, pAnimeScene->mAnimations[0]->mDuration);
+    double animation_time = fmod(time_in_ticks, pAnimeScene->mAnimations[0]->mDuration);
     // animation_time 
 
-    ReadNodeHierarchy(animation_time, pAnimeScene->mRootNode, identity_matrix);
+    ReadNodeHierarchy((float)animation_time, pAnimeScene->mRootNode, identity_matrix);
 
     transforms.resize(m_num_bones);
 

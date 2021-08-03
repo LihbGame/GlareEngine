@@ -56,7 +56,8 @@ void GlareEngine::DirectX12Graphics::GraphicsPSO::SetSampleMask(UINT SampleMask)
 
 void GlareEngine::DirectX12Graphics::GraphicsPSO::SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE TopologyType)
 {
-	assert(TopologyType != D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED, "Can't draw with undefined topology");
+	//Can't draw with undefined topology
+	assert(TopologyType != D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED);
 	m_PSODesc.PrimitiveTopologyType = TopologyType;
 }
 
@@ -67,7 +68,8 @@ void GlareEngine::DirectX12Graphics::GraphicsPSO::SetRenderTargetFormat(DXGI_FOR
 
 void GlareEngine::DirectX12Graphics::GraphicsPSO::SetRenderTargetFormats(UINT NumRTVs, const DXGI_FORMAT* RTVFormats, DXGI_FORMAT DSVFormat, UINT MsaaCount, UINT MsaaQuality)
 {
-	assert(NumRTVs == 0 || RTVFormats != nullptr, "Null format array conflicts with non-zero length");
+	//Null format array conflicts with non-zero length
+	assert(NumRTVs == 0 || RTVFormats != nullptr);
 	for (UINT i = 0; i < NumRTVs; ++i)
 		m_PSODesc.RTVFormats[i] = RTVFormats[i];
 	for (UINT i = NumRTVs; i < m_PSODesc.NumRenderTargets; ++i)

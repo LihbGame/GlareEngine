@@ -175,8 +175,8 @@ namespace GlareEngine
 			case DXGI_FORMAT_R24_UNORM_X8_TYPELESS:
 			case DXGI_FORMAT_X24_TYPELESS_G8_UINT:
 			case DXGI_FORMAT_D16_UNORM:
-
-				assert(false, "Requested a UAV format for a depth stencil format.");
+				//Requested a UAV format for a depth stencil format.
+				assert(false);
 #endif
 
 			default:

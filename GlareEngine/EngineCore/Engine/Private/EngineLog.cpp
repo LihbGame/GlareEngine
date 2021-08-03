@@ -49,7 +49,7 @@ void EngineLog::Filter(wstring Filter)
 	FilterDisplayLogs.clear();
 	for (int i=0;i<FilterLogs.size();++i)
 	{
-		Position= FilterLogs[i].find(Filter);
+		Position= (int)FilterLogs[i].find(Filter);
 		if (Position != FilterLogs[i].npos)
 		{
 			FilterDisplayLogs.push_back(DisplayLogs[i]);

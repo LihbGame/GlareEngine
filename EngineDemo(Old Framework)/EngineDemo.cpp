@@ -837,7 +837,7 @@ void GameApp::BuildShadersAndInputLayout()
 		"SKINNED","1",
 		NULL, NULL
 	};
-
+	 
 	wstring ShaderPath = L"Shaders\\";
 
 	mShaders["GerstnerWave"] = new GerstnerWaveShader(ShaderPath+L"DefaultVS.hlsl", ShaderPath + L"DefaultPS.hlsl");

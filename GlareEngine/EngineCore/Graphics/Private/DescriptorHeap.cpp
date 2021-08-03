@@ -67,7 +67,8 @@ namespace GlareEngine
 
 		DescriptorHandle UserDescriptorHeap::Alloc(uint32_t Count)
 		{
-			assert(HasAvailableSpace(Count), "Descriptor Heap out of space.  Increase heap size.");
+			//If Descriptor Heap out of space
+			assert(HasAvailableSpace(Count));
 			DescriptorHandle ret = m_NextFreeHandle;
 			m_NextFreeHandle += Count * m_DescriptorSize;
 			return ret;

@@ -172,8 +172,8 @@ namespace GlareEngine
 				StaleParams ^= (1 << RootIndex);
 
 				uint32_t MaxSetHandle = 0;
-				assert(TRUE == _BitScanReverse((unsigned long*)&MaxSetHandle, m_RootDescriptorTable[RootIndex].AssignedHandlesBitMap),
-					"Root entry marked as stale but has no stale descriptors");
+				//Root entry marked as stale but has no stale descriptors
+				assert(TRUE == _BitScanReverse((unsigned long*)&MaxSetHandle, m_RootDescriptorTable[RootIndex].AssignedHandlesBitMap));
 
 				NeededSpace += MaxSetHandle + 1;
 			}
@@ -198,17 +198,16 @@ namespace GlareEngine
 				StaleParams ^= (1 << RootIndex);
 
 				uint32_t MaxSetHandle=0;
-				assert(TRUE == _BitScanReverse((unsigned long*)&MaxSetHandle, m_RootDescriptorTable[RootIndex].AssignedHandlesBitMap),
-					"Root entry marked as stale but has no stale descriptors");
+				//Root entry marked as stale but has no stale descriptors
+				assert(TRUE == _BitScanReverse((unsigned long*)&MaxSetHandle, m_RootDescriptorTable[RootIndex].AssignedHandlesBitMap));
 
 				NeededSpace += MaxSetHandle + 1;
 				TableSize[StaleParamCount] = MaxSetHandle + 1;
 
 				++StaleParamCount;
 			}
-
-			assert(StaleParamCount <= DescriptorHandleCache::MaxNumDescriptorTables,
-				"We're only equipped to handle so many descriptor tables");
+			//We're only equipped to handle so many descriptor tables
+			assert(StaleParamCount <= DescriptorHandleCache::MaxNumDescriptorTables);
 
 			m_StaleRootParamsBitMap = 0;
 
@@ -285,7 +284,8 @@ namespace GlareEngine
 
 		void DynamicDescriptorHeap::DescriptorHandleCache::StageDescriptorHandles(UINT RootIndex, UINT Offset, UINT NumHandles, const D3D12_CPU_DESCRIPTOR_HANDLE Handles[])
 		{
-			assert(((1 << RootIndex) & m_RootDescriptorTablesBitMap) != 0, "Root parameter is not a CBV_SRV_UAV descriptor table");
+			//Root parameter is not a CBV_SRV_UAV descriptor table
+			assert(((1 << RootIndex) & m_RootDescriptorTablesBitMap) != 0);
 			assert(Offset + NumHandles <= m_RootDescriptorTable[RootIndex].TableSize);
 
 			DescriptorTableCache& TableCache = m_RootDescriptorTable[RootIndex];
@@ -299,8 +299,8 @@ namespace GlareEngine
 		void DynamicDescriptorHeap::DescriptorHandleCache::ParseRootSignature(D3D12_DESCRIPTOR_HEAP_TYPE Type, const RootSignature& RootSig)
 		{
 			UINT CurrentOffset = 0;
-
-			assert(RootSig.m_NumParameters <= 16, "Maybe we need to support something greater");
+			//Maybe we need to support something greater
+			assert(RootSig.m_NumParameters <= 16);
 
 			m_StaleRootParamsBitMap = 0;
 			m_RootDescriptorTablesBitMap = (Type == D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER ?
@@ -324,8 +324,8 @@ namespace GlareEngine
 			}
 
 			m_MaxCachedDescriptors = CurrentOffset;
-
-			assert(m_MaxCachedDescriptors <= MaxNumDescriptors, "Exceeded user-supplied maximum cache size");
+			//Exceeded user-supplied maximum cache size
+			assert(m_MaxCachedDescriptors <= MaxNumDescriptors);
 		}
 	}
 }

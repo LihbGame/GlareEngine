@@ -184,7 +184,7 @@ void EngineGUI::Draw(ID3D12GraphicsCommandList* d3dCommandList)
 			}
 
 			//将滚动条滑倒最后一条log
-			int LogSize = mLogs.size();
+			int LogSize = (int)mLogs.size();
 			if (LogSize != mLogSize)
 			{
 				ImGui::SetScrollY(ImGui::GetFrameHeightWithSpacing()*LogSize);
@@ -241,26 +241,26 @@ void EngineGUI::SetWindowStyles()
 {
 	ImGuiStyle& style = ImGui::GetStyle();
 
-	style.Colors[ImGuiCol_Text] = ImVec4(0.247, 0.288, 0.288, 1);
-	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.005, 0.005, 0.005, 1);
-	style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.0028, 0.0061, 0.0061, 1);
+	style.Colors[ImGuiCol_Text] = ImVec4(0.247f, 0.288f, 0.288f, 1);
+	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.005f, 0.005f, 0.005f, 1);
+	style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.0028f, 0.0061f, 0.0061f, 1);
 	style.Colors[ImGuiCol_CheckMark] = ImVec4(0, 0, 0, 1);
-	style.Colors[ImGuiCol_Header] = ImVec4(0.09, 0.0133, 0.0184, 0.8);
-	style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.001, 0.005, 0.005, 1);
-	style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.05, 0.05, 0.05, 1);
-	style.Colors[ImGuiCol_FrameBg] = ImVec4(0.01, 0.01, 0.01, 0.5);
-	style.Colors[ImGuiCol_Border] = ImVec4(0.01, 0.01, 0.01, 1);
-	style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.01, 0.050, 0.075, 1);
-	style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.01, 0.050, 0.075, 1);
+	style.Colors[ImGuiCol_Header] = ImVec4(0.09f, 0.0133f, 0.0184f, 0.8f);
+	style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.001f, 0.005f, 0.005f, 1);
+	style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.05f, 0.05f, 0.05f, 1);
+	style.Colors[ImGuiCol_FrameBg] = ImVec4(0.01f, 0.01f, 0.01f, 0.5f);
+	style.Colors[ImGuiCol_Border] = ImVec4(0.01f, 0.01f, 0.01f, 1);
+	style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.01f, 0.050f, 0.075f, 1);
+	style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.01f, 0.050f, 0.075f, 1);
 
-	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.115, 0.0247, 0.0417, 1);
-	style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.005, 0.007, 0.007, 1);
-	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.005, 0.0017, 0.017, 1);
-	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.0015, 0.0027, 0.0027, 1);
-	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.0015, 0.0027, 0.0027, 1);
-	style.Colors[ImGuiCol_Button] = ImVec4(0.09, 0.0133, 0.0184, 0.8);
-	style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.05, 0.05, 0.05, 1);
-	style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.05, 0.05, 0.05, 1);
-	style.Colors[ImGuiCol_Separator] = ImVec4(0.02, 0.02, 0.02, 1);
+	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.115f, 0.0247f, 0.0417f, 1);
+	style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.005f, 0.007f, 0.007f, 1);
+	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.005f, 0.0017f, 0.017f, 1);
+	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.0015f, 0.0027f, 0.0027f, 1);
+	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.0015f, 0.0027f, 0.0027f, 1);
+	style.Colors[ImGuiCol_Button] = ImVec4(0.09f, 0.0133f, 0.0184f, 0.8f);
+	style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.05f, 0.05f, 0.05f, 1);
+	style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.05f, 0.05f, 0.05f, 1);
+	style.Colors[ImGuiCol_Separator] = ImVec4(0.02f, 0.02f, 0.02f, 1);
 }
 
