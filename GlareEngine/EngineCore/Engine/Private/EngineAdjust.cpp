@@ -1,4 +1,4 @@
-ï»¿#include "EngineUtility.h"
+#include "EngineUtility.h"
 #include "EngineAdjust.h"
 #include "EngineInput.h"
 #include "Color.h"
@@ -15,8 +15,8 @@ namespace GlareEngine
 
 	namespace EngineAdjust
 	{
-		//ï¿½Ó³ï¿½×¢ï¿½á¡£ï¿½Ú½ï¿½Ò»Ð©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Óµï¿½Í¼Ö®Ç°ï¿½ï¿½
-		//ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»Ð©ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½Ú³ï¿½Ê¼ï¿½ï¿½Ë³ï¿½ò²»¿É¿ï¿½)ï¿½ï¿½ 
+		//ÑÓ³Ù×¢²á¡£ÔÚ½«Ò»Ð©¶ÔÏóÌí¼Óµ½Í¼Ö®Ç°£¬
+		//ÒÑ¾­¹¹ÔìÁËÒ»Ð©¶ÔÏó(ÓÉÓÚ³õÊ¼»¯Ë³Ðò²»¿É¿¿)¡£ 
 		enum { kMaxUnregisteredTweaks = 1024 };
 		char s_UnregisteredPath[kMaxUnregisteredTweaks][128];
 		EngineVar* s_UnregisteredVariable[kMaxUnregisteredTweaks] = { nullptr };
@@ -34,7 +34,7 @@ namespace GlareEngine
 	}
 
 
-	//ï¿½ï¿½ï¿½ï¿½ï¿½Ú¿ï¿½ï¿½Å¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é¡£ 
+	//²»Ïò¹«ÖÚ¿ª·Å¡£µ±µ÷½ÚÆ÷µÄÂ·¾¶°üº¬×éÃûÊ±£¬½«×Ô¶¯´´½¨×é¡£ 
 	class VariableGroup : public EngineVar
 	{
 	public:
@@ -119,7 +119,7 @@ namespace GlareEngine
 	}
 
 
-	
+
 
 	void EngineAdjust::AddToVariableGraph(const string& path, EngineVar& var)
 	{
@@ -147,7 +147,6 @@ namespace GlareEngine
 		for (auto iter = SeparatedPath.begin(); iter != SeparatedPath.end(); ++iter)
 		{
 			VariableGroup* nextGroup;
-			static int i = 0;
 			EngineVar* node = group->FindChild(*iter);
 			if (node == nullptr)
 			{
@@ -214,7 +213,7 @@ namespace GlareEngine
 		}
 		//Do not find engine variable in its designated group
 		assert(iter != m_Children.end());
-		
+
 		auto nextIter = iter;
 		++nextIter;
 
@@ -269,8 +268,8 @@ namespace GlareEngine
 	}
 
 
-    //=====================================================================================================================
-    // EngineVar implementations
+	//=====================================================================================================================
+	// EngineVar implementations
 
 	EngineVar::EngineVar(void) : m_GroupPtr(nullptr)
 	{
@@ -326,7 +325,7 @@ namespace GlareEngine
 		std::string pattern = "\n " + setting + ": %s";
 		char valstr[6];
 
-		// ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½Æ¥ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿
+		// ÔÚÎÄ¼þÖÐËÑË÷Óë¸ÃÉèÖÃµÄÃû³ÆÆ¥ÅäµÄÌõÄ¿
 		fscanf_s(file, pattern.c_str(), valstr, _countof(valstr));
 
 		// Look for one of the many affirmations
