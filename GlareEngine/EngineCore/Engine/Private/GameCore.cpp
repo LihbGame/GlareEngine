@@ -99,9 +99,9 @@ namespace GlareEngine
 		void RunApplication(GameApp& app, const wchar_t* className, HINSTANCE hand)
 		{
 			// Enable run-time memory check for debug builds.
-//#if defined(DEBUG) | defined(_DEBUG)
-//			_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-//#endif
+#if defined(DEBUG) | defined(_DEBUG)
+		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
 
 
 			//ASSERT_SUCCEEDED(CoInitializeEx(nullptr, COINITBASE_MULTITHREADED));

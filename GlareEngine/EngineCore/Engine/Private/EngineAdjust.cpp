@@ -25,10 +25,12 @@ namespace GlareEngine
 		// Internal functions
 		void AddToVariableGraph(const string& path, EngineVar& var);
 		void RegisterVariable(const string& path, EngineVar& var);
+		VariableGroup* DynamicVariable(int index);
 
 		EngineVar* sm_SelectedVariable = nullptr;
 		bool sm_IsVisible = false;
-		
+		//var group
+		vector<VariableGroup> g_Var;
 	}
 
 
@@ -37,6 +39,7 @@ namespace GlareEngine
 	{
 	public:
 		VariableGroup() : m_IsExpanded(false) {}
+
 
 		EngineVar* FindChild(const string& name)
 		{
@@ -76,7 +79,14 @@ namespace GlareEngine
 	VariableGroup VariableGroup::sm_RootGroup;
 
 
-
+	VariableGroup* EngineAdjust::DynamicVariable(int index)
+	{
+		if (g_Var.size() <= index)
+		{
+			g_Var.resize(index + 100);
+		}
+		return &g_Var[index];
+	}
 
 	void EngineAdjust::Initialize(void)
 	{
@@ -108,6 +118,8 @@ namespace GlareEngine
 	}
 
 
+	
+
 	void EngineAdjust::AddToVariableGraph(const string& path, EngineVar& var)
 	{
 		vector<string> SeparatedPath;
@@ -134,10 +146,11 @@ namespace GlareEngine
 		for (auto iter = SeparatedPath.begin(); iter != SeparatedPath.end(); ++iter)
 		{
 			VariableGroup* nextGroup;
+			static int i = 0;
 			EngineVar* node = group->FindChild(*iter);
 			if (node == nullptr)
 			{
-				nextGroup = new VariableGroup();
+				nextGroup = DynamicVariable(i++);
 				group->AddChild(*iter, *nextGroup);
 				group = nextGroup;
 			}
@@ -200,7 +213,7 @@ namespace GlareEngine
 		}
 		//Do not find engine variable in its designated group
 		assert(iter != m_Children.end());
-
+		
 		auto nextIter = iter;
 		++nextIter;
 
@@ -266,6 +279,7 @@ namespace GlareEngine
 	{
 		EngineAdjust::RegisterVariable(path, *this);
 	}
+
 
 	EngineVar* EngineVar::NextVar(void)
 	{
