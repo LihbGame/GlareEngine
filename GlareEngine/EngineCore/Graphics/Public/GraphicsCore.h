@@ -29,6 +29,7 @@ namespace GlareEngine
 		void Terminate(void);
 		void Shutdown(void);
 		void Present(void);
+		void PreparePresent(void);
 
 		extern uint32_t g_DisplayWidth;
 		extern uint32_t g_DisplayHeight;
@@ -42,6 +43,8 @@ namespace GlareEngine
 
 		//每秒的总帧数
 		float GetFrameRate(void);
+
+		ColorBuffer& GetCurrentBuffer();
 
 		//Device
 		extern ID3D12Device* g_Device;

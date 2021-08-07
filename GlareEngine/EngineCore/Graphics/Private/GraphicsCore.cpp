@@ -158,6 +158,8 @@ namespace GlareEngine
 		ColorBuffer g_DisplayBuffers[SWAP_CHAIN_BUFFER_COUNT];
 		UINT g_CurrentBuffer = 0;
 
+		ColorBuffer& GetCurrentBuffer() { return g_DisplayBuffers[g_CurrentBuffer]; }
+
 		//Swap Chain
 		IDXGISwapChain1* s_SwapChain1 = nullptr;
 
@@ -309,7 +311,7 @@ namespace GlareEngine
 		s_PresentRS[1].InitAsConstants(0, 6, D3D12_SHADER_VISIBILITY_ALL);
 		s_PresentRS[2].InitAsBufferSRV(2, D3D12_SHADER_VISIBILITY_PIXEL);
 		s_PresentRS[3].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1);
-		s_PresentRS.InitStaticSampler(0, SamplerLinearClampDesc);
+		s_PresentRS.InitStaticSampler(0, SamplerLinearWrapDesc);
 		s_PresentRS.InitStaticSampler(1, SamplerPointClampDesc);
 		s_PresentRS.Finalize(L"Present");
 
@@ -352,7 +354,7 @@ namespace GlareEngine
 		Context.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		// Copy (and convert) the LDR buffer to the back buffer
-		Context.SetDynamicDescriptor(0, 0, g_SceneColorBuffer.GetSRV());
+		Context.SetDynamicDescriptor(0, 0, g_SceneColorBuffer.GetSRV());;
 
 		Context.SetPipelineState(PresentSDRPS);
 		Context.TransitionResource(g_DisplayBuffers[g_CurrentBuffer], D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -529,11 +531,6 @@ namespace GlareEngine
 
 	void DirectX12Graphics::Present(void)
 	{
-		if (g_bEnableHDROutput)
-			PreparePresentHDR();
-		else
-			PreparePresentLDR();
-
 		g_CurrentBuffer = (g_CurrentBuffer + 1) % SWAP_CHAIN_BUFFER_COUNT;
 
 		UINT PresentInterval = s_EnableVSync ? min(4, (int)round(s_FrameTime * 60.0f)) : 0;
@@ -562,6 +559,14 @@ namespace GlareEngine
 		//TemporalEffects::Update((uint32_t)s_FrameIndex);
 
 		SetNativeResolution();
+	}
+
+	void DirectX12Graphics::PreparePresent(void)
+	{
+		if (g_bEnableHDROutput)
+			PreparePresentHDR();
+		else
+			PreparePresentLDR();
 	}
 
 	uint64_t DirectX12Graphics::GetFrameCount(void)

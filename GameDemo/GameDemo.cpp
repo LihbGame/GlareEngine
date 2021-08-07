@@ -47,7 +47,7 @@ public:
 	virtual void RenderScene(void);// = 0;
 
 	//可选的UI（覆盖）渲染阶段。 这是LDR。 缓冲区已被清除。 
-	virtual void RenderUI() {};
+	virtual void RenderUI();
 
 	virtual void OnResize(uint32_t width, uint32_t height);
 
@@ -224,7 +224,7 @@ void App::RenderScene(void)
 	RenderContext.ClearRenderTarget(g_SceneColorBuffer);
 
 	RenderContext.SetRootSignature(mRootSignature);
-	//set render target
+	//set scene render target
 	RenderContext.SetRenderTarget(g_SceneColorBuffer.GetRTV());
 	//set main constant buffer
 	RenderContext.SetDynamicConstantBufferView(0, sizeof(mMainConstants), &mMainConstants);
@@ -232,13 +232,19 @@ void App::RenderScene(void)
 	//Draw sky
 	mSky->Draw(RenderContext);
 	
-	//Draw UI
-	mEngineUI->Draw(RenderContext.GetCommandList());
-
-
 	RenderContext.Finish(true);
 }
 
+
+void App::RenderUI()
+{
+	GraphicsContext& RenderContext = GraphicsContext::Begin(L"Render UI");
+	//Draw UI
+	RenderContext.SetRenderTarget(GetCurrentBuffer().GetRTV());
+	RenderContext.TransitionResource(GetCurrentBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+	mEngineUI->Draw(RenderContext.GetCommandList());
+	RenderContext.Finish(true);
+}
 
 void App::OnResize(uint32_t width, uint32_t height)
 {

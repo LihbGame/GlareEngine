@@ -17,14 +17,11 @@ float4 main(VertexOut pin) : SV_Target
 {
     float4 litColor = gCubeMap.Sample(gsamLinearWrap, pin.PosL);
 
-		// Reinhard色调映射
-		//litColor.rgb = litColor.rgb / (litColor.rgb + float3(1.0f, 1.0f, 1.0f));
+	// Reinhard色调映射
+	//litColor.rgb = litColor.rgb / (litColor.rgb + float3(1.0f, 1.0f, 1.0f));
 
-		// 曝光色调映射
+	// 曝光色调映射
     litColor.rgb = float3(1.0f, 1.0f, 1.0f) - exp(-litColor.rgb * exposure);
-	//Gamma
-    //float3 gamma = float(1.0 / 2.2);
-    //litColor.rgb = pow(litColor.rgb, gamma);
 
     return litColor;
 }

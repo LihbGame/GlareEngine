@@ -19,8 +19,6 @@ CSky::CSky(ID3D12GraphicsCommandList* CommandList,
 
 	//world mat
 	XMStoreFloat4x4(&mWorld, XMMatrixScaling(5000.0f, 5000.0f, 5000.0f));
-
-
 }
 
 CSky::~CSky()

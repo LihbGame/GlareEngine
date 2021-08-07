@@ -55,18 +55,25 @@ namespace GlareEngine
 
 		bool UpdateApplication(GameApp& Game)
 		{
-			EngineProfiling::Update();
 			GameTimer::Tick();
-
 			float DeltaTime = DirectX12Graphics::GetFrameTime();
 
+			EngineProfiling::Update();
 			EngineInput::Update(DeltaTime);
 			EngineAdjust::Update(DeltaTime);
 
+			//Update Game
 			Game.Update(DeltaTime);
+			//RenderScene
 			Game.RenderScene();
+
 			//PostEffects::Render();
 
+			//HDR OR LDR
+			DirectX12Graphics::PreparePresent();
+			//RenderUI
+			Game.RenderUI();
+			//Present
 			DirectX12Graphics::Present();
 			
 			return !Game.IsDone();

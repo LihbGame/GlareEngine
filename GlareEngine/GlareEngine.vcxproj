@@ -84,7 +84,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>.\;..\x64\Debug;.\GraphicEffects\Sky\Public;.\GraphicEffects\Misc;.\EngineCore\Engine\Public;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\EngineCore\Graphics\Public;.\Dependences\include;.\Animation;.\EngineCore\Public;$(IncludePath)</IncludePath>
+    <IncludePath>.\GraphicEffects\Particles\Public;.\;..\x64\Debug;.\GraphicEffects\Sky\Public;.\GraphicEffects\Misc;.\EngineCore\Engine\Public;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\EngineCore\Graphics\Public;.\Dependences\include;.\Animation;.\EngineCore\Public;$(IncludePath)</IncludePath>
     <LibraryPath>.\Dependences\lib\ozz\debug;.\Dependences\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -179,6 +179,9 @@
     <ClInclude Include="Animation\OzzAnimePlayBack.h" />
     <None Include="EngineCore\Graphics\Public\Color.h" />
     <ClInclude Include="EngineCore\Graphics\Public\TextureManager.h" />
+    <ClInclude Include="GraphicEffects\Particles\Public\ParticleEffect.h" />
+    <ClInclude Include="GraphicEffects\Particles\Public\ParticleEffectProperties.h" />
+    <ClInclude Include="GraphicEffects\Particles\Public\ParticleShaderStructs.h" />
     <ClInclude Include="GraphicEffects\Sky\Public\Sky.h" />
     <ClInclude Include="DXR\D3D12RaytracingHelper.h" />
     <ClInclude Include="EngineCore\Engine\Public\EngineAdjust.h" />
@@ -256,6 +259,8 @@
     <ClCompile Include="Animation\ModelMesh.cpp" />
     <None Include="EngineCore\Graphics\Private\Color.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\TextureManager.cpp" />
+    <ClCompile Include="GraphicEffects\Particles\Private\ParticleEffect.cpp" />
+    <ClCompile Include="GraphicEffects\Particles\Private\ParticleEmissionProperties.cpp" />
     <ClCompile Include="GraphicEffects\Sky\Private\Sky.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\CommandAllocatorPool.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\GraphicsCore.cpp" />
