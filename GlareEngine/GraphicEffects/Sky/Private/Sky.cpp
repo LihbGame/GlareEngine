@@ -100,13 +100,11 @@ void CSky::Draw(GraphicsContext& Context)
 
 void CSky::BuildPSO(const RootSignature& rootSignature)
 {
-	D3D12_DEPTH_STENCIL_DESC  DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-	DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
 
 	mSkyPSO.SetRootSignature(rootSignature);
 	mSkyPSO.SetRasterizerState(RasterizerDefault);
 	mSkyPSO.SetBlendState(BlendDisable);
-	mSkyPSO.SetDepthStencilState(DepthStencilState);
+	mSkyPSO.SetDepthStencilState(DepthStateDisabled);
 	mSkyPSO.SetSampleMask(0xFFFFFFFF);
 	mSkyPSO.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
 	mSkyPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);

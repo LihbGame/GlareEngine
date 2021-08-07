@@ -346,6 +346,8 @@ namespace GlareEngine
 	void DirectX12Graphics::PreparePresentLDR()
 	{
 		GraphicsContext& Context = GraphicsContext::Begin(L"Present");
+		
+		Context.PIXBeginEvent(L"Prepare Present LDR");
 
 		// We're going to be reading these buffers to write to the swap chain buffer(s)
 		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
@@ -361,10 +363,8 @@ namespace GlareEngine
 		Context.SetRenderTarget(g_DisplayBuffers[g_CurrentBuffer].GetRTV());
 		Context.SetViewportAndScissor(0, 0, g_DisplayWidth, g_DisplayHeight);
 		Context.Draw(3);
-
-		Context.TransitionResource(g_DisplayBuffers[g_CurrentBuffer], D3D12_RESOURCE_STATE_PRESENT);
-
 		// Close the final context to be executed before frame present.
+		Context.PIXEndEvent();
 		Context.Finish();
 	}
 

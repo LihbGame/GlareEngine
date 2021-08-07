@@ -218,6 +218,8 @@ void App::RenderScene(void)
 {
 	GraphicsContext& RenderContext = GraphicsContext::Begin(L"RenderScene");
 
+	RenderContext.PIXBeginEvent(L"Scene");
+
 	RenderContext.SetViewportAndScissor(m_MainViewport, m_MainScissor);
 
 	RenderContext.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
@@ -230,9 +232,14 @@ void App::RenderScene(void)
 	RenderContext.SetDynamicConstantBufferView(0, sizeof(mMainConstants), &mMainConstants);
 
 	//Draw sky
+	RenderContext.PIXBeginEvent(L"Draw Sky");
 	mSky->Draw(RenderContext);
-	
+	RenderContext.PIXEndEvent();
+
+
+	RenderContext.PIXEndEvent();
 	RenderContext.Finish(true);
+
 }
 
 
@@ -240,9 +247,12 @@ void App::RenderUI()
 {
 	GraphicsContext& RenderContext = GraphicsContext::Begin(L"Render UI");
 	//Draw UI
+	RenderContext.PIXBeginEvent(L"Render UI");
 	RenderContext.SetRenderTarget(GetCurrentBuffer().GetRTV());
 	RenderContext.TransitionResource(GetCurrentBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 	mEngineUI->Draw(RenderContext.GetCommandList());
+	RenderContext.PIXEndEvent();
+	RenderContext.TransitionResource(GetCurrentBuffer(), D3D12_RESOURCE_STATE_PRESENT, true);
 	RenderContext.Finish(true);
 }
 

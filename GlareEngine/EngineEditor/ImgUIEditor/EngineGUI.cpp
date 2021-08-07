@@ -34,7 +34,7 @@ void EngineGUI::InitGUI(HWND GameWnd)
 	 // Setup Platform/Renderer bindings
 	ImGui_ImplWin32_Init(GameWnd);
 	ImGui_ImplDX12_Init(pd3dDevice, gNumFrameResources,
-		DXGI_FORMAT_R11G11B10_FLOAT, mGUISrvDescriptorHeap,
+		DXGI_FORMAT_R10G10B10A2_UNORM, mGUISrvDescriptorHeap,
 		mGUISrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		mGUISrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
