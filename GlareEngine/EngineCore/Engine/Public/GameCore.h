@@ -52,10 +52,11 @@ namespace GlareEngine
 			bool      mMaximized = false;  // is the application maximized?
 			bool      mResizing = false;
 
+		public:
 			uint32_t mClientWidth = 1600;
 			uint32_t mClientHeight = 900;
 
-
+			POINT mLastMousePos;
 
 		};
 

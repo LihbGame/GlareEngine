@@ -87,8 +87,6 @@ private:
 	
 	float mCameraSpeed = 100.0f;
 
-	POINT mLastMousePos;
-
 	D3D12_RECT mClientRect;
 };
 
@@ -217,7 +215,7 @@ void App::UpdateMainConstantBuffer(float DeltaTime)
 void App::RenderScene(void)
 {
 	GraphicsContext& RenderContext = GraphicsContext::Begin(L"RenderScene");
-
+#pragma region Scene
 	RenderContext.PIXBeginEvent(L"Scene");
 
 	RenderContext.SetViewportAndScissor(m_MainViewport, m_MainScissor);
@@ -232,12 +230,20 @@ void App::RenderScene(void)
 	RenderContext.SetDynamicConstantBufferView(0, sizeof(mMainConstants), &mMainConstants);
 
 	//Draw sky
+#pragma region Draw sky
 	RenderContext.PIXBeginEvent(L"Draw Sky");
 	mSky->Draw(RenderContext);
 	RenderContext.PIXEndEvent();
+#pragma endregion
+
+
+
+
+
 
 
 	RenderContext.PIXEndEvent();
+#pragma endregion
 	RenderContext.Finish(true);
 
 }
@@ -258,8 +264,8 @@ void App::RenderUI()
 
 void App::OnResize(uint32_t width, uint32_t height)
 {
-	DirectX12Graphics::Resize(width, height);
 
+	DirectX12Graphics::Resize(width, height);
 
 	//窗口调整大小，因此更新宽高比并重新计算投影矩阵;
 	mCamera->SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 40000.0f);
@@ -305,6 +311,7 @@ void App::OnMouseDown(WPARAM btnState, int x, int y)
 
 void App::OnMouseUp(WPARAM btnState, int x, int y)
 {
+	
 	ReleaseCapture();
 }
 

@@ -12,6 +12,9 @@
 #include "resource.h"
 #pragma comment(lib, "runtimeobject.lib")
 
+#define RESIZE_RANGE 5
+ 
+
 namespace GlareEngine
 {
 	namespace DirectX12Graphics
@@ -42,9 +45,10 @@ namespace GlareEngine
 			EngineInput::Initialize();
 			EngineAdjust::Initialize();
 			GameTimer::Reset();
-
+			
 			//Game Initialize
 			Game.Startup();
+			Game.OnResize(Game.mClientWidth, Game.mClientHeight);
 		}
 
 		void TerminateApplication(GameApp& Game)
@@ -75,7 +79,7 @@ namespace GlareEngine
 			Game.RenderUI();
 			//Present
 			DirectX12Graphics::Present();
-			
+
 			return !Game.IsDone();
 		}
 
@@ -141,9 +145,9 @@ namespace GlareEngine
 			}
 			// Create window
 			RECT rc = { 0, 0,(LONG)g_DisplayWidth, (LONG)g_DisplayHeight };
-			AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
+			AdjustWindowRect(&rc, WS_POPUPWINDOW, FALSE);
 
-			g_hWnd = CreateWindow(className, className, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+			g_hWnd = CreateWindow(className, className, WS_POPUPWINDOW, 100, 100,
 				rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInst, nullptr);
 
 			assert(g_hWnd != 0);
@@ -184,53 +188,61 @@ namespace GlareEngine
 				// Save the new client area dimensions.
 				mClientWidth = LOWORD(lParam);
 				mClientHeight = HIWORD(lParam);
-
-				if (wParam == SIZE_MINIMIZED)
+				if (s_SwapChain1 != nullptr)
 				{
-					mAppPaused = true;
-					mMinimized = true;
-					mMaximized = false;
-					EngineGUI::mWindowMaxSize = false;
-				}
-				else if (wParam == SIZE_MAXIMIZED)
-				{
-					mAppPaused = false;
-					mMinimized = false;
-					mMaximized = true;
-					EngineGUI::mWindowMaxSize = true;
-					OnResize(mClientWidth, mClientHeight);
-				}
-				else if (wParam == SIZE_RESTORED)
-				{
-					// Restoring from minimized state?
-					if (mMinimized)
+					if (wParam == SIZE_MINIMIZED)
+					{
+						mAppPaused = true;
+						mMinimized = true;
+						mMaximized = false;
+						EngineGUI::mWindowMaxSize = false;
+					}
+					else if (wParam == SIZE_MAXIMIZED)
 					{
 						mAppPaused = false;
 						mMinimized = false;
+						mMaximized = true;
+						EngineGUI::mWindowMaxSize = true;
 						OnResize(mClientWidth, mClientHeight);
 					}
-					// Restoring from maximized state?
-					else if (mMaximized)
+					else if (wParam == SIZE_RESTORED)
 					{
-						mAppPaused = false;
-						mMaximized = false;
-						EngineGUI::mWindowMaxSize = false;
-						OnResize(mClientWidth, mClientHeight);
-					}
-					else if (mResizing)//正在调整大小
-					{
-						//如果用户正在拖动调整大小条，我们不会在此处调整缓冲区的大小，
-						//因为当用户不断拖动调整大小条时，会向窗口发送一个WM_SIZE消息流，
-						//并且为每个WM_SIZE调整大小是没有意义的（并且很慢） 通过拖动调整大小条收到的消息。
-						//因此，我们在用户完成窗口大小调整后释放调整大小条，然后发送WM_EXITSIZEMOVE消息。
-					}
-					else // API call such as SetWindowPos or mSwapChain->SetFullscreenState.
-					{
-						OnResize(mClientWidth, mClientHeight);
+						// Restoring from minimized state?
+						if (mMinimized)
+						{
+							mAppPaused = false;
+							mMinimized = false;
+							OnResize(mClientWidth, mClientHeight);
+						}
+						// Restoring from maximized state?
+						else if (mMaximized)
+						{
+							mAppPaused = false;
+							mMaximized = false;
+							EngineGUI::mWindowMaxSize = false;
+							OnResize(mClientWidth, mClientHeight);
+						}
+						else if (mResizing)//正在调整大小
+						{
+							//如果用户正在拖动调整大小条，我们不会在此处调整缓冲区的大小，
+							//因为当用户不断拖动调整大小条时，会向窗口发送一个WM_SIZE消息流，
+							//并且为每个WM_SIZE调整大小是没有意义的（并且很慢） 通过拖动调整大小条收到的消息。
+							//因此，我们在用户完成窗口大小调整后释放调整大小条，然后发送WM_EXITSIZEMOVE消息。
+						}
+						else // API call such as SetWindowPos or mSwapChain->SetFullscreenState.
+						{
+							OnResize(mClientWidth, mClientHeight);
+						}
 					}
 				}
 				break;
 			}
+
+			case WM_ENTERSIZEMOVE:
+				mAppPaused = true;
+				mResizing = true;
+				GameTimer::Stop();
+				return 0;
 			// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
 	        // Here we reset everything based on the new window dimensions.
 			case WM_EXITSIZEMOVE:
@@ -240,6 +252,52 @@ namespace GlareEngine
 				OnResize(mClientWidth, mClientHeight);
 				break;
 			case WM_LBUTTONDOWN:
+				OnMouseDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				SystemParametersInfo(SPI_SETDRAGFULLWINDOWS, true, NULL, 0);
+				RECT WindowRect;
+				//在客户区域实现拖动窗口
+				if (GET_Y_LPARAM(lParam) < 22 && GET_X_LPARAM(lParam) > 80 &&
+					GET_X_LPARAM(lParam) < (int)mClientWidth - 205)
+				{
+					ReleaseCapture();
+					SendMessage(g_hWnd, WM_NCLBUTTONDOWN, HTCAPTION, NULL);
+					SendMessage(g_hWnd, WM_LBUTTONUP, NULL, NULL);
+
+					//拖动全屏功能
+					GetWindowRect(g_hWnd, &WindowRect);
+					if (WindowRect.top <= 1)
+					{
+						SendMessage(g_hWnd, WM_SYSCOMMAND, SC_MAXIMIZE, NULL);
+					}
+				}
+				//拖动改变窗口大小
+				if (!mMaximized)
+				{
+					GetClientRect(g_hWnd, &WindowRect);
+					if (mLastMousePos.y >= ((LONG)WindowRect.bottom - RESIZE_RANGE) &&
+						mLastMousePos.x >= ((LONG)WindowRect.left - RESIZE_RANGE))
+					{
+						SendMessage(g_hWnd, WM_NCLBUTTONDOWN, HTCAPTION, NULL);
+						SendMessage(g_hWnd, WM_LBUTTONUP, NULL, NULL);
+						SendMessage(g_hWnd, WM_SYSCOMMAND, SC_SIZE | WMSZ_BOTTOMRIGHT, NULL);
+						break;
+					}
+					if (mLastMousePos.y >= ((LONG)WindowRect.bottom - RESIZE_RANGE) &&
+						mLastMousePos.y <= ((LONG)WindowRect.bottom))
+					{
+						SendMessage(g_hWnd, WM_NCLBUTTONDOWN, HTCAPTION, NULL);
+						SendMessage(g_hWnd, WM_LBUTTONUP, NULL, NULL);
+						SendMessage(g_hWnd, WM_SYSCOMMAND, SC_SIZE | WMSZ_BOTTOM, NULL);
+					}
+					else if (mLastMousePos.x >= ((LONG)WindowRect.left - RESIZE_RANGE) &&
+						mLastMousePos.x <= ((LONG)WindowRect.left))
+					{
+						SendMessage(g_hWnd, WM_NCLBUTTONDOWN, HTCAPTION, NULL);
+						SendMessage(g_hWnd, WM_LBUTTONUP, NULL, NULL);
+						SendMessage(g_hWnd, WM_SYSCOMMAND, SC_SIZE | WMSZ_RIGHT, NULL);
+					}
+				}
+				break;
 			case WM_MBUTTONDOWN:
 			case WM_RBUTTONDOWN:
 				OnMouseDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));

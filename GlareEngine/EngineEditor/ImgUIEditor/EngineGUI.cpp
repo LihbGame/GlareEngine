@@ -57,7 +57,7 @@ void EngineGUI::InitGUI(HWND GameWnd)
 
 	 g = ImGui::GetCurrentContext();
 	 g->Style.WindowRounding = 0;
-
+	 g->Style.DisplaySafeAreaPadding = ImVec2(3, 5);
 	 SetWindowStyles();
 }
 
@@ -68,9 +68,6 @@ void EngineGUI::CreateUIDescriptorHeap()
 	desc.NumDescriptors = 1;
 	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	ThrowIfFailed(pd3dDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&mGUISrvDescriptorHeap)));
-
-
-
 }
 
 void EngineGUI::Draw(ID3D12GraphicsCommandList* d3dCommandList)
