@@ -1,5 +1,14 @@
 #pragma once
 
+#define RESIZE_RANGE 3
+enum CursorType
+{
+	SIZENWSE,
+	SIZENS,
+	SIZEWE,
+	Count
+};
+
 namespace GlareEngine
 {
 	namespace GameCore
@@ -57,7 +66,7 @@ namespace GlareEngine
 			uint32_t mClientHeight = 900;
 
 			POINT mLastMousePos;
-
+			CursorType mCursorType = CursorType::Count;
 		};
 
 		void RunApplication(GameApp& app, const wchar_t* className,HINSTANCE HAND);

@@ -126,7 +126,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>GlareEngine.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Msimg32.lib;GlareEngine.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -150,6 +150,7 @@
     <ClCompile Include="GameDemo.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Resource\Textures\ICONS\Arrow.cur" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -158,6 +159,12 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\Resource\Textures\ICONS\gamecontroller.bmp" />
+    <Image Include="..\Resource\Textures\ICONS\gamecontroller_128px_1180532_easyicon.net.ico" />
+    <Image Include="..\Resource\Textures\ICONS\gameicon.ico" />
+    <Image Include="..\Resource\Textures\ICONS\GAME_128px_1199103_easyicon.net.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

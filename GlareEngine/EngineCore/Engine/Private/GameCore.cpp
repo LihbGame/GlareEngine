@@ -12,8 +12,6 @@
 #include "resource.h"
 #pragma comment(lib, "runtimeobject.lib")
 
-#define RESIZE_RANGE 5
- 
 
 namespace GlareEngine
 {
@@ -36,6 +34,56 @@ namespace GlareEngine
 		{
 			//转发hwnd因为我们可以在CreateWindow返回之前获取消息(例如，WM_CREATE)。
 			return GameApp::GetApp()->MsgProc(hwnd, msg, wParam, lParam);
+		}
+
+		void InitializeWindow(HINSTANCE hand, const wchar_t* className)
+		{
+			//ASSERT_SUCCEEDED(CoInitializeEx(nullptr, COINITBASE_MULTITHREADED));
+			Microsoft::WRL::Wrappers::RoInitializeWrapper InitializeWinRT(RO_INIT_MULTITHREADED);
+			ThrowIfFailed(InitializeWinRT);
+
+
+			//当前所调用该函数的程序实例句柄
+			HINSTANCE hInst = hand;
+
+			// Register class
+			WNDCLASSEX wcex;
+			wcex.cbSize = sizeof(WNDCLASSEX);
+			wcex.style = CS_HREDRAW | CS_VREDRAW;
+			wcex.lpfnWndProc = MainWndProc;
+			wcex.cbClsExtra = 0;
+			wcex.cbWndExtra = 0;
+			wcex.hInstance = hInst;
+			wcex.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON1));
+			wcex.hCursor = LoadCursor(hInst, MAKEINTRESOURCE(IDC_CURSOR1));
+			wcex.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+			wcex.lpszMenuName = nullptr;
+			wcex.lpszClassName = className;
+			wcex.hIconSm = LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON1));
+			if (!RegisterClassEx(&wcex))
+			{
+				DWORD dwerr = GetLastError();
+				MessageBox(0, L"RegisterClass Failed.", 0, 0);
+				return;
+			}
+			// Create window
+			RECT rc = { 0, 0,(LONG)g_DisplayWidth, (LONG)g_DisplayHeight };
+			AdjustWindowRect(&rc, WS_POPUPWINDOW, FALSE);
+
+			g_hWnd = CreateWindow(className, className, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_POPUPWINDOW, 100, 100,
+				rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInst, nullptr);
+
+			assert(g_hWnd != 0);
+		}
+
+		void PreRender(GameApp& Game)
+		{
+			//HDR OR LDR
+			DirectX12Graphics::PreparePresent();
+			//RenderUI
+			Game.RenderUI();
+			//Present
+			DirectX12Graphics::Present();
 		}
 
 		void InitializeApplication(GameApp& Game)
@@ -99,7 +147,7 @@ namespace GlareEngine
 
 		float GameApp::AspectRatio() const
 		{
-			return static_cast<float>(mClientWidth) / mClientHeight;
+			return static_cast <float>(mClientWidth) / mClientHeight;
 		}
 
 
@@ -111,50 +159,13 @@ namespace GlareEngine
 		{
 			// Enable run-time memory check for debug builds.
 #if defined(DEBUG) | defined(_DEBUG)
-		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+			_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-
-			//ASSERT_SUCCEEDED(CoInitializeEx(nullptr, COINITBASE_MULTITHREADED));
-			Microsoft::WRL::Wrappers::RoInitializeWrapper InitializeWinRT(RO_INIT_MULTITHREADED);
-			ThrowIfFailed(InitializeWinRT);
-
-
-			//当前所调用该函数的程序实例句柄
-			HINSTANCE hInst = hand;
-
-			// Register class
-			WNDCLASSEX wcex;
-			wcex.cbSize = sizeof(WNDCLASSEX);
-			wcex.style = CS_HREDRAW | CS_VREDRAW;
-			wcex.lpfnWndProc = MainWndProc;
-			wcex.cbClsExtra = 0;
-			wcex.cbWndExtra = 0;
-			wcex.hInstance = hInst;
-			wcex.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON1));
-			wcex.hCursor = LoadCursor(hInst, MAKEINTRESOURCE(IDC_CURSOR1));
-			wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-			wcex.lpszMenuName = nullptr;
-			wcex.lpszClassName = className;
-			wcex.hIconSm = LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON1));
-			if (!RegisterClassEx(&wcex))
-			{
-				DWORD dwerr = GetLastError();
-				MessageBox(0, L"RegisterClass Failed.", 0, 0);
-				return;
-			}
-			// Create window
-			RECT rc = { 0, 0,(LONG)g_DisplayWidth, (LONG)g_DisplayHeight };
-			AdjustWindowRect(&rc, WS_POPUPWINDOW, FALSE);
-
-			g_hWnd = CreateWindow(className, className, WS_POPUPWINDOW, 100, 100,
-				rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInst, nullptr);
-
-			assert(g_hWnd != 0);
-
-
 			//初始化
+			InitializeWindow(hand, className);
 			InitializeApplication(app);
+			PreRender(app);
 
 			ShowWindow(g_hWnd, SW_SHOW);
 			UpdateWindow(g_hWnd);
@@ -162,14 +173,14 @@ namespace GlareEngine
 			do
 			{
 				MSG msg = {};
-				while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+				while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 				{
 					TranslateMessage(&msg);
 					DispatchMessage(&msg);
 				}
 
 			} while (UpdateApplication(app) && !gExit);    // Returns false to quit loop
-			
+
 			DirectX12Graphics::Terminate();
 			TerminateApplication(app);
 			DirectX12Graphics::Shutdown();
@@ -183,11 +194,16 @@ namespace GlareEngine
 		{
 			switch (message)
 			{
+			case WM_NCCALCSIZE:
+			{
+				break;
+			}
 			case WM_SIZE:
 			{
 				// Save the new client area dimensions.
 				mClientWidth = LOWORD(lParam);
 				mClientHeight = HIWORD(lParam);
+
 				if (s_SwapChain1 != nullptr)
 				{
 					if (wParam == SIZE_MINIMIZED)
@@ -199,6 +215,7 @@ namespace GlareEngine
 					}
 					else if (wParam == SIZE_MAXIMIZED)
 					{
+						SetWindowPos(hWnd, NULL, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), 0);
 						mAppPaused = false;
 						mMinimized = false;
 						mMaximized = true;
@@ -224,6 +241,7 @@ namespace GlareEngine
 						}
 						else if (mResizing)//正在调整大小
 						{
+							OnResize(mClientWidth, mClientHeight);
 							//如果用户正在拖动调整大小条，我们不会在此处调整缓冲区的大小，
 							//因为当用户不断拖动调整大小条时，会向窗口发送一个WM_SIZE消息流，
 							//并且为每个WM_SIZE调整大小是没有意义的（并且很慢） 通过拖动调整大小条收到的消息。
@@ -252,9 +270,9 @@ namespace GlareEngine
 				OnResize(mClientWidth, mClientHeight);
 				break;
 			case WM_LBUTTONDOWN:
+			{
 				OnMouseDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				SystemParametersInfo(SPI_SETDRAGFULLWINDOWS, true, NULL, 0);
-				RECT WindowRect;
 				//在客户区域实现拖动窗口
 				if (GET_Y_LPARAM(lParam) < 22 && GET_X_LPARAM(lParam) > 80 &&
 					GET_X_LPARAM(lParam) < (int)mClientWidth - 205)
@@ -262,42 +280,37 @@ namespace GlareEngine
 					ReleaseCapture();
 					SendMessage(g_hWnd, WM_NCLBUTTONDOWN, HTCAPTION, NULL);
 					SendMessage(g_hWnd, WM_LBUTTONUP, NULL, NULL);
-
-					//拖动全屏功能
-					GetWindowRect(g_hWnd, &WindowRect);
-					if (WindowRect.top <= 1)
-					{
-						SendMessage(g_hWnd, WM_SYSCOMMAND, SC_MAXIMIZE, NULL);
-					}
 				}
 				//拖动改变窗口大小
 				if (!mMaximized)
 				{
-					GetClientRect(g_hWnd, &WindowRect);
-					if (mLastMousePos.y >= ((LONG)WindowRect.bottom - RESIZE_RANGE) &&
-						mLastMousePos.x >= ((LONG)WindowRect.left - RESIZE_RANGE))
+					if (mCursorType != CursorType::Count)
 					{
 						SendMessage(g_hWnd, WM_NCLBUTTONDOWN, HTCAPTION, NULL);
 						SendMessage(g_hWnd, WM_LBUTTONUP, NULL, NULL);
-						SendMessage(g_hWnd, WM_SYSCOMMAND, SC_SIZE | WMSZ_BOTTOMRIGHT, NULL);
-						break;
-					}
-					if (mLastMousePos.y >= ((LONG)WindowRect.bottom - RESIZE_RANGE) &&
-						mLastMousePos.y <= ((LONG)WindowRect.bottom))
-					{
-						SendMessage(g_hWnd, WM_NCLBUTTONDOWN, HTCAPTION, NULL);
-						SendMessage(g_hWnd, WM_LBUTTONUP, NULL, NULL);
-						SendMessage(g_hWnd, WM_SYSCOMMAND, SC_SIZE | WMSZ_BOTTOM, NULL);
-					}
-					else if (mLastMousePos.x >= ((LONG)WindowRect.left - RESIZE_RANGE) &&
-						mLastMousePos.x <= ((LONG)WindowRect.left))
-					{
-						SendMessage(g_hWnd, WM_NCLBUTTONDOWN, HTCAPTION, NULL);
-						SendMessage(g_hWnd, WM_LBUTTONUP, NULL, NULL);
-						SendMessage(g_hWnd, WM_SYSCOMMAND, SC_SIZE | WMSZ_RIGHT, NULL);
+						switch (mCursorType)
+						{
+						case SIZENWSE:
+							SetCursor(LoadCursor(NULL, IDC_SIZENWSE));
+							SendMessage(g_hWnd, WM_SYSCOMMAND, SC_SIZE | WMSZ_BOTTOMRIGHT, NULL);
+							break;
+						case SIZENS:
+							SetCursor(LoadCursor(NULL, IDC_SIZENS));
+							SendMessage(g_hWnd, WM_SYSCOMMAND, SC_SIZE | WMSZ_BOTTOM, NULL);
+							break;
+						case SIZEWE:
+							SetCursor(LoadCursor(NULL, IDC_SIZEWE));
+							SendMessage(g_hWnd, WM_SYSCOMMAND, SC_SIZE | WMSZ_RIGHT, NULL);
+							break;
+						case Count:
+							break;
+						default:
+							break;
+						}
 					}
 				}
 				break;
+			}
 			case WM_MBUTTONDOWN:
 			case WM_RBUTTONDOWN:
 				OnMouseDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
@@ -309,11 +322,12 @@ namespace GlareEngine
 				break;
 			case WM_MOUSEMOVE:
 				OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				
 				break;
 			// 抓住此消息以防止窗口变得太小。
 			case WM_GETMINMAXINFO:
-				((MINMAXINFO*)lParam)->ptMinTrackSize.x = 1280;
-				((MINMAXINFO*)lParam)->ptMinTrackSize.y = 720;
+				((MINMAXINFO*)lParam)->ptMinTrackSize.x = 800;
+				((MINMAXINFO*)lParam)->ptMinTrackSize.y = 450;
 				break;
 			case WM_DESTROY:
 			{

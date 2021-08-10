@@ -327,8 +327,34 @@ void App::OnMouseMove(WPARAM btnState, int x, int y)
 			float dy = XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
 			mCamera->Pitch(dy);
 			mCamera->RotateY(dx);
-			mLastMousePos.x = x;
-			mLastMousePos.y = y;
+		}
+	}
+	mLastMousePos.x = x;
+	mLastMousePos.y = y;
+
+	if (!mMaximized)
+	{
+		RECT WindowRect;
+		GetClientRect(g_hWnd, &WindowRect);
+		mCursorType = CursorType::Count;
+		if (mLastMousePos.y >= ((LONG)WindowRect.bottom - RESIZE_RANGE) &&
+			mLastMousePos.x >= ((LONG)WindowRect.right - RESIZE_RANGE))
+		{
+			SetCursor(LoadCursor(NULL, IDC_SIZENWSE));
+			mCursorType = CursorType::SIZENWSE;
+			return;
+		}
+		if (mLastMousePos.y >= ((LONG)WindowRect.bottom - RESIZE_RANGE) &&
+			mLastMousePos.y <= ((LONG)WindowRect.bottom))
+		{
+			SetCursor(LoadCursor(NULL, IDC_SIZENS));
+			mCursorType = CursorType::SIZENS;
+		}
+		else if (mLastMousePos.x >= ((LONG)WindowRect.right - RESIZE_RANGE) &&
+			mLastMousePos.x <= ((LONG)WindowRect.right))
+		{
+			SetCursor(LoadCursor(NULL, IDC_SIZEWE));
+			mCursorType = CursorType::SIZEWE;
 		}
 	}
 }
