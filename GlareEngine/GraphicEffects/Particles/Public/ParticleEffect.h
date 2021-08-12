@@ -18,13 +18,14 @@ private:
 	StructuredBuffer m_StateBuffers[2];
 	uint32_t m_CurrentStateBuffer;
 	StructuredBuffer m_RandomStateBuffer;
+
 	IndirectArgsBuffer m_DispatchIndirectArgs;
 	IndirectArgsBuffer m_DrawIndirectArgs;
 
 	ParticleEffectProperties m_EffectProperties;
 	ParticleEffectProperties m_OriginalEffectProperties;
+
+
 	float m_ElapsedTime;
 	UINT m_effectID;
-
-
 };

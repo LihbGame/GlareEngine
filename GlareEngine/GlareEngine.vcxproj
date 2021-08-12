@@ -179,6 +179,7 @@
     <ClInclude Include="Animation\OzzAnimePlayBack.h" />
     <None Include="EngineCore\Graphics\Public\Color.h" />
     <ClInclude Include="EngineCore\Graphics\Public\TextureManager.h" />
+    <ClInclude Include="EngineCore\Math\Random.h" />
     <ClInclude Include="GraphicEffects\Particles\Public\ParticleEffect.h" />
     <ClInclude Include="GraphicEffects\Particles\Public\ParticleEffectProperties.h" />
     <ClInclude Include="GraphicEffects\Particles\Public\ParticleShaderStructs.h" />
@@ -259,6 +260,7 @@
     <ClCompile Include="Animation\ModelMesh.cpp" />
     <None Include="EngineCore\Graphics\Private\Color.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\TextureManager.cpp" />
+    <ClCompile Include="EngineCore\Math\Random.cpp" />
     <ClCompile Include="GraphicEffects\Particles\Private\ParticleEffect.cpp" />
     <ClCompile Include="GraphicEffects\Particles\Private\ParticleEmissionProperties.cpp" />
     <ClCompile Include="GraphicEffects\Sky\Private\Sky.cpp" />
