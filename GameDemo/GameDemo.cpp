@@ -117,7 +117,6 @@ void App::Startup(void)
 	BuildRootSignature();
 	BuildPSO(); 
 	
-	int32_t i = INT32_MIN;
 	InitializeContext.Finish(true);
 }
 

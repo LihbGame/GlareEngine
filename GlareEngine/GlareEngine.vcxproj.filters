@@ -68,13 +68,8 @@
     <ClInclude Include="ShaderSource\Public\SkyShader.h" />
     <ClInclude Include="ShaderSource\Public\SimpleGeometryInstanceShader.h" />
     <ClInclude Include="ShaderSource\Public\SimpleGeometryShadowMapShader.h" />
-    <ClInclude Include="Animation\ModelMesh.h" />
-    <ClInclude Include="Animation\ModelLoader.h" />
     <ClInclude Include="ShaderSource\Public\ComplexStaticModelInstanceShader.h" />
     <ClInclude Include="ShaderSource\Public\SkinAnimeShader.h" />
-    <ClInclude Include="Animation\AnimEvaluator.h" />
-    <ClInclude Include="Animation\Animations.h" />
-    <ClInclude Include="Animation\OzzAnimePlayBack.h" />
     <ClInclude Include="ShaderSource\Public\WaterRefractionMaskShader.h" />
     <ClInclude Include="ShaderSource\Public\ShockWaveWaterShader.h" />
     <ClInclude Include="ShaderSource\Public\HeightMapTerrainShader.h" />
@@ -129,18 +124,6 @@
     <ClInclude Include="EngineCore\Math\Random.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Animation\ModelMesh.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation\ModelLoader.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation\AnimEvaluator.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation\Animations.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>

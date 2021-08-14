@@ -78,7 +78,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>.\;.\RanderEffects\ParticleSystem\Public;.\ShaderSource\Public;..\GlareEngine\EngineCore\Engine\Public;..\GlareEngine\EngineCore\Graphics\Public;..\GlareEngine\EngineCore\Public;.\RanderEffects\Terrain\Public;.\RenderEffects\Sky\Public;..\GlareEngine\EngineEditor\ImgUIEditor;..\GlareEngine\EngineCore\Math;.\RanderEffects\ShockWaveWater\Public;..\GlareEngine\Dependences\include;..\GlareEngine\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;..\GlareEngine\EngineEditor;.\RanderEffects\HDRSky\Public;..\GlareEngine\EngineMain\Public;$(IncludePath)</IncludePath>
+    <IncludePath>.\Animation;.\;.\RanderEffects\ParticleSystem\Public;.\ShaderSource\Public;..\GlareEngine\EngineCore\Engine\Public;..\GlareEngine\EngineCore\Graphics\Public;..\GlareEngine\EngineCore\Public;.\RanderEffects\Terrain\Public;.\RenderEffects\Sky\Public;..\GlareEngine\EngineEditor\ImgUIEditor;..\GlareEngine\EngineCore\Math;.\RanderEffects\ShockWaveWater\Public;..\GlareEngine\Dependences\include;..\GlareEngine\Animation;.\RanderEffects\Water\Public;.\RanderEffects\SimpleGeoInstance;.\RanderEffects\Shadow\Public;..\GlareEngine\EngineEditor;.\RanderEffects\HDRSky\Public;..\GlareEngine\EngineMain\Public;$(IncludePath)</IncludePath>
     <LibraryPath>..\x64\Debug;..\GlareEngine\Dependences\lib\ozz\debug;..\GlareEngine\Dependences\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -146,6 +146,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Animation\Animations.h" />
+    <ClInclude Include="Animation\AnimEvaluator.h" />
+    <ClInclude Include="Animation\ModelLoader.h" />
+    <ClInclude Include="Animation\ModelMesh.h" />
+    <ClInclude Include="Animation\OzzAnimePlayBack.h" />
     <ClInclude Include="EngineDemo.h" />
     <ClInclude Include="FrameResource.h" />
     <ClInclude Include="framework.h" />
@@ -177,6 +182,10 @@
     <ClInclude Include="UploadBuffer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Animation\Animations.cpp" />
+    <ClCompile Include="Animation\AnimEvaluator.cpp" />
+    <ClCompile Include="Animation\ModelLoader.cpp" />
+    <ClCompile Include="Animation\ModelMesh.cpp" />
     <ClCompile Include="EngineDemo.cpp" />
     <ClCompile Include="FrameResource.cpp" />
     <ClCompile Include="BaseApp.cpp" />

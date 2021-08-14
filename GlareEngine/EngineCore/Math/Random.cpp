@@ -1,6 +1,8 @@
 #include "Random.h"
-
-namespace Math
+namespace GlareEngine
 {
-	RandomGenerator g_RNG;
+	namespace Math
+	{
+		RandomGenerator g_Random;
+	}
 }

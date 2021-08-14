@@ -7,10 +7,15 @@ class ParticleEffect
 {
 public:
 	ParticleEffect(ParticleEffectProperties& effectProperties);
-	void LoadDeviceResources(ID3D12Device* device);
+	
+	void InitializeResources(ID3D12Device* device);
+	
 	void Update(ComputeContext& CompContext, float timeDelta);
+	
 	float GetLifetime() { return m_EffectProperties.TotalActiveLifetime; }
+	
 	float GetElapsedTime() { return m_ElapsedTime; }
+	
 	void Reset();
 
 private:

@@ -172,11 +172,6 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Animation\Animations.h" />
-    <ClInclude Include="Animation\AnimEvaluator.h" />
-    <ClInclude Include="Animation\ModelLoader.h" />
-    <ClInclude Include="Animation\ModelMesh.h" />
-    <ClInclude Include="Animation\OzzAnimePlayBack.h" />
     <None Include="EngineCore\Graphics\Public\Color.h" />
     <ClInclude Include="EngineCore\Graphics\Public\TextureManager.h" />
     <ClInclude Include="EngineCore\Math\Random.h" />
@@ -255,9 +250,6 @@
     <None Include="Shaders\Misc\ShaderUtility.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Animation\Animations.cpp" />
-    <ClCompile Include="Animation\AnimEvaluator.cpp" />
-    <ClCompile Include="Animation\ModelMesh.cpp" />
     <None Include="EngineCore\Graphics\Private\Color.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\TextureManager.cpp" />
     <ClCompile Include="EngineCore\Math\Random.cpp" />
@@ -309,7 +301,6 @@
     <ClCompile Include="EngineEditor\ImgUIEditor\imgui_impl_dx12.cpp" />
     <ClCompile Include="EngineEditor\ImgUIEditor\imgui_impl_win32.cpp" />
     <ClCompile Include="EngineEditor\ImgUIEditor\imgui_widgets.cpp" />
-    <ClCompile Include="Animation\ModelLoader.cpp" />
     <None Include="EngineCore\Graphics\Private\GPUBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
