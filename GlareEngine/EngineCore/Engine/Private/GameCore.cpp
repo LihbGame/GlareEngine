@@ -224,12 +224,13 @@ namespace GlareEngine
 					}
 					else if (wParam == SIZE_RESTORED)
 					{
+						OnResize(mClientWidth, mClientHeight);
+						UpdateApplication(*GameApp::GetApp());
 						// Restoring from minimized state?
 						if (mMinimized)
 						{
 							mAppPaused = false;
 							mMinimized = false;
-							OnResize(mClientWidth, mClientHeight);
 						}
 						// Restoring from maximized state?
 						else if (mMaximized)
@@ -237,13 +238,9 @@ namespace GlareEngine
 							mAppPaused = false;
 							mMaximized = false;
 							EngineGUI::mWindowMaxSize = false;
-							OnResize(mClientWidth, mClientHeight);
 						}
 						else if (mResizing)//正在调整大小
 						{
-							OnResize(mClientWidth, mClientHeight);
-							UpdateApplication(*GameApp::GetApp());
-
 							//如果用户正在拖动调整大小条，我们不会在此处调整缓冲区的大小，
 							//因为当用户不断拖动调整大小条时，会向窗口发送一个WM_SIZE消息流，
 							//并且为每个WM_SIZE调整大小是没有意义的（并且很慢） 通过拖动调整大小条收到的消息。
@@ -251,7 +248,6 @@ namespace GlareEngine
 						}
 						else // API call such as SetWindowPos or mSwapChain->SetFullscreenState.
 						{
-							OnResize(mClientWidth, mClientHeight);
 						}
 					}
 				}
@@ -269,7 +265,6 @@ namespace GlareEngine
 				mAppPaused = false;
 				mResizing = false;
 				GameTimer::Start();
-				OnResize(mClientWidth, mClientHeight);
 				break;
 			case WM_LBUTTONDOWN:
 			{
