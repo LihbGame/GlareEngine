@@ -242,6 +242,8 @@ namespace GlareEngine
 						else if (mResizing)//正在调整大小
 						{
 							OnResize(mClientWidth, mClientHeight);
+							UpdateApplication(*GameApp::GetApp());
+
 							//如果用户正在拖动调整大小条，我们不会在此处调整缓冲区的大小，
 							//因为当用户不断拖动调整大小条时，会向窗口发送一个WM_SIZE消息流，
 							//并且为每个WM_SIZE调整大小是没有意义的（并且很慢） 通过拖动调整大小条收到的消息。
@@ -290,19 +292,19 @@ namespace GlareEngine
 						SendMessage(g_hWnd, WM_LBUTTONUP, NULL, NULL);
 						switch (mCursorType)
 						{
-						case SIZENWSE:
+						case CursorType::SIZENWSE:
 							SetCursor(LoadCursor(NULL, IDC_SIZENWSE));
 							SendMessage(g_hWnd, WM_SYSCOMMAND, SC_SIZE | WMSZ_BOTTOMRIGHT, NULL);
 							break;
-						case SIZENS:
+						case CursorType::SIZENS:
 							SetCursor(LoadCursor(NULL, IDC_SIZENS));
 							SendMessage(g_hWnd, WM_SYSCOMMAND, SC_SIZE | WMSZ_BOTTOM, NULL);
 							break;
-						case SIZEWE:
+						case CursorType::SIZEWE:
 							SetCursor(LoadCursor(NULL, IDC_SIZEWE));
 							SendMessage(g_hWnd, WM_SYSCOMMAND, SC_SIZE | WMSZ_RIGHT, NULL);
 							break;
-						case Count:
+						case CursorType::Count:
 							break;
 						default:
 							break;

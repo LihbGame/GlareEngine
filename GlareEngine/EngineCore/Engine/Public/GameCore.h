@@ -1,7 +1,7 @@
 #pragma once
 
 #define RESIZE_RANGE 3
-enum CursorType
+enum class CursorType
 {
 	SIZENWSE,
 	SIZENS,
@@ -69,20 +69,27 @@ namespace GlareEngine
 			CursorType mCursorType = CursorType::Count;
 		};
 
-		void RunApplication(GameApp& app, const wchar_t* className,HINSTANCE HAND);
+		void RunApplication(GameApp& app, const wchar_t* className, HINSTANCE HAND);
 
 
 	}
-	
+
 
 #define MAIN_FUNCTION()  int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,\
 	PSTR cmdLine, int showCmd)
 #define CREATE_APPLICATION( app_class ) \
     MAIN_FUNCTION() \
     { \
+try\
+	{\
         GameApp* app = new app_class(); \
         GlareEngine::GameCore::RunApplication( *app, L#app_class,hInstance); \
         delete app; \
+	}\
+catch (DxException& e)\
+	{\
+		MessageBox(nullptr, e.ToString().c_str(), L"DX12 HR Failed", MB_OK);\
+	}\
         return 0; \
     }
 
