@@ -151,8 +151,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Resource\Textures\ICONS\Arrow.cur" />
-    <None Include="..\resource\textures\icons\cursor2.cur" />
-    <None Include="..\Resource\Textures\ICONS\icons8.cur" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

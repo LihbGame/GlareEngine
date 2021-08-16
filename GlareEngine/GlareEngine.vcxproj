@@ -173,6 +173,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="EngineCore\Graphics\Public\Color.h" />
+    <ClInclude Include="Animation\ModelMesh.h" />
     <ClInclude Include="EngineCore\Graphics\Public\TextureManager.h" />
     <ClInclude Include="EngineCore\Math\Random.h" />
     <ClInclude Include="GraphicEffects\Particles\Public\ParticleEffect.h" />
@@ -251,6 +252,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="EngineCore\Graphics\Private\Color.cpp" />
+    <ClCompile Include="Animation\ModelMesh.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\TextureManager.cpp" />
     <ClCompile Include="EngineCore\Math\Random.cpp" />
     <ClCompile Include="GraphicEffects\Particles\Private\ParticleEffect.cpp" />

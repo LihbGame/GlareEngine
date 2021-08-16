@@ -215,7 +215,14 @@ namespace GlareEngine
 					}
 					else if (wParam == SIZE_MAXIMIZED)
 					{
-						SetWindowPos(hWnd, NULL, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), 0);
+						//monitor full screen
+						//SetWindowPos(hWnd, NULL, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), 0);
+
+						//Client area full screen
+						RECT rect;
+						SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
+						SetWindowPos(hWnd, NULL, rect.left, rect.top, rect.right- rect.left, rect.bottom- rect.top, 0);
+
 						mAppPaused = false;
 						mMinimized = false;
 						mMaximized = true;
@@ -226,6 +233,7 @@ namespace GlareEngine
 					{
 						OnResize(mClientWidth, mClientHeight);
 						UpdateApplication(*GameApp::GetApp());
+
 						// Restoring from minimized state?
 						if (mMinimized)
 						{
@@ -241,10 +249,6 @@ namespace GlareEngine
 						}
 						else if (mResizing)//正在调整大小
 						{
-							//如果用户正在拖动调整大小条，我们不会在此处调整缓冲区的大小，
-							//因为当用户不断拖动调整大小条时，会向窗口发送一个WM_SIZE消息流，
-							//并且为每个WM_SIZE调整大小是没有意义的（并且很慢） 通过拖动调整大小条收到的消息。
-							//因此，我们在用户完成窗口大小调整后释放调整大小条，然后发送WM_EXITSIZEMOVE消息。
 						}
 						else // API call such as SetWindowPos or mSwapChain->SetFullscreenState.
 						{
