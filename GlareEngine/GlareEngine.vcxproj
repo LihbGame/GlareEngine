@@ -235,6 +235,7 @@
     <None Include="EngineCore\Math\Functions.inl" />
     <None Include="EngineCore\Graphics\Public\GPUBuffer.h" />
     <ClInclude Include="GraphicEffects\Misc\RanderObject.h" />
+    <ClInclude Include="Animation\ModelLoader.h" />
     <ClInclude Include="ShaderSource\Public\BaseShader.h" />
     <ClInclude Include="ShaderSource\Public\ComplexStaticModelInstanceShader.h" />
     <ClInclude Include="ShaderSource\Public\GrassShader.h" />
@@ -251,6 +252,7 @@
     <None Include="Shaders\Misc\ShaderUtility.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Animation\ModelLoader.cpp" />
     <None Include="EngineCore\Graphics\Private\Color.cpp" />
     <ClCompile Include="Animation\ModelMesh.cpp" />
     <ClCompile Include="EngineCore\Graphics\Private\TextureManager.cpp" />

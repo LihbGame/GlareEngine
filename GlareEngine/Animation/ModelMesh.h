@@ -1,6 +1,7 @@
 #pragma once
 #include "EngineUtility.h"
 #include "Vertex.h"
+
 namespace GlareEngine
 {
 	class ModelMesh
