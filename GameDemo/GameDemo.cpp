@@ -59,6 +59,8 @@ public:
 
 	void BuildPSO();
 
+	void UpdateWindow(float DeltaTime);
+
 	void UpdateCamera(float DeltaTime);
 
 	void UpdateMainConstantBuffer(float DeltaTime);
@@ -128,19 +130,9 @@ void App::Cleanup(void)
 
 void App::Update(float DeltaTime)
 {
-	if (EngineGUI::mWindowMaxSize && !mMaximized)
-	{
-		SendMessage(g_hWnd, WM_SYSCOMMAND, SC_MAXIMIZE, NULL);
-	}
-	if (!EngineGUI::mWindowMaxSize && mMaximized)
-	{
-		SendMessage(g_hWnd, WM_SYSCOMMAND, SC_RESTORE, NULL);
-	}
-
-
+	UpdateWindow(DeltaTime);
 	UpdateCamera(DeltaTime);
 	UpdateMainConstantBuffer(DeltaTime);
-
 }
 
 void App::BuildRootSignature()
@@ -151,12 +143,24 @@ void App::BuildRootSignature()
 	mRootSignature[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1);
 	mRootSignature.InitStaticSampler(0, SamplerLinearWrapDesc);
 	mRootSignature.InitStaticSampler(1, SamplerLinearClampDesc);
-	mRootSignature.Finalize(L"Render", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+	mRootSignature.Finalize(L"Forward Rendering", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 }
 
 void App::BuildPSO()
 {
-	mSky->BuildPSO(mRootSignature);
+	//mSky->BuildPSO(mRootSignature);
+}
+
+void App::UpdateWindow(float DeltaTime)
+{
+	if (EngineGUI::mWindowMaxSize && !mMaximized)
+	{
+		SendMessage(g_hWnd, WM_SYSCOMMAND, SC_MAXIMIZE, NULL);
+	}
+	if (!EngineGUI::mWindowMaxSize && mMaximized)
+	{
+		SendMessage(g_hWnd, WM_SYSCOMMAND, SC_RESTORE, NULL);
+	}
 }
 
 void App::UpdateCamera(float DeltaTime)
@@ -232,7 +236,7 @@ void App::RenderScene(void)
 	//Draw sky
 #pragma region Draw sky
 	RenderContext.PIXBeginEvent(L"Draw Sky");
-	mSky->Draw(RenderContext);
+	//mSky->Draw(RenderContext);
 	RenderContext.PIXEndEvent();
 #pragma endregion
 

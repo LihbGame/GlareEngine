@@ -34,5 +34,15 @@ namespace GlareEngine
 			}
 			return mTextures[name];
 		}
+
+		std::unique_ptr<Texture>& TextureManager::GetModelTexture(std::wstring name, bool ForceSRGB)
+		{
+			if (mTextures.find(name) == mTextures.end())
+			{
+				CreateTexture(name, name + L".dds", ForceSRGB);
+			}
+			return mTextures[name];
+		}
+
 	}
 }

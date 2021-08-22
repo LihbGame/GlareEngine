@@ -218,7 +218,6 @@
     <ClInclude Include="EngineCore\Engine\Public\Camera.h" />
     <ClInclude Include="EngineCore\Engine\Public\GameTimer.h" />
     <ClInclude Include="EngineCore\Engine\Public\GeometryGenerator.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\Material.h" />
     <ClInclude Include="EngineCore\Math\MathHelper.h" />
     <ClInclude Include="EngineCore\Engine\Public\EngineUtility.h" />
     <ClInclude Include="EngineCore\Engine\Public\Vertex.h" />
@@ -293,7 +292,6 @@
     <ClCompile Include="EngineCore\Engine\Private\GameTimer.cpp" />
     <ClCompile Include="EngineCore\Engine\Private\GeometryGenerator.cpp" />
     <ClCompile Include="EngineCore\Engine\Private\InputLayout.cpp" />
-    <ClCompile Include="EngineCore\Graphics\Private\Material.cpp" />
     <ClCompile Include="EngineCore\Math\MathHelper.cpp" />
     <ClCompile Include="EngineCore\Engine\Private\EngineUtility.cpp" />
     <ClCompile Include="EngineCore\Engine\Private\Vertex.cpp" />

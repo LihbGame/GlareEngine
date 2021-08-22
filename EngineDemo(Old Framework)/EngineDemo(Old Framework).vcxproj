@@ -155,6 +155,7 @@
     <ClInclude Include="FrameResource.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="BaseApp.h" />
+    <ClInclude Include="Material.h" />
     <ClInclude Include="RanderEffects\HDRSky\Public\Sky.h" />
     <ClInclude Include="RanderEffects\ParticleSystem\Public\BaseParticle.h" />
     <ClInclude Include="RanderEffects\ParticleSystem\Public\ParticleGroup.h" />
@@ -189,6 +190,7 @@
     <ClCompile Include="EngineDemo.cpp" />
     <ClCompile Include="FrameResource.cpp" />
     <ClCompile Include="BaseApp.cpp" />
+    <ClCompile Include="Material.cpp" />
     <ClCompile Include="PSOManager.cpp" />
     <ClCompile Include="RanderEffects\HDRSky\Private\Sky.cpp" />
     <ClCompile Include="RanderEffects\ParticleSystem\Private\BaseParticle.cpp" />

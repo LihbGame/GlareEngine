@@ -120,6 +120,9 @@
     <ClInclude Include="Animation\OzzAnimePlayBack.h">
       <Filter>Animation</Filter>
     </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FrameResource.cpp">
@@ -211,6 +214,9 @@
     </ClCompile>
     <ClCompile Include="Animation\ModelMesh.cpp">
       <Filter>Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

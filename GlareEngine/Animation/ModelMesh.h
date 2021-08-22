@@ -7,10 +7,9 @@ namespace GlareEngine
 	class ModelMesh
 	{
 	public:
-		ModelMesh(ID3D12GraphicsCommandList* CommandList, vector<Vertice::PosNormalTangentTexc> vertices, vector<UINT> indices, vector<Texture> textures);
+		ModelMesh(ID3D12GraphicsCommandList* CommandList, vector<Vertice::PosNormalTangentTexc> vertices, vector<UINT> indices);
 		~ModelMesh();
 
-		vector<Texture> mTextures;
 		MeshGeometry mMeshGeo;
 	private:
 		void SetupMesh(ID3D12GraphicsCommandList* CommandList);

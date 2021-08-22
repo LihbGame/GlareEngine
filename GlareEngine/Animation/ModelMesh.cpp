@@ -3,11 +3,10 @@
 
 using namespace GlareEngine;
 
-ModelMesh::ModelMesh(ID3D12GraphicsCommandList* CommandList, vector<Vertice::PosNormalTangentTexc> vertices, vector<UINT> indices, vector<Texture> textures)
+ModelMesh::ModelMesh(ID3D12GraphicsCommandList* CommandList, vector<Vertice::PosNormalTangentTexc> vertices, vector<UINT> indices)
 {
 	this->mVertices = vertices;
 	this->mIndices = indices;
-	this->mTextures = textures;
 
 	this->SetupMesh(CommandList);
 }

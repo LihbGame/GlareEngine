@@ -117,7 +117,6 @@
       <Filter>Core\Public</Filter>
     </ClInclude>
     <ClInclude Include="EngineCore\Engine\Public\InputLayout.h" />
-    <ClInclude Include="EngineCore\Graphics\Public\Material.h" />
     <ClInclude Include="GraphicEffects\Particles\Public\ParticleShaderStructs.h" />
     <ClInclude Include="GraphicEffects\Particles\Public\ParticleEffectProperties.h" />
     <ClInclude Include="GraphicEffects\Particles\Public\ParticleEffect.h" />
@@ -254,9 +253,6 @@
     </ClCompile>
     <ClCompile Include="EngineCore\Engine\Private\GameTimer.cpp">
       <Filter>Core\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Graphics\Private\Material.cpp">
-      <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="GraphicEffects\Particles\Private\ParticleEmissionProperties.cpp">
       <Filter>MainSource</Filter>
