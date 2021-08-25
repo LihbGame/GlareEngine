@@ -123,6 +123,7 @@
     <ClInclude Include="EngineCore\Math\Random.h" />
     <ClInclude Include="Animation\ModelMesh.h" />
     <ClInclude Include="Animation\ModelLoader.h" />
+    <ClInclude Include="EngineCore\Engine\Public\Material.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
@@ -267,6 +268,9 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="Animation\ModelLoader.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\Private\Material.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>

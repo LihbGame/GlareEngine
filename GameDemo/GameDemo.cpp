@@ -148,7 +148,7 @@ void App::BuildRootSignature()
 
 void App::BuildPSO()
 {
-	//mSky->BuildPSO(mRootSignature);
+	mSky->BuildPSO(mRootSignature);
 }
 
 void App::UpdateWindow(float DeltaTime)
@@ -236,7 +236,7 @@ void App::RenderScene(void)
 	//Draw sky
 #pragma region Draw sky
 	RenderContext.PIXBeginEvent(L"Draw Sky");
-	//mSky->Draw(RenderContext);
+	mSky->Draw(RenderContext);
 	RenderContext.PIXEndEvent();
 #pragma endregion
 

@@ -33,7 +33,7 @@ namespace GlareEngine
 
 			const RootSignature* m_RootSignature;
 
-			ID3D12PipelineState* m_PSO;
+			ID3D12PipelineState* m_PSO = nullptr;
 		};
 
 		//GraphicsPSO
