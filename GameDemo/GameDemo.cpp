@@ -107,7 +107,6 @@ void App::Startup(void)
 
 	ID3D12GraphicsCommandList* CommandList = InitializeContext.GetCommandList();
 
-	g_TextureManager.SetCommandList(CommandList);
 	//Main Camera
 	mCamera = make_unique<Camera>();
 	//Sky Initialize

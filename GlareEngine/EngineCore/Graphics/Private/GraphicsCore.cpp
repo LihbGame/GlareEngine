@@ -146,11 +146,6 @@ namespace GlareEngine
 		//SwapChainFormat
 		DXGI_FORMAT g_SwapChainFormat = DXGI_FORMAT_R10G10B10A2_UNORM;
 
-		//Core Features
-		TextureManager g_TextureManager;
-
-		
-
 		//FEATURE LEVEL 11
 		D3D_FEATURE_LEVEL g_D3DFeatureLevel = D3D_FEATURE_LEVEL_11_0;
 

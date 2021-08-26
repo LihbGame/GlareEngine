@@ -55,9 +55,6 @@ namespace GlareEngine
 
 		extern DXGI_FORMAT g_SwapChainFormat;
 
-		//Core Features
-		extern TextureManager g_TextureManager;
-
 		//FEATURE LEVE 
 		extern D3D_FEATURE_LEVEL g_D3DFeatureLevel;
 

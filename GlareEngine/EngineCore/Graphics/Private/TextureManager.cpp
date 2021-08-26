@@ -5,9 +5,28 @@ namespace GlareEngine
 {
 	namespace DirectX12Graphics
 	{
-		void TextureManager::SetCommandList(ID3D12GraphicsCommandList* pCommandList)
+		TextureManager* TextureManager::m_pTextureManagerInstance = nullptr;
+		ID3D12GraphicsCommandList* TextureManager::mCommandList = nullptr;
+
+		TextureManager* TextureManager::GetInstance(ID3D12GraphicsCommandList* pCommandList)
 		{
+			if (m_pTextureManagerInstance == nullptr)
+			{
+				m_pTextureManagerInstance = new TextureManager();
+			}
+			//reset command list 
 			mCommandList = pCommandList;
+
+			return m_pTextureManagerInstance;
+		}
+
+		void TextureManager::Shutdown()
+		{
+			if (m_pTextureManagerInstance)
+			{
+				delete m_pTextureManagerInstance;
+				m_pTextureManagerInstance = nullptr;
+			}
 		}
 
 		void TextureManager::CreateTexture(std::wstring name, std::wstring filename, bool ForceSRGB)

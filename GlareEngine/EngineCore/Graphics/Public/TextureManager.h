@@ -7,17 +7,23 @@ namespace GlareEngine
 		class TextureManager
 		{
 		public:
-			TextureManager() {}
-			~TextureManager() {};
+			static TextureManager* GetInstance(ID3D12GraphicsCommandList* pCommandList);
+			static void Shutdown();
 
-			void SetCommandList(ID3D12GraphicsCommandList* pCommandList);
 			void CreateTexture(std::wstring name, std::wstring filename, bool ForceSRGB = true);
 			std::unique_ptr<Texture>& GetTexture(std::wstring name, bool ForceSRGB = true);
 			std::unique_ptr<Texture>& GetModelTexture(std::wstring name, bool ForceSRGB = true);
 		private:
-			ID3D12GraphicsCommandList* mCommandList = nullptr;
+			
 			std::unordered_map<std::wstring, std::unique_ptr<Texture>> mTextures;
 			std::wstring RootFilePath = L"../Resource/Textures/";
+		
+			static TextureManager* m_pTextureManagerInstance;
+			static ID3D12GraphicsCommandList* mCommandList;
+
+		private:
+			TextureManager() {}
+			~TextureManager() {}
 		};
 	}
 }

@@ -141,6 +141,6 @@ void ModelLoader::LoadPBRTexture(string texturename)
 	for (auto Type:PBRTextureFileType)
 	{
 		Fullfilename = RootFilename + Type;
-		mModelTextures[texturename].push_back(g_TextureManager.GetModelTexture(wstring(Fullfilename.begin(), Fullfilename.end())).get());
+		mModelTextures[texturename].push_back(TextureManager::GetInstance(m_pCommandList)->GetModelTexture(wstring(Fullfilename.begin(), Fullfilename.end())).get());
 	}
 }

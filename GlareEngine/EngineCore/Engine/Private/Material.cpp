@@ -4,11 +4,10 @@ using namespace GlareEngine;
 
 Materials* Materials::GetMaterialInstance()
 {
-
-
+	return nullptr;
 }
 
-void Materials::ReleaseMaterialInstance()
+void Materials::Release()
 {
 
 

@@ -15,7 +15,7 @@ public:
     void BuildSkyMesh(ID3D12GraphicsCommandList* CommandList,
         float radius, int sliceCount, int stackCount);
 
-    void BuildSkySRV();
+    void BuildSkySRV(ID3D12GraphicsCommandList* CommandList);
 
     virtual void Draw(GraphicsContext& Context);
     virtual void BuildPSO(const RootSignature& rootSignature);

@@ -10,7 +10,7 @@ namespace GlareEngine
 		~Materials() {};
 
 		static Materials* GetMaterialInstance();
-		static void ReleaseMaterialInstance();
+		static void Release();
 
 		static int GetMaterialSize() { return MatCBIndex; }
 

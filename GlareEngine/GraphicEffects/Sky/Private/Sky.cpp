@@ -15,7 +15,7 @@ CSky::CSky(ID3D12GraphicsCommandList* CommandList,
 	float radius, int sliceCount, int stackCount)
 {
 	BuildSkyMesh(CommandList, radius, sliceCount, stackCount);
-	BuildSkySRV();
+	BuildSkySRV(CommandList);
 
 	//world mat
 	XMStoreFloat4x4(&mWorld, XMMatrixScaling(5000.0f, 5000.0f, 5000.0f));
@@ -72,9 +72,9 @@ void CSky::BuildSkyMesh(ID3D12GraphicsCommandList* CommandList, float radius, in
 	mSkyMesh->DrawArgs["Sky"] = submesh;
 }
 
-void CSky::BuildSkySRV()
+void CSky::BuildSkySRV(ID3D12GraphicsCommandList* CommandList)
 {
-	auto SkyTex = g_TextureManager.GetTexture(L"HDRSky\\Sky",false)->Resource;
+	auto SkyTex = TextureManager::GetInstance(CommandList)->GetTexture(L"HDRSky\\Sky",false)->Resource;
 	m_Descriptor= AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC SkysrvDesc = {};

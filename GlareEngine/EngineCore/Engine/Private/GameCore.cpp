@@ -103,6 +103,7 @@ namespace GlareEngine
 		{
 			Game.Cleanup();
 			EngineInput::Shutdown();
+			TextureManager::Shutdown();
 		}
 
 		bool UpdateApplication(GameApp& Game)
