@@ -6,3 +6,6 @@ Demo ScreenShot
 ![demo](ScreenShot/screenshot1.png)
 
 ![demo](ScreenShot/screenshot4.png)
+
+Editor
+![demo](ScreenShot/screenshot7.png)
