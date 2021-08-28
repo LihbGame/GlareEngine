@@ -6159,6 +6159,8 @@ void ImGui::EndMenuBar()
 bool ImGui::BeginMainMenuBar()
 {
     ImGuiContext& g = *GImGui;
+    g.Style.FramePadding.y = 5;
+    g.Style.DisplaySafeAreaPadding.y = 6;
     g.NextWindowData.MenuBarOffsetMinVal = ImVec2(g.Style.DisplaySafeAreaPadding.x, ImMax(g.Style.DisplaySafeAreaPadding.y - g.Style.FramePadding.y, 0.0f));
     SetNextWindowPos(ImVec2(g.IO.DisplaySize.x * 0.16667f, 0.0f));
     SetNextWindowSize(ImVec2(g.IO.DisplaySize.x + 1 - g.IO.DisplaySize.x * 0.16667f, 25));

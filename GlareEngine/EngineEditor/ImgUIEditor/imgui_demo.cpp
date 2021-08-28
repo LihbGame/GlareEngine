@@ -285,7 +285,7 @@ void ImGui::ShowDemoWindow(bool* p_open,bool* isMax)
     ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);*/
 
     ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x * 5.0f / 6.0f, MainMenuBarHeight));
-    ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x * 1.0f / 6.0f+1.0f, ImGui::GetIO().DisplaySize.y * 0.75f- MainMenuBarHeight));
+    ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x * CLIENT_FROMLEFT +1.0f, ImGui::GetIO().DisplaySize.y * CLIENT_HEIGHT - MainMenuBarHeight));
     ImGui::SetNextWindowBgAlpha(1);
 
     // Main body of the Demo window starts here.
@@ -3578,15 +3578,15 @@ static void ShowExampleAppMainMenuBar(bool* IsMax,bool IsFullScreenMode)
         ImGuiIO& io = ImGui::GetIO();
         if (!IsFullScreenMode)
         {
-            if (ImGui::RadioButton("Min", true, ImVec2(ImGui::GetWindowSize().x - 290.0f, 0.0f)))
+            if (ImGui::RadioButton("Min", true, ImVec2(ImGui::GetWindowSize().x - 310.0f, 0.0f)))
             {
                 SendMessage((HWND)io.ImeWindowHandle, WM_SYSCOMMAND, SC_MINIMIZE, NULL);
             }
-            if (ImGui::RadioButton("Max", true, ImVec2(ImGui::GetWindowSize().x - 280.0f, 0.0f)))
+            if (ImGui::RadioButton("Max", true, ImVec2(ImGui::GetWindowSize().x - 300.0f, 0.0f)))
             {
                 *IsMax = !(*IsMax);
             }
-			if (ImGui::RadioButton("Close", true, ImVec2(ImGui::GetWindowSize().x - 270.0f, 0.0f)))
+			if (ImGui::RadioButton("Close", true, ImVec2(ImGui::GetWindowSize().x - 290.0f, 0.0f)))
 			{
 				SendMessage((HWND)io.ImeWindowHandle, WM_CLOSE, NULL, NULL);
 			}
@@ -3599,6 +3599,7 @@ static void ShowExampleAppMainMenuBar(bool* IsMax,bool IsFullScreenMode)
             }
         }
         ImGui::EndMainMenuBar();
+        ImGui::GetStyle().FramePadding.y = 3;
     }
 }
 

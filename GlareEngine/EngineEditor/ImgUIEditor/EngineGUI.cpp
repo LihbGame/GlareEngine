@@ -104,28 +104,28 @@ void EngineGUI::Draw(ID3D12GraphicsCommandList* d3dCommandList)
 		
 		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 		if (show_demo_window)
-		{
-			
-			g->NextWindowData.MenuBarOffsetMinVal = ImVec2(g->Style.DisplaySafeAreaPadding.x, ImMax(g->Style.DisplaySafeAreaPadding.y - g->Style.FramePadding.y, 0.0f));
-			ImGui::SetNextWindowPos(ImVec2(g->IO.DisplaySize.x * 5.0f / 6.0f, 0.0f));
-			ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * CLIENT_FROMLEFT, g->IO.DisplaySize.y * CLIENT_HEIGHT));
+		{	
+			//g->NextWindowData.MenuBarOffsetMinVal = ImVec2(g->Style.DisplaySafeAreaPadding.x, ImMax(g->Style.DisplaySafeAreaPadding.y - g->Style.FramePadding.y, 0.0f));
+			//ImGui::SetNextWindowPos(ImVec2(g->IO.DisplaySize.x * 5.0f / 6.0f, 0.0f));
+			//ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * CLIENT_FROMLEFT, g->IO.DisplaySize.y * CLIENT_HEIGHT));
 			ImGui::ShowDemoWindow(&show_demo_window,&mWindowMaxSize);
 		}
 		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
 		{
+			float IconSize = g->IO.DisplaySize.x * 0.075f;
+			float IconWindowHigh = IconSize * 1.15f;
 			ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
-			ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * 1.0f / 6.0f, g->IO.DisplaySize.y * 0.15f));
+			ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * CLIENT_FROMLEFT, IconWindowHigh));
 			ImGui::SetNextWindowBgAlpha(1);
 			ImGui::Begin("Engine Icon",&isUIShow, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoScrollbar);
 			CD3DX12_GPU_DESCRIPTOR_HANDLE ICONTexDescriptor(mGUISrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 			ICONTexDescriptor.Offset(1, g_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-			float IconSize = g->IO.DisplaySize.x * 0.075f;
 			ImGui::Image((void*)(ICONTexDescriptor.ptr), ImVec2(g->IO.DisplaySize.x * 0.0417f, 0), ImVec2(IconSize, IconSize), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1.0f, 1.0f, 1.0f, 0.2f));
 			ImGui::End();
 
 			static int counter = 0;
-			ImGui::SetNextWindowPos(ImVec2(0.0f, g->IO.DisplaySize.y * 0.15f));
-			ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * CLIENT_FROMLEFT, g->IO.DisplaySize.y*0.60f));
+			ImGui::SetNextWindowPos(ImVec2(0.0f, IconWindowHigh));
+			ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * CLIENT_FROMLEFT, int(g->IO.DisplaySize.y * CLIENT_HEIGHT+1.0f)  - IconWindowHigh));
 			ImGui::SetNextWindowBgAlpha(1);
 
 			ImGui::Begin("Control Panel",&isUIShow,ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
@@ -282,7 +282,7 @@ void EngineGUI::SetWindowStyles()
 	colors[ImGuiCol_TitleBg] = ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
 	colors[ImGuiCol_TitleBgActive] = ImVec4(0.16f, 0.29f, 0.48f, 1.00f);
 	colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
-	colors[ImGuiCol_MenuBarBg] = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+	colors[ImGuiCol_MenuBarBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.00f);
 	colors[ImGuiCol_ScrollbarBg] = ImVec4(0.2f, 0.2f, 0.2f, 0.53f);
 	colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.3f, 0.3f, 0.3f, 1.00f);
 	colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.4f, 0.4f, 0.4f, 1.00f);
