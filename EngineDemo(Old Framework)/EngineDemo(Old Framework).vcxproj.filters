@@ -123,6 +123,9 @@
     <ClInclude Include="Material.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="EngineGUI.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FrameResource.cpp">
@@ -216,6 +219,9 @@
       <Filter>Animation</Filter>
     </ClCompile>
     <ClCompile Include="Material.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineGUI.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -73,13 +73,12 @@ bool GameApp::Initialize()
 	// 将命令列表重置为准备初始化命令。
 	ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
 
-
-	//init UI
-	mEngineUI = make_unique<EngineGUI>(mhMainWnd, md3dDevice.Get());
 	// 获取此堆类型中描述符的增量大小。 这是特定于硬件的，因此我们必须查询此信息。
 	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	//texture manage
 	mTextureManage = std::make_unique<TextureManage>(md3dDevice.Get(), mCommandList.Get(), mCbvSrvDescriptorSize);
+	//init UI
+	mEngineUI = make_unique<EngineGUI>(mhMainWnd, md3dDevice.Get(),mTextureManage.get(), mCommandList.Get());
 	//pso init
 	mPSOs = std::make_unique<PSO>();
 	//wave :not use

@@ -4,17 +4,17 @@
 #include "EngineLog.h"
 #include "EngineAdjust.h"
 #include "GraphicsCore.h"
-#include "GameCore.h"
-#include "TextureManager.h"
+#include "TextureManage.h"
 using Microsoft::WRL::ComPtr;
-using namespace GlareEngine::GameCore;
 bool gFullSreenMode = false;
 bool EngineGUI::mWindowMaxSize = false;
 
-EngineGUI::EngineGUI(ID3D12GraphicsCommandList* d3dCommandList)
+EngineGUI::EngineGUI(HWND GameWnd, ID3D12Device* d3dDevice, TextureManage* pTextureManager, ID3D12GraphicsCommandList* d3dCommandList)
 {
+	md3dDevice = d3dDevice;
+	mTextureManager = pTextureManager;
 	CreateUIDescriptorHeap(d3dCommandList);
-	InitGUI();
+	InitGUI(GameWnd);
 }
 
 EngineGUI::~EngineGUI()
@@ -22,7 +22,7 @@ EngineGUI::~EngineGUI()
 
 }
 
-void EngineGUI::InitGUI()
+void EngineGUI::InitGUI(HWND GameWnd)
 {
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -36,8 +36,8 @@ void EngineGUI::InitGUI()
 	//ImGui::StyleColorsDark();
 	//ImGui::StyleColorsClassic();
 	 // Setup Platform/Renderer bindings
-	ImGui_ImplWin32_Init(g_hWnd);
-	ImGui_ImplDX12_Init(g_Device, gNumFrameResources,
+	ImGui_ImplWin32_Init(GameWnd);
+	ImGui_ImplDX12_Init(md3dDevice, gNumFrameResources,
 		DXGI_FORMAT_R10G10B10A2_UNORM, mGUISrvDescriptorHeap,
 		mGUISrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		mGUISrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
@@ -71,13 +71,13 @@ void EngineGUI::CreateUIDescriptorHeap(ID3D12GraphicsCommandList* d3dCommandList
 	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	desc.NumDescriptors = 2;
 	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	ThrowIfFailed(g_Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&mGUISrvDescriptorHeap)));
+	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&mGUISrvDescriptorHeap)));
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(mGUISrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-	UINT SRVDescriptorHandleIncrementSize=g_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	UINT SRVDescriptorHandleIncrementSize= md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	hDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
 	
-	auto IconTex = TextureManager::GetInstance(d3dCommandList)->GetTexture(L"ICONS\\gamecontrolle", false)->Resource;
+	auto IconTex = mTextureManager->GetTexture(L"ICONS\\gamecontrolle")->Resource;
 	D3D12_SHADER_RESOURCE_VIEW_DESC IconsrvDesc = {};
 	IconsrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	IconsrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -85,7 +85,7 @@ void EngineGUI::CreateUIDescriptorHeap(ID3D12GraphicsCommandList* d3dCommandList
 	IconsrvDesc.TextureCube.MipLevels = IconTex->GetDesc().MipLevels;
 	IconsrvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
 	IconsrvDesc.Format = IconTex->GetDesc().Format;
-	g_Device->CreateShaderResourceView(IconTex.Get(), &IconsrvDesc, hDescriptor);
+	md3dDevice->CreateShaderResourceView(IconTex.Get(), &IconsrvDesc, hDescriptor);
 }
 
 void EngineGUI::Draw(ID3D12GraphicsCommandList* d3dCommandList)
@@ -108,7 +108,7 @@ void EngineGUI::Draw(ID3D12GraphicsCommandList* d3dCommandList)
 			
 			g->NextWindowData.MenuBarOffsetMinVal = ImVec2(g->Style.DisplaySafeAreaPadding.x, ImMax(g->Style.DisplaySafeAreaPadding.y - g->Style.FramePadding.y, 0.0f));
 			ImGui::SetNextWindowPos(ImVec2(g->IO.DisplaySize.x * 5.0f / 6.0f, 0.0f));
-			ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * CLIENT_FROMLEFT, g->IO.DisplaySize.y * CLIENT_HEIGHT));
+			ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * 1.0f/6.0f, g->IO.DisplaySize.y * 0.75f));
 			ImGui::ShowDemoWindow(&show_demo_window,&mWindowMaxSize);
 		}
 		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
@@ -118,14 +118,13 @@ void EngineGUI::Draw(ID3D12GraphicsCommandList* d3dCommandList)
 			ImGui::SetNextWindowBgAlpha(1);
 			ImGui::Begin("Engine Icon",&isUIShow, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoScrollbar);
 			CD3DX12_GPU_DESCRIPTOR_HANDLE ICONTexDescriptor(mGUISrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-			ICONTexDescriptor.Offset(1, g_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-			float IconSize = g->IO.DisplaySize.x * 0.075f;
-			ImGui::Image((void*)(ICONTexDescriptor.ptr), ImVec2(g->IO.DisplaySize.x * 0.0417f, 0), ImVec2(IconSize, IconSize), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1.0f, 1.0f, 1.0f, 0.2f));
+			ICONTexDescriptor.Offset(1, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+			ImGui::Image((void*)(ICONTexDescriptor.ptr), ImVec2(g->IO.DisplaySize.x * 0.0417f, 0), ImVec2(g->IO.DisplaySize.x * 0.075f, g->IO.DisplaySize.x * 0.075f), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1.0f, 1.0f, 1.0f, 0.2f));
 			ImGui::End();
 
 			static int counter = 0;
 			ImGui::SetNextWindowPos(ImVec2(0.0f, g->IO.DisplaySize.y * 0.15f));
-			ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * CLIENT_FROMLEFT, g->IO.DisplaySize.y*0.60f));
+			ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * 1.0f/6.0f, g->IO.DisplaySize.y*0.60f));
 			ImGui::SetNextWindowBgAlpha(1);
 
 			ImGui::Begin("Control Panel",&isUIShow,ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);

@@ -6,7 +6,7 @@
 #include <imgui_internal.h>
 #include "EngineUtility.h"
 
-
+class TextureManage;
 #define MainMenuBarHeight  25.0f
 #define CLIENT_FROMLEFT 0.166667f
 #define CLIENT_HEIGHT 0.75f
@@ -15,7 +15,7 @@ extern bool gFullSreenMode;
 class EngineGUI
 {
 public:
-	EngineGUI(ID3D12GraphicsCommandList* d3dCommandList);
+	EngineGUI(HWND GameWnd, ID3D12Device* d3dDevice, TextureManage* mTextureManager,ID3D12GraphicsCommandList* d3dCommandList = nullptr);
 	~EngineGUI();
 public:
 	void Draw(ID3D12GraphicsCommandList* d3dCommandList);
@@ -48,7 +48,7 @@ public:
 
 	static bool mWindowMaxSize;
 private:
-	void InitGUI();
+	void InitGUI(HWND GameWnd);
 	void CreateUIDescriptorHeap(ID3D12GraphicsCommandList* d3dCommandList);
 	void SetWindowStyles();
 private:
@@ -87,7 +87,9 @@ private:
 	char InputBuffer[256] = {};
 	int mLogSize = 0;
 private:
+	TextureManage* mTextureManager;
 	ID3D12DescriptorHeap* mGUISrvDescriptorHeap = nullptr;
+	ID3D12Device* md3dDevice = nullptr;
 	ImGuiContext *g=nullptr;
 	bool isUIShow = true;
 };

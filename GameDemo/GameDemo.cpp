@@ -112,7 +112,7 @@ void App::Startup(void)
 	//Sky Initialize
 	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
 	//UI Init
-	mEngineUI = make_unique<EngineGUI>(g_hWnd, g_Device);
+	mEngineUI = make_unique<EngineGUI>(CommandList);
 	//Model Loader Initialize
 
 

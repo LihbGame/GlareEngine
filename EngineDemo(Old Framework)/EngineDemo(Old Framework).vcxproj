@@ -152,6 +152,7 @@
     <ClInclude Include="Animation\ModelMesh.h" />
     <ClInclude Include="Animation\OzzAnimePlayBack.h" />
     <ClInclude Include="EngineDemo.h" />
+    <ClInclude Include="EngineGUI.h" />
     <ClInclude Include="FrameResource.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="BaseApp.h" />
@@ -188,6 +189,7 @@
     <ClCompile Include="Animation\ModelLoader.cpp" />
     <ClCompile Include="Animation\ModelMesh.cpp" />
     <ClCompile Include="EngineDemo.cpp" />
+    <ClCompile Include="EngineGUI.cpp" />
     <ClCompile Include="FrameResource.cpp" />
     <ClCompile Include="BaseApp.cpp" />
     <ClCompile Include="Material.cpp" />
