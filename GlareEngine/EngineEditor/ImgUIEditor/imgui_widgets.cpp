@@ -987,8 +987,8 @@ bool ImGui::ImageButton(ImTextureID user_texture_id, const ImVec2& Pos, const Im
 
     ImVec2 ImagePosition = Pos + window->DC.CursorPos;
     const ImVec2 padding = (frame_padding >= 0) ? ImVec2((float)frame_padding, (float)frame_padding) : style.FramePadding;
-    const ImRect bb(ImagePosition, ImagePosition + size + padding * 2);
-    const ImRect image_bb(ImagePosition + padding, ImagePosition + padding + size);
+    const ImRect bb(ImagePosition, ImagePosition + size);
+    const ImRect image_bb(ImagePosition + ImVec2(2, 2), ImagePosition + size - ImVec2(2, 2));
     ItemSize(bb);
     if (!ItemAdd(bb, id))
         return false;

@@ -62,6 +62,7 @@ void EngineGUI::InitGUI()
 	 g = ImGui::GetCurrentContext();
 	 g->Style.WindowRounding = 0;
 	 g->Style.DisplaySafeAreaPadding = ImVec2(3, 5);
+	 g->Style.WindowBorderSize = 1.0f;
 	 SetWindowStyles();
 }
 
@@ -378,15 +379,15 @@ void EngineGUI::DrawMainMenuBar(bool* IsMax, bool IsFullScreenMode)
 		if (!IsFullScreenMode)
 		{
 			ImGui::GetStyle().Colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.2f, 0.0f);
-			if (ImGui::ImageButton((void*)(mEngineMinTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 220.0f, 0), ImVec2(18, 18), ImVec2(0, 0), ImVec2(1, 1),5))
+			if (ImGui::ImageButton((void*)(mEngineMinTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 210.0f, 0), ImVec2(25, 25), ImVec2(0, 0), ImVec2(1, 1),5))
 			{
 				SendMessage((HWND)io.ImeWindowHandle, WM_SYSCOMMAND, SC_MINIMIZE, NULL);
 			}
-			if (ImGui::ImageButton((void*)(mEngineMaxTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 210.0f, 0), ImVec2(18, 18), ImVec2(0, 0), ImVec2(1, 1),5))
+			if (ImGui::ImageButton((void*)(mEngineMaxTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 200.0f, 0), ImVec2(25, 25), ImVec2(0, 0), ImVec2(1, 1),5))
 			{
 				*IsMax = !(*IsMax);
 			}
-			if (ImGui::ImageButton((void*)(mEngineCloseTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 200.0f, 0), ImVec2(18, 18), ImVec2(0, 0), ImVec2(1, 1),5))
+			if (ImGui::ImageButton((void*)(mEngineCloseTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 190.0f, 0), ImVec2(25, 25), ImVec2(0, 0), ImVec2(1, 1),5))
 			{
 				SendMessage((HWND)io.ImeWindowHandle, WM_CLOSE, NULL, NULL);
 			}

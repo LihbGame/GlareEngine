@@ -214,7 +214,7 @@ void ImGui::ShowDemoWindow(bool* p_open,bool* isMax)
         style.FrameRounding = 7;
         style.GrabRounding = 7;
         //style.WindowRounding = 7;
-        style.WindowBorderSize = 1.5f;
+        //style.WindowBorderSize = 1.5f;
     }
 
     IM_ASSERT(ImGui::GetCurrentContext() != NULL && "Missing dear imgui context. Refer to examples app!"); // Exceptionally add an extra assert here for people confused with initial dear imgui setup
