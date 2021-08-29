@@ -277,7 +277,7 @@ namespace GlareEngine
 				SystemParametersInfo(SPI_SETDRAGFULLWINDOWS, true, NULL, 0);
 				//在客户区域实现拖动窗口
 				if (GET_Y_LPARAM(lParam) < 22 && GET_X_LPARAM(lParam) > 80 &&
-					GET_X_LPARAM(lParam) < (int)mClientWidth - 205)
+					GET_X_LPARAM(lParam) < (int)mClientWidth - 150)
 				{
 					ReleaseCapture();
 					SendMessage(g_hWnd, WM_NCLBUTTONDOWN, HTCAPTION, NULL);

@@ -221,7 +221,7 @@ void ImGui::ShowDemoWindow(bool* p_open,bool* isMax)
    
     // Examples Apps (accessible from the "Examples" menu)
     static bool show_app_documents = false;
-    static bool show_app_main_menu_bar = true;
+    static bool show_app_main_menu_bar = false;
     static bool show_app_console = false;
     static bool show_app_log = false;
     static bool show_app_layout = false;
@@ -849,7 +849,7 @@ static void ShowDemoWindowWidgets()
         {
             ImGui::PushID(i);
             int frame_padding = -1 + i;     // -1 = uses default padding
-            if (ImGui::ImageButton(my_tex_id, ImVec2(32,32), ImVec2(0,0), ImVec2(32.0f/my_tex_w,32/my_tex_h), frame_padding, ImVec4(0.0f,0.0f,0.0f,1.0f)))
+            if (ImGui::ImageButton(my_tex_id, ImVec2(0, 0), ImVec2(32,32), ImVec2(0,0), ImVec2(32.0f/my_tex_w,32/my_tex_h), frame_padding, ImVec4(0.0f,0.0f,0.0f,1.0f)))
                 pressed_count += 1;
             ImGui::PopID();
             ImGui::SameLine();

@@ -51,10 +51,15 @@ private:
 	void InitGUI();
 	void CreateUIDescriptorHeap(ID3D12GraphicsCommandList* d3dCommandList);
 	void SetWindowStyles();
+	void DrawEngineIcon(float IconSize, float IconWindowHigh);
+	void DrawControlPanel(float IconWindowHigh);
+	void DrawDebugWindow();
+	void DrawStatWindow();
+	void DrawMainMenuBar(bool* IsMax, bool IsFullScreenMode);
 private:
 
-	bool show_demo_window = true;
-	bool show_another_window = true;
+	bool mShowControlPanel = true;
+	bool mShowDebugwindow = true;
 
 	bool show_shadow = false;
 	bool show_model = false;
@@ -88,6 +93,10 @@ private:
 	int mLogSize = 0;
 private:
 	ID3D12DescriptorHeap* mGUISrvDescriptorHeap = nullptr;
+	CD3DX12_GPU_DESCRIPTOR_HANDLE mEngineIconTexDescriptor;
+	CD3DX12_GPU_DESCRIPTOR_HANDLE mEngineMaxTexDescriptor;
+	CD3DX12_GPU_DESCRIPTOR_HANDLE mEngineMinTexDescriptor;
+	CD3DX12_GPU_DESCRIPTOR_HANDLE mEngineCloseTexDescriptor;
 	ImGuiContext *g=nullptr;
 	bool isUIShow = true;
 };
