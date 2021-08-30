@@ -62,6 +62,7 @@ void EngineGUI::InitGUI(HWND GameWnd)
 	 g = ImGui::GetCurrentContext();
 	 g->Style.WindowRounding = 0;
 	 g->Style.DisplaySafeAreaPadding = ImVec2(3, 5);
+	 g->Style.WindowBorderSize = 1.0f;
 	 SetWindowStyles();
 }
 
@@ -69,7 +70,7 @@ void EngineGUI::CreateUIDescriptorHeap(ID3D12GraphicsCommandList* d3dCommandList
 {
 	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	desc.NumDescriptors = 2;
+	desc.NumDescriptors = 5;
 	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&mGUISrvDescriptorHeap)));
 
@@ -77,20 +78,47 @@ void EngineGUI::CreateUIDescriptorHeap(ID3D12GraphicsCommandList* d3dCommandList
 	UINT SRVDescriptorHandleIncrementSize= md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	hDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
 	
-	auto IconTex = mTextureManager->GetTexture(L"ICONS\\gamecontrolle")->Resource;
-	D3D12_SHADER_RESOURCE_VIEW_DESC IconsrvDesc = {};
-	IconsrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	IconsrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	IconsrvDesc.TextureCube.MostDetailedMip = 0;
-	IconsrvDesc.TextureCube.MipLevels = IconTex->GetDesc().MipLevels;
-	IconsrvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
-	IconsrvDesc.Format = IconTex->GetDesc().Format;
-	md3dDevice->CreateShaderResourceView(IconTex.Get(), &IconsrvDesc, hDescriptor);
+	auto Tex = mTextureManager->GetTexture(L"ICONS\\gamecontrolle", false)->Resource;
+	D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
+	SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	SrvDesc.TextureCube.MostDetailedMip = 0;
+	SrvDesc.TextureCube.MipLevels = Tex->GetDesc().MipLevels;
+	SrvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
+	SrvDesc.Format = Tex->GetDesc().Format;
+	md3dDevice->CreateShaderResourceView(Tex.Get(), &SrvDesc, hDescriptor);
+	
+	hDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
+	Tex = mTextureManager->GetTexture(L"ICONS\\max", false)->Resource;
+	SrvDesc.TextureCube.MipLevels = Tex->GetDesc().MipLevels;
+	SrvDesc.Format = Tex->GetDesc().Format;
+	md3dDevice->CreateShaderResourceView(Tex.Get(), &SrvDesc, hDescriptor);
+
+	hDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
+	Tex = mTextureManager->GetTexture(L"ICONS\\min", false)->Resource;
+	SrvDesc.TextureCube.MipLevels = Tex->GetDesc().MipLevels;
+	SrvDesc.Format = Tex->GetDesc().Format;
+	md3dDevice->CreateShaderResourceView(Tex.Get(), &SrvDesc, hDescriptor);
+
+	hDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
+	Tex = mTextureManager->GetTexture(L"ICONS\\close", false)->Resource;
+	SrvDesc.TextureCube.MipLevels = Tex->GetDesc().MipLevels;
+	SrvDesc.Format = Tex->GetDesc().Format;
+	md3dDevice->CreateShaderResourceView(Tex.Get(), &SrvDesc, hDescriptor);
+
+	mEngineIconTexDescriptor = mGUISrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+	mEngineIconTexDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
+	mEngineMaxTexDescriptor = mEngineIconTexDescriptor;
+	mEngineMaxTexDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
+	mEngineMinTexDescriptor = mEngineMaxTexDescriptor;
+	mEngineMinTexDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
+	mEngineCloseTexDescriptor = mEngineMinTexDescriptor;
+	mEngineCloseTexDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
 }
 
 void EngineGUI::Draw(ID3D12GraphicsCommandList* d3dCommandList)
 {
-	//DRAW GUI
+	//DRAW UI
 	{
 		ID3D12DescriptorHeap* descriptorHeaps[] = { mGUISrvDescriptorHeap };
 		d3dCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
@@ -103,150 +131,31 @@ void EngineGUI::Draw(ID3D12GraphicsCommandList* d3dCommandList)
 		ImGui::SetNextWindowBgAlpha(1);
 		
 		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-		if (show_demo_window)
-		{
-			
-			g->NextWindowData.MenuBarOffsetMinVal = ImVec2(g->Style.DisplaySafeAreaPadding.x, ImMax(g->Style.DisplaySafeAreaPadding.y - g->Style.FramePadding.y, 0.0f));
-			ImGui::SetNextWindowPos(ImVec2(g->IO.DisplaySize.x * 5.0f / 6.0f, 0.0f));
-			ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * 1.0f/6.0f, g->IO.DisplaySize.y * 0.75f));
-			ImGui::ShowDemoWindow(&show_demo_window,&mWindowMaxSize);
+		if (mShowControlPanel)
+		{	
+			DrawMainMenuBar(&mWindowMaxSize, gFullSreenMode);
+			ImGui::ShowDemoWindow(&mShowControlPanel,&mWindowMaxSize);
 		}
 		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
 		{
-			ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
-			ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * 1.0f / 6.0f, g->IO.DisplaySize.y * 0.15f));
-			ImGui::SetNextWindowBgAlpha(1);
-			ImGui::Begin("Engine Icon",&isUIShow, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoScrollbar);
-			CD3DX12_GPU_DESCRIPTOR_HANDLE ICONTexDescriptor(mGUISrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-			ICONTexDescriptor.Offset(1, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-			ImGui::Image((void*)(ICONTexDescriptor.ptr), ImVec2(g->IO.DisplaySize.x * 0.0417f, 0), ImVec2(g->IO.DisplaySize.x * 0.075f, g->IO.DisplaySize.x * 0.075f), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1.0f, 1.0f, 1.0f, 0.2f));
-			ImGui::End();
-
-			static int counter = 0;
-			ImGui::SetNextWindowPos(ImVec2(0.0f, g->IO.DisplaySize.y * 0.15f));
-			ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * 1.0f/6.0f, g->IO.DisplaySize.y*0.60f));
-			ImGui::SetNextWindowBgAlpha(1);
-
-			ImGui::Begin("Control Panel",&isUIShow,ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-			//ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-			//ImGui::Checkbox("Debug Window", &show_another_window);
-
-			ImGui::Text("Camera Move Speed");
-			ImGui::SliderFloat("   ", &CameraMoveSpeed, 0.0f, 500.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-
-			ImGui::Text("Show Sence");
-			ImGui::Checkbox("Shadow", &show_shadow);
-			ImGui::Checkbox("Model", &show_model);
-			ImGui::Checkbox("Sky", &show_sky);
-			ImGui::Checkbox("Land", &show_land);
-			ImGui::Checkbox("HeightMapTerrain", &show_HeightMapTerrain);
-
-			if (ImGui::CollapsingHeader("Water", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				ImGui::Checkbox("Water Rendering", &show_water);
-				ImGui::SliderFloat("Transparent", &mWaterTransparent, 0.0f, 500.0f);
-			}
-
-			if (ImGui::CollapsingHeader("Grass", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				ImGui::Checkbox("Grass Rendering", &show_Grass);
-				ImGui::Checkbox("RandomSize", &mIsGrassRandom);
-				ImGui::ColorEdit3("Grass color", mGrassColor, 0);
-				ImGui::SliderFloat("Height", &mPerGrassHeight, 3.0f, 10.0f);
-				ImGui::SliderFloat("Width", &mPerGrassWidth, 0.5f, 3.0f);
-				ImGui::SliderFloat("MinWind", &GrassMinWind, 0.0f, 1.0f);
-				ImGui::SliderFloat("MaxWind", &GrassMaxWind, 1.0f, 2.5f);
-			}
-
-			if (ImGui::CollapsingHeader("Fog", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				ImGui::Checkbox("Fog Rendering", &FogEnabled);
-				ImGui::Text("Fog Start");
-				ImGui::SliderFloat(" ", &FogStart, 0.0f, 1000.0f);
-				ImGui::Text("Fog Range");
-				ImGui::SliderFloat("  ", &FogRange, 0.0f, 1000.0f);
-			}
-				//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			
-
-			ImGui::End();
+			float IconSize = g->IO.DisplaySize.x * 0.075f;
+			float IconWindowHigh = IconSize * 1.15f;
+			//Engine Icon
+			DrawEngineIcon(IconSize, IconWindowHigh);
+			//ControlPanel
+			DrawControlPanel(IconWindowHigh);
 		}
 
 		// 3. Show Output log window.
-		if (show_another_window)
+		if (mShowDebugwindow)
 		{
-			//g.NextWindowData.MenuBarOffsetMinVal = ImVec2(g.Style.DisplaySafeAreaPadding.x, ImMax(g.Style.DisplaySafeAreaPadding.y - g.Style.FramePadding.y, 0.0f));
-			ImGui::SetNextWindowPos(ImVec2(0.0f, g->IO.DisplaySize.y * 0.75f));
-			ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x, ceil(g->IO.DisplaySize.y * 0.25f)));
-			ImGui::SetNextWindowBgAlpha(1);
-
-			ImGui::Begin("Debug Window", &show_another_window,ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-			if (ImGui::Button("Clear")) { EngineLog::ClearLogs(); }ImGui::SameLine();
-			if (ImGui::Button("Copy")) { ImGui::LogToClipboard(); }ImGui::SameLine();
-			ImGui::SetNextItemWidth(200);
-			ImGui::InputText("Filter", FilterString, IM_ARRAYSIZE(FilterString));
-			ImGui::Separator();
-		
-			const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing(); // 1 separator, 1 input text
-			ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar); // Leave room for 1 separator + 1 InputText
-
-			ImGui::Text("Camera Position X:%.1f Y:%.1f Z:%.1f", mCameraPosition.x, mCameraPosition.y, mCameraPosition.z);
-
-			//Filter logs
-			string Filter(FilterString);
-			if (strcmp(FilterString, "") != 0)
-			{
-				EngineLog::Filter(StringToWString(Filter));
-				mLogs = EngineLog::GetFilterLogs();
-			}
-			else
-			{
-				mLogs = EngineLog::GetLogs();
-			}
-			//Display logs
-			for (auto& e : mLogs)
-			{
-				ImGui::Text((">>"+WStringToString(e)).c_str());
-			}
-		
-			//将滚动条滑倒最后一条log
-			int LogSize = (int)mLogs.size();
-			if (LogSize != mLogSize)
-			{
-				ImGui::SetScrollY(ImGui::GetFrameHeightWithSpacing()*LogSize);
-				mLogSize = LogSize;
-			}
-			ImGui::EndChild();
-			ImGui::SetNextItemWidth(300);
-			ImGui::InputText("Input", InputBuffer, IM_ARRAYSIZE(InputBuffer));
-			ImGui::End();
+			DrawDebugWindow();
 		}
 
 		//Stat Windows
 		{
-			ImGui::SetNextWindowPos(ImVec2(ImVec2(g->IO.DisplaySize.x / 5.8f, MainMenuBarHeight+5.0f)));
-			ImGui::SetNextWindowSize(ImVec2(120.0f, 200.0f));
-			bool stat = true;
-			ImGui::Begin("Stat Window", &stat, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-			if (ImGui::CollapsingHeader("  States"))
-			{
-				if (ImGui::RadioButton("Wireframe", mWireframe))
-				{
-					if (mWireframe)
-					{
-						mWireframe = false;
-					}
-					else
-					{
-						mWireframe = true;
-					}
-				}
-				
-			}
-			ImGui::End();
+			DrawStatWindow();
 		}
-
-
 
 		ImGui::Render();
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), d3dCommandList);
@@ -281,7 +190,7 @@ void EngineGUI::SetWindowStyles()
 	colors[ImGuiCol_TitleBg] = ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
 	colors[ImGuiCol_TitleBgActive] = ImVec4(0.16f, 0.29f, 0.48f, 1.00f);
 	colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
-	colors[ImGuiCol_MenuBarBg] = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+	colors[ImGuiCol_MenuBarBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.00f);
 	colors[ImGuiCol_ScrollbarBg] = ImVec4(0.2f, 0.2f, 0.2f, 0.53f);
 	colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.3f, 0.3f, 0.3f, 1.00f);
 	colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.4f, 0.4f, 0.4f, 1.00f);
@@ -318,3 +227,180 @@ void EngineGUI::SetWindowStyles()
 	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 }
 
+void EngineGUI::DrawEngineIcon(float IconSize, float IconWindowHigh)
+{
+	ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+	ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * CLIENT_FROMLEFT, IconWindowHigh));
+	ImGui::SetNextWindowBgAlpha(1);
+	ImGui::Begin("Engine Icon", &isUIShow, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
+	ImGui::Image((void*)(mEngineIconTexDescriptor.ptr), ImVec2(g->IO.DisplaySize.x * 0.0417f, 0), ImVec2(IconSize, IconSize), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+	ImGui::End();
+}
+
+void EngineGUI::DrawControlPanel(float IconWindowHigh)
+{
+	ImGui::SetNextWindowPos(ImVec2(0.0f, IconWindowHigh));
+	ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * CLIENT_FROMLEFT, int(g->IO.DisplaySize.y * CLIENT_HEIGHT + 1.0f) - IconWindowHigh));
+	ImGui::SetNextWindowBgAlpha(1);
+
+	ImGui::Begin("Control Panel", &isUIShow, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+
+	ImGui::Text("Camera Move Speed");
+	ImGui::SliderFloat("   ", &CameraMoveSpeed, 0.0f, 500.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+
+	ImGui::Text("Show Sence");
+	ImGui::Checkbox("Shadow", &show_shadow);
+	ImGui::Checkbox("Model", &show_model);
+	ImGui::Checkbox("Sky", &show_sky);
+	ImGui::Checkbox("Land", &show_land);
+	ImGui::Checkbox("HeightMapTerrain", &show_HeightMapTerrain);
+
+	if (ImGui::CollapsingHeader("Water", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Checkbox("Water Rendering", &show_water);
+		ImGui::SliderFloat("Transparent", &mWaterTransparent, 0.0f, 500.0f);
+	}
+
+	if (ImGui::CollapsingHeader("Grass", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Checkbox("Grass Rendering", &show_Grass);
+		ImGui::Checkbox("RandomSize", &mIsGrassRandom);
+		ImGui::ColorEdit3("Grass color", mGrassColor, 0);
+		ImGui::SliderFloat("Height", &mPerGrassHeight, 3.0f, 10.0f);
+		ImGui::SliderFloat("Width", &mPerGrassWidth, 0.5f, 3.0f);
+		ImGui::SliderFloat("MinWind", &GrassMinWind, 0.0f, 1.0f);
+		ImGui::SliderFloat("MaxWind", &GrassMaxWind, 1.0f, 2.5f);
+	}
+
+	if (ImGui::CollapsingHeader("Fog", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Checkbox("Fog Rendering", &FogEnabled);
+		ImGui::Text("Fog Start");
+		ImGui::SliderFloat(" ", &FogStart, 0.0f, 1000.0f);
+		ImGui::Text("Fog Range");
+		ImGui::SliderFloat("  ", &FogRange, 0.0f, 1000.0f);
+	}
+	//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	ImGui::End();
+}
+
+void EngineGUI::DrawDebugWindow()
+{
+	//g.NextWindowData.MenuBarOffsetMinVal = ImVec2(g.Style.DisplaySafeAreaPadding.x, ImMax(g.Style.DisplaySafeAreaPadding.y - g.Style.FramePadding.y, 0.0f));
+	ImGui::SetNextWindowPos(ImVec2(0.0f, g->IO.DisplaySize.y * 0.75f));
+	ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x, ceil(g->IO.DisplaySize.y * 0.25f)));
+	ImGui::SetNextWindowBgAlpha(1);
+
+	ImGui::Begin("Debug Window", &mShowDebugwindow, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+	if (ImGui::Button("Clear")) { EngineLog::ClearLogs(); }ImGui::SameLine();
+	if (ImGui::Button("Copy")) { ImGui::LogToClipboard(); }ImGui::SameLine();
+	ImGui::SetNextItemWidth(200);
+	ImGui::InputText("Filter", FilterString, IM_ARRAYSIZE(FilterString));
+	ImGui::Separator();
+
+	const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing(); // 1 separator, 1 input text
+	ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar); // Leave room for 1 separator + 1 InputText
+
+	ImGui::Text("Camera Position X:%.1f Y:%.1f Z:%.1f", mCameraPosition.x, mCameraPosition.y, mCameraPosition.z);
+
+	//Filter logs
+	string Filter(FilterString);
+	if (strcmp(FilterString, "") != 0)
+	{
+		EngineLog::Filter(StringToWString(Filter));
+		mLogs = EngineLog::GetFilterLogs();
+	}
+	else
+	{
+		mLogs = EngineLog::GetLogs();
+	}
+	//Display logs
+	for (auto& e : mLogs)
+	{
+		ImGui::Text((">>" + WStringToString(e)).c_str());
+	}
+
+	//将滚动条滑倒最后一条log
+	int LogSize = (int)mLogs.size();
+	if (LogSize != mLogSize)
+	{
+		ImGui::SetScrollY(ImGui::GetFrameHeightWithSpacing() * LogSize);
+		mLogSize = LogSize;
+	}
+	ImGui::EndChild();
+	ImGui::SetNextItemWidth(300);
+	ImGui::InputText("Input", InputBuffer, IM_ARRAYSIZE(InputBuffer));
+	ImGui::End();
+}
+
+void EngineGUI::DrawStatWindow()
+{
+	ImGui::SetNextWindowPos(ImVec2(ImVec2(g->IO.DisplaySize.x / 5.8f, MainMenuBarHeight + 5.0f)));
+	ImGui::SetNextWindowSize(ImVec2(120.0f, 200.0f));
+	bool stat = true;
+	ImGui::Begin("Stat Window", &stat, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+	if (ImGui::CollapsingHeader("  States"))
+	{
+		if (ImGui::RadioButton("Wireframe", mWireframe))
+		{
+			if (mWireframe)
+			{
+				mWireframe = false;
+			}
+			else
+			{
+				mWireframe = true;
+			}
+		}
+
+	}
+	ImGui::End();
+}
+
+void EngineGUI::DrawMainMenuBar(bool* IsMax, bool IsFullScreenMode)
+{
+	if (ImGui::BeginMainMenuBar())
+	{
+		if (ImGui::BeginMenu("File"))
+		{
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Edit"))
+		{
+			if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
+			if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
+			ImGui::Separator();
+			if (ImGui::MenuItem("Cut", "CTRL+X")) {}
+			if (ImGui::MenuItem("Copy", "CTRL+C")) {}
+			if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+			ImGui::EndMenu();
+		}
+		ImGuiIO& io = ImGui::GetIO();
+		if (!IsFullScreenMode)
+		{
+			ImGui::GetStyle().Colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.2f, 0.0f);
+			if (ImGui::ImageButton((void*)(mEngineMinTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 210.0f, 0), ImVec2(25, 25), ImVec2(0, 0), ImVec2(1, 1),5))
+			{
+				SendMessage((HWND)io.ImeWindowHandle, WM_SYSCOMMAND, SC_MINIMIZE, NULL);
+			}
+			if (ImGui::ImageButton((void*)(mEngineMaxTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 200.0f, 0), ImVec2(25, 25), ImVec2(0, 0), ImVec2(1, 1),5))
+			{
+				*IsMax = !(*IsMax);
+			}
+			if (ImGui::ImageButton((void*)(mEngineCloseTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 190.0f, 0), ImVec2(25, 25), ImVec2(0, 0), ImVec2(1, 1),5))
+			{
+				SendMessage((HWND)io.ImeWindowHandle, WM_CLOSE, NULL, NULL);
+			}
+			ImGui::GetStyle().Colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.2f, 0.4f);
+		}
+		else
+		{
+			if (ImGui::RadioButton("Close", true, ImVec2(ImGui::GetWindowSize().x - 160.0f, 0.0f)))
+			{
+				SendMessage((HWND)io.ImeWindowHandle, WM_CLOSE, NULL, NULL);
+			}
+		}
+		ImGui::EndMainMenuBar();
+		ImGui::GetStyle().FramePadding.y = 3;
+	}
+}

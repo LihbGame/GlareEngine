@@ -7,7 +7,7 @@
 #include "EngineUtility.h"
 
 class TextureManage;
-#define MainMenuBarHeight  25.0f
+#define MainMenuBarHeight  27.0f
 #define CLIENT_FROMLEFT 0.166667f
 #define CLIENT_HEIGHT 0.75f
 
@@ -51,10 +51,15 @@ private:
 	void InitGUI(HWND GameWnd);
 	void CreateUIDescriptorHeap(ID3D12GraphicsCommandList* d3dCommandList);
 	void SetWindowStyles();
+	void DrawEngineIcon(float IconSize, float IconWindowHigh);
+	void DrawControlPanel(float IconWindowHigh);
+	void DrawDebugWindow();
+	void DrawStatWindow();
+	void DrawMainMenuBar(bool* IsMax, bool IsFullScreenMode);
 private:
 
-	bool show_demo_window = true;
-	bool show_another_window = true;
+	bool mShowControlPanel = true;
+	bool mShowDebugwindow = true;
 
 	bool show_shadow = false;
 	bool show_model = false;
@@ -87,9 +92,13 @@ private:
 	char InputBuffer[256] = {};
 	int mLogSize = 0;
 private:
+	ID3D12Device* md3dDevice;
 	TextureManage* mTextureManager;
 	ID3D12DescriptorHeap* mGUISrvDescriptorHeap = nullptr;
-	ID3D12Device* md3dDevice = nullptr;
+	CD3DX12_GPU_DESCRIPTOR_HANDLE mEngineIconTexDescriptor;
+	CD3DX12_GPU_DESCRIPTOR_HANDLE mEngineMaxTexDescriptor;
+	CD3DX12_GPU_DESCRIPTOR_HANDLE mEngineMinTexDescriptor;
+	CD3DX12_GPU_DESCRIPTOR_HANDLE mEngineCloseTexDescriptor;
 	ImGuiContext *g=nullptr;
 	bool isUIShow = true;
 };
