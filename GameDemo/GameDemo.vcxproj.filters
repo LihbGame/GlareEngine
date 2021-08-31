@@ -51,5 +51,14 @@
     <Image Include="..\Resource\Textures\ICONS\gamecontroller.bmp">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="..\Resource\Textures\ICONS\gamecontroller_64px.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\Resource\Textures\ICONS\gamecontroller_32px.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\Resource\Textures\ICONS\gamecontroller_16px.ico">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>

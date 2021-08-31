@@ -60,11 +60,17 @@ IDC_CURSOR1             CURSOR                  "..\\Resource\\Textures\\ICONS\\
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
+IDI_ICON4               ICON                    "..\\Resource\\Textures\\ICONS\\gamecontroller_64px.ico"
+
 IDI_ICON1               ICON                    "..\\Resource\\Textures\\ICONS\\gamecontroller_128px_1180532_easyicon.net.ico"
 
 IDI_ICON3               ICON                    "..\\Resource\\Textures\\ICONS\\gameicon.ico"
 
 IDI_ICON2               ICON                    "..\\Resource\\Textures\\ICONS\\GAME_128px_1199103_easyicon.net.ico"
+
+IDI_ICON5               ICON                    "..\\Resource\\Textures\\ICONS\\gamecontroller_32px.ico"
+
+IDI_ICON6               ICON                    "..\\Resource\\Textures\\ICONS\\gamecontroller_16px.ico"
 
 #endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////

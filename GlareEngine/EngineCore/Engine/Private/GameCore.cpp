@@ -54,12 +54,12 @@ namespace GlareEngine
 			wcex.cbClsExtra = 0;
 			wcex.cbWndExtra = 0;
 			wcex.hInstance = hInst;
-			wcex.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON1));
+			wcex.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON5));
 			wcex.hCursor = LoadCursor(hInst, MAKEINTRESOURCE(IDC_CURSOR1));
 			wcex.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 			wcex.lpszMenuName = nullptr;
 			wcex.lpszClassName = className;
-			wcex.hIconSm = LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON1));
+			wcex.hIconSm = LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON6));
 			if (!RegisterClassEx(&wcex))
 			{
 				DWORD dwerr = GetLastError();

@@ -3,9 +3,9 @@
 // π© GlareEngine.rc  π”√
 //
 #define IDC_MYICON                      2
-#define IDD_L3DENGINEDX12_DIALOG        102
+#define IDI_ICON5                       102
 #define IDS_APP_TITLE                   103
-#define IDD_ABOUTBOX                    103
+#define IDI_ICON6                       103
 #define IDM_ABOUT                       104
 #define IDM_EXIT                        105
 #define IDI_L3DENGINEDX12               107
@@ -18,7 +18,7 @@
 #define IDI_ICON3                       138
 #define IDC_CURSOR1                     139
 #define IDC_STATIC                      -1
-
+#define IDI_ICON4                       101
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

@@ -163,6 +163,9 @@
   <ItemGroup>
     <Image Include="..\Resource\Textures\ICONS\gamecontroller.bmp" />
     <Image Include="..\Resource\Textures\ICONS\gamecontroller_128px_1180532_easyicon.net.ico" />
+    <Image Include="..\Resource\Textures\ICONS\gamecontroller_16px.ico" />
+    <Image Include="..\Resource\Textures\ICONS\gamecontroller_32px.ico" />
+    <Image Include="..\Resource\Textures\ICONS\gamecontroller_64px.ico" />
     <Image Include="..\Resource\Textures\ICONS\gameicon.ico" />
     <Image Include="..\Resource\Textures\ICONS\GAME_128px_1199103_easyicon.net.ico" />
   </ItemGroup>
