@@ -3,6 +3,28 @@
 
 namespace GlareEngine
 {
+	struct Material
+	{
+		// Unique material name for lookup.
+		std::wstring mName;
+
+		// Index into constant buffer corresponding to this material.
+		int mMatCBIndex = -1;
+
+		float mHeightScale = 0.0f;
+
+		// Dirty flag indicating the material has changed and we need to update the constant buffer.
+		bool  mDataDirty = true;
+
+		// Material constant buffer data used for shading.
+		DirectX::XMFLOAT4 DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
+		
+		DirectX::XMFLOAT3 FresnelR0 = { 0.01f, 0.01f, 0.01f };
+		
+		DirectX::XMFLOAT4X4 MatTransform = MathHelper::Identity4x4();
+	};
+
+
 	class Materials
 	{
 	public:
@@ -29,11 +51,9 @@ namespace GlareEngine
 	private:
 		Materials();
 
-		static  Materials* MaterialInstance;
+		static  Materials* gMaterialInstance;
 
 		static int MatCBIndex;
-
-		std::vector<wstring> mPBRTextureName;
 
 		std::unordered_map<std::wstring, std::unique_ptr<Material>> mMaterials;
 	};

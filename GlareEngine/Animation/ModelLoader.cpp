@@ -52,12 +52,31 @@ bool ModelLoader::LoadModel(string filename)
 }
 
 
+void ModelLoader::CreateSRVDescriptor()
+{
+
+
+
+}
+
+void ModelLoader::BuildMaterial(string MaterialName)
+{
+	XMFLOAT4X4  MatTransform = MathHelper::Identity4x4();
+
+	Materials::GetMaterialInstance()->BuildMaterials(
+		wstring(MaterialName.begin(), MaterialName.end()),
+		0.09f,
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		XMFLOAT3(0.1f, 0.1f, 0.1f),
+		MatTransform);
+}
+
 void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene)
 {
 	for (UINT i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		mMeshes[mModelName].push_back(this->ProcessMesh(mesh, scene));
+		mMeshes[mModelName].mMeshes.push_back(this->ProcessMesh(mesh, scene));
 	}
 
 	for (UINT i = 0; i < node->mNumChildren; i++)
@@ -133,14 +152,14 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
 void ModelLoader::LoadPBRTexture(string texturename)
 {
-	//Store model's texture name
-	mModelTexturesName[mModelName].push_back(texturename);
-
 	string RootFilename = mDirectory + "PBRTextures/" + texturename;
 	string Fullfilename = "";
 	for (auto Type:PBRTextureFileType)
 	{
 		Fullfilename = RootFilename + Type;
-		mModelTextures[texturename].push_back(TextureManager::GetInstance(m_pCommandList)->GetModelTexture(wstring(Fullfilename.begin(), Fullfilename.end())).get());
+		mMeshes[mModelName].mModelTextures.push_back(TextureManager::GetInstance(m_pCommandList)->GetModelTexture(wstring(Fullfilename.begin(), Fullfilename.end())).get());
 	}
+
+	//Build Material
+	BuildMaterial(texturename);
 }
