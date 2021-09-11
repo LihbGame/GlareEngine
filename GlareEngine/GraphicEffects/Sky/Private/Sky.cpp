@@ -100,7 +100,6 @@ void CSky::Draw(GraphicsContext& Context)
 
 void CSky::BuildPSO(const RootSignature& rootSignature)
 {
-
 	mSkyPSO.SetRootSignature(rootSignature);
 	mSkyPSO.SetRasterizerState(RasterizerDefault);
 	mSkyPSO.SetBlendState(BlendDisable);

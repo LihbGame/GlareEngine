@@ -11,6 +11,8 @@
 
 #include "Camera.h"
 #include "Sky.h"
+#include "ModelLoader.h"
+
 
 //lib
 #pragma comment(lib, "dxgi.lib")
@@ -113,7 +115,7 @@ void App::Startup(void)
 	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
 	//UI Init
 	mEngineUI = make_unique<EngineGUI>(CommandList);
-	//Model Loader Initialize
+
 
 
 	BuildRootSignature();
@@ -125,6 +127,7 @@ void App::Startup(void)
 void App::Cleanup(void)
 {
 	mEngineUI->ShutDown();
+	Materials::Release();
 }
 
 void App::Update(float DeltaTime)

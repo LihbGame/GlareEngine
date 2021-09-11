@@ -1,7 +1,14 @@
-
+#define    ALBEDO      0
+#define    NORMAL      1
+#define    AO          2
+#define    METALLIC    3
+#define    ROUGHNESS   4
+#define    HEIGHT      5
 
 SamplerState gsamLinearWrap : register(s0);
 SamplerState gsamLinearClamp : register(s1);
+
+
 
 // 每帧常量数据。
 cbuffer MainPass : register(b0)

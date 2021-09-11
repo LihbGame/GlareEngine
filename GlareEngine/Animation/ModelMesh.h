@@ -7,6 +7,7 @@ namespace GlareEngine
 	class ModelMesh
 	{
 	public:
+		ModelMesh() {}
 		ModelMesh(ID3D12GraphicsCommandList* CommandList, vector<Vertice::PosNormalTangentTexc> vertices, vector<UINT> indices);
 		~ModelMesh();
 

@@ -52,11 +52,23 @@ bool ModelLoader::LoadModel(string filename)
 }
 
 
-void ModelLoader::CreateSRVDescriptor()
+void ModelLoader::CreateSRVDescriptor(vector<Texture*> Texture)
 {
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 
-
-
+	for (int i = 0; i < Texture.size(); ++i)
+	{
+		CD3DX12_CPU_DESCRIPTOR_HANDLE Descriptor;
+		Descriptor =AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		srvDesc.Format = Texture[i]->Resource->GetDesc().Format;
+		srvDesc.Texture2D.MipLevels = Texture[i]->Resource->GetDesc().MipLevels;
+		g_Device->CreateShaderResourceView(Texture[i]->Resource.Get(), &srvDesc, Descriptor);
+		mMeshes[mModelName].mSubMeshes.back().mDescriptors.push_back(Descriptor);
+	}
 }
 
 void ModelLoader::BuildMaterial(string MaterialName)
@@ -76,7 +88,9 @@ void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene)
 	for (UINT i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		mMeshes[mModelName].mMeshes.push_back(this->ProcessMesh(mesh, scene));
+
+		mMeshes[mModelName].mSubMeshes.push_back(SubMesh());
+		mMeshes[mModelName].mSubMeshes.back().mMesh = this->ProcessMesh(mesh, scene);
 	}
 
 	for (UINT i = 0; i < node->mNumChildren; i++)
@@ -152,14 +166,21 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
 void ModelLoader::LoadPBRTexture(string texturename)
 {
+	vector<Texture*> ModelTextures;
 	string RootFilename = mDirectory + "PBRTextures/" + texturename;
 	string Fullfilename = "";
+
 	for (auto Type:PBRTextureFileType)
 	{
 		Fullfilename = RootFilename + Type;
-		mMeshes[mModelName].mModelTextures.push_back(TextureManager::GetInstance(m_pCommandList)->GetModelTexture(wstring(Fullfilename.begin(), Fullfilename.end())).get());
+		ModelTextures.push_back(TextureManager::GetInstance(m_pCommandList)->GetModelTexture(StringToWString(Fullfilename)).get());
 	}
 
 	//Build Material
 	BuildMaterial(texturename);
+	//Init material const buffer index
+	mMeshes[mModelName].mSubMeshes.back().mMaterialIndex = Materials::GetMaterialInstance()->GetMaterial(StringToWString(texturename))->mMatCBIndex;
+	//Create SRV Descriptor
+	CreateSRVDescriptor(ModelTextures);
 }
+

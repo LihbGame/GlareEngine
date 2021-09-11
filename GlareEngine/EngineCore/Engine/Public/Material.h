@@ -13,9 +13,6 @@ namespace GlareEngine
 
 		float mHeightScale = 0.0f;
 
-		// Dirty flag indicating the material has changed and we need to update the constant buffer.
-		bool  mDataDirty = true;
-
 		// Material constant buffer data used for shading.
 		DirectX::XMFLOAT4 DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
 		
@@ -49,7 +46,7 @@ namespace GlareEngine
 
 		std::unordered_map<std::wstring, std::unique_ptr<Material>>& GetAllMaterial() { return mMaterials; };
 	private:
-		Materials();
+		Materials() {}
 
 		static  Materials* gMaterialInstance;
 

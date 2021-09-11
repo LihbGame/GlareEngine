@@ -8,11 +8,19 @@
 
 namespace GlareEngine
 {
+	struct SubMesh
+	{
+		SubMesh() {}
+
+		ModelMesh                                  mMesh;
+		UINT                                       mMaterialIndex;
+		vector<CD3DX12_CPU_DESCRIPTOR_HANDLE>      mDescriptors;
+	};
+
+
 	struct Mesh 
 	{
-		vector<ModelMesh> mMeshes;
-		vector<Texture*> mModelTextures;
-		Material mMaterial;
+		vector<SubMesh> mSubMeshes;
 	};
 
 
@@ -39,7 +47,7 @@ namespace GlareEngine
 		vector<Texture > mTextures;
 		Assimp::Importer mImporter;
 	private:
-		void CreateSRVDescriptor();
+		void CreateSRVDescriptor(vector<Texture*> texture);
 
 		void BuildMaterial(string MaterialName);
 
