@@ -75,10 +75,8 @@ namespace GlareEngine
 	}
 
 
-#define MAIN_FUNCTION()  int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,\
-	PSTR cmdLine, int showCmd)
 #define CREATE_APPLICATION( app_class ) \
-    MAIN_FUNCTION() \
+    int APIENTRY wWinMain(_In_ HINSTANCE hInstance,_In_opt_ HINSTANCE hPrevInstance,_In_  LPWSTR    lpCmdLine,_In_  int nCmdShow) \
     { \
 try\
 	{\

@@ -100,6 +100,7 @@ private:
 //Game App entry
 CREATE_APPLICATION(App);
 
+
 //////////////////////////////////////////////////////////////
 
 
@@ -127,7 +128,7 @@ void App::Startup(void)
 void App::Cleanup(void)
 {
 	mEngineUI->ShutDown();
-	Materials::Release();
+	MaterialManager::GetMaterialInstance()->Release();
 }
 
 void App::Update(float DeltaTime)

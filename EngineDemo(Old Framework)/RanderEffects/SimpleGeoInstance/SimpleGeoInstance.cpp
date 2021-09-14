@@ -1,6 +1,10 @@
 #include "SimpleGeoInstance.h"
 #include "Material.h"
 #include "TextureManage.h"
+#include "ModelMesh.h"
+#include "../../../GlareEngine/Animation/ModelMesh.h"
+using namespace GlareEngine;
+
 SimpleGeoInstance::SimpleGeoInstance(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pd3dDevice,TextureManage* TextureManage)
 {
     this->pd3dDevice = pd3dDevice;
@@ -22,7 +26,7 @@ SimpleGeoInstance::~SimpleGeoInstance()
 void SimpleGeoInstance::BuildSimpleGeometryMesh(SimpleGeometry GeoType)
 {
     GeometryGenerator Geo;
-    GeometryGenerator::MeshData SimpleGeoMesh;
+    MeshData SimpleGeoMesh;
     std::string MeshName;
     XMFLOAT3 BoundsExtents = XMFLOAT3(0.0f, 0.0f, 0.0f);
 
@@ -67,15 +71,15 @@ void SimpleGeoInstance::BuildSimpleGeometryMesh(SimpleGeometry GeoType)
     }
 
 
-    std::vector<Vertice::PosNormalTangentTexc> vertices(SimpleGeoMesh.Vertices.size());
+    std::vector<Vertices::PosNormalTangentTexc> vertices(SimpleGeoMesh.Vertices.size());
     for (size_t i = 0; i < SimpleGeoMesh.Vertices.size(); ++i)
     {
-        vertices[i].Pos = SimpleGeoMesh.Vertices[i].Position;
+        vertices[i].Position = SimpleGeoMesh.Vertices[i].Position;
         vertices[i].Normal = SimpleGeoMesh.Vertices[i].Normal;
-        vertices[i].Tangent = SimpleGeoMesh.Vertices[i].TangentU;
-        vertices[i].Texc = SimpleGeoMesh.Vertices[i].TexC;
+        vertices[i].Tangent = SimpleGeoMesh.Vertices[i].Tangent;
+        vertices[i].Texc = SimpleGeoMesh.Vertices[i].Texc;
     }
-    const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertice::PosNormalTangentTexc);
+    const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertices::PosNormalTangentTexc);
     std::vector<std::uint16_t> indices = SimpleGeoMesh.GetIndices16();
     const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
 
@@ -101,7 +105,7 @@ void SimpleGeoInstance::BuildSimpleGeometryMesh(SimpleGeometry GeoType)
     mSimpleMesh->IndexBufferGPU = EngineUtility::CreateDefaultBuffer(pd3dDevice,
         pCommandList, indices.data(), ibByteSize, mSimpleMesh->IndexBufferUploader);
 
-    mSimpleMesh->VertexByteStride = sizeof(Vertice::PosNormalTangentTexc);
+    mSimpleMesh->VertexByteStride = sizeof(Vertices::PosNormalTangentTexc);
     mSimpleMesh->VertexBufferByteSize = vbByteSize;
     mSimpleMesh->IndexFormat = DXGI_FORMAT_R16_UINT;
     mSimpleMesh->IndexBufferByteSize = ibByteSize;

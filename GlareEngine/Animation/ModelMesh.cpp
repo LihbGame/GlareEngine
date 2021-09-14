@@ -3,7 +3,7 @@
 
 using namespace GlareEngine;
 
-ModelMesh::ModelMesh(ID3D12GraphicsCommandList* CommandList, vector<Vertice::PosNormalTangentTexc> vertices, vector<UINT> indices)
+ModelMesh::ModelMesh(ID3D12GraphicsCommandList* CommandList, vector<Vertices::PosNormalTangentTexc> vertices, vector<UINT> indices)
 {
 	this->mVertices = vertices;
 	this->mIndices = indices;
@@ -18,7 +18,7 @@ ModelMesh::~ModelMesh()
 // Initializes all the buffer objects/arrays
 void ModelMesh::SetupMesh(ID3D12GraphicsCommandList* pCommandList)
 {
-	const UINT vbByteSize = (UINT)mVertices.size() * sizeof(Vertice::PosNormalTangentTexc);
+	const UINT vbByteSize = (UINT)mVertices.size() * sizeof(Vertices::PosNormalTangentTexc);
 	const UINT ibByteSize = (UINT)mIndices.size() * sizeof(UINT);
 
 	mMeshGeo.Name = "Model Mesh";
@@ -38,7 +38,7 @@ void ModelMesh::SetupMesh(ID3D12GraphicsCommandList* pCommandList)
 		pCommandList, mIndices.data(), ibByteSize, mMeshGeo.IndexBufferUploader);
 
 
-	mMeshGeo.VertexByteStride = sizeof(Vertice::PosNormalTangentTexc);
+	mMeshGeo.VertexByteStride = sizeof(Vertices::PosNormalTangentTexc);
 	mMeshGeo.VertexBufferByteSize = vbByteSize;
 	mMeshGeo.IndexFormat = DXGI_FORMAT_R32_UINT;
 	mMeshGeo.IndexBufferByteSize = ibByteSize;

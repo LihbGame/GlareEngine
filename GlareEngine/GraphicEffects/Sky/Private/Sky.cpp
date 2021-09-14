@@ -29,15 +29,15 @@ CSky::~CSky()
 void CSky::BuildSkyMesh(ID3D12GraphicsCommandList* CommandList, float radius, int sliceCount, int stackCount)
 {
 	GeometryGenerator SphereGeo;
-	GeometryGenerator::MeshData Sphere = SphereGeo.CreateSphere(radius, sliceCount, stackCount);
+	MeshData Sphere = SphereGeo.CreateSphere(radius, sliceCount, stackCount);
 
-	std::vector<Vertice::Pos> vertices(Sphere.Vertices.size());
+	std::vector<Vertices::Pos> vertices(Sphere.Vertices.size());
 	for (size_t i = 0; i < Sphere.Vertices.size(); ++i)
 	{
-		vertices[i].Pos = Sphere.Vertices[i].Position;
+		vertices[i].Position = Sphere.Vertices[i].Position;
 	}
 
-	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertice::Pos);
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertices::Pos);
 
 	std::vector<std::uint16_t> indices = Sphere.GetIndices16();
 	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
@@ -59,7 +59,7 @@ void CSky::BuildSkyMesh(ID3D12GraphicsCommandList* CommandList, float radius, in
 	mSkyMesh->IndexBufferGPU = EngineUtility::CreateDefaultBuffer(g_Device,
 		CommandList, indices.data(), ibByteSize, mSkyMesh->IndexBufferUploader);
 
-	mSkyMesh->VertexByteStride = sizeof(Vertice::Pos);
+	mSkyMesh->VertexByteStride = sizeof(Vertices::Pos);
 	mSkyMesh->VertexBufferByteSize = vbByteSize;
 	mSkyMesh->IndexFormat = DXGI_FORMAT_R16_UINT;
 	mSkyMesh->IndexBufferByteSize = ibByteSize;

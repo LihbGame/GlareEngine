@@ -75,7 +75,7 @@ void ModelLoader::BuildMaterial(string MaterialName)
 {
 	XMFLOAT4X4  MatTransform = MathHelper::Identity4x4();
 
-	Materials::GetMaterialInstance()->BuildMaterials(
+	MaterialManager::GetMaterialInstance()->BuildMaterials(
 		wstring(MaterialName.begin(), MaterialName.end()),
 		0.09f,
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
@@ -103,19 +103,19 @@ void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene)
 ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 {
 	// Data to fill
-	vector<Vertice::PosNormalTangentTexc> vertices;
+	vector<Vertices::PosNormalTangentTexc> vertices;
 	vector<UINT> indices;
 
 	// Walk through each of the mesh's vertices
 	for (UINT i = 0; i < mesh->mNumVertices; i++)
 	{
-		Vertice::PosNormalTangentTexc vertex;
+		Vertices::PosNormalTangentTexc vertex;
 		//Position
 		if (mesh->HasPositions())
 		{
-			vertex.Pos.x = (float)mesh->mVertices[i].x;
-			vertex.Pos.y = (float)mesh->mVertices[i].y;
-			vertex.Pos.z = (float)mesh->mVertices[i].z;
+			vertex.Position.x = (float)mesh->mVertices[i].x;
+			vertex.Position.y = (float)mesh->mVertices[i].y;
+			vertex.Position.z = (float)mesh->mVertices[i].z;
 		}
 		//Normal
 		if (mesh->HasNormals())
@@ -179,7 +179,7 @@ void ModelLoader::LoadPBRTexture(string texturename)
 	//Build Material
 	BuildMaterial(texturename);
 	//Init material const buffer index
-	mMeshes[mModelName].mSubMeshes.back().mMaterialIndex = Materials::GetMaterialInstance()->GetMaterial(StringToWString(texturename))->mMatCBIndex;
+	mMeshes[mModelName].mSubMeshes.back().mMaterialIndex = MaterialManager::GetMaterialInstance()->GetMaterial(StringToWString(texturename))->mMatCBIndex;
 	//Create SRV Descriptor
 	CreateSRVDescriptor(ModelTextures);
 }

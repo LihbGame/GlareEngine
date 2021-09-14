@@ -172,7 +172,7 @@ string textype;
 ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 {
     // Data to fill
-    vector<Vertice::PosNormalTangentTexc> vertices;
+    vector<Vertices::PosNormalTangentTexc> vertices;
     vector<UINT> indices;
     vector<Texture> textures;
 
@@ -189,14 +189,14 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
     for (UINT i = 0; i < mesh->mNumVertices; i++)
     {
-        Vertice::PosNormalTangentTexc vertex;
+        Vertices::PosNormalTangentTexc vertex;
 
         //Position
         if (mesh->HasPositions())
         {
-            vertex.Pos.x = (float)mesh->mVertices[i].x;
-            vertex.Pos.y = (float)mesh->mVertices[i].y;
-            vertex.Pos.z = (float)mesh->mVertices[i].z;
+            vertex.Position.x = (float)mesh->mVertices[i].x;
+            vertex.Position.y = (float)mesh->mVertices[i].y;
+            vertex.Position.z = (float)mesh->mVertices[i].z;
         }
 
         //Normal

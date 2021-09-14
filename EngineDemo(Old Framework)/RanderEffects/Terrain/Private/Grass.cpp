@@ -25,7 +25,7 @@ Grass::~Grass()
 
 void Grass::BuildGrassVB()
 {
-	std::vector<Vertice::Grass> vertices(mNumVertRows * mNumVertCols);
+	std::vector<Vertices::Grass> vertices(mNumVertRows * mNumVertCols);
 	float halfWidth = 0.5f * mGrassWidth;
 	float halfDepth = 0.5f * mGrassDepth;
 
@@ -41,14 +41,14 @@ void Grass::BuildGrassVB()
 		for (UINT j = 0; j < mNumVertCols; ++j)
 		{
 			float x = -halfWidth + j * PerGrassDepth;
-			vertices[i * mNumVertCols + j].Pos = XMFLOAT3(x+MathHelper::RandF()*5, 0.0f, z+MathHelper::RandF()*5);
+			vertices[i * mNumVertCols + j].Position = XMFLOAT3(x+MathHelper::RandF()*5, 0.0f, z+MathHelper::RandF()*5);
 			// Stretch texture over grid.
 			vertices[i * mNumVertCols + j].Tex.x = j * du;
 			vertices[i * mNumVertCols + j].Tex.y = i * dv;
 		}
 	}
 
-	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertice::Grass);
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertices::Grass);
 
 
 	auto geo = std::make_unique<MeshGeometry>();
@@ -62,7 +62,7 @@ void Grass::BuildGrassVB()
 		mCommandList, vertices.data(), vbByteSize, geo->VertexBufferUploader);
 
 	
-	geo->VertexByteStride = sizeof(Vertice::Grass);
+	geo->VertexByteStride = sizeof(Vertices::Grass);
 	geo->VertexBufferByteSize = vbByteSize;
 
 

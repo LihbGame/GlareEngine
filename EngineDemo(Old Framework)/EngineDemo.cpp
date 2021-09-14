@@ -1,11 +1,13 @@
 ﻿#include "EngineDemo.h"
 #include "Grass.h"
-
+#include "ModelMesh.h"
 //lib
 #pragma comment(lib, "comsuppw.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib,"dxguid.lib")
+
+using namespace GlareEngine;
 
 #define ShadowMapSize 4096
 
@@ -763,9 +765,9 @@ void GameApp::UpdateWaves(const GameTimer& gt)
 	auto currWavesVB = mCurrFrameResource->WavesVB.get();
 	for (int i = 0; i < mWaves->VertexCount(); ++i)
 	{
-		Vertice::PosNormalTexc v;
+		Vertices::PosNormalTexc v;
 
-		v.Pos = mWaves->Position(i);
+		v.Position = mWaves->Position(i);
 		v.Normal = mWaves->Normal(i);
 
 		currWavesVB->CopyData(i, v);
@@ -875,7 +877,7 @@ void GameApp::BuildSimpleGeometry()
 void GameApp::BuildLandGeometry()
 {
 	GeometryGenerator geoGen;
-	GeometryGenerator::MeshData grid = geoGen.CreateGrid(200.0f, 200.0f, 2, 2);
+	MeshData grid = geoGen.CreateGrid(200.0f, 200.0f, 2, 2);
 
 	//
 	// Extract the vertex elements we are interested and apply the height function to
@@ -883,16 +885,16 @@ void GameApp::BuildLandGeometry()
 	// sandy looking beaches, grassy low hills, and snow mountain peaks.
 	//
 
-	std::vector<Vertice::PosNormalTangentTexc> vertices(grid.Vertices.size());
+	std::vector<Vertices::PosNormalTangentTexc> vertices(grid.Vertices.size());
 	for (size_t i = 0; i < grid.Vertices.size(); ++i)
 	{
-		vertices[i].Pos = grid.Vertices[i].Position;
+		vertices[i].Position = grid.Vertices[i].Position;
 		vertices[i].Normal = grid.Vertices[i].Normal;
-		vertices[i].Tangent = grid.Vertices[i].TangentU;
-		vertices[i].Texc = grid.Vertices[i].TexC;
+		vertices[i].Tangent = grid.Vertices[i].Tangent;
+		vertices[i].Texc = grid.Vertices[i].Texc;
 	}
 
-	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertice::PosNormalTangentTexc);
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertices::PosNormalTangentTexc);
 
 	std::vector<std::uint16_t> indices = grid.GetIndices16();
 	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
@@ -912,7 +914,7 @@ void GameApp::BuildLandGeometry()
 	geo->IndexBufferGPU = EngineUtility::CreateDefaultBuffer(md3dDevice.Get(),
 		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
 
-	geo->VertexByteStride = sizeof(Vertice::PosNormalTangentTexc);
+	geo->VertexByteStride = sizeof(Vertices::PosNormalTangentTexc);
 	geo->VertexBufferByteSize = vbByteSize;
 	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
 	geo->IndexBufferByteSize = ibByteSize;
@@ -951,7 +953,7 @@ void GameApp::BuildWavesGeometryBuffers()
 		}
 	}
 
-	UINT vbByteSize = mWaves->VertexCount() * sizeof(Vertice::PosNormalTexc);
+	UINT vbByteSize = mWaves->VertexCount() * sizeof(Vertices::PosNormalTexc);
 	UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
 
 	auto geo = std::make_unique<MeshGeometry>();
@@ -967,7 +969,7 @@ void GameApp::BuildWavesGeometryBuffers()
 	geo->IndexBufferGPU = EngineUtility::CreateDefaultBuffer(md3dDevice.Get(),
 		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
 
-	geo->VertexByteStride = sizeof(Vertice::PosNormalTexc);
+	geo->VertexByteStride = sizeof(Vertices::PosNormalTexc);
 	geo->VertexBufferByteSize = vbByteSize;
 	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
 	geo->IndexBufferByteSize = ibByteSize;

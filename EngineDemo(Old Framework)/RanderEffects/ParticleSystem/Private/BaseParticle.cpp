@@ -60,8 +60,8 @@ void BaseParticle::BuildVB(ID3D12Device* device)
 {
 	// The initial particle emitter has type 0 and age 0.  The rest
 	// of the particle attributes do not apply to an emitter.
-	Vertice::Particle p;
-	ZeroMemory(&p, sizeof(Vertice::Particle));
+	Vertices::Particle p;
+	ZeroMemory(&p, sizeof(Vertices::Particle));
 	p.Age = 0.0f;
 	p.Type = 0;
 }

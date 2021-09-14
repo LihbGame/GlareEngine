@@ -3,22 +3,22 @@
 namespace GlareEngine
 {
 	//init Material
-	Materials* Materials::gMaterialInstance = new Materials;
-	int Materials::MatCBIndex = 0;
+	MaterialManager* MaterialManager::gMaterialInstance = new MaterialManager;
+	int MaterialManager::MatCBIndex = 0;
 
 
-	Materials* Materials::GetMaterialInstance()
+	MaterialManager* MaterialManager::GetMaterialInstance()
 	{
 		return gMaterialInstance;
 	}
 
-	void Materials::Release()
+	void MaterialManager::Release()
 	{
 		delete gMaterialInstance;
 		gMaterialInstance = nullptr;
 	}
 
-	void Materials::BuildMaterials(wstring name, float Height_Scale, XMFLOAT4 DiffuseAlbedo, XMFLOAT3 FresnelR0, XMFLOAT4X4 MatTransform)
+	void MaterialManager::BuildMaterials(wstring name, float Height_Scale, XMFLOAT4 DiffuseAlbedo, XMFLOAT3 FresnelR0, XMFLOAT4X4 MatTransform)
 	{
 		if (mMaterials.find(name) == mMaterials.end())
 		{

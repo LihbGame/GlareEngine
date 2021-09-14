@@ -22,16 +22,17 @@ namespace GlareEngine
 	};
 
 
-	class Materials
+	class MaterialManager
 	{
 	public:
 
-		~Materials() {};
+		~MaterialManager() {};
 
-		static Materials* GetMaterialInstance();
-		static void Release();
+		static MaterialManager* GetMaterialInstance();
 
-		static int GetMaterialSize() { return MatCBIndex; }
+		void Release();
+
+		int GetMaterialSize() { return MatCBIndex; }
 
 		void BuildMaterials(
 			wstring name,
@@ -46,9 +47,9 @@ namespace GlareEngine
 
 		std::unordered_map<std::wstring, std::unique_ptr<Material>>& GetAllMaterial() { return mMaterials; };
 	private:
-		Materials() {}
+		MaterialManager() {}
 
-		static  Materials* gMaterialInstance;
+		static  MaterialManager* gMaterialInstance;
 
 		static int MatCBIndex;
 

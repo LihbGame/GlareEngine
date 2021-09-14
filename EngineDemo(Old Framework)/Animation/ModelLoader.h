@@ -3,7 +3,7 @@
 #include "Animations.h"
 #include "ModelMesh.h"
 #include "..\EngineDemo(Old Framework)/TextureManage.h"
-
+#include "../../../GlareEngine/Animation/ModelMesh.h"
 
 
 class ModelLoader
@@ -19,7 +19,7 @@ public:
    
     void DrawModel(string ModelName);
 
-    vector<ModelMesh>& GetModelMesh(string ModelName);
+    vector<::ModelMesh>& GetModelMesh(string ModelName);
     unordered_map<string, vector<Texture*>>& GetAllModelTextures();
 
 
@@ -39,7 +39,7 @@ private:
     ID3D12GraphicsCommandList* pCommandList;
     HWND hwnd;
     map<string,int> mBoneNames;
-    unordered_map<string,vector<ModelMesh>> meshes;
+    unordered_map<string,vector<::ModelMesh>> meshes;
     unordered_map<string, vector<Texture*>> ModelTextures;
     unordered_map<string, vector<string>> ModelTexturesName;
     string directory;
@@ -60,7 +60,7 @@ private:
     ///mesh functions
     ModelLoader() {};
     void ProcessNode(aiNode* node, const aiScene* scene,bool isAniamtion);
-    ModelMesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
+    ::ModelMesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
     AnimationMesh ProcessAnimation(aiMesh* mesh, const aiScene* scene);
     vector<Texture> LoadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName, const aiScene* scene);
     string DetermineTextureType(const aiScene* scene, aiMaterial* mat);

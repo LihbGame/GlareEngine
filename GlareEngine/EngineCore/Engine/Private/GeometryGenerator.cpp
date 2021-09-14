@@ -3,7 +3,7 @@
 
 using namespace DirectX;
 
-GeometryGenerator::MeshData GeometryGenerator::CreateBox(float width, float height, float depth, uint32 numSubdivisions)
+MeshData GeometryGenerator::CreateBox(float width, float height, float depth, uint32 numSubdivisions)
 {
     MeshData meshData;
 
@@ -11,47 +11,47 @@ GeometryGenerator::MeshData GeometryGenerator::CreateBox(float width, float heig
 	// Create the vertices.
 	//
 
-	Vertex v[24];
+	Vertices::PosNormalTangentTexc v[24];
 
 	float w2 = 0.5f*width;
 	float h2 = 0.5f*height;
 	float d2 = 0.5f*depth;
     
 	// Fill in the front face vertex data.
-	v[0] = Vertex(-w2, -h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	v[1] = Vertex(-w2, +h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-	v[2] = Vertex(+w2, +h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-	v[3] = Vertex(+w2, -h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	v[0] = Vertices::PosNormalTangentTexc(-w2, -h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	v[1] = Vertices::PosNormalTangentTexc(-w2, +h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+	v[2] = Vertices::PosNormalTangentTexc(+w2, +h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+	v[3] = Vertices::PosNormalTangentTexc(+w2, -h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
 
 	// Fill in the back face vertex data.
-	v[4] = Vertex(-w2, -h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-	v[5] = Vertex(+w2, -h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	v[6] = Vertex(+w2, +h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-	v[7] = Vertex(-w2, +h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+	v[4] = Vertices::PosNormalTangentTexc(-w2, -h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	v[5] = Vertices::PosNormalTangentTexc(+w2, -h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	v[6] = Vertices::PosNormalTangentTexc(+w2, +h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+	v[7] = Vertices::PosNormalTangentTexc(-w2, +h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
 	// Fill in the top face vertex data.
-	v[8]  = Vertex(-w2, +h2, -d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	v[9]  = Vertex(-w2, +h2, +d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-	v[10] = Vertex(+w2, +h2, +d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-	v[11] = Vertex(+w2, +h2, -d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	v[8]  = Vertices::PosNormalTangentTexc(-w2, +h2, -d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	v[9]  = Vertices::PosNormalTangentTexc(-w2, +h2, +d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+	v[10] = Vertices::PosNormalTangentTexc(+w2, +h2, +d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+	v[11] = Vertices::PosNormalTangentTexc(+w2, +h2, -d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
 
 	// Fill in the bottom face vertex data.
-	v[12] = Vertex(-w2, -h2, -d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-	v[13] = Vertex(+w2, -h2, -d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	v[14] = Vertex(+w2, -h2, +d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-	v[15] = Vertex(-w2, -h2, +d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+	v[12] = Vertices::PosNormalTangentTexc(-w2, -h2, -d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	v[13] = Vertices::PosNormalTangentTexc(+w2, -h2, -d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	v[14] = Vertices::PosNormalTangentTexc(+w2, -h2, +d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+	v[15] = Vertices::PosNormalTangentTexc(-w2, -h2, +d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
 	// Fill in the left face vertex data.
-	v[16] = Vertex(-w2, -h2, +d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f);
-	v[17] = Vertex(-w2, +h2, +d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f);
-	v[18] = Vertex(-w2, +h2, -d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f);
-	v[19] = Vertex(-w2, -h2, -d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f);
+	v[16] = Vertices::PosNormalTangentTexc(-w2, -h2, +d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f);
+	v[17] = Vertices::PosNormalTangentTexc(-w2, +h2, +d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f);
+	v[18] = Vertices::PosNormalTangentTexc(-w2, +h2, -d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f);
+	v[19] = Vertices::PosNormalTangentTexc(-w2, -h2, -d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f);
 
 	// Fill in the right face vertex data.
-	v[20] = Vertex(+w2, -h2, -d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f);
-	v[21] = Vertex(+w2, +h2, -d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
-	v[22] = Vertex(+w2, +h2, +d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f);
-	v[23] = Vertex(+w2, -h2, +d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
+	v[20] = Vertices::PosNormalTangentTexc(+w2, -h2, -d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f);
+	v[21] = Vertices::PosNormalTangentTexc(+w2, +h2, -d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+	v[22] = Vertices::PosNormalTangentTexc(+w2, +h2, +d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f);
+	v[23] = Vertices::PosNormalTangentTexc(+w2, -h2, +d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
 
 	meshData.Vertices.assign(&v[0], &v[24]);
  
@@ -96,7 +96,7 @@ GeometryGenerator::MeshData GeometryGenerator::CreateBox(float width, float heig
     return meshData;
 }
 
-GeometryGenerator::MeshData GeometryGenerator::CreateSphere(float radius, uint32 sliceCount, uint32 stackCount)
+MeshData GeometryGenerator::CreateSphere(float radius, uint32 sliceCount, uint32 stackCount)
 {
 	MeshData meshData;
 
@@ -124,7 +124,7 @@ GeometryGenerator::MeshData GeometryGenerator::CreateSphere(float radius, uint32
 		{
 			float theta = j * thetaStep;
 
-			Vertex v;
+			Vertices::PosNormalTangentTexc v;
 
 			// spherical to cartesian
 			v.Position.x = radius * sinf(phi) * cosf(theta);
@@ -132,18 +132,18 @@ GeometryGenerator::MeshData GeometryGenerator::CreateSphere(float radius, uint32
 			v.Position.z = radius * sinf(phi) * sinf(theta);
 
 			// Partial derivative of P with respect to theta
-			v.TangentU.x = -radius * sinf(phi) * sinf(theta);
-			v.TangentU.y = 0.0f;
-			v.TangentU.z = +radius * sinf(phi) * cosf(theta);
+			v.Tangent.x = -radius * sinf(phi) * sinf(theta);
+			v.Tangent.y = 0.0f;
+			v.Tangent.z = +radius * sinf(phi) * cosf(theta);
 
-			XMVECTOR T = XMLoadFloat3(&v.TangentU);
-			XMStoreFloat3(&v.TangentU, XMVector3Normalize(T));
+			XMVECTOR T = XMLoadFloat3(&v.Tangent);
+			XMStoreFloat3(&v.Tangent, XMVector3Normalize(T));
 
 			XMVECTOR p = XMLoadFloat3(&v.Position);
 			XMStoreFloat3(&v.Normal, XMVector3Normalize(p));
 
-			v.TexC.x = theta / XM_2PI;
-			v.TexC.y = phi / XM_PI;
+			v.Texc.x = theta / XM_2PI;
+			v.Texc.y = phi / XM_PI;
 
 			meshData.Vertices.push_back(v);
 		}
@@ -213,17 +213,17 @@ void GeometryGenerator::Subdivide(MeshData& meshData)
 	uint32 numTris = (uint32)inputCopy.Indices32.size()/3;
 	for(uint32 i = 0; i < numTris; ++i)
 	{
-		Vertex v0 = inputCopy.Vertices[ inputCopy.Indices32[i*3+0] ];
-		Vertex v1 = inputCopy.Vertices[ inputCopy.Indices32[i*3+1] ];
-		Vertex v2 = inputCopy.Vertices[ inputCopy.Indices32[i*3+2] ];
+		Vertices::PosNormalTangentTexc v0 = inputCopy.Vertices[ inputCopy.Indices32[i*3+0] ];
+		Vertices::PosNormalTangentTexc v1 = inputCopy.Vertices[ inputCopy.Indices32[i*3+1] ];
+		Vertices::PosNormalTangentTexc v2 = inputCopy.Vertices[ inputCopy.Indices32[i*3+2] ];
 
 		//
 		// Generate the midpoints.
 		//
 
-        Vertex m0 = MidPoint(v0, v1);
-        Vertex m1 = MidPoint(v1, v2);
-        Vertex m2 = MidPoint(v0, v2);
+		Vertices::PosNormalTangentTexc m0 = MidPoint(v0, v1);
+		Vertices::PosNormalTangentTexc m1 = MidPoint(v1, v2);
+		Vertices::PosNormalTangentTexc m2 = MidPoint(v0, v2);
 
 		//
 		// Add new geometry.
@@ -254,7 +254,7 @@ void GeometryGenerator::Subdivide(MeshData& meshData)
 	}
 }
 
-GeometryGenerator::Vertex GeometryGenerator::MidPoint(const Vertex& v0, const Vertex& v1)
+Vertices::PosNormalTangentTexc GeometryGenerator::MidPoint(const Vertices::PosNormalTangentTexc& v0, const Vertices::PosNormalTangentTexc& v1)
 {
     XMVECTOR p0 = XMLoadFloat3(&v0.Position);
     XMVECTOR p1 = XMLoadFloat3(&v1.Position);
@@ -262,11 +262,11 @@ GeometryGenerator::Vertex GeometryGenerator::MidPoint(const Vertex& v0, const Ve
     XMVECTOR n0 = XMLoadFloat3(&v0.Normal);
     XMVECTOR n1 = XMLoadFloat3(&v1.Normal);
 
-    XMVECTOR tan0 = XMLoadFloat3(&v0.TangentU);
-    XMVECTOR tan1 = XMLoadFloat3(&v1.TangentU);
+    XMVECTOR tan0 = XMLoadFloat3(&v0.Tangent);
+    XMVECTOR tan1 = XMLoadFloat3(&v1.Tangent);
 
-    XMVECTOR tex0 = XMLoadFloat2(&v0.TexC);
-    XMVECTOR tex1 = XMLoadFloat2(&v1.TexC);
+    XMVECTOR tex0 = XMLoadFloat2(&v0.Texc);
+    XMVECTOR tex1 = XMLoadFloat2(&v1.Texc);
 
     // Compute the midpoints of all the attributes.  Vectors need to be normalized
     // since linear interpolating can make them not unit length.  
@@ -275,16 +275,16 @@ GeometryGenerator::Vertex GeometryGenerator::MidPoint(const Vertex& v0, const Ve
     XMVECTOR tangent = XMVector3Normalize(0.5f*(tan0+tan1));
     XMVECTOR tex = 0.5f*(tex0 + tex1);
 
-    Vertex v;
+	Vertices::PosNormalTangentTexc v;
     XMStoreFloat3(&v.Position, pos);
     XMStoreFloat3(&v.Normal, normal);
-    XMStoreFloat3(&v.TangentU, tangent);
-    XMStoreFloat2(&v.TexC, tex);
+    XMStoreFloat3(&v.Tangent, tangent);
+    XMStoreFloat2(&v.Texc, tex);
 
     return v;
 }
 
-GeometryGenerator::MeshData GeometryGenerator::CreateGeosphere(float radius, uint32 numSubdivisions)
+MeshData GeometryGenerator::CreateGeosphere(float radius, uint32 numSubdivisions)
 {
     MeshData meshData;
 
@@ -344,22 +344,22 @@ GeometryGenerator::MeshData GeometryGenerator::CreateGeosphere(float radius, uin
 
 		float phi = acosf(meshData.Vertices[i].Position.y / radius);
 
-		meshData.Vertices[i].TexC.x = theta/XM_2PI;
-		meshData.Vertices[i].TexC.y = phi/XM_PI;
+		meshData.Vertices[i].Texc.x = theta/XM_2PI;
+		meshData.Vertices[i].Texc.y = phi/XM_PI;
 
 		// Partial derivative of P with respect to theta
-		meshData.Vertices[i].TangentU.x = -radius*sinf(phi)*sinf(theta);
-		meshData.Vertices[i].TangentU.y = 0.0f;
-		meshData.Vertices[i].TangentU.z = +radius*sinf(phi)*cosf(theta);
+		meshData.Vertices[i].Tangent.x = -radius*sinf(phi)*sinf(theta);
+		meshData.Vertices[i].Tangent.y = 0.0f;
+		meshData.Vertices[i].Tangent.z = +radius*sinf(phi)*cosf(theta);
 
-		XMVECTOR T = XMLoadFloat3(&meshData.Vertices[i].TangentU);
-		XMStoreFloat3(&meshData.Vertices[i].TangentU, XMVector3Normalize(T));
+		XMVECTOR T = XMLoadFloat3(&meshData.Vertices[i].Tangent);
+		XMStoreFloat3(&meshData.Vertices[i].Tangent, XMVector3Normalize(T));
 	}
 
     return meshData;
 }
 
-GeometryGenerator::MeshData GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius, float height, uint32 sliceCount, uint32 stackCount)
+MeshData GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius, float height, uint32 sliceCount, uint32 stackCount)
 {
     MeshData meshData;
 
@@ -384,15 +384,15 @@ GeometryGenerator::MeshData GeometryGenerator::CreateCylinder(float bottomRadius
 		float dTheta = 2.0f*XM_PI/sliceCount;
 		for(uint32 j = 0; j <= sliceCount; ++j)
 		{
-			Vertex vertex;
+			Vertices::PosNormalTangentTexc vertex;
 
 			float c = cosf(j*dTheta);
 			float s = sinf(j*dTheta);
 
 			vertex.Position = XMFLOAT3(r*c, y, r*s);
 
-			vertex.TexC.x = (float)j/sliceCount;
-			vertex.TexC.y = 1.0f - (float)i/stackCount;
+			vertex.Texc.x = (float)j/sliceCount;
+			vertex.Texc.y = 1.0f - (float)i/stackCount;
 
 			// Cylinder can be parameterized as follows, where we introduce v
 			// parameter that goes in the same direction as the v tex-coord
@@ -414,12 +414,12 @@ GeometryGenerator::MeshData GeometryGenerator::CreateCylinder(float bottomRadius
 			//  dz/dv = (r0-r1)*sin(t)
 
 			// This is unit length.
-			vertex.TangentU = XMFLOAT3(-s, 0.0f, c);
+			vertex.Tangent = XMFLOAT3(-s, 0.0f, c);
 
 			float dr = bottomRadius-topRadius;
 			XMFLOAT3 bitangent(dr*c, -height, dr*s);
 
-			XMVECTOR T = XMLoadFloat3(&vertex.TangentU);
+			XMVECTOR T = XMLoadFloat3(&vertex.Tangent);
 			XMVECTOR B = XMLoadFloat3(&bitangent);
 			XMVECTOR N = XMVector3Normalize(XMVector3Cross(T, B));
 			XMStoreFloat3(&vertex.Normal, N);
@@ -472,11 +472,11 @@ void GeometryGenerator::BuildCylinderTopCap(float bottomRadius, float topRadius,
 		float u = x/height + 0.5f;
 		float v = z/height + 0.5f;
 
-		meshData.Vertices.push_back( Vertex(x, y, z, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, u, v) );
+		meshData.Vertices.push_back(Vertices::PosNormalTangentTexc(x, y, z, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, u, v) );
 	}
 
 	// Cap center vertex.
-	meshData.Vertices.push_back( Vertex(0.0f, y, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.5f, 0.5f) );
+	meshData.Vertices.push_back(Vertices::PosNormalTangentTexc(0.0f, y, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.5f, 0.5f) );
 
 	// Index of center vertex.
 	uint32 centerIndex = (uint32)meshData.Vertices.size()-1;
@@ -511,11 +511,11 @@ void GeometryGenerator::BuildCylinderBottomCap(float bottomRadius, float topRadi
 		float u = x/height + 0.5f;
 		float v = z/height + 0.5f;
 
-		meshData.Vertices.push_back( Vertex(x, y, z, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, u, v) );
+		meshData.Vertices.push_back(Vertices::PosNormalTangentTexc(x, y, z, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, u, v) );
 	}
 
 	// Cap center vertex.
-	meshData.Vertices.push_back( Vertex(0.0f, y, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.5f, 0.5f) );
+	meshData.Vertices.push_back(Vertices::PosNormalTangentTexc(0.0f, y, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.5f, 0.5f) );
 
 	// Cache the index of center vertex.
 	uint32 centerIndex = (uint32)meshData.Vertices.size()-1;
@@ -528,7 +528,7 @@ void GeometryGenerator::BuildCylinderBottomCap(float bottomRadius, float topRadi
 	}
 }
 
-GeometryGenerator::MeshData GeometryGenerator::CreateGrid(float width, float depth, uint32 m, uint32 n)
+MeshData GeometryGenerator::CreateGrid(float width, float depth, uint32 m, uint32 n)
 {
     MeshData meshData;
 
@@ -558,11 +558,11 @@ GeometryGenerator::MeshData GeometryGenerator::CreateGrid(float width, float dep
 
 			meshData.Vertices[i*n+j].Position = XMFLOAT3(x, 0.0f, z);
 			meshData.Vertices[i*n+j].Normal   = XMFLOAT3(0.0f, 1.0f, 0.0f);
-			meshData.Vertices[i*n+j].TangentU = XMFLOAT3(1.0f, 0.0f, 0.0f);
+			meshData.Vertices[i*n+j].Tangent = XMFLOAT3(1.0f, 0.0f, 0.0f);
 
 			// Stretch texture over grid.
-			meshData.Vertices[i*n+j].TexC.x = j*du;
-			meshData.Vertices[i*n+j].TexC.y = i*dv;
+			meshData.Vertices[i*n+j].Texc.x = j*du;
+			meshData.Vertices[i*n+j].Texc.y = i*dv;
 		}
 	}
  
@@ -593,7 +593,7 @@ GeometryGenerator::MeshData GeometryGenerator::CreateGrid(float width, float dep
     return meshData;
 }
 
-GeometryGenerator::MeshData GeometryGenerator::CreateQuad(float x, float y, float w, float h, float depth)
+MeshData GeometryGenerator::CreateQuad(float x, float y, float w, float h, float depth)
 {
     MeshData meshData;
 
@@ -601,25 +601,25 @@ GeometryGenerator::MeshData GeometryGenerator::CreateQuad(float x, float y, floa
 	meshData.Indices32.resize(6);
 
 	// Position coordinates specified in NDC space.
-	meshData.Vertices[0] = Vertex(
+	meshData.Vertices[0] = Vertices::PosNormalTangentTexc(
         x, y - h, depth,
 		0.0f, 0.0f, -1.0f,
 		1.0f, 0.0f, 0.0f,
 		0.0f, 1.0f);
 
-	meshData.Vertices[1] = Vertex(
+	meshData.Vertices[1] = Vertices::PosNormalTangentTexc(
 		x, y, depth,
 		0.0f, 0.0f, -1.0f,
 		1.0f, 0.0f, 0.0f,
 		0.0f, 0.0f);
 
-	meshData.Vertices[2] = Vertex(
+	meshData.Vertices[2] = Vertices::PosNormalTangentTexc(
 		x+w, y, depth,
 		0.0f, 0.0f, -1.0f,
 		1.0f, 0.0f, 0.0f,
 		1.0f, 0.0f);
 
-	meshData.Vertices[3] = Vertex(
+	meshData.Vertices[3] = Vertices::PosNormalTangentTexc(
 		x+w, y-h, depth,
 		0.0f, 0.0f, -1.0f,
 		1.0f, 0.0f, 0.0f,
