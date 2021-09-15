@@ -29,7 +29,7 @@ public:
 	float GetDepth()const;
 	float GetHeight(float x, float z)const;
 
-	MeshGeometry* GetMeshGeometry()const;
+	::MeshGeometry* GetMeshGeometry()const;
 
 
 	XMMATRIX GetWorld()const;
@@ -97,7 +97,7 @@ private:
 	//All Textures
 	unordered_map<string, vector<Texture*>> TerrainTextures;
 
-	std::unique_ptr<MeshGeometry> mGeometries;
+	std::unique_ptr<::MeshGeometry> mGeometries;
 
 	//grass
 	std::unique_ptr<Grass> mGrass;

@@ -3,12 +3,12 @@
 
 using namespace GlareEngine;
 
-ModelMesh::ModelMesh(ID3D12GraphicsCommandList* CommandList, vector<Vertices::PosNormalTangentTexc> vertices, vector<UINT> indices)
+ModelMesh::ModelMesh(ID3D12GraphicsCommandList* CommandList, const char* name, vector<Vertices::PosNormalTangentTexc> vertices, vector<UINT> indices)
+	:pModelMeshName(name)
 {
-	this->mVertices = vertices;
-	this->mIndices = indices;
-
-	this->SetupMesh(CommandList);
+	mMeshData.Vertices = vertices;
+	mMeshData.Indices32 = indices;
+	this->SetupMesh(CommandList, name);
 }
 
 ModelMesh::~ModelMesh()
@@ -16,26 +16,26 @@ ModelMesh::~ModelMesh()
 }
 
 // Initializes all the buffer objects/arrays
-void ModelMesh::SetupMesh(ID3D12GraphicsCommandList* pCommandList)
+void ModelMesh::SetupMesh(ID3D12GraphicsCommandList* pCommandList, const  char* name)
 {
-	const UINT vbByteSize = (UINT)mVertices.size() * sizeof(Vertices::PosNormalTangentTexc);
-	const UINT ibByteSize = (UINT)mIndices.size() * sizeof(UINT);
+	const UINT vbByteSize = (UINT)mMeshData.Vertices.size() * sizeof(Vertices::PosNormalTangentTexc);
+	const UINT ibByteSize = (UINT)mMeshData.Indices32.size() * sizeof(UINT);
 
 	mMeshGeo.Name = "Model Mesh";
 	ThrowIfFailed(D3DCreateBlob(vbByteSize, &mMeshGeo.VertexBufferCPU));
-	CopyMemory(mMeshGeo.VertexBufferCPU->GetBufferPointer(), mVertices.data(), vbByteSize);
+	CopyMemory(mMeshGeo.VertexBufferCPU->GetBufferPointer(), mMeshData.Vertices.data(), vbByteSize);
 
 
 	ThrowIfFailed(D3DCreateBlob(ibByteSize, &mMeshGeo.IndexBufferCPU));
-	CopyMemory(mMeshGeo.IndexBufferCPU->GetBufferPointer(), mIndices.data(), ibByteSize);
+	CopyMemory(mMeshGeo.IndexBufferCPU->GetBufferPointer(), mMeshData.Indices32.data(), ibByteSize);
 
 
 	mMeshGeo.VertexBufferGPU = EngineUtility::CreateDefaultBuffer(DirectX12Graphics::g_Device,
-		pCommandList, mVertices.data(), vbByteSize, mMeshGeo.VertexBufferUploader);
+		pCommandList, mMeshData.Vertices.data(), vbByteSize, mMeshGeo.VertexBufferUploader);
 
 
 	mMeshGeo.IndexBufferGPU = EngineUtility::CreateDefaultBuffer(DirectX12Graphics::g_Device,
-		pCommandList, mIndices.data(), ibByteSize, mMeshGeo.IndexBufferUploader);
+		pCommandList, mMeshData.Indices32.data(), ibByteSize, mMeshGeo.IndexBufferUploader);
 
 
 	mMeshGeo.VertexByteStride = sizeof(Vertices::PosNormalTangentTexc);
@@ -45,8 +45,8 @@ void ModelMesh::SetupMesh(ID3D12GraphicsCommandList* pCommandList)
 
 
 	SubmeshGeometry submesh;
-	submesh.IndexCount = (UINT)mIndices.size();
+	submesh.IndexCount = (UINT)mMeshData.Indices32.size();
 	submesh.StartIndexLocation = 0;
 	submesh.BaseVertexLocation = 0;
-	mMeshGeo.DrawArgs["Model Mesh"] = submesh;
+	mMeshGeo.DrawArgs[name] = submesh;
 }

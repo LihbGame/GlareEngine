@@ -3,6 +3,7 @@
 
 namespace GlareEngine
 {
+	using namespace std;
 	struct Material
 	{
 		// Unique material name for lookup.

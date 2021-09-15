@@ -3,8 +3,10 @@
 #include "EngineUtility.h"
 #include "GeometryGenerator.h"
 #include "Vertex.h"
+#include "RanderObject.h"
 
-class SimpleGeometryInstance
+class SimpleGeometryInstance 
+	:public RanderObject
 {
 };
 

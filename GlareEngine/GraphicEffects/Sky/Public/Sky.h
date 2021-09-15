@@ -1,7 +1,8 @@
 #pragma once
 #include "RanderObject.h"
 #include "PipelineState.h"
-
+#include "MeshStruct.h"
+using namespace GlareEngine;
 
 class CSky :
     public RanderObject

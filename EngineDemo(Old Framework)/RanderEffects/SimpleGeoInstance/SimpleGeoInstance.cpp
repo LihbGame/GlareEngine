@@ -2,7 +2,6 @@
 #include "Material.h"
 #include "TextureManage.h"
 #include "ModelMesh.h"
-#include "../../../GlareEngine/Animation/ModelMesh.h"
 using namespace GlareEngine;
 
 SimpleGeoInstance::SimpleGeoInstance(ID3D12GraphicsCommandList* pCommandList, ID3D12Device* pd3dDevice,TextureManage* TextureManage)
@@ -85,7 +84,7 @@ void SimpleGeoInstance::BuildSimpleGeometryMesh(SimpleGeometry GeoType)
 
 
 
-    mSimpleMesh = std::make_unique<MeshGeometry>();
+    mSimpleMesh = std::make_unique<::MeshGeometry>();
     mSimpleMesh->Name = MeshName;
 
     //CPU Vertex Buffer
@@ -110,7 +109,7 @@ void SimpleGeoInstance::BuildSimpleGeometryMesh(SimpleGeometry GeoType)
     mSimpleMesh->IndexFormat = DXGI_FORMAT_R16_UINT;
     mSimpleMesh->IndexBufferByteSize = ibByteSize;
 
-    SubmeshGeometry submesh;
+    ::SubmeshGeometry submesh;
     submesh.IndexCount = (UINT)indices.size();
     submesh.StartIndexLocation = 0;
     submesh.BaseVertexLocation = 0;
@@ -121,7 +120,7 @@ void SimpleGeoInstance::BuildSimpleGeometryMesh(SimpleGeometry GeoType)
 
 
 
-std::unique_ptr<MeshGeometry>& SimpleGeoInstance::GetSimpleGeoMesh(SimpleGeometry GeoType)
+std::unique_ptr<::MeshGeometry>& SimpleGeoInstance::GetSimpleGeoMesh(SimpleGeometry GeoType)
 
 {
     BuildSimpleGeometryMesh(GeoType);

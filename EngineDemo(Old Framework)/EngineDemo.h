@@ -64,8 +64,8 @@ struct RenderItem
 	//索引到此渲染项目对应于ObjectCB的GPU常量缓冲区。
 	int ObjCBIndex = -1;
 
-	Material* Mat = nullptr;
-	std::vector<MeshGeometry*> Geo;
+	::Material* Mat = nullptr;
+	std::vector<::MeshGeometry*> Geo;
 
 	// Primitive topology.
 	D3D12_PRIMITIVE_TOPOLOGY PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -202,7 +202,7 @@ private:
 	ComPtr<ID3D12DescriptorHeap> mGUISrvDescriptorHeap = nullptr;
 
 
-	std::unordered_map<std::string, std::unique_ptr<MeshGeometry>> mGeometries;
+	std::unordered_map<std::string, std::unique_ptr<::MeshGeometry>> mGeometries;
 	std::unordered_map<std::string, std::unique_ptr<Texture>> mTextures;
 
 

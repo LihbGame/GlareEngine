@@ -158,8 +158,7 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 		texture = texture.substr((LONG64)(it) + 1, texture.find_last_of('.') - it - 1);
 		LoadPBRTexture(texture);
 	}
-
-	return ModelMesh(m_pCommandList, vertices, indices);
+	return ModelMesh(m_pCommandList, mesh->mName.C_Str(), vertices, indices);
 }
 
 

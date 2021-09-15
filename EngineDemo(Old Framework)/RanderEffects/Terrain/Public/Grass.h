@@ -1,5 +1,6 @@
 #pragma once
 #include "EngineUtility.h"
+#include "ModelMesh.h"
 class TextureManage;
 class Grass
 {
@@ -12,7 +13,7 @@ public:
 	~Grass();
 	void BuildGrassVB();
 
-	MeshGeometry* GetMeshGeometry()const { return mGeometries.get(); };
+	::MeshGeometry* GetMeshGeometry()const { return mGeometries.get(); };
 
 	void BuildMaterials();
 
@@ -35,7 +36,7 @@ private:
 	ID3D12GraphicsCommandList* mCommandList;
 	TextureManage* mTextureManage;
 
-	std::unique_ptr<MeshGeometry> mGeometries;
+	std::unique_ptr<::MeshGeometry> mGeometries;
 
 	//srv index
 	int mRGBNoiseMapIndex;

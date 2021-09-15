@@ -2,7 +2,7 @@
 //assimp head
 #include "AnimEvaluator.h"
 #include "EngineUtility.h"
-
+#include "ModelMesh.h"
 
 #define MAX_BONES 100
 #define NUM_BONES_PER_VEREX 4
@@ -87,7 +87,7 @@ public:
     //anime data
     vector<VertexBoneData> bones_id_weights_for_each_vertex;
 
-    MeshGeometry mBoneGeo;
+    ::MeshGeometry mBoneGeo;
 };
 
 class Animation
@@ -169,7 +169,7 @@ public:
 
     //anime data
     vector<VertexBoneData> bones_id_weights_for_each_vertex;
-    MeshGeometry mBoneGeo;
+    ::MeshGeometry mBoneGeo;
 
     map<string, int> m_bone_mapping; // maps a bone name and their index
     UINT m_num_bones = 0;

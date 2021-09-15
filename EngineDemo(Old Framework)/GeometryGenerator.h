@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <DirectXMath.h>
 #include <vector>
-#include "ModelMesh.h"
+#include "../GlareEngine/Animation/ModelMesh.h"
 using namespace GlareEngine;
 
 class GeometryGenerator

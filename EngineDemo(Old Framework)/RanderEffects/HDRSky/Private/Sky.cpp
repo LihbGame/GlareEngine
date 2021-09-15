@@ -33,7 +33,7 @@ void Sky::BuildSkyMesh()
 	std::vector<std::uint16_t> indices = Sphere.GetIndices16();
 	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
 
-	mSkyMesh= std::make_unique<MeshGeometry>();
+	mSkyMesh= std::make_unique<::MeshGeometry>();
 	mSkyMesh->Name = "SphereGeo";
 
 	//CPU Vertex Buffer
@@ -54,7 +54,7 @@ void Sky::BuildSkyMesh()
 	mSkyMesh->IndexFormat = DXGI_FORMAT_R16_UINT;
 	mSkyMesh->IndexBufferByteSize = ibByteSize;
 
-	SubmeshGeometry submesh;
+	::SubmeshGeometry submesh;
 	submesh.IndexCount = (UINT)indices.size();
 	submesh.StartIndexLocation = 0;
 	submesh.BaseVertexLocation = 0;
@@ -64,7 +64,7 @@ void Sky::BuildSkyMesh()
 	
 }
 
-std::unique_ptr<MeshGeometry>& Sky::GetSkyMesh()
+std::unique_ptr<::MeshGeometry>& Sky::GetSkyMesh()
 {
 	return mSkyMesh;
 }

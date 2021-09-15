@@ -1,9 +1,9 @@
 #pragma once
 
 #include "EngineUtility.h"
-#include "GeometryGenerator.h"
+#include "./GeometryGenerator.h"
 #include "Vertex.h"
-
+#include "ModelMesh.h"
 class TextureManage;
 enum class  SimpleGeometry : int
 {
@@ -21,7 +21,7 @@ public:
 
     ~SimpleGeoInstance();
 
-    std::unique_ptr<MeshGeometry>& GetSimpleGeoMesh(SimpleGeometry GeoType);
+    std::unique_ptr<::MeshGeometry>& GetSimpleGeoMesh(SimpleGeometry GeoType);
 
     void BuildMaterials();
 
@@ -35,7 +35,7 @@ private:
 
     ID3D12GraphicsCommandList* pCommandList;
     ID3D12Device* pd3dDevice;
-    std::unique_ptr<MeshGeometry> mSimpleMesh;
+    std::unique_ptr<::MeshGeometry> mSimpleMesh;
     std::vector<wstring> mPBRTextureName;
     TextureManage* pTextureManage = nullptr;
 };

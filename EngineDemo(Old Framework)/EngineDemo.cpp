@@ -655,7 +655,7 @@ void GameApp::UpdateMaterialCBs(const GameTimer& gt)
 	{
 		// Only update the cbuffer data if the constants have changed.  If the cbuffer
 		// data changes, it needs to be updated for each FrameResource.
-		Material* mat = e.second.get();
+		::Material* mat = e.second.get();
 		if (mat->NumFramesDirty > 0)
 		{
 			XMMATRIX matTransform = XMLoadFloat4x4(&mat->MatTransform);
@@ -899,7 +899,7 @@ void GameApp::BuildLandGeometry()
 	std::vector<std::uint16_t> indices = grid.GetIndices16();
 	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
 
-	auto geo = std::make_unique<MeshGeometry>();
+	auto geo = std::make_unique<::MeshGeometry>();
 	geo->Name = "landGeo";
 
 	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
@@ -919,7 +919,7 @@ void GameApp::BuildLandGeometry()
 	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
 	geo->IndexBufferByteSize = ibByteSize;
 
-	SubmeshGeometry submesh;
+	::SubmeshGeometry submesh;
 	submesh.IndexCount = (UINT)indices.size();
 	submesh.StartIndexLocation = 0;
 	submesh.BaseVertexLocation = 0;
@@ -956,7 +956,7 @@ void GameApp::BuildWavesGeometryBuffers()
 	UINT vbByteSize = mWaves->VertexCount() * sizeof(Vertices::PosNormalTexc);
 	UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
 
-	auto geo = std::make_unique<MeshGeometry>();
+	auto geo = std::make_unique<::MeshGeometry>();
 	geo->Name = "waterGeo";
 
 	// Set dynamically.
@@ -974,7 +974,7 @@ void GameApp::BuildWavesGeometryBuffers()
 	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
 	geo->IndexBufferByteSize = ibByteSize;
 
-	SubmeshGeometry submesh;
+	::SubmeshGeometry submesh;
 	submesh.IndexCount = (UINT)indices.size();
 	submesh.StartIndexLocation = 0;
 	submesh.BaseVertexLocation = 0;
