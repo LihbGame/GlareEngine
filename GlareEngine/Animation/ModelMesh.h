@@ -20,5 +20,16 @@ namespace GlareEngine
 		const char* pModelMeshName = nullptr;
 		MeshData mMeshData;
 	};
+
+	struct ModelData
+	{
+		ModelMesh mMeshData;
+		Material* mMaterial;
+	};
+
+	struct ModelRenderData
+	{
+		vector<ModelData> mSubModels;
+	};
 }
 

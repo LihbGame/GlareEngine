@@ -51,36 +51,21 @@ bool ModelLoader::LoadModel(string filename)
 	return true;
 }
 
-
-void ModelLoader::CreateSRVDescriptor(vector<Texture*> Texture)
+ModelRenderData& ModelLoader::GetModelRenderData(string ModelName)
 {
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MostDetailedMip = 0;
-	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-
-	for (int i = 0; i < Texture.size(); ++i)
-	{
-		CD3DX12_CPU_DESCRIPTOR_HANDLE Descriptor;
-		Descriptor =AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-		srvDesc.Format = Texture[i]->Resource->GetDesc().Format;
-		srvDesc.Texture2D.MipLevels = Texture[i]->Resource->GetDesc().MipLevels;
-		g_Device->CreateShaderResourceView(Texture[i]->Resource.Get(), &srvDesc, Descriptor);
-		mMeshes[mModelName].mSubMeshes.back().mDescriptors.push_back(Descriptor);
-	}
+	return mMeshes[ModelName];
 }
+
 
 void ModelLoader::BuildMaterial(string MaterialName)
 {
-	XMFLOAT4X4  MatTransform = MathHelper::Identity4x4();
-
 	MaterialManager::GetMaterialInstance()->BuildMaterials(
-		wstring(MaterialName.begin(), MaterialName.end()),
+		StringToWString(MaterialName),
+		LoadPBRTexture(MaterialName),
 		0.09f,
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 		XMFLOAT3(0.1f, 0.1f, 0.1f),
-		MatTransform);
+		MathHelper::Identity4x4());
 }
 
 void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene)
@@ -89,8 +74,8 @@ void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 
-		mMeshes[mModelName].mSubMeshes.push_back(SubMesh());
-		mMeshes[mModelName].mSubMeshes.back().mMesh = this->ProcessMesh(mesh, scene);
+		mMeshes[mModelName].mSubModels.push_back(ModelData());
+		mMeshes[mModelName].mSubModels.back().mMeshData = this->ProcessMesh(mesh, scene);
 	}
 
 	for (UINT i = 0; i < node->mNumChildren; i++)
@@ -156,30 +141,27 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
 		int it = (int)texture.find_last_of('\\');
 		texture = texture.substr((LONG64)(it) + 1, texture.find_last_of('.') - it - 1);
-		LoadPBRTexture(texture);
+		
+		//Build Material
+		BuildMaterial(texture);
 	}
 	return ModelMesh(m_pCommandList, mesh->mName.C_Str(), vertices, indices);
 }
 
 
 
-void ModelLoader::LoadPBRTexture(string texturename)
+vector<Texture*> ModelLoader::LoadPBRTexture(string texturename)
 {
 	vector<Texture*> ModelTextures;
 	string RootFilename = mDirectory + "PBRTextures/" + texturename;
 	string Fullfilename = "";
 
-	for (auto Type:PBRTextureFileType)
+	for (auto Type : PBRTextureFileType)
 	{
 		Fullfilename = RootFilename + Type;
 		ModelTextures.push_back(TextureManager::GetInstance(m_pCommandList)->GetModelTexture(StringToWString(Fullfilename)).get());
 	}
 
-	//Build Material
-	BuildMaterial(texturename);
-	//Init material const buffer index
-	mMeshes[mModelName].mSubMeshes.back().mMaterialIndex = MaterialManager::GetMaterialInstance()->GetMaterial(StringToWString(texturename))->mMatCBIndex;
-	//Create SRV Descriptor
-	CreateSRVDescriptor(ModelTextures);
+	return ModelTextures;
 }
 

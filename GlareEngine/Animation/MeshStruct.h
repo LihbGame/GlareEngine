@@ -6,7 +6,7 @@
 
 namespace GlareEngine
 {
-	// Defines a subrange of geometry in a MeshGeometry.  This is for when multiple
+// Defines a subrange of geometry in a MeshGeometry.  This is for when multiple
 // geometries are stored in one vertex and index buffer.  It provides the offsets
 // and data needed to draw a subset of geometry stores in the vertex and index 
 // buffers so that we can implement the technique described by Figure 6.3.
@@ -80,8 +80,6 @@ namespace GlareEngine
 	};
 
 
-
-
 	using uint16 = std::uint16_t;
 	using uint32 = std::uint32_t;
 
@@ -104,19 +102,4 @@ namespace GlareEngine
 	private:
 		std::vector<uint16> mIndices16;
 	};
-
-
-	struct ModelData
-	{
-		MeshData mMeshData;
-		Material* mMaterial;
-	};
-
-	struct ModelRenderData 
-	{
-		vector<ModelData> mSubModels;
-	};
-
-
-
 }
