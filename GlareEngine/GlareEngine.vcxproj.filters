@@ -124,9 +124,9 @@
     <ClInclude Include="Animation\ModelMesh.h" />
     <ClInclude Include="Animation\ModelLoader.h" />
     <ClInclude Include="EngineCore\Engine\Public\SceneManager.h" />
-    <ClInclude Include="GraphicEffects\InstanceModel\Public\SimpleGeometryInstance.h" />
     <ClInclude Include="Animation\MeshStruct.h" />
     <ClInclude Include="EngineCore\Engine\Public\Materials.h" />
+    <ClInclude Include="GraphicEffects\InstanceModel\Public\InstanceModel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
@@ -276,10 +276,10 @@
     <ClCompile Include="EngineCore\Engine\Private\SceneManager.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicEffects\InstanceModel\Private\SimpleGeometryInstance.cpp">
+    <ClCompile Include="EngineCore\Engine\Private\Materials.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\Engine\Private\Materials.cpp">
+    <ClCompile Include="GraphicEffects\InstanceModel\Private\InstanceModel.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>

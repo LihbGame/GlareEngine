@@ -15,8 +15,11 @@ namespace GlareEngine
 
 	void MaterialManager::Release()
 	{
-		delete gMaterialInstance;
-		gMaterialInstance = nullptr;
+		if (gMaterialInstance)
+		{
+			delete gMaterialInstance;
+			gMaterialInstance = nullptr;
+		}
 	}
 
 	void MaterialManager::BuildMaterials(wstring name, 

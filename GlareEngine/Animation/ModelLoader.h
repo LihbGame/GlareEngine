@@ -11,18 +11,25 @@ namespace GlareEngine
 	class ModelLoader
 	{
 	public:
-		ModelLoader(ID3D12GraphicsCommandList* CommandList);
+		ModelLoader();
 		~ModelLoader();
+
+		static ModelLoader* GetModelLoader(ID3D12GraphicsCommandList* CommandList);
+		static void Release();
+
+		void SetCommandList(ID3D12GraphicsCommandList* CommandList);
 
 		//Load model mesh data
 		bool LoadModel(string filename);
 
-		ModelRenderData& GetModelRenderData(string ModelName);
+		const ModelRenderData* GetModelRenderData(string ModelName);
 
 		
 	private:
+		static ModelLoader* g_ModelLoader;
+
 		ID3D12GraphicsCommandList* m_pCommandList;
-		unordered_map<string, ModelRenderData> mMeshes;
+		unordered_map<string, unique_ptr<ModelRenderData>> mMeshes;
 
 		string mDirectory;
 		string mModelName;

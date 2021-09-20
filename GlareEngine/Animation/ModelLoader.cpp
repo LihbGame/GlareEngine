@@ -5,6 +5,7 @@
 using namespace GlareEngine; 
 using namespace GlareEngine::DirectX12Graphics;
 
+ModelLoader* ModelLoader::g_ModelLoader = new ModelLoader();
 
 string  PBRTextureFileType[] = {
 	"_albedo",
@@ -18,8 +19,7 @@ string  PBRTextureFileType[] = {
 
 
 
-ModelLoader::ModelLoader(ID3D12GraphicsCommandList* CommandList)
-	:m_pCommandList(CommandList)
+ModelLoader::ModelLoader()
 {
 }
 
@@ -28,6 +28,27 @@ ModelLoader::~ModelLoader()
 	mImporter.FreeScene();
 }
 
+ModelLoader* ModelLoader::GetModelLoader(ID3D12GraphicsCommandList* CommandList)
+{
+	assert(g_ModelLoader);
+	g_ModelLoader->SetCommandList(CommandList);
+	return g_ModelLoader;
+}
+
+void ModelLoader::Release()
+{
+	if (g_ModelLoader)
+	{
+		delete g_ModelLoader;
+		g_ModelLoader = nullptr;
+	}
+}
+
+
+void ModelLoader::SetCommandList(ID3D12GraphicsCommandList* CommandList)
+{
+	m_pCommandList = CommandList;
+}
 
 bool ModelLoader::LoadModel(string filename)
 {
@@ -45,15 +66,19 @@ bool ModelLoader::LoadModel(string filename)
 
 	int it = (int)filename.find_last_of('/');
 	this->mDirectory += filename.substr(0, (LONG64)(it) + 1);
-	this->mModelName = filename.substr((LONG64)(it) + 1, filename.find_last_of('.') - it - 1);
+	this->mModelName = filename;
 
 	ProcessNode(pScene->mRootNode, pScene);
 	return true;
 }
 
-ModelRenderData& ModelLoader::GetModelRenderData(string ModelName)
+const ModelRenderData* ModelLoader::GetModelRenderData(string ModelName)
 {
-	return mMeshes[ModelName];
+	if (mMeshes.find(ModelName) == mMeshes.end())
+	{
+		LoadModel(ModelName);
+	}
+	return mMeshes[ModelName].get();
 }
 
 
@@ -74,8 +99,8 @@ void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 
-		mMeshes[mModelName].mSubModels.push_back(ModelData());
-		mMeshes[mModelName].mSubModels.back().mMeshData = this->ProcessMesh(mesh, scene);
+		mMeshes[mModelName].get()->mSubModels.push_back(ModelData());
+		mMeshes[mModelName].get()->mSubModels.back().mMeshData = this->ProcessMesh(mesh, scene);
 	}
 
 	for (UINT i = 0; i < node->mNumChildren; i++)

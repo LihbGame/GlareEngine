@@ -12,7 +12,7 @@
 #include "Camera.h"
 #include "Sky.h"
 #include "ModelLoader.h"
-
+#include "SceneManager.h"
 
 //lib
 #pragma comment(lib, "dxgi.lib")
@@ -66,13 +66,13 @@ public:
 	void UpdateCamera(float DeltaTime);
 
 	void UpdateMainConstantBuffer(float DeltaTime);
+
+	void InitializeScene();
 protected:
 	// 处理鼠标输入的重载函数
 	virtual void OnMouseDown(WPARAM btnState, int x, int y);
 	virtual void OnMouseUp(WPARAM btnState, int x, int y);
 	virtual void OnMouseMove(WPARAM btnState, int x, int y);
-
-
 private:
 	//Main Constant Buffer
 	MainConstants mMainConstants;
@@ -92,6 +92,9 @@ private:
 	float mCameraSpeed = 100.0f;
 
 	D3D12_RECT mClientRect;
+	//scene manager
+	unique_ptr<SceneManager> mSceneManager;
+
 };
 
 
@@ -102,7 +105,14 @@ CREATE_APPLICATION(App);
 
 
 //////////////////////////////////////////////////////////////
+void App::InitializeScene()
+{
+	assert(mSceneManager);
+	mSceneManager->CreateScene("Test Scene");
 
+
+
+}
 
 void App::Startup(void)
 {
@@ -116,6 +126,10 @@ void App::Startup(void)
 	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
 	//UI Init
 	mEngineUI = make_unique<EngineGUI>(CommandList);
+	//Scene Manager
+	mSceneManager = make_unique<SceneManager>();
+
+
 
 
 
@@ -128,7 +142,8 @@ void App::Startup(void)
 void App::Cleanup(void)
 {
 	mEngineUI->ShutDown();
-	MaterialManager::GetMaterialInstance()->Release();
+	MaterialManager::Release();
+	ModelLoader::Release();
 }
 
 void App::Update(float DeltaTime)
@@ -242,11 +257,6 @@ void App::RenderScene(void)
 	mSky->Draw(RenderContext);
 	RenderContext.PIXEndEvent();
 #pragma endregion
-
-
-
-
-
 
 
 	RenderContext.PIXEndEvent();

@@ -31,7 +31,7 @@ namespace GlareEngine
 
 		static MaterialManager* GetMaterialInstance();
 
-		void Release();
+		static void Release();
 
 		int GetMaterialSize() { return MatCBIndex; }
 

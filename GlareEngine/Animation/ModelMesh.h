@@ -11,7 +11,7 @@ namespace GlareEngine
 		ModelMesh() {}
 		ModelMesh(ID3D12GraphicsCommandList* CommandList,const char* name, vector<Vertices::PosNormalTangentTexc> vertices, vector<UINT> indices);
 		~ModelMesh();
-
+	public:
 		MeshGeometry mMeshGeo;
 	private:
 		void SetupMesh(ID3D12GraphicsCommandList* CommandList, const char* name);
