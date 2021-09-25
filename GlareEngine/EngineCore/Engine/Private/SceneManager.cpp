@@ -9,7 +9,7 @@ Scene::Scene(string name, ID3D12GraphicsCommandList* pCommandList)
     :mName(name),
     m_pCommandList(pCommandList)
 {
-    CreateModelInstance("BlueTree/Blue_Tree_03a.fbx", 5, 5);
+    CreateModelInstance("mercMaleMarksman/mercMaleMarksman.FBX", 5, 5);
 }
 
 

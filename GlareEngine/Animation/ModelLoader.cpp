@@ -67,6 +67,7 @@ bool ModelLoader::LoadModel(string filename)
 	int it = (int)filename.find_last_of('/');
 	this->mDirectory += filename.substr(0, (LONG64)(it) + 1);
 	this->mModelName = filename;
+	mMeshes[mModelName] = make_unique<ModelRenderData>();
 
 	ProcessNode(pScene->mRootNode, pScene);
 	return true;
@@ -78,7 +79,7 @@ const ModelRenderData* ModelLoader::GetModelRenderData(string ModelName)
 	{
 		LoadModel(ModelName);
 	}
-	return &mMeshes[ModelName];
+	return mMeshes[ModelName].get();
 }
 
 
@@ -94,7 +95,7 @@ void ModelLoader::BuildMaterial(string MaterialName)
 
 	const Material* ModelMat = MaterialManager::GetMaterialInstance()->GetMaterial(StringToWString(MaterialName));
 	assert(ModelMat);
-	mMeshes[mModelName].mSubModels.back().mMaterial = ModelMat;
+	mMeshes[mModelName].get()->mSubModels.back().mMaterial = ModelMat;
 }
 
 void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene)
@@ -103,8 +104,8 @@ void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 
-		mMeshes[mModelName].mSubModels.push_back(ModelData());
-		mMeshes[mModelName].mSubModels.back().mMeshData = this->ProcessMesh(mesh, scene);
+		mMeshes[mModelName].get()->mSubModels.push_back(ModelData());
+		mMeshes[mModelName].get()->mSubModels.back().mMeshData = this->ProcessMesh(mesh, scene);
 	}
 
 	for (UINT i = 0; i < node->mNumChildren; i++)
