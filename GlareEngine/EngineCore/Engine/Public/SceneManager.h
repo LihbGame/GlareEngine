@@ -6,7 +6,7 @@
 class Scene
 {
 public:
-	Scene(string name);
+	Scene(string name, ID3D12GraphicsCommandList* pCommandList);
 	~Scene() {};
 
 	void RenderScene();
@@ -15,6 +15,7 @@ public:
 private:
 
 private:
+	ID3D12GraphicsCommandList* m_pCommandList = nullptr;
 	string mName;
 	vector<InstanceModel> mModels;
 };
@@ -24,7 +25,7 @@ private:
 class SceneManager
 {
 public:
-	SceneManager() {};
+	SceneManager(ID3D12GraphicsCommandList* pCommandList):m_pCommandList(pCommandList) {};
 	~SceneManager() {};
 
 	void CreateScene(string Name);
@@ -33,6 +34,7 @@ public:
 
 	void ReleaseScene(string name);
 private:
+	ID3D12GraphicsCommandList* m_pCommandList = nullptr;
 	unordered_map<string,unique_ptr<Scene>> mScenes;
 };
 

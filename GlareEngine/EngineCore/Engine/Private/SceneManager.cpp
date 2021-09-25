@@ -1,36 +1,41 @@
 #include "SceneManager.h"
 #include "RanderObject.h"
+#include "ModelLoader.h"
+using namespace  GlareEngine;
 
 /// Scene/////////////////////////////////////////////
 
-Scene::Scene(string name)
-    :mName(name)
+Scene::Scene(string name, ID3D12GraphicsCommandList* pCommandList)
+    :mName(name),
+    m_pCommandList(pCommandList)
 {
-    //CreateModelInstance(5, 5);
-
+    CreateModelInstance("BlueTree/Blue_Tree_03a.fbx", 5, 5);
 }
 
 
 void Scene::CreateModelInstance(string ModelName, int Num_X, int Num_Y)
 {
-    //ModelRenderData* 
+    assert(m_pCommandList);
+    const ModelRenderData* ModelData=ModelLoader::GetModelLoader(m_pCommandList)->GetModelRenderData(ModelName);
 
+    InstanceRenderData InstanceData;
+   InstanceData.mModelData = ModelData;
+   InstanceData.mInstanceConstants.resize(ModelData->mSubModels.size());
+   for (int SubMeshIndex = 0; SubMeshIndex < ModelData->mSubModels.size(); SubMeshIndex++)
+   {
+       for (int i = 0; i < Num_X; ++i)
+       {
+           for (int y = 0; y < Num_Y; ++y)
+           {
+               InstanceRenderConstants IRC;
 
-    //InstanceRenderData InstanceData;
-
-    for (int i = 0; i < Num_X; ++i)
-    {
-        for (int y = 0; y < Num_Y; ++y)
-        {
-
-
-
-
-
-        }
-    }
-    
-
+               IRC.mMaterialIndex = ModelData->mSubModels[SubMeshIndex].mMaterial->mMatCBIndex;
+               XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranslation(Num_X * 100.0f, Num_Y * 100.0f, 0));
+               InstanceData.mInstanceConstants[SubMeshIndex].push_back(IRC);
+           }
+       }
+   }
+   mModels.push_back(InstanceModel(InstanceData));
 }
 
 
@@ -42,7 +47,7 @@ void Scene::CreateModelInstance(string ModelName, int Num_X, int Num_Y)
 
 void SceneManager::CreateScene(string name)
 {
-	auto scene = make_unique<Scene>(name);
+    auto scene = make_unique<Scene>(name, m_pCommandList);
 	mScenes[name] = std::move(scene);
 }
 

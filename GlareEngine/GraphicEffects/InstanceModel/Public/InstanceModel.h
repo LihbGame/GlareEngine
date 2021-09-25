@@ -9,13 +9,13 @@ class InstanceModel
 	:public RanderObject
 {
 public:
-	InstanceModel(unique_ptr<InstanceRenderData> InstanceData);
+	InstanceModel(InstanceRenderData InstanceData);
 	~InstanceModel() {};
 
 	virtual void Draw(GraphicsContext& Context);
 	virtual void BuildPSO(const RootSignature& rootSignature);
 
 private:
-	unique_ptr<InstanceRenderData> mInstanceData;
+	InstanceRenderData mInstanceData;
 };
 

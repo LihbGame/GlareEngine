@@ -4,6 +4,7 @@
 namespace GlareEngine
 {
 	using namespace std;
+
 	struct Material
 	{
 		// Unique material name for lookup.
@@ -23,6 +24,16 @@ namespace GlareEngine
 	};
 
 
+	//GPU struct Data
+	struct MaterialConstant
+	{
+		DirectX::XMFLOAT4			mDiffuseAlbedo	= { 1.0f, 1.0f, 1.0f, 1.0f };
+		DirectX::XMFLOAT3			mFresnelR0		= { 0.01f, 0.01f, 0.01f };
+		float						mHeightScale	= 0.0f;
+		DirectX::XMFLOAT4X4			mMatTransform	= MathHelper::Identity4x4();
+	};
+
+
 	class MaterialManager
 	{
 	public:
@@ -35,6 +46,10 @@ namespace GlareEngine
 
 		int GetMaterialSize() { return MatCBIndex; }
 
+		void CreateMaterialsConstantBuffer();
+
+		vector<MaterialConstant>& GetMaterialsConstantBuffer();
+
 		void BuildMaterials(
 			wstring name,
 			vector<Texture*>   Textures,
@@ -44,7 +59,13 @@ namespace GlareEngine
 			XMFLOAT4X4 MatTransform = MathHelper::Identity4x4());
 
 
-		const Material* GetMaterial(std::wstring MaterialName) { return mMaterials[MaterialName].get(); }
+		const Material* GetMaterial(std::wstring MaterialName) { 
+			if (mMaterials.find(MaterialName) == mMaterials.end())
+			{
+				return nullptr;
+			}
+			return mMaterials[MaterialName].get(); 
+		}
 
 
 		std::unordered_map<std::wstring, std::unique_ptr<Material>>& GetAllMaterial() { return mMaterials; };
@@ -58,5 +79,7 @@ namespace GlareEngine
 		static int MatCBIndex;
 
 		std::unordered_map<std::wstring, std::unique_ptr<Material>> mMaterials;
+	
+		vector<MaterialConstant> mMaterialConstanrBuffer;
 	};
 }

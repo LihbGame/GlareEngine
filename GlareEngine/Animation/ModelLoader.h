@@ -29,7 +29,7 @@ namespace GlareEngine
 		static ModelLoader* g_ModelLoader;
 
 		ID3D12GraphicsCommandList* m_pCommandList;
-		unordered_map<string, unique_ptr<ModelRenderData>> mMeshes;
+		unordered_map<string, ModelRenderData> mMeshes;
 
 		string mDirectory;
 		string mModelName;

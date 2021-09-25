@@ -1,8 +1,8 @@
 #include "InstanceModel.h"
 
-InstanceModel::InstanceModel(unique_ptr<InstanceRenderData> InstanceData)
+InstanceModel::InstanceModel(InstanceRenderData InstanceData)
+	:mInstanceData(InstanceData)
 {
-	mInstanceData = std::move(InstanceData);
 }
 
 void InstanceModel::Draw(GraphicsContext& Context)

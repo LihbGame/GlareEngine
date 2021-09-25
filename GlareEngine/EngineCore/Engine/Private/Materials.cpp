@@ -22,7 +22,25 @@ namespace GlareEngine
 		}
 	}
 
-	void MaterialManager::BuildMaterials(wstring name, 
+	void MaterialManager::CreateMaterialsConstantBuffer()
+	{
+		mMaterialConstanrBuffer.resize(mMaterials.size());
+		for (auto& Material : mMaterials)
+		{
+			int ConstBufferIndex = Material.second->mMatCBIndex;
+			mMaterialConstanrBuffer[ConstBufferIndex].mDiffuseAlbedo = Material.second->DiffuseAlbedo;
+			mMaterialConstanrBuffer[ConstBufferIndex].mFresnelR0 = Material.second->FresnelR0;
+			mMaterialConstanrBuffer[ConstBufferIndex].mMatTransform = Material.second->MatTransform;
+			mMaterialConstanrBuffer[ConstBufferIndex].mHeightScale = Material.second->mHeightScale;
+		}
+	}
+
+	vector<MaterialConstant>& MaterialManager::GetMaterialsConstantBuffer()
+	{
+		return mMaterialConstanrBuffer;
+	}
+
+	void MaterialManager::BuildMaterials(wstring name,
 		vector<Texture*>  Textures,
 		float Height_Scale, XMFLOAT4 DiffuseAlbedo, 
 		XMFLOAT3 FresnelR0, XMFLOAT4X4 MatTransform)

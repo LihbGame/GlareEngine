@@ -127,9 +127,9 @@ void App::Startup(void)
 	//UI Init
 	mEngineUI = make_unique<EngineGUI>(CommandList);
 	//Scene Manager
-	mSceneManager = make_unique<SceneManager>();
+	mSceneManager = make_unique<SceneManager>(CommandList);
 
-
+	InitializeScene();
 
 
 

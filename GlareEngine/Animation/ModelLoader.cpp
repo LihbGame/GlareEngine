@@ -78,7 +78,7 @@ const ModelRenderData* ModelLoader::GetModelRenderData(string ModelName)
 	{
 		LoadModel(ModelName);
 	}
-	return mMeshes[ModelName].get();
+	return &mMeshes[ModelName];
 }
 
 
@@ -91,6 +91,10 @@ void ModelLoader::BuildMaterial(string MaterialName)
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 		XMFLOAT3(0.1f, 0.1f, 0.1f),
 		MathHelper::Identity4x4());
+
+	const Material* ModelMat = MaterialManager::GetMaterialInstance()->GetMaterial(StringToWString(MaterialName));
+	assert(ModelMat);
+	mMeshes[mModelName].mSubModels.back().mMaterial = ModelMat;
 }
 
 void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene)
@@ -99,8 +103,8 @@ void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 
-		mMeshes[mModelName].get()->mSubModels.push_back(ModelData());
-		mMeshes[mModelName].get()->mSubModels.back().mMeshData = this->ProcessMesh(mesh, scene);
+		mMeshes[mModelName].mSubModels.push_back(ModelData());
+		mMeshes[mModelName].mSubModels.back().mMeshData = this->ProcessMesh(mesh, scene);
 	}
 
 	for (UINT i = 0; i < node->mNumChildren; i++)

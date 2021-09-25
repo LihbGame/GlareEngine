@@ -24,7 +24,7 @@ namespace GlareEngine
 	struct ModelData
 	{
 		ModelMesh mMeshData;
-		Material* mMaterial;
+		const Material* mMaterial;
 	};
 
 	struct ModelRenderData
