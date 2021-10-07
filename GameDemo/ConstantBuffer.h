@@ -20,4 +20,11 @@ struct MainConstants
 	float FarZ = 0.0f;
 	float TotalTime = 0.0f;
 	float DeltaTime = 0.0f;
+	DirectX::XMFLOAT4 gAmbientLight;
+
+	// 索引[0，NUM_DIR_LIGHTS）是方向灯；
+	 //索引[NUM_DIR_LIGHTS，NUM_DIR_LIGHTS + NUM_POINT_LIGHTS）是点光源；
+	 //索引[NUM_DIR_LIGHTS + NUM_POINT_LIGHTS，NUM_DIR_LIGHTS + NUM_POINT_LIGHT + NUM_SPOT_LIGHTS）
+	 //是聚光灯，每个对象最多可使用MaxLights。
+	Light Lights[MaxLights];
 };

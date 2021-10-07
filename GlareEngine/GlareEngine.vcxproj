@@ -252,6 +252,7 @@
     <ClInclude Include="ShaderSource\Public\WaterRefractionMaskShader.h" />
     <None Include="Shaders\Misc\ColorSpaceUtility.hlsli" />
     <None Include="Shaders\Misc\CommonResource.hlsli" />
+    <None Include="Shaders\Misc\PBRLighting.hlsli" />
     <None Include="Shaders\Misc\ShaderUtility.hlsli" />
   </ItemGroup>
   <ItemGroup>
@@ -263,6 +264,7 @@
     <ClCompile Include="EngineCore\Graphics\Private\TextureManager.cpp" />
     <ClCompile Include="EngineCore\Math\Random.cpp" />
     <ClCompile Include="GraphicEffects\InstanceModel\Private\InstanceModel.cpp" />
+    <ClCompile Include="GraphicEffects\Misc\RanderObject.cpp" />
     <ClCompile Include="GraphicEffects\Particles\Private\ParticleEffect.cpp" />
     <ClCompile Include="GraphicEffects\Particles\Private\ParticleEmissionProperties.cpp" />
     <ClCompile Include="GraphicEffects\Sky\Private\Sky.cpp" />
@@ -338,6 +340,19 @@
     <Library Include="Dependences\lib\ozz\debug\sample_framework_d.lib" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Shaders\PBRInstanceModel\InstanceModelPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ALPHA_TEST</PreprocessorDefinitions>
+    </FxCompile>
+    <FxCompile Include="Shaders\PBRInstanceModel\InstanceModelVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
     <FxCompile Include="Shaders\Misc\ScreenQuadVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>

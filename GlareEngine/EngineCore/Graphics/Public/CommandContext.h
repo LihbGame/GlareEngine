@@ -575,7 +575,7 @@ namespace GlareEngine
 		{
 			assert(BufferData != nullptr && Math::IsAligned(BufferData, 16));
 			DynamicAlloc cb = m_CPULinearAllocator.Allocate(BufferSize);
-			SIMDMemoryCopy(cb.DataPtr, BufferData, Math::AlignUp(BufferSize, 16) >> 4);
+			memcpy(cb.DataPtr, BufferData, BufferSize);
 			m_CommandList->SetGraphicsRootShaderResourceView(RootIndex, cb.GPUAddress);
 		}
 

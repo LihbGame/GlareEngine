@@ -69,6 +69,15 @@ namespace GlareEngine
 			return g_DescriptorAllocator[Type].Allocate(Count);
 		}
 
+		//SRV Descriptors Manager ,return Descriptor index
+		extern vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_TextureSRV;
+		inline int AddToGlobalTextureSRVDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes)
+		{
+			g_TextureSRV.push_back(SRVdes);
+			return int(g_TextureSRV.size() - 1);
+		}
+
+
 		extern RootSignature g_GenerateMipsRS;
 		extern ComputePSO g_GenerateMipsLinearPSO[4];
 		extern ComputePSO g_GenerateMipsGammaPSO[4];

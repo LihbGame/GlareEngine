@@ -1,22 +1,37 @@
 #define MaxLights 16
 #define PI 3.1415
+
+// Defaults for number of lights.
+#ifndef NUM_DIR_LIGHTS
+    #define NUM_DIR_LIGHTS 3
+#endif
+
+#ifndef NUM_POINT_LIGHTS
+    #define NUM_POINT_LIGHTS 0
+#endif
+
+#ifndef NUM_SPOT_LIGHTS
+    #define NUM_SPOT_LIGHTS 0
+#endif
+
+
 struct Light
 {
     float3 Strength;
-    float FalloffStart; // point/spot light only
-    float3 Direction;   // directional/spot light only
-    float FalloffEnd;   // point/spot light only
-    float3 Position;    // point light only
-    float SpotPower;    // spot light only
+    float FalloffStart;     // point/spot light only
+    float3 Direction;       // directional/spot light only
+    float FalloffEnd;       // point/spot light only
+    float3 Position;        // point light only
+    float SpotPower;        // spot light only
 };
 
 struct Material
 {
-    float4 DiffuseAlbedo;
-    float3 FresnelR0;
-    float Roughness;
-    float metallic;
-    float AO;
+    float4  DiffuseAlbedo;
+    float3  FresnelR0;
+    float   Roughness;
+    float   metallic;
+    float   AO;
 };
 
 //BRDF-F
@@ -67,7 +82,7 @@ float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
 float CalcAttenuation(float d, float falloffStart, float falloffEnd)
 {
     // Linear falloff.
-    return saturate((falloffEnd-d) / (falloffEnd - falloffStart));
+    return saturate((falloffEnd - d) / (falloffEnd - falloffStart));
 }
 
 // Schlick gives an approximation to Fresnel reflectance (see pg. 233 "Real-Time Rendering 3rd Ed.").
@@ -77,7 +92,7 @@ float3 SchlickFresnel(float3 R0, float3 normal, float3 lightVec)
     float cosIncidentAngle = saturate(dot(normal, lightVec));
 
     float f0 = 1.0f - cosIncidentAngle;
-    float3 reflectPercent = R0 + (1.0f - R0)*(f0*f0*f0*f0*f0);
+    float3 reflectPercent = R0 + (1.0f - R0) * (f0 * f0 * f0 * f0 * f0);
 
     return reflectPercent;
 }
@@ -85,13 +100,13 @@ float3 SchlickFresnel(float3 R0, float3 normal, float3 lightVec)
 //BlinnPhong
 float3 BlinnPhong(float3 lightStrength, float3 lightVec, float3 normal, float3 toEye, Material mat)
 {
-    const float m = (1-mat.Roughness) * 256.0f;
+    const float m = (1 - mat.Roughness) * 256.0f;
     float3 halfVec = normalize(toEye + lightVec);
 
-    float roughnessFactor = (m + 8.0f)*pow(max(dot(halfVec, normal), 0.0f), m) / 8.0f;
+    float roughnessFactor = (m + 8.0f) * pow(max(dot(halfVec, normal), 0.0f), m) / 8.0f;
     float3 fresnelFactor = SchlickFresnel(mat.FresnelR0, halfVec, lightVec);
 
-    float3 specAlbedo = fresnelFactor*roughnessFactor;
+    float3 specAlbedo = fresnelFactor * roughnessFactor;
 
     // Our spec formula goes outside [0,1] range, but we are 
     // doing LDR rendering.  So scale it down a bit.
@@ -101,14 +116,14 @@ float3 BlinnPhong(float3 lightStrength, float3 lightVec, float3 normal, float3 t
 }
 
 // cook-torrance BRDF
-float3 CookTorranceBRDF(float3 radiance,float3 N,float3 H,float3 V,float3 L, float3 F0, Material mat)
+float3 CookTorranceBRDF(float3 radiance, float3 N, float3 H, float3 V, float3 L, float3 F0, Material mat)
 {
     float NDF = DistributionGGX(N, H, mat.Roughness);
     float G = GeometrySmith(N, V, L, mat.Roughness);
     float3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
 
     float3 kS = F;
-    float3 kD = float3(1.0f,1.0f,1.0f) - kS;
+    float3 kD = float3(1.0f, 1.0f, 1.0f) - kS;
     kD *= 1.0 - mat.metallic;
 
     float3 nominator = NDF * G * F;
@@ -117,7 +132,7 @@ float3 CookTorranceBRDF(float3 radiance,float3 N,float3 H,float3 V,float3 L, flo
 
     // outgoing radiance Lo
     float NdotL = max(dot(N, L), 0.0);
-    return  (kD * mat.DiffuseAlbedo.rgb / PI + specular)* radiance* NdotL;
+    return (kD * mat.DiffuseAlbedo.rgb / PI + specular) * radiance * NdotL;
 
 }
 
@@ -125,7 +140,7 @@ float3 CookTorranceBRDF(float3 radiance,float3 N,float3 H,float3 V,float3 L, flo
 //---------------------------------------------------------------------------------------
 // Evaluates the lighting equation for directional lights.
 //---------------------------------------------------------------------------------------
-float3 ComputeDirectionalLight(Light L, Material mat, float3 normal, float3 toEye,float3 F0)
+float3 ComputeDirectionalLight(Light L, Material mat, float3 normal, float3 toEye, float3 F0)
 {
     // The light vector aims opposite the direction the light rays travel.
     float3 lightVec = -L.Direction;
@@ -134,9 +149,9 @@ float3 ComputeDirectionalLight(Light L, Material mat, float3 normal, float3 toEy
     float ndotl = max(dot(lightVec, normal), 0.0f);
     float3 lightStrength = L.Strength * ndotl;
 
-    float3 Half= normalize(toEye + lightVec);
+    float3 Half = normalize(toEye + lightVec);
 
-    return  CookTorranceBRDF(lightStrength, normal, Half, toEye, lightVec, F0, mat);
+    return CookTorranceBRDF(lightStrength, normal, Half, toEye, lightVec, F0, mat);
 }
 
 //---------------------------------------------------------------------------------------
@@ -151,7 +166,7 @@ float3 ComputePointLight(Light L, Material mat, float3 pos, float3 normal, float
     float d = length(lightVec);
 
     // Range test.
-    if(d > L.FalloffEnd)
+    if (d > L.FalloffEnd)
         return 0.0f;
 
     // Normalize the light vector.
@@ -183,7 +198,7 @@ float3 ComputeSpotLight(Light L, Material mat, float3 pos, float3 normal, float3
     float d = length(lightVec);
 
     // Range test.
-    if(d > L.FalloffEnd)
+    if (d > L.FalloffEnd)
         return 0.0f;
 
     // Normalize the light vector.

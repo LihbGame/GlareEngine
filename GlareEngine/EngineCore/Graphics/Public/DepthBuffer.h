@@ -8,7 +8,7 @@ namespace GlareEngine
 			public PixelBuffer
 		{
 		public:
-			DepthBuffer(float ClearDepth = 0.0f, uint8_t ClearStencil = 0)
+			DepthBuffer(float ClearDepth = 1.0f, uint8_t ClearStencil = 0)
 				: m_ClearDepth(ClearDepth), m_ClearStencil(ClearStencil)
 			{
 				m_hDSV[0].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;

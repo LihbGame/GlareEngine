@@ -19,17 +19,16 @@ public:
     void BuildSkySRV(ID3D12GraphicsCommandList* CommandList);
 
     virtual void Draw(GraphicsContext& Context);
-    virtual void BuildPSO(const RootSignature& rootSignature);
 
+    static void BuildPSO(const RootSignature& rootSignature);
 private:
+	//PSO
+	static GraphicsPSO mPSO;
 	//World mat
 	XMFLOAT4X4 mWorld = MathHelper::Identity4x4();
     //Sky Cube Mesh
     std::unique_ptr<MeshGeometry> mSkyMesh;
     //Sky SRV Descriptor
     CD3DX12_CPU_DESCRIPTOR_HANDLE m_Descriptor;
-    //Sky PSO
-    GraphicsPSO mSkyPSO;
-
 };
 

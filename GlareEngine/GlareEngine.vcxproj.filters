@@ -282,6 +282,9 @@
     <ClCompile Include="GraphicEffects\InstanceModel\Private\InstanceModel.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
+    <ClCompile Include="GraphicEffects\Misc\RanderObject.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -333,6 +336,7 @@
     <None Include="Shaders\Misc\ShaderUtility.hlsli" />
     <None Include="Shaders\Misc\ColorSpaceUtility.hlsli" />
     <None Include="Shaders\Misc\CommonResource.hlsli" />
+    <None Include="Shaders\Misc\PBRLighting.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Dependences\lib\ozz\debug\ozz_animation_d.lib" />
@@ -349,5 +353,7 @@
     <FxCompile Include="Shaders\Present\BufferCopyPS.hlsl" />
     <FxCompile Include="Shaders\Sky\SkyPS.hlsl" />
     <FxCompile Include="Shaders\Sky\SkyVS.hlsl" />
+    <FxCompile Include="Shaders\PBRInstanceModel\InstanceModelVS.hlsl" />
+    <FxCompile Include="Shaders\PBRInstanceModel\InstanceModelPS.hlsl" />
   </ItemGroup>
 </Project>

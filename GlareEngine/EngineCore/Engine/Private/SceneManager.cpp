@@ -9,9 +9,26 @@ Scene::Scene(string name, ID3D12GraphicsCommandList* pCommandList)
     :mName(name),
     m_pCommandList(pCommandList)
 {
-    CreateModelInstance("mercMaleMarksman/mercMaleMarksman.FBX", 5, 5);
+    CreateModelInstance("BlueTree/Blue_Tree_02a.FBX", 5, 5);
 }
 
+
+void Scene::RenderScene(GraphicsContext& Context)
+{
+    //Set Textures SRV
+    Context.SetDynamicDescriptors(3, 0, (UINT)g_TextureSRV.size(), g_TextureSRV.data());
+    //Set Material Data
+   const vector<MaterialConstant>& MaterialData = MaterialManager::GetMaterialInstance()->GetMaterialsConstantBuffer();
+   Context.SetDynamicSRV(4,sizeof(MaterialConstant) * MaterialData.size(), MaterialData.data());
+
+
+    for (auto& e : mModels)
+    {
+        Context.PIXBeginEvent(e.GetName().c_str());
+        e.Draw(Context);
+        Context.PIXEndEvent();
+    }
+}
 
 void Scene::CreateModelInstance(string ModelName, int Num_X, int Num_Y)
 {
@@ -30,12 +47,12 @@ void Scene::CreateModelInstance(string ModelName, int Num_X, int Num_Y)
                InstanceRenderConstants IRC;
 
                IRC.mMaterialIndex = ModelData->mSubModels[SubMeshIndex].mMaterial->mMatCBIndex;
-               XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranslation(Num_X * 100.0f, Num_Y * 100.0f, 0));
+               XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranslation(Num_X * 100.0f, Num_Y * 100.0f, 0)*XMMatrixScaling(0.5f,0.5f,0.5f));
                InstanceData.mInstanceConstants[SubMeshIndex].push_back(IRC);
            }
        }
    }
-   mModels.push_back(InstanceModel(InstanceData));
+   mModels.push_back(InstanceModel(StringToWString(ModelName), InstanceData));
 }
 
 
@@ -49,6 +66,7 @@ void SceneManager::CreateScene(string name)
 {
     auto scene = make_unique<Scene>(name, m_pCommandList);
 	mScenes[name] = std::move(scene);
+
 }
 
 Scene* SceneManager::GetScene(string Name)

@@ -26,6 +26,7 @@ using namespace GlareEngine::GameCore;
 using namespace GlareEngine::DirectX12Graphics;
 using namespace GlareEngine::EngineInput;
 
+#define MAXSRVSIZE 256
 
 const int gNumFrameResources = 3;
 
@@ -86,12 +87,12 @@ private:
 	unique_ptr<EngineGUI> mEngineUI;
 
 	//Viewport and Scissor
-	D3D12_VIEWPORT m_MainViewport;
-	D3D12_RECT m_MainScissor;
+	D3D12_VIEWPORT m_MainViewport = { 0 };
+	D3D12_RECT m_MainScissor = { 0 };
 	
 	float mCameraSpeed = 100.0f;
 
-	D3D12_RECT mClientRect;
+	D3D12_RECT mClientRect = { 0 };
 	//scene manager
 	unique_ptr<SceneManager> mSceneManager;
 
@@ -109,7 +110,8 @@ void App::InitializeScene()
 {
 	assert(mSceneManager);
 	mSceneManager->CreateScene("Test Scene");
-
+	//Create Materials Constant Buffer
+	MaterialManager::GetMaterialInstance()->CreateMaterialsConstantBuffer();
 
 
 }
@@ -130,6 +132,8 @@ void App::Startup(void)
 	mSceneManager = make_unique<SceneManager>(CommandList);
 
 	InitializeScene();
+
+
 
 
 
@@ -155,18 +159,37 @@ void App::Update(float DeltaTime)
 
 void App::BuildRootSignature()
 {
-	mRootSignature.Reset(3, 2);
+	mRootSignature.Reset(6, 8);
+	//Main Constant Buffer
 	mRootSignature[0].InitAsConstantBuffer(0);
+	//Objects Constant Buffer
 	mRootSignature[1].InitAsConstantBuffer(1);
+	//Sky Cube Texture
 	mRootSignature[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1);
+	//Cook BRDF PBR Textures 
+	mRootSignature[3].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, MAXSRVSIZE);
+	//Material Constant Data
+	mRootSignature[4].InitAsBufferSRV(1, 1);
+	//Instance Constant Data 
+	mRootSignature[5].InitAsBufferSRV(0, 1);
+
+	//Static Samplers
 	mRootSignature.InitStaticSampler(0, SamplerLinearWrapDesc);
-	mRootSignature.InitStaticSampler(1, SamplerLinearClampDesc);
+	mRootSignature.InitStaticSampler(1, SamplerAnisoWrapDesc);
+	mRootSignature.InitStaticSampler(2, SamplerShadowDesc);
+	mRootSignature.InitStaticSampler(3, SamplerLinearClampDesc);
+	mRootSignature.InitStaticSampler(4, SamplerVolumeWrapDesc);
+	mRootSignature.InitStaticSampler(5, SamplerPointClampDesc);
+	mRootSignature.InitStaticSampler(6, SamplerPointBorderDesc);
+	mRootSignature.InitStaticSampler(7, SamplerLinearBorderDesc);
+
 	mRootSignature.Finalize(L"Forward Rendering", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 }
 
 void App::BuildPSO()
 {
-	mSky->BuildPSO(mRootSignature);
+	CSky::BuildPSO(mRootSignature);
+	InstanceModel::BuildPSO(mRootSignature);
 }
 
 void App::UpdateWindow(float DeltaTime)
@@ -232,6 +255,29 @@ void App::UpdateMainConstantBuffer(float DeltaTime)
 	mMainConstants.FarZ = 1000.0f;
 	mMainConstants.TotalTime = GameTimer::TotalTime();
 	mMainConstants.DeltaTime = DeltaTime;
+
+	//lights constant buffer
+	{
+		mMainConstants.gAmbientLight = { 0.25f, 0.25f, 0.25f, 1.0f };
+
+		mMainConstants.Lights[0].Direction = XMFLOAT3(0.57735f, -0.47735f, 0.57735f);
+		mMainConstants.Lights[0].Strength = { 1.0f, 1.0f, 1.0f };
+		mMainConstants.Lights[0].FalloffStart = 1.0f;
+		mMainConstants.Lights[0].FalloffEnd = 50.0f;
+		mMainConstants.Lights[0].Position = { 20,20,20 };
+
+		mMainConstants.Lights[1].Direction = XMFLOAT3(-0.57735f, -0.47735f, 0.57735f);
+		mMainConstants.Lights[1].Strength = { 1.0f, 1.0f, 1.0f };
+		mMainConstants.Lights[1].FalloffStart = 1.0f;
+		mMainConstants.Lights[1].FalloffEnd = 50.0f;
+		mMainConstants.Lights[1].Position = { 20,20,20 };
+
+		mMainConstants.Lights[2].Direction = XMFLOAT3(0.57735f, -0.47735f, -0.57735f);
+		mMainConstants.Lights[2].Strength = { 1.0f, 1.0f, 1.0f };
+		mMainConstants.Lights[2].FalloffStart = 1.0f;
+		mMainConstants.Lights[2].FalloffEnd = 50.0f;
+		mMainConstants.Lights[2].Position = { 20,20,20 };
+	}
 }
 
 void App::RenderScene(void)
@@ -243,11 +289,16 @@ void App::RenderScene(void)
 	RenderContext.SetViewportAndScissor(m_MainViewport, m_MainScissor);
 
 	RenderContext.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+	RenderContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+
+	RenderContext.ClearDepth(g_SceneDepthBuffer);
 	RenderContext.ClearRenderTarget(g_SceneColorBuffer);
 
 	RenderContext.SetRootSignature(mRootSignature);
-	//set scene render target
-	RenderContext.SetRenderTarget(g_SceneColorBuffer.GetRTV());
+
+	//set scene render target & Depth Stencli target
+	RenderContext.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
+
 	//set main constant buffer
 	RenderContext.SetDynamicConstantBufferView(0, sizeof(mMainConstants), &mMainConstants);
 
@@ -256,6 +307,10 @@ void App::RenderScene(void)
 	RenderContext.PIXBeginEvent(L"Draw Sky");
 	mSky->Draw(RenderContext);
 	RenderContext.PIXEndEvent();
+#pragma endregion
+
+#pragma region Test Scene
+	mSceneManager->GetScene("Test Scene")->RenderScene(RenderContext);
 #pragma endregion
 
 

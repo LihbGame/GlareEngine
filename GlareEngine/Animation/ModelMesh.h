@@ -13,11 +13,12 @@ namespace GlareEngine
 		~ModelMesh();
 	public:
 		MeshGeometry mMeshGeo;
+		const char* pModelMeshName = nullptr;
 	private:
 		void SetupMesh(ID3D12GraphicsCommandList* CommandList, const char* name);
 	
 	private:
-		const char* pModelMeshName = nullptr;
+
 		MeshData mMeshData;
 	};
 

@@ -44,9 +44,9 @@ namespace GlareEngine
 				m_RootParam.Descriptor.RegisterSpace = 0;
 			}
 
-			void InitAsBufferSRV(UINT Register, D3D12_SHADER_VISIBILITY Visibility = D3D12_SHADER_VISIBILITY_ALL)
+			void InitAsBufferSRV(UINT Register, UINT registerSpace = 0, D3D12_SHADER_VISIBILITY Visibility = D3D12_SHADER_VISIBILITY_ALL)
 			{
-				m_RootParam.InitAsShaderResourceView(Register);
+				m_RootParam.InitAsShaderResourceView(Register, registerSpace);
 				/*m_RootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
 				m_RootParam.ShaderVisibility = Visibility;
 				m_RootParam.Descriptor.ShaderRegister = Register;

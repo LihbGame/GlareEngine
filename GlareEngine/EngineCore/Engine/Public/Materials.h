@@ -19,18 +19,24 @@ namespace GlareEngine
 		DirectX::XMFLOAT3                       FresnelR0 = { 0.01f, 0.01f, 0.01f };
 		//Material Transform
 		DirectX::XMFLOAT4X4                     MatTransform = MathHelper::Identity4x4();
-		//Texture
-		vector<CD3DX12_CPU_DESCRIPTOR_HANDLE>	mDescriptors;
+		//Texture SRV Index
+		vector<int>								mDescriptorsIndex;
 	};
 
 
 	//GPU struct Data
 	struct MaterialConstant
 	{
-		DirectX::XMFLOAT4			mDiffuseAlbedo	= { 1.0f, 1.0f, 1.0f, 1.0f };
-		DirectX::XMFLOAT3			mFresnelR0		= { 0.01f, 0.01f, 0.01f };
-		float						mHeightScale	= 0.0f;
-		DirectX::XMFLOAT4X4			mMatTransform	= MathHelper::Identity4x4();
+		DirectX::XMFLOAT4			mDiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
+		DirectX::XMFLOAT3			mFresnelR0 = { 0.01f, 0.01f, 0.01f };
+		float						mHeightScale = 0.0f;
+		DirectX::XMFLOAT4X4			mMatTransform = MathHelper::Identity4x4();
+		UINT						mRoughnessMapIndex = 0;
+		UINT						mDiffuseMapIndex = 0;
+		UINT						mNormalMapIndex = 0;
+		UINT						mMetallicMapIndex = 0;
+		UINT						mAOMapIndex = 0;
+		UINT						mHeightMapIndex = 0;
 	};
 
 

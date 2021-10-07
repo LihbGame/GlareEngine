@@ -167,6 +167,9 @@ namespace GlareEngine
 			D3D12_DESCRIPTOR_HEAP_TYPE_DSV,
 		};
 
+		//SRV Descriptors Manager ,return Descriptor index
+		vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_TextureSRV;
+
 		RootSignature s_PresentRS;
 		GraphicsPSO s_PresentPSO;
 		GraphicsPSO PresentSDRPS;

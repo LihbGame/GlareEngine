@@ -1,16 +1,15 @@
 #include "Sky.h"
-#include "GraphicsCore.h"
 #include "GeometryGenerator.h"
 #include "TextureManager.h"
-#include "CommandContext.h"
-#include "BufferManager.h"
-#include "Vertex.h"
-#include "InputLayout.h"
+
 //shader
 #include "CompiledShaders/SkyVS.h"
 #include "CompiledShaders/SkyPS.h"
 
 using namespace GlareEngine::DirectX12Graphics;
+
+GraphicsPSO CSky::mPSO;
+
 CSky::CSky(ID3D12GraphicsCommandList* CommandList,
 	float radius, int sliceCount, int stackCount)
 {
@@ -89,7 +88,7 @@ void CSky::BuildSkySRV(ID3D12GraphicsCommandList* CommandList)
 
 void CSky::Draw(GraphicsContext& Context)
 {
-	Context.SetPipelineState(mSkyPSO);
+	Context.SetPipelineState(mPSO);
 	Context.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	Context.SetDynamicDescriptor(2, 0, m_Descriptor);
 	Context.SetIndexBuffer(mSkyMesh->IndexBufferView());
@@ -100,16 +99,16 @@ void CSky::Draw(GraphicsContext& Context)
 
 void CSky::BuildPSO(const RootSignature& rootSignature)
 {
-	mSkyPSO.SetRootSignature(rootSignature);
-	mSkyPSO.SetRasterizerState(RasterizerDefault);
-	mSkyPSO.SetBlendState(BlendDisable);
-	mSkyPSO.SetDepthStencilState(DepthStateDisabled);
-	mSkyPSO.SetSampleMask(0xFFFFFFFF);
-	mSkyPSO.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
-	mSkyPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-	mSkyPSO.SetVertexShader(g_pSkyVS, sizeof(g_pSkyVS));
-	mSkyPSO.SetPixelShader(g_pSkyPS, sizeof(g_pSkyPS));
-	mSkyPSO.SetRenderTargetFormat(DefaultHDRColorFormat, DXGI_FORMAT_UNKNOWN);
-	mSkyPSO.Finalize();
+	mPSO.SetRootSignature(rootSignature);
+	mPSO.SetRasterizerState(RasterizerDefault);
+	mPSO.SetBlendState(BlendDisable);
+	mPSO.SetDepthStencilState(DepthStateDisabled);
+	mPSO.SetSampleMask(0xFFFFFFFF);
+	mPSO.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
+	mPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+	mPSO.SetVertexShader(g_pSkyVS, sizeof(g_pSkyVS));
+	mPSO.SetPixelShader(g_pSkyPS, sizeof(g_pSkyPS));
+	mPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat());
+	mPSO.Finalize();
 
 }

@@ -32,6 +32,13 @@ namespace GlareEngine
 			mMaterialConstanrBuffer[ConstBufferIndex].mFresnelR0 = Material.second->FresnelR0;
 			mMaterialConstanrBuffer[ConstBufferIndex].mMatTransform = Material.second->MatTransform;
 			mMaterialConstanrBuffer[ConstBufferIndex].mHeightScale = Material.second->mHeightScale;
+			//PBR TEXTURE INDEX ORDER BY PBRTextureFileType
+			mMaterialConstanrBuffer[ConstBufferIndex].mDiffuseMapIndex = Material.second->mDescriptorsIndex[0];
+			mMaterialConstanrBuffer[ConstBufferIndex].mNormalMapIndex = Material.second->mDescriptorsIndex[1];
+			mMaterialConstanrBuffer[ConstBufferIndex].mAOMapIndex = Material.second->mDescriptorsIndex[2];
+			mMaterialConstanrBuffer[ConstBufferIndex].mMetallicMapIndex = Material.second->mDescriptorsIndex[3];
+			mMaterialConstanrBuffer[ConstBufferIndex].mRoughnessMapIndex = Material.second->mDescriptorsIndex[4];
+			mMaterialConstanrBuffer[ConstBufferIndex].mHeightMapIndex = Material.second->mDescriptorsIndex[5];
 		}
 	}
 
@@ -76,7 +83,8 @@ namespace GlareEngine
 			srvDesc.Format = Textures[i]->Resource->GetDesc().Format;
 			srvDesc.Texture2D.MipLevels = Textures[i]->Resource->GetDesc().MipLevels;
 			g_Device->CreateShaderResourceView(Textures[i]->Resource.Get(), &srvDesc, Descriptor);
-			Mat->mDescriptors.emplace_back(Descriptor);
+			int TextureSrvIndex = DirectX12Graphics::AddToGlobalTextureSRVDescriptor(Descriptor);
+			Mat->mDescriptorsIndex.push_back(TextureSrvIndex);
 		}
 	}
 }

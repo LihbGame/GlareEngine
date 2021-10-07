@@ -6,17 +6,10 @@ cbuffer SkyPass : register(b1)
     float4x4 gWorld;
 }
 
-struct VertexOut
+
+PosVSOut main(float3 PosL : POSITION)
 {
-    float4 PosH : SV_POSITION;
-    float3 PosL : POSITION;
-};
-
-
-
-VertexOut main(float3 PosL : POSITION)
-{
-    VertexOut vout;
+    PosVSOut vout;
 
 	// 使用局部顶点位置作为立方体贴图采样向量。
     vout.PosL = PosL;

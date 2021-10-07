@@ -3,7 +3,7 @@
 
 namespace Vertices
 {
-	 struct Pos
+	struct Pos
 	{
 		 Pos() :Position(0, 0, 0) {}
 		 Pos(const DirectX::XMFLOAT3& p) :Position(p) {}

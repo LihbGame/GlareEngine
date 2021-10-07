@@ -9,7 +9,7 @@ public:
 	Scene(string name, ID3D12GraphicsCommandList* pCommandList);
 	~Scene() {};
 
-	void RenderScene();
+	void RenderScene(GraphicsContext& Context);
 
 	void CreateModelInstance(string ModelName,int Num_X, int Num_Y);
 private:

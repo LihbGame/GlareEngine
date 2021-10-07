@@ -88,7 +88,7 @@ void ModelLoader::BuildMaterial(string MaterialName)
 	MaterialManager::GetMaterialInstance()->BuildMaterials(
 		StringToWString(MaterialName),
 		LoadPBRTexture(MaterialName),
-		0.09f,
+		0.0f,
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 		XMFLOAT3(0.1f, 0.1f, 0.1f),
 		MathHelper::Identity4x4());
