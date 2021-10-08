@@ -47,7 +47,7 @@ void Scene::CreateModelInstance(string ModelName, int Num_X, int Num_Y)
                InstanceRenderConstants IRC;
 
                IRC.mMaterialIndex = ModelData->mSubModels[SubMeshIndex].mMaterial->mMatCBIndex;
-               XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranslation(Num_X * 100.0f, Num_Y * 100.0f, 0)*XMMatrixScaling(0.5f,0.5f,0.5f));
+               XMStoreFloat4x4(&IRC.mWorldTransform,XMMatrixTranspose(XMMatrixScaling(0.5f, 0.5f, 0.5f) * XMMatrixTranslation(i * 100.0f, -200, y * 100.0f)));
                InstanceData.mInstanceConstants[SubMeshIndex].push_back(IRC);
            }
        }

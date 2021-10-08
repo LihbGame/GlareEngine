@@ -3,7 +3,7 @@
 #include "Camera.h"
 #include "TextureManage.h"
 #include "FrameResource.h"
-
+#include "ModelMesh.h"
 class Grass;
 
 class HeightmapTerrain

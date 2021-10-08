@@ -10,7 +10,7 @@ PosNorTanTexOut main(PosNorTanTexIn vin, uint instanceID : SV_InstanceID)
 
 	// Fetch the instance data.
     InstanceData instData = gInstanceData[instanceID];
-    float4x4 world = float4x4(0.3,0,0,0,0,0.3,0,0,0,0,0.3,0,0,0,0,1);
+    float4x4 world = instData.World;
     uint MatIndex = instData.MaterialIndex;
 
     vout.MatIndex = MatIndex;

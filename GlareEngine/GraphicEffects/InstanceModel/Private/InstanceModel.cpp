@@ -19,7 +19,7 @@ void InstanceModel::Draw(GraphicsContext& Context)
 	{
 		//Set Instance data
 		const vector<InstanceRenderConstants>& InstanceData = mInstanceData.mInstanceConstants[SubModelIndex];
-		Context.SetDynamicSRV(5, sizeof(InstanceRenderConstants), (void*)InstanceData.data());
+		Context.SetDynamicSRV(5, sizeof(InstanceRenderConstants)* InstanceData.size(), (void*)InstanceData.data());
 		Context.SetPipelineState(mPSO);
 		Context.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -28,7 +28,7 @@ void InstanceModel::Draw(GraphicsContext& Context)
 		Context.SetIndexBuffer(SubModelMeshGeo.IndexBufferView());
 		Context.SetVertexBuffer(0, SubModelMeshGeo.VertexBufferView());
 		UINT IndexCount =((MeshGeometry)SubModelMeshGeo).DrawArgs[SubMeshName].IndexCount;
-		Context.DrawIndexedInstanced(IndexCount,/* (UINT)InstanceData.size()*/1, 0, 0, 0);
+		Context.DrawIndexedInstanced(IndexCount,(UINT)InstanceData.size(), 0, 0, 0);
 	}
 }
 

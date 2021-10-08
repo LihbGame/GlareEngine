@@ -96,7 +96,7 @@ float HeightmapTerrain::GetHeight(float x, float z) const
 	}
 }
 
-MeshGeometry* HeightmapTerrain::GetMeshGeometry() const
+::MeshGeometry* HeightmapTerrain::GetMeshGeometry() const
 {
 	return mGeometries.get();
 }
@@ -309,7 +309,7 @@ void HeightmapTerrain::BuildQuadPatchGeometry()
 {
 //Vertices
 #pragma region Vertices data
-	std::vector<Vertice::Terrain> patchVertices(mNumPatchVertRows * mNumPatchVertCols);
+	std::vector<Vertices::Terrain> patchVertices(mNumPatchVertRows * mNumPatchVertCols);
 
 	float halfWidth = 0.5f * GetWidth();
 	float halfDepth = 0.5f * GetDepth();
@@ -326,7 +326,7 @@ void HeightmapTerrain::BuildQuadPatchGeometry()
 		{
 			float x = -halfWidth + j * patchWidth;
 
-			patchVertices[i * mNumPatchVertCols + j].Pos = XMFLOAT3(x, 0.0f, z);
+			patchVertices[i * mNumPatchVertCols + j].Position = XMFLOAT3(x, 0.0f, z);
 
 			// Stretch texture over grid.
 			patchVertices[i * mNumPatchVertCols + j].Tex.x = j * du;
@@ -344,15 +344,15 @@ void HeightmapTerrain::BuildQuadPatchGeometry()
 		}
 	}
 
-	std::vector<Vertice::Terrain> vertices(patchVertices.size());
+	std::vector<Vertices::Terrain> vertices(patchVertices.size());
 	for (size_t i = 0; i < patchVertices.size(); ++i)
 	{
-		vertices[i].Pos = patchVertices[i].Pos;
+		vertices[i].Position = patchVertices[i].Position;
 		vertices[i].Tex = patchVertices[i].Tex;
 		vertices[i].BoundsY = patchVertices[i].BoundsY;
 	}
 
-	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertice::Terrain);
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertices::Terrain);
 #pragma endregion
 
 //Indices
@@ -379,7 +379,7 @@ void HeightmapTerrain::BuildQuadPatchGeometry()
 #pragma endregion
 
 
-	auto geo = std::make_unique<MeshGeometry>();
+	auto geo = std::make_unique<::MeshGeometry>();
 	geo->Name = "TerrainGeo";
 
 	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
@@ -394,12 +394,12 @@ void HeightmapTerrain::BuildQuadPatchGeometry()
 	geo->IndexBufferGPU = EngineUtility::CreateDefaultBuffer(mDevice,
 		mCommandList, indices.data(), ibByteSize, geo->IndexBufferUploader);
 
-	geo->VertexByteStride = sizeof(Vertice::Terrain);
+	geo->VertexByteStride = sizeof(Vertices::Terrain);
 	geo->VertexBufferByteSize = vbByteSize;
 	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
 	geo->IndexBufferByteSize = ibByteSize;
 
-	SubmeshGeometry submesh;
+	::SubmeshGeometry submesh;
 	submesh.IndexCount = (UINT)indices.size();
 	submesh.StartIndexLocation = 0;
 	submesh.BaseVertexLocation = 0;
