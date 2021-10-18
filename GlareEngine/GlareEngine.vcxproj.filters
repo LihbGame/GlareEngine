@@ -127,6 +127,7 @@
     <ClInclude Include="Animation\MeshStruct.h" />
     <ClInclude Include="EngineCore\Engine\Public\Materials.h" />
     <ClInclude Include="GraphicEffects\InstanceModel\Public\InstanceModel.h" />
+    <ClInclude Include="GraphicEffects\InstanceModel\Public\SimpleModelGenerator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
@@ -283,6 +284,9 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="GraphicEffects\Misc\RanderObject.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicEffects\InstanceModel\Private\SimpleModelGenerator.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>

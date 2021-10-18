@@ -29,7 +29,9 @@ PosNorTanTexOut main(PosNorTanTexIn vin, uint instanceID : SV_InstanceID)
     vout.PosH = mul(posW, gViewProj);
 
 	// Output vertex attributes for interpolation across triangle.
-    vout.TexC = mul(float4(vin.TexC, 0.0f, 1.0f), matData.mMatTransform).xy;
+    vout.TexC = mul(float4(vin.TexC, 0.0f, 1.0f), instData.TexTransform).xy;
+    //vout.TexC = mul(float4(vin.TexC, 0.0f, 1.0f), matData.mMatTransform).xy;
+    
 
 	// Generate projective tex-coords to project shadow map onto scene.
     //vout.ShadowPosH = mul(posW, gShadowTransform);

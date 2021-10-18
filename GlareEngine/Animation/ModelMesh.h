@@ -9,13 +9,13 @@ namespace GlareEngine
 	{
 	public:
 		ModelMesh() {}
-		ModelMesh(ID3D12GraphicsCommandList* CommandList,const char* name, vector<Vertices::PosNormalTangentTexc> vertices, vector<UINT> indices);
+		ModelMesh(ID3D12GraphicsCommandList* CommandList,string name, vector<Vertices::PosNormalTangentTexc> vertices, vector<UINT> indices);
 		~ModelMesh();
 	public:
 		MeshGeometry mMeshGeo;
-		const char* pModelMeshName = nullptr;
+		string pModelMeshName;
 	private:
-		void SetupMesh(ID3D12GraphicsCommandList* CommandList, const char* name);
+		void SetupMesh(ID3D12GraphicsCommandList* CommandList, string name);
 	
 	private:
 

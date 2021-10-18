@@ -112,8 +112,7 @@ void App::InitializeScene()
 	mSceneManager->CreateScene("Test Scene");
 	//Create Materials Constant Buffer
 	MaterialManager::GetMaterialInstance()->CreateMaterialsConstantBuffer();
-
-
+	mCamera->LookAt(XMFLOAT3(100, 100, 100), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 1, 0));
 }
 
 void App::Startup(void)
@@ -148,6 +147,7 @@ void App::Cleanup(void)
 	mEngineUI->ShutDown();
 	MaterialManager::Release();
 	ModelLoader::Release();
+	SimpleModelGenerator::Release();
 }
 
 void App::Update(float DeltaTime)
@@ -206,6 +206,8 @@ void App::UpdateWindow(float DeltaTime)
 
 void App::UpdateCamera(float DeltaTime)
 {
+	mCameraSpeed = mEngineUI->GetCameraModeSpeed();
+
 	if (EngineInput::IsPressed(GInput::kKey_W))
 	{
 		mCamera->Walk(mCameraSpeed * DeltaTime);

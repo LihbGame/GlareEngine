@@ -86,7 +86,7 @@ void GlareEngine::DirectX12Graphics::InitializeSampler(void)
 	SamplerPointClamp = SamplerPointClampDesc.CreateDescriptor();
 
 
-	SamplerAnisoWrapDesc.MaxAnisotropy = 4;
+	SamplerAnisoWrapDesc.MaxAnisotropy = 16;
 	SamplerAnisoWrap = SamplerAnisoWrapDesc.CreateDescriptor();
 
 

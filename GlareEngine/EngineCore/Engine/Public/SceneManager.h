@@ -2,6 +2,8 @@
 #include "GraphicsCore.h"
 #include "ModelMesh.h"
 #include "InstanceModel.h"
+#include "SimpleModelGenerator.h"
+
 
 class Scene
 {
@@ -10,8 +12,9 @@ public:
 	~Scene() {};
 
 	void RenderScene(GraphicsContext& Context);
-
+	void BuildScene();
 	void CreateModelInstance(string ModelName,int Num_X, int Num_Y);
+	void CreateSimpleModelInstance(string ModelName,SimpleModelType Type,string MaterialName, int Num_X, int Num_Y);
 private:
 
 private:

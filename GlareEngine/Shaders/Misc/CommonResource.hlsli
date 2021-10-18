@@ -23,6 +23,7 @@ Texture2D gSRVMap[MAXSRVSIZE] : register(t1);
 struct InstanceData
 {
     float4x4 World;
+    float4x4 TexTransform;
     uint MaterialIndex;
     uint mPAD1;
     uint mPAD2;

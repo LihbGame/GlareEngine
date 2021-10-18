@@ -7,14 +7,7 @@ using namespace GlareEngine::DirectX12Graphics;
 
 ModelLoader* ModelLoader::g_ModelLoader = new ModelLoader();
 
-string  PBRTextureFileType[] = {
-	"_albedo",
-	"_normal",
-	"_ao",
-	"_metallic",
-	"_roughness",
-	"_height"
-};
+
 
 
 
@@ -175,7 +168,7 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 		//Build Material
 		BuildMaterial(texture);
 	}
-	return ModelMesh(m_pCommandList, mesh->mName.C_Str(), vertices, indices);
+	return ModelMesh(m_pCommandList, string((char*)mesh->mName.C_Str()), vertices, indices);
 }
 
 
@@ -184,14 +177,7 @@ vector<Texture*> ModelLoader::LoadPBRTexture(string texturename)
 {
 	vector<Texture*> ModelTextures;
 	string RootFilename = mDirectory + "PBRTextures/" + texturename;
-	string Fullfilename = "";
-
-	for (auto Type : PBRTextureFileType)
-	{
-		Fullfilename = RootFilename + Type;
-		ModelTextures.push_back(TextureManager::GetInstance(m_pCommandList)->GetModelTexture(StringToWString(Fullfilename)).get());
-	}
-
+	TextureManager::GetInstance(m_pCommandList)->CreatePBRTextures(RootFilename, ModelTextures);
 	return ModelTextures;
 }
 

@@ -1,6 +1,17 @@
 #include "TextureManager.h"
 #include "GraphicsCore.h"
 
+
+string  PBRTextureFileType[] = {
+	"_albedo",
+	"_normal",
+	"_ao",
+	"_metallic",
+	"_roughness",
+	"_height"
+};
+
+
 namespace GlareEngine
 {
 	namespace DirectX12Graphics
@@ -26,6 +37,16 @@ namespace GlareEngine
 			{
 				delete m_pTextureManagerInstance;
 				m_pTextureManagerInstance = nullptr;
+			}
+		}
+
+		void TextureManager::CreatePBRTextures(string PathName, vector<Texture*>& Textures)
+		{
+			string Fullfilename = "";
+			for (auto Type : PBRTextureFileType)
+			{
+				Fullfilename = PathName + Type;
+				Textures.push_back(GetModelTexture(StringToWString(Fullfilename)).get());
 			}
 		}
 

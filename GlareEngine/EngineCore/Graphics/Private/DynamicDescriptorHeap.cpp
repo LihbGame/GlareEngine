@@ -173,9 +173,9 @@ namespace GlareEngine
 
 				uint32_t MaxSetHandle = 0;
 				//Root entry marked as stale but has no stale descriptors
-				assert(TRUE == _BitScanReverse((unsigned long*)&MaxSetHandle, m_RootDescriptorTable[RootIndex].AssignedHandlesBitMap));
+				//assert(TRUE == _BitScanReverse((unsigned long*)&MaxSetHandle, (unsigned long)m_RootDescriptorTable[RootIndex].AssignedHandlesBitMap));
 
-				NeededSpace += MaxSetHandle + 1;
+				NeededSpace += m_RootDescriptorTable[RootIndex].AssignedHandlesBitMap;//MaxSetHandle + 1;
 			}
 			return NeededSpace;
 		}
@@ -199,10 +199,10 @@ namespace GlareEngine
 
 				uint32_t MaxSetHandle=0;
 				//Root entry marked as stale but has no stale descriptors
-				assert(TRUE == _BitScanReverse((unsigned long*)&MaxSetHandle, m_RootDescriptorTable[RootIndex].AssignedHandlesBitMap));
+				//assert(TRUE == _BitScanReverse((unsigned long*)&MaxSetHandle, (unsigned long)m_RootDescriptorTable[RootIndex].AssignedHandlesBitMap));
 
-				NeededSpace += MaxSetHandle + 1;
-				TableSize[StaleParamCount] = MaxSetHandle + 1;
+				NeededSpace += m_RootDescriptorTable[RootIndex].AssignedHandlesBitMap;// MaxSetHandle + 1;
+				TableSize[StaleParamCount] = m_RootDescriptorTable[RootIndex].AssignedHandlesBitMap;// MaxSetHandle + 1;
 
 				++StaleParamCount;
 			}
@@ -211,7 +211,7 @@ namespace GlareEngine
 
 			m_StaleRootParamsBitMap = 0;
 
-			static const uint32_t kMaxDescriptorsPerCopy = 16;
+			static const uint32_t kMaxDescriptorsPerCopy = 256;
 			UINT NumDestDescriptorRanges = 0;
 			D3D12_CPU_DESCRIPTOR_HANDLE pDestDescriptorRangeStarts[kMaxDescriptorsPerCopy];
 			UINT pDestDescriptorRangeSizes[kMaxDescriptorsPerCopy];
@@ -228,24 +228,56 @@ namespace GlareEngine
 				DescriptorTableCache& RootDescTable = m_RootDescriptorTable[RootIndex];
 
 				D3D12_CPU_DESCRIPTOR_HANDLE* SrcHandles = RootDescTable.TableStart;
-				uint64_t SetHandles = (uint64_t)RootDescTable.AssignedHandlesBitMap;
+				uint32_t SetHandles = (uint64_t)RootDescTable.AssignedHandlesBitMap;
 				D3D12_CPU_DESCRIPTOR_HANDLE CurDest = DestHandleStart.GetCPUHandle();
 				DestHandleStart += TableSize[i] * DescriptorSize;
 
-				unsigned long SkipCount;
-				while (_BitScanForward64(&SkipCount, SetHandles))
+				//unsigned long SkipCount;
+				//while (_BitScanForward64(&SkipCount, SetHandles))
+				//{
+				//	// Skip over unset descriptor handles
+				//	SetHandles >>= SkipCount;
+				//	SrcHandles += SkipCount;
+				//	CurDest.ptr += SkipCount * DescriptorSize;
+				//
+				//	unsigned long DescriptorCount;
+				//	_BitScanForward64(&DescriptorCount, ~SetHandles);
+				//	SetHandles >>= DescriptorCount;
+				//
+				//	// If we run out of temp room, copy what we've got so far
+				//	if (NumSrcDescriptorRanges + DescriptorCount > kMaxDescriptorsPerCopy)
+				//	{
+				//		g_Device->CopyDescriptors(
+				//			NumDestDescriptorRanges, pDestDescriptorRangeStarts, pDestDescriptorRangeSizes,
+				//			NumSrcDescriptorRanges, pSrcDescriptorRangeStarts, pSrcDescriptorRangeSizes,
+				//			Type);
+				//
+				//		NumSrcDescriptorRanges = 0;
+				//		NumDestDescriptorRanges = 0;
+				//	}
+				//
+				//	// Setup destination range
+				//	pDestDescriptorRangeStarts[NumDestDescriptorRanges] = CurDest;
+				//	pDestDescriptorRangeSizes[NumDestDescriptorRanges] = DescriptorCount;
+				//	++NumDestDescriptorRanges;
+				//
+				//	// Setup source ranges (one descriptor each because we don't assume they are contiguous)
+				//	for (uint32_t j = 0; j < DescriptorCount; ++j)
+				//	{
+				//		pSrcDescriptorRangeStarts[NumSrcDescriptorRanges] = SrcHandles[j];
+				//		pSrcDescriptorRangeSizes[NumSrcDescriptorRanges] = 1;
+				//		++NumSrcDescriptorRanges;
+				//	}
+				//
+				//	// Move the destination pointer forward by the number of descriptors we will copy
+				//	SrcHandles += DescriptorCount;
+				//	CurDest.ptr += DescriptorCount * DescriptorSize;
+				//}
+
+				//not Skip
 				{
-					// Skip over unset descriptor handles
-					SetHandles >>= SkipCount;
-					SrcHandles += SkipCount;
-					CurDest.ptr += SkipCount * DescriptorSize;
-
-					unsigned long DescriptorCount;
-					_BitScanForward64(&DescriptorCount, ~SetHandles);
-					SetHandles >>= DescriptorCount;
-
 					// If we run out of temp room, copy what we've got so far
-					if (NumSrcDescriptorRanges + DescriptorCount > kMaxDescriptorsPerCopy)
+					if (NumSrcDescriptorRanges + SetHandles > kMaxDescriptorsPerCopy)
 					{
 						g_Device->CopyDescriptors(
 							NumDestDescriptorRanges, pDestDescriptorRangeStarts, pDestDescriptorRangeSizes,
@@ -258,11 +290,11 @@ namespace GlareEngine
 
 					// Setup destination range
 					pDestDescriptorRangeStarts[NumDestDescriptorRanges] = CurDest;
-					pDestDescriptorRangeSizes[NumDestDescriptorRanges] = DescriptorCount;
+					pDestDescriptorRangeSizes[NumDestDescriptorRanges] = SetHandles;
 					++NumDestDescriptorRanges;
 
 					// Setup source ranges (one descriptor each because we don't assume they are contiguous)
-					for (uint32_t j = 0; j < DescriptorCount; ++j)
+					for (uint32_t j = 0; j < SetHandles; ++j)
 					{
 						pSrcDescriptorRangeStarts[NumSrcDescriptorRanges] = SrcHandles[j];
 						pSrcDescriptorRangeSizes[NumSrcDescriptorRanges] = 1;
@@ -270,10 +302,13 @@ namespace GlareEngine
 					}
 
 					// Move the destination pointer forward by the number of descriptors we will copy
-					SrcHandles += DescriptorCount;
-					CurDest.ptr += DescriptorCount * DescriptorSize;
+					SrcHandles += SetHandles;
+					CurDest.ptr += SetHandles * DescriptorSize;
 				}
 			}
+
+
+
 
 			g_Device->CopyDescriptors(
 				NumDestDescriptorRanges, pDestDescriptorRangeStarts, pDestDescriptorRangeSizes,
@@ -292,7 +327,7 @@ namespace GlareEngine
 			D3D12_CPU_DESCRIPTOR_HANDLE* CopyDest = TableCache.TableStart + Offset;
 			for (UINT i = 0; i < NumHandles; ++i)
 				CopyDest[i] = Handles[i];
-			TableCache.AssignedHandlesBitMap |= ((1 << NumHandles) - 1) << Offset;
+			TableCache.AssignedHandlesBitMap = NumHandles;//|= (((LONG64)1 << NumHandles) - 1) << Offset;
 			m_StaleRootParamsBitMap |= (1 << RootIndex);
 		}
 

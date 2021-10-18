@@ -10,6 +10,8 @@ namespace GlareEngine
 			static TextureManager* GetInstance(ID3D12GraphicsCommandList* pCommandList);
 			static void Shutdown();
 
+
+			void CreatePBRTextures(string PathName, vector<Texture*>& Textures);
 			void CreateTexture(std::wstring name, std::wstring filename, bool ForceSRGB = true);
 			std::unique_ptr<Texture>& GetTexture(std::wstring name, bool ForceSRGB = true);
 			std::unique_ptr<Texture>& GetModelTexture(std::wstring name, bool ForceSRGB = true);
