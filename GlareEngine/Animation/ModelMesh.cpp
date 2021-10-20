@@ -3,7 +3,7 @@
 
 using namespace GlareEngine;
 
-ModelMesh::ModelMesh(ID3D12GraphicsCommandList* CommandList, string name, vector<Vertices::PosNormalTangentTexc> vertices, vector<UINT> indices)
+ModelMesh::ModelMesh(ID3D12GraphicsCommandList* CommandList, const char* name, vector<Vertices::PosNormalTangentTexc> vertices, vector<UINT> indices)
 	:pModelMeshName(name)
 {
 	mMeshData.Vertices = vertices;
@@ -16,7 +16,7 @@ ModelMesh::~ModelMesh()
 }
 
 // Initializes all the buffer objects/arrays
-void ModelMesh::SetupMesh(ID3D12GraphicsCommandList* pCommandList, string name)
+void ModelMesh::SetupMesh(ID3D12GraphicsCommandList* pCommandList, const char* name)
 {
 	const UINT vbByteSize = (UINT)mMeshData.Vertices.size() * sizeof(Vertices::PosNormalTangentTexc);
 	const UINT ibByteSize = (UINT)mMeshData.Indices32.size() * sizeof(UINT);

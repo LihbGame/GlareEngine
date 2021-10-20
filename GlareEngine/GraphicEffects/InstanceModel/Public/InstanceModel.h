@@ -3,10 +3,10 @@
 #include "EngineUtility.h"
 #include "GeometryGenerator.h"
 #include "Vertex.h"
-#include "RanderObject.h"
+#include "RenderObject.h"
 
 class InstanceModel 
-	:public RanderObject
+	:public RenderObject
 {
 public:
 	InstanceModel(wstring Name, InstanceRenderData InstanceData);

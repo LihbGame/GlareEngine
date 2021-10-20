@@ -168,7 +168,7 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 		//Build Material
 		BuildMaterial(texture);
 	}
-	return ModelMesh(m_pCommandList, string((char*)mesh->mName.C_Str()), vertices, indices);
+	return ModelMesh(m_pCommandList, mesh->mName.C_Str(), vertices, indices);
 }
 
 

@@ -1,11 +1,11 @@
 #pragma once
-#include "RanderObject.h"
+#include "RenderObject.h"
 #include "PipelineState.h"
 #include "MeshStruct.h"
 using namespace GlareEngine;
 
 class CSky :
-    public RanderObject
+    public RenderObject
 {
 public:
 	CSky(ID3D12GraphicsCommandList* CommandList,

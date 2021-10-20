@@ -29,11 +29,11 @@ struct InstanceRenderData
 	const ModelRenderData*							mModelData = nullptr;
 };
 
-class RanderObject
+class RenderObject
 {
 public:
-	RanderObject() {}
-	~RanderObject() {}
+	RenderObject() {}
+	~RenderObject() {}
 public:
 	void SetName(wstring name) { mName = name; }
 	wstring GetName() const { return mName; }

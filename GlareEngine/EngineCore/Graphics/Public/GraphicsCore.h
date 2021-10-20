@@ -10,6 +10,12 @@
 
 namespace GlareEngine
 {
+	enum class RenderPipelineType:int
+	{
+		Forward,
+		Forward_Plus,
+		Deferred
+	};
 
 	namespace DirectX12Graphics
 	{

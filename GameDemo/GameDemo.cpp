@@ -68,13 +68,16 @@ public:
 
 	void UpdateMainConstantBuffer(float DeltaTime);
 
-	void InitializeScene();
+	void InitializeScene(ID3D12GraphicsCommandList* CommandList);
 protected:
 	// 处理鼠标输入的重载函数
 	virtual void OnMouseDown(WPARAM btnState, int x, int y);
 	virtual void OnMouseUp(WPARAM btnState, int x, int y);
 	virtual void OnMouseMove(WPARAM btnState, int x, int y);
 private:
+	//Only one scene
+	static Scene* gScene;
+
 	//Main Constant Buffer
 	MainConstants mMainConstants;
 	//Main Camera
@@ -98,7 +101,7 @@ private:
 
 };
 
-
+Scene* App::gScene = nullptr;
 //////////////////////////////////////////////////////////////
 
 //Game App entry
@@ -106,13 +109,37 @@ CREATE_APPLICATION(App);
 
 
 //////////////////////////////////////////////////////////////
-void App::InitializeScene()
+void App::InitializeScene(ID3D12GraphicsCommandList* CommandList)
 {
-	assert(mSceneManager);
-	mSceneManager->CreateScene("Test Scene");
-	//Create Materials Constant Buffer
-	MaterialManager::GetMaterialInstance()->CreateMaterialsConstantBuffer();
+	//Main Camera
+	mCamera = make_unique<Camera>();
 	mCamera->LookAt(XMFLOAT3(100, 100, 100), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 1, 0));
+	//Sky Initialize
+	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
+	//Create PBR Materials
+	SimpleModelGenerator::GetInstance(CommandList)->CreatePBRMaterials();
+	//Create Root Signature
+	BuildRootSignature();
+	//Create PSO
+	BuildPSO();
+
+	assert(mSceneManager);
+	gScene = mSceneManager->CreateScene("Test Scene");
+
+	//////Build Scene//////////
+	{
+		//sky
+		gScene->AddObjectToScene(mSky.get());
+		//instance models
+		gScene->CreateSimpleModelInstance("Grid_01", SimpleModelType::Grid, "PBRharshbricks", 1, 1);
+		gScene->CreateModelInstance("BlueTree/Blue_Tree_02a.FBX", 5, 5);
+		//gScene->CreateSimpleModelInstance("Sphere_01", SimpleModelType::Sphere, "PBRharshbricks", 1, 1);
+		//gScene->CreateSimpleModelInstance("Sphere_01", SimpleModelType::Cylinder, "PBRharshbricks", 2, 1);
+		//gScene->CreateModelInstance("mercMaleMarksman/mercMaleMarksman.FBX", 5, 5);
+	}
+
+	//Create all Materials Constant Buffer
+	MaterialManager::GetMaterialInstance()->CreateMaterialsConstantBuffer();
 }
 
 void App::Startup(void)
@@ -121,24 +148,13 @@ void App::Startup(void)
 
 	ID3D12GraphicsCommandList* CommandList = InitializeContext.GetCommandList();
 
-	//Main Camera
-	mCamera = make_unique<Camera>();
-	//Sky Initialize
-	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
 	//UI Init
 	mEngineUI = make_unique<EngineGUI>(CommandList);
 	//Scene Manager
 	mSceneManager = make_unique<SceneManager>(CommandList);
+	//Create scene
+	InitializeScene(CommandList);
 
-	InitializeScene();
-
-
-
-
-
-	BuildRootSignature();
-	BuildPSO(); 
-	
 	InitializeContext.Finish(true);
 }
 
@@ -304,15 +320,8 @@ void App::RenderScene(void)
 	//set main constant buffer
 	RenderContext.SetDynamicConstantBufferView(0, sizeof(mMainConstants), &mMainConstants);
 
-	//Draw sky
-#pragma region Draw sky
-	RenderContext.PIXBeginEvent(L"Draw Sky");
-	mSky->Draw(RenderContext);
-	RenderContext.PIXEndEvent();
-#pragma endregion
-
 #pragma region Test Scene
-	mSceneManager->GetScene("Test Scene")->RenderScene(RenderContext);
+	gScene->RenderScene(RenderPipelineType::Forward, RenderContext);
 #pragma endregion
 
 

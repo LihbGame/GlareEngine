@@ -3,26 +3,7 @@
 #include "ModelMesh.h"
 #include "InstanceModel.h"
 #include "SimpleModelGenerator.h"
-
-
-class Scene
-{
-public:
-	Scene(string name, ID3D12GraphicsCommandList* pCommandList);
-	~Scene() {};
-
-	void RenderScene(GraphicsContext& Context);
-	void BuildScene();
-	void CreateModelInstance(string ModelName,int Num_X, int Num_Y);
-	void CreateSimpleModelInstance(string ModelName,SimpleModelType Type,string MaterialName, int Num_X, int Num_Y);
-private:
-
-private:
-	ID3D12GraphicsCommandList* m_pCommandList = nullptr;
-	string mName;
-	vector<InstanceModel> mModels;
-};
-
+#include "Scene.h"
 
 
 class SceneManager
@@ -31,7 +12,7 @@ public:
 	SceneManager(ID3D12GraphicsCommandList* pCommandList):m_pCommandList(pCommandList) {};
 	~SceneManager() {};
 
-	void CreateScene(string Name);
+	Scene* CreateScene(string Name);
 
 	Scene* GetScene(string Name);
 

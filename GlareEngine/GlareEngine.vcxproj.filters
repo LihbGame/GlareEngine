@@ -100,7 +100,6 @@
     <ClInclude Include="EngineCore\Engine\Public\EngineLog.h" />
     <ClInclude Include="EngineCore\Graphics\Public\BufferManager.h" />
     <ClInclude Include="EngineCore\Graphics\Public\ShadowBuffer.h" />
-    <ClInclude Include="GraphicEffects\Misc\RanderObject.h" />
     <ClInclude Include="EngineCore\Graphics\Public\TextureManager.h" />
     <ClInclude Include="GraphicEffects\Sky\Public\Sky.h" />
     <ClInclude Include="EngineCore\Engine\Public\Camera.h" />
@@ -128,6 +127,8 @@
     <ClInclude Include="EngineCore\Engine\Public\Materials.h" />
     <ClInclude Include="GraphicEffects\InstanceModel\Public\InstanceModel.h" />
     <ClInclude Include="GraphicEffects\InstanceModel\Public\SimpleModelGenerator.h" />
+    <ClInclude Include="EngineCore\Engine\Public\Scene.h" />
+    <ClInclude Include="GraphicEffects\Misc\RenderObject.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
@@ -283,10 +284,13 @@
     <ClCompile Include="GraphicEffects\InstanceModel\Private\InstanceModel.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicEffects\Misc\RanderObject.cpp">
+    <ClCompile Include="GraphicEffects\InstanceModel\Private\SimpleModelGenerator.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicEffects\InstanceModel\Private\SimpleModelGenerator.cpp">
+    <ClCompile Include="EngineCore\Engine\Private\Scene.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicEffects\Misc\RenderObject.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
