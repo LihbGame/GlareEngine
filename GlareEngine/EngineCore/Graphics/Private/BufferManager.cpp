@@ -8,12 +8,11 @@ namespace GlareEngine
 	{
 		DepthBuffer g_SceneDepthBuffer;
 		ColorBuffer g_SceneColorBuffer;
+
 		//ColorBuffer g_PostEffectsBuffer;
 		//ColorBuffer g_VelocityBuffer;
 		//ColorBuffer g_OverlayBuffer;
 		//ColorBuffer g_HorizontalBuffer;
-
-		ShadowBuffer g_ShadowBuffer;
 
 		//ColorBuffer g_SSAOFullScreen(Color(1.0f, 1.0f, 1.0f));
 		//ColorBuffer g_LinearDepth[2];
@@ -80,24 +79,22 @@ void GlareEngine::DirectX12Graphics::InitializeRenderingBuffers(uint32_t NativeW
 {
 	GraphicsContext& InitContext = GraphicsContext::Begin();
 
-	const uint32_t bufferWidth1 = (NativeWidth + 1) / 2;
-	const uint32_t bufferWidth2 = (NativeWidth + 3) / 4;
-	const uint32_t bufferWidth3 = (NativeWidth + 7) / 8;
-	const uint32_t bufferWidth4 = (NativeWidth + 15) / 16;
-	const uint32_t bufferWidth5 = (NativeWidth + 31) / 32;
-	const uint32_t bufferWidth6 = (NativeWidth + 63) / 64;
-	const uint32_t bufferHeight1 = (NativeHeight + 1) / 2;
-	const uint32_t bufferHeight2 = (NativeHeight + 3) / 4;
-	const uint32_t bufferHeight3 = (NativeHeight + 7) / 8;
-	const uint32_t bufferHeight4 = (NativeHeight + 15) / 16;
-	const uint32_t bufferHeight5 = (NativeHeight + 31) / 32;
-	const uint32_t bufferHeight6 = (NativeHeight + 63) / 64;
+	//const uint32_t bufferWidth1 = (NativeWidth + 1) / 2;
+	//const uint32_t bufferWidth2 = (NativeWidth + 3) / 4;
+	//const uint32_t bufferWidth3 = (NativeWidth + 7) / 8;
+	//const uint32_t bufferWidth4 = (NativeWidth + 15) / 16;
+	//const uint32_t bufferWidth5 = (NativeWidth + 31) / 32;
+	//const uint32_t bufferWidth6 = (NativeWidth + 63) / 64;
+	//const uint32_t bufferHeight1 = (NativeHeight + 1) / 2;
+	//const uint32_t bufferHeight2 = (NativeHeight + 3) / 4;
+	//const uint32_t bufferHeight3 = (NativeHeight + 7) / 8;
+	//const uint32_t bufferHeight4 = (NativeHeight + 15) / 16;
+	//const uint32_t bufferHeight5 = (NativeHeight + 31) / 32;
+	//const uint32_t bufferHeight6 = (NativeHeight + 63) / 64;
 
 
 	g_SceneColorBuffer.Create(L"Main Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 	g_SceneDepthBuffer.Create(L"Scene Depth Buffer", NativeWidth, NativeHeight, DSV_FORMAT);
-	g_ShadowBuffer.Create(L"Shadow Map", 2048, 2048);
-	
 	
 	//g_VelocityBuffer.Create(L"Motion Vectors", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT);
 	//g_PostEffectsBuffer.Create(L"Post Effects Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT);
@@ -211,7 +208,7 @@ void GlareEngine::DirectX12Graphics::DestroyRenderingBuffers()
 	g_HorizontalBuffer.Destroy();
 	g_PostEffectsBuffer.Destroy();*/
 
-	g_ShadowBuffer.Destroy();
+	//g_ShadowBuffer.Destroy();
 
 	//g_SSAOFullScreen.Destroy();
 	//g_LinearDepth[0].Destroy();

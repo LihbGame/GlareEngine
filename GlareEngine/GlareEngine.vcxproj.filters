@@ -129,6 +129,7 @@
     <ClInclude Include="GraphicEffects\InstanceModel\Public\SimpleModelGenerator.h" />
     <ClInclude Include="EngineCore\Engine\Public\Scene.h" />
     <ClInclude Include="GraphicEffects\Misc\RenderObject.h" />
+    <ClInclude Include="GraphicEffects\Shadow\Public\ShadowMap.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
@@ -291,6 +292,9 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="GraphicEffects\Misc\RenderObject.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicEffects\Shadow\Private\ShadowMap.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>

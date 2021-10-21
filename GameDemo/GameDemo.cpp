@@ -13,6 +13,7 @@
 #include "Sky.h"
 #include "ModelLoader.h"
 #include "SceneManager.h"
+#include "ShadowMap.h"
 
 //lib
 #pragma comment(lib, "dxgi.lib")
@@ -27,8 +28,12 @@ using namespace GlareEngine::DirectX12Graphics;
 using namespace GlareEngine::EngineInput;
 
 #define MAXSRVSIZE 256
+#define SHADOWMAPSIZE 2048
+#define  FAR_Z 5000.0f
 
 const int gNumFrameResources = 3;
+
+
 
 class App :public GameApp
 {
@@ -84,6 +89,8 @@ private:
 	unique_ptr<Camera> mCamera;
 	//Sky
 	unique_ptr<CSky> mSky;
+	//Shadow map
+	unique_ptr<ShadowMap> mShadowMap;
 	//Root Signature
 	RootSignature mRootSignature;
 	//UI
@@ -116,6 +123,8 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList)
 	mCamera->LookAt(XMFLOAT3(100, 100, 100), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 1, 0));
 	//Sky Initialize
 	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
+	//Shadow map Initialize
+	mShadowMap = make_unique<ShadowMap>(XMFLOAT3(0.57735f, -0.47735f, 0.57735f), SHADOWMAPSIZE, SHADOWMAPSIZE);
 	//Create PBR Materials
 	SimpleModelGenerator::GetInstance(CommandList)->CreatePBRMaterials();
 	//Create Root Signature
@@ -123,11 +132,14 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList)
 	//Create PSO
 	BuildPSO();
 
+
+	//////Build Scene//////////
 	assert(mSceneManager);
 	gScene = mSceneManager->CreateScene("Test Scene");
 
-	//////Build Scene//////////
 	{
+		//Shadow map
+		gScene->SetShadowMap(mShadowMap.get());
 		//sky
 		gScene->AddObjectToScene(mSky.get());
 		//instance models
@@ -264,13 +276,13 @@ void App::UpdateMainConstantBuffer(float DeltaTime)
 	XMStoreFloat4x4(&mMainConstants.InvProj, XMMatrixTranspose(InvProj));
 	XMStoreFloat4x4(&mMainConstants.ViewProj, XMMatrixTranspose(ViewProj));
 	XMStoreFloat4x4(&mMainConstants.InvViewProj, XMMatrixTranspose(InvViewProj));
-	//XMStoreFloat4x4(&mMainConstants.ShadowTransform, XMMatrixTranspose(XMLoadFloat4x4(&mShadowMap->mShadowTransform)));
+	XMStoreFloat4x4(&mMainConstants.ShadowTransform, XMMatrixTranspose(XMLoadFloat4x4(&mShadowMap->GetShadowTransform())));
 
 	mMainConstants.EyePosW = mCamera->GetPosition3f();
 	mMainConstants.RenderTargetSize = XMFLOAT2((float)mClientWidth, (float)mClientHeight);
 	mMainConstants.InvRenderTargetSize = XMFLOAT2(1.0f / mClientWidth, 1.0f / mClientHeight);
 	mMainConstants.NearZ = 1.0f;
-	mMainConstants.FarZ = 1000.0f;
+	mMainConstants.FarZ = FAR_Z;
 	mMainConstants.TotalTime = GameTimer::TotalTime();
 	mMainConstants.DeltaTime = DeltaTime;
 
@@ -278,7 +290,7 @@ void App::UpdateMainConstantBuffer(float DeltaTime)
 	{
 		mMainConstants.gAmbientLight = { 0.25f, 0.25f, 0.25f, 1.0f };
 
-		mMainConstants.Lights[0].Direction = XMFLOAT3(0.57735f, -0.47735f, 0.57735f);
+		mMainConstants.Lights[0].Direction = mShadowMap->GetShadowedLightDir();
 		mMainConstants.Lights[0].Strength = { 1.0f, 1.0f, 1.0f };
 		mMainConstants.Lights[0].FalloffStart = 1.0f;
 		mMainConstants.Lights[0].FalloffEnd = 50.0f;
@@ -351,7 +363,7 @@ void App::OnResize(uint32_t width, uint32_t height)
 	DirectX12Graphics::Resize(width, height);
 
 	//窗口调整大小，因此更新宽高比并重新计算投影矩阵;
-	mCamera->SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 40000.0f);
+	mCamera->SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, FAR_Z);
 
 	m_MainViewport.Width = (float)g_SceneColorBuffer.GetWidth();
 	m_MainViewport.Height = (float)g_SceneColorBuffer.GetHeight();

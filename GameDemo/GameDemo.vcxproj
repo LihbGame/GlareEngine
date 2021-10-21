@@ -79,7 +79,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\GlareEngine\GraphicEffects\InstanceModel\Public;..\GlareEngine\Dependences\include;..\GlareEngine\Animation;..\GlareEngine\EngineEditor\ImgUIEditor;..\GlareEngine\GraphicEffects\Misc;..\GlareEngine\GraphicEffects\Sky\Public;..\GlareEngine\EngineCore\Math;..\GlareEngine\EngineCore\Graphics\Public;..\GlareEngine\EngineCore\Public;..\GlareEngine\EngineCore\Engine\Public;$(IncludePath)</IncludePath>
+    <IncludePath>..\GlareEngine\GraphicEffects\Shadow\Public;..\GlareEngine\GraphicEffects\InstanceModel\Public;..\GlareEngine\Dependences\include;..\GlareEngine\Animation;..\GlareEngine\EngineEditor\ImgUIEditor;..\GlareEngine\GraphicEffects\Misc;..\GlareEngine\GraphicEffects\Sky\Public;..\GlareEngine\EngineCore\Math;..\GlareEngine\EngineCore\Graphics\Public;..\GlareEngine\EngineCore\Public;..\GlareEngine\EngineCore\Engine\Public;$(IncludePath)</IncludePath>
     <LibraryPath>..\GlareEngine\Dependences\lib;..\x64\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
