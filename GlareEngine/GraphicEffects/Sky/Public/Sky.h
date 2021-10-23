@@ -18,7 +18,7 @@ public:
 
     void BuildSkySRV(ID3D12GraphicsCommandList* CommandList);
 
-    virtual void Draw(GraphicsContext& Context);
+    virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr);
 
     static void BuildPSO(const RootSignature& rootSignature);
 private:

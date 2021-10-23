@@ -1,7 +1,15 @@
 #pragma once
 #include "EngineUtility.h"
 #include "ShadowBuffer.h"
-class ShadowMap
+#include "RenderObject.h"
+
+struct ShadowConstantBuffer 
+{
+	XMFLOAT4X4 gShadowViewProj = MathHelper::Identity4x4();
+};
+
+
+class ShadowMap:public RenderObject
 {
 public:
 	ShadowMap(XMFLOAT3 LightDirection, UINT width, UINT height);
@@ -15,6 +23,12 @@ public:
 	D3D12_VIEWPORT Viewport()const;
 	D3D12_RECT ScissorRect()const;
 
+
+	virtual void Draw(GraphicsContext& Context, GraphicsPSO* PSO = nullptr) {};
+	void Draw(GraphicsContext& Context, vector<RenderObject*> RenderObjects);
+
+	static void BuildPSO(const RootSignature& rootSignature);
+
 	void OnResize(UINT newWidth, UINT newHeight);
 
 	void SetSceneBoundCenter(XMFLOAT3 center) { mSceneBounds.Center = center; }
@@ -27,10 +41,14 @@ public:
 	XMFLOAT4X4 GetShadowTransform()const { return mShadowTransform; }
 
 	XMFLOAT3 GetShadowedLightDir()const { return mBaseLightDirection; }
-
+private:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetDSV()const { return mShadowBuffer.GetDSV(); }
 	D3D12_CPU_DESCRIPTOR_HANDLE GetSRV()const { return mShadowBuffer.GetSRV(); }
+
 private:
+	//PSO
+	static GraphicsPSO mShadowPSO;
+
 	D3D12_VIEWPORT mViewport;
 	D3D12_RECT mScissorRect;
 
@@ -59,7 +77,8 @@ private:
 	XMFLOAT3 mBaseLightDirection;
 	//旋转后光的方向
 	XMFLOAT3 mRotatedLightDirection;
-
+	//constant buffer
+	ShadowConstantBuffer mConstantBuffer;
 	int mShadowMapIndex = 0;
 };
 

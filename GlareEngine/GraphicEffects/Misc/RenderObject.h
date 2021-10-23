@@ -22,6 +22,13 @@ struct InstanceRenderConstants
 	int							mPAD3;
 };
 
+enum class PSOType :int
+{
+	Default,
+	Shadow,
+	Count
+};
+
 //For Instance Draw
 struct InstanceRenderData
 {
@@ -37,13 +44,15 @@ public:
 public:
 	void SetName(wstring name) { mName = name; }
 	wstring GetName() const { return mName; }
-	virtual void Draw(GraphicsContext& Context) = 0;
+	void SetShadowFlag(bool IsCastShadow) { mShouldCastShadow = IsCastShadow; }
+	bool GetShadowFlag() { return mShouldCastShadow; }
+
+	virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr) = 0;
 	static void BuildPSO(const RootSignature& rootSignature) {};
 protected:
-	//PSO
-	static GraphicsPSO mPSO;
 	//Name
 	wstring mName;
+	bool mShouldCastShadow = false;
 };
 
 

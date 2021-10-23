@@ -367,5 +367,7 @@
     <FxCompile Include="Shaders\Sky\SkyVS.hlsl" />
     <FxCompile Include="Shaders\PBRInstanceModel\InstanceModelVS.hlsl" />
     <FxCompile Include="Shaders\PBRInstanceModel\InstanceModelPS.hlsl" />
+    <FxCompile Include="Shaders\Shadow\ModelShadowVS.hlsl" />
+    <FxCompile Include="Shaders\Shadow\ModelShadowPS.hlsl" />
   </ItemGroup>
 </Project>

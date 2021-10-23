@@ -1,8 +1,5 @@
 #include "../Misc/CommonResource.hlsli"
 
-StructuredBuffer<MaterialData> gMaterialData : register(t1, space1);
-StructuredBuffer<InstanceData> gInstanceData : register(t0, space1);
-
 float4 main(PosNorTanTexOut pin) : SV_Target
 {
 // Vector from point being lit to eye. 
@@ -41,11 +38,11 @@ float4 main(PosNorTanTexOut pin) : SV_Target
     Material mat = { diffuseAlbedo, matData.mFresnelR0, Roughness, Metallic, AO };
 // Only the first light casts a shadow.
     float3 shadowFactor = float3(1.0f, 1.0f, 1.0f);
-    shadowFactor[0] = 1; //CalcShadowFactor(pin.ShadowPosH);
+    shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
     float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
 	bumpedNormalW, toEyeW, shadowFactor);
 
-    float4 litColor = ambient * shadowFactor[0] + directLight;
+    float4 litColor = (ambient + directLight) * shadowFactor[0];
 
 // Common convention to take alpha from diffuse material.
     litColor.a = diffuseAlbedo.a;

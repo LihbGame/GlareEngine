@@ -1,6 +1,13 @@
 #include "ShadowMap.h"
 #include "GraphicsCore.h"
+
+//shader
+#include "CompiledShaders/ModelShadowVS.h"
+#include "CompiledShaders/ModelShadowPS.h"
+
 using namespace GlareEngine;
+
+GraphicsPSO ShadowMap::mShadowPSO;
 
 ShadowMap::ShadowMap(XMFLOAT3 LightDirection, UINT width, UINT height)
 	:mBaseLightDirection(LightDirection),
@@ -21,7 +28,7 @@ ShadowMap::ShadowMap(XMFLOAT3 LightDirection, UINT width, UINT height)
 	//网格是“最宽的对象”，宽度为20，深度为30.0f，以世界空间原点为中心; 
 	//通常，您需要遍历每个世界空间顶点位置并计算边界球体;
 	mSceneBounds.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	mSceneBounds.Radius = 2000.0f;
+	mSceneBounds.Radius = 300.0f;
 }
 
 
@@ -75,9 +82,13 @@ void ShadowMap::UpdateShadowTransform(float Detailtime)
 		XMStoreFloat4x4(&this->mLightProj, lightProj);
 		XMStoreFloat4x4(&this->mShadowTransform, S);
 
+		XMMATRIX ShadowViewProj = XMMatrixMultiply(lightView, lightProj);
+		XMStoreFloat4x4(&mConstantBuffer.gShadowViewProj, XMMatrixTranspose(ShadowViewProj));
+
 		IsShadowTransformed = false;
 	}
 }
+
 
 UINT ShadowMap::Width()const
 {
@@ -97,6 +108,41 @@ D3D12_VIEWPORT ShadowMap::Viewport()const
 D3D12_RECT ShadowMap::ScissorRect()const
 {
 	return mScissorRect;
+}
+
+void ShadowMap::Draw(GraphicsContext& Context,vector<RenderObject*> RenderObjects)
+{
+	//set Viewport And Scissor
+	Context.SetViewportAndScissor(mViewport, mScissorRect);
+	//set scene render target & Depth Stencil target
+	Context.TransitionResource(mShadowBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+	Context.ClearDepth(mShadowBuffer);
+	Context.SetDepthStencilTarget(GetDSV());
+	//set shadow constant buffer
+	Context.SetDynamicConstantBufferView(1, sizeof(ShadowConstantBuffer), &mConstantBuffer);
+
+	for (auto& object:RenderObjects)
+	{
+		if (object->GetShadowFlag())
+		{
+			object->Draw(Context, &mShadowPSO);
+		}
+	}
+}
+
+void ShadowMap::BuildPSO(const RootSignature& rootSignature)
+{
+	mShadowPSO.SetRootSignature(rootSignature);
+	mShadowPSO.SetRasterizerState(RasterizerShadow);
+	mShadowPSO.SetBlendState(BlendDisable);
+	mShadowPSO.SetDepthStencilState(DepthStateReadWrite);
+	mShadowPSO.SetSampleMask(0xFFFFFFFF);
+	mShadowPSO.SetInputLayout((UINT)InputLayout::PosNormalTangentTexc.size(), InputLayout::PosNormalTangentTexc.data());
+	mShadowPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+	mShadowPSO.SetVertexShader(g_pModelShadowVS, sizeof(g_pModelShadowVS));
+	mShadowPSO.SetPixelShader(g_pModelShadowPS, sizeof(g_pModelShadowPS));
+	mShadowPSO.SetRenderTargetFormats(0,&DefaultHDRColorFormat, DXGI_FORMAT_D32_FLOAT);
+	mShadowPSO.Finalize();
 }
 
 void ShadowMap::OnResize(UINT newWidth, UINT newHeight)

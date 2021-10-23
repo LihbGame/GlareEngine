@@ -2,24 +2,6 @@
 
 #define MAXSRVSIZE 256
 
-//static sampler
-SamplerState gSamplerLinearWrap         : register(s0);
-SamplerState gSamplerAnisoWrap          : register(s1);
-SamplerState gSamplerLinearClamp        : register(s3);
-SamplerState gSamplerVolumeWrap         : register(s4);
-SamplerState gSamplerPointClamp         : register(s5);
-SamplerState gSamplerPointBorder        : register(s6);
-SamplerState gSamplerLinearBorder       : register(s7);
-SamplerComparisonState gSamplerShadow   : register(s2);
-
-//纹理数组，仅着色器模型5.1+支持。 与Texture2DArray不同，
-//此数组中的纹理可以具有不同的大小和格式，使其比纹理数组更灵活。
-Texture2D gSRVMap[MAXSRVSIZE] : register(t1);
-
-
-
-
-
 struct InstanceData
 {
     float4x4 World;
@@ -46,6 +28,23 @@ struct MaterialData
 };
 
 
+//static sampler
+SamplerState gSamplerLinearWrap         : register(s0);
+SamplerState gSamplerAnisoWrap          : register(s1);
+SamplerState gSamplerLinearClamp        : register(s3);
+SamplerState gSamplerVolumeWrap         : register(s4);
+SamplerState gSamplerPointClamp         : register(s5);
+SamplerState gSamplerPointBorder        : register(s6);
+SamplerState gSamplerLinearBorder       : register(s7);
+SamplerComparisonState gSamplerShadow   : register(s2);
+
+//纹理数组，仅着色器模型5.1+支持。 与Texture2DArray不同，
+//此数组中的纹理可以具有不同的大小和格式，使其比纹理数组更灵活。
+Texture2D gSRVMap[MAXSRVSIZE] : register(t1);
+
+StructuredBuffer<MaterialData> gMaterialData : register(t1, space1);
+StructuredBuffer<InstanceData> gInstanceData : register(t0, space1);
+
 // 每帧常量数据。
 cbuffer MainPass : register(b0)
 {
@@ -66,11 +65,13 @@ cbuffer MainPass : register(b0)
     float gDeltaTime;
     float4 gAmbientLight;
 
-    // 索引[0，NUM_DIR_LIGHTS）是方向灯；
+     //索引[0，NUM_DIR_LIGHTS）是方向灯；
      //索引[NUM_DIR_LIGHTS，NUM_DIR_LIGHTS + NUM_POINT_LIGHTS）是点光源；
      //索引[NUM_DIR_LIGHTS + NUM_POINT_LIGHTS，NUM_DIR_LIGHTS + NUM_POINT_LIGHT + NUM_SPOT_LIGHTS）
      //是聚光灯，每个对象最多可使用MaxLights。
     Light gLights[MaxLights];
+    
+    int gShadowMapIndex;
 };    
 
 //Position
@@ -92,7 +93,7 @@ struct PosNorTanTexIn
 struct PosNorTanTexOut
 {
     float4 PosH         : SV_POSITION;
-    //float4 ShadowPosH   : POSITION0;
+    float4 ShadowPosH   : POSITION0;
     float3 PosW         : POSITION1;
     float3 NormalW      : NORMAL;
     float3 TangentW     : TANGENT;
@@ -187,37 +188,37 @@ float2 ParallaxMapping(uint HeightMapIndex, float2 texCoords, float3 viewDir, fl
 // PCF for shadow mapping.
 //---------------------------------------------------------------------------------------
 
-//float CalcShadowFactor(float4 shadowPosH)
-//{
-//    // Complete projection by doing division by w.
-//    shadowPosH.xyz /= shadowPosH.w;
+float CalcShadowFactor(float4 shadowPosH)
+{
+    // Complete projection by doing division by w.
+    shadowPosH.xyz /= shadowPosH.w;
 
-//    // Depth in NDC space.
-//    float depth = shadowPosH.z;
+    // Depth in NDC space.
+    float depth = shadowPosH.z;
 
-//    uint width, height, numMips;
-//    gSRVMap[48].GetDimensions(0, width, height, numMips);
+    uint width, height, numMips;
+    gSRVMap[48].GetDimensions(0, width, height, numMips);
 
-//    // Texel size.
-//    float dx = 1.0f / (float) width;
+    // Texel size.
+    float dx = 1.0f / (float) width;
 
-//    float percentLit = 0.0f;
-//    const float2 offsets[9] =
-//    {
-//        float2(-dx, -dx), float2(0.0f, -dx), float2(dx, -dx),
-//        float2(-dx, 0.0f), float2(0.0f, 0.0f), float2(dx, 0.0f),
-//        float2(-dx, +dx), float2(0.0f, +dx), float2(dx, +dx)
-//    };
+    float percentLit = 0.0f;
+    const float2 offsets[9] =
+    {
+        float2(-dx, -dx), float2(0.0f, -dx), float2(dx, -dx),
+        float2(-dx, 0.0f), float2(0.0f, 0.0f), float2(dx, 0.0f),
+        float2(-dx, +dx), float2(0.0f, +dx), float2(dx, +dx)
+    };
 
-//    [unroll]
-//    for (int i = 0; i < 9; ++i)
-//    {
-//        percentLit += gSRVMap[gShadowMapIndex].SampleCmpLevelZero(gsamShadow,
-//            shadowPosH.xy + offsets[i], depth).r;
-//    }
-
-//    return percentLit / 9.0f;
-//}
+    [unroll]
+    for (int i = 0; i < 9; ++i)
+    {
+        percentLit += gSRVMap[gShadowMapIndex].SampleCmpLevelZero(gSamplerShadow,
+            shadowPosH.xy + offsets[i], depth).r;
+    }
+    percentLit /= 9.0f;
+    return clamp(percentLit, 0.1f, 1.0f);
+}
 
 
 // 如果框完全位于平面的后面(负半空间),则返回true。

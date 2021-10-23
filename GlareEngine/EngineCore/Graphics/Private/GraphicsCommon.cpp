@@ -91,7 +91,7 @@ void GlareEngine::DirectX12Graphics::InitializeSampler(void)
 
 
 	SamplerShadowDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
-	SamplerShadowDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+	SamplerShadowDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 	SamplerShadowDesc.SetTextureAddressMode(D3D12_TEXTURE_ADDRESS_MODE_CLAMP);
 	SamplerShadow = SamplerShadowDesc.CreateDescriptor();
 
@@ -144,9 +144,10 @@ void GlareEngine::DirectX12Graphics::InitializeRasterizer(void)
 
 	// Shadows need their own rasterizer state so we can reverse the winding of faces
 	RasterizerShadow = RasterizerDefault;
-	//RasterizerShadow.CullMode = D3D12_CULL_FRONT;  // Hacked here rather than fixing the content
-	RasterizerShadow.SlopeScaledDepthBias = -1.5f;
-	RasterizerShadow.DepthBias = -100;
+	RasterizerShadow.CullMode = D3D12_CULL_MODE_FRONT;  // Hacked here rather than fixing the content
+	RasterizerShadow.SlopeScaledDepthBias = 1.0f;
+	RasterizerShadow.DepthBiasClamp = 0.0f;
+	RasterizerShadow.DepthBias = 25000;
 
 	RasterizerShadowTwoSided = RasterizerShadow;
 	RasterizerShadowTwoSided.CullMode = D3D12_CULL_MODE_NONE;
@@ -172,7 +173,7 @@ void GlareEngine::DirectX12Graphics::InitializeDepthState(void)
 	DepthStateReadWrite = DepthStateDisabled;
 	DepthStateReadWrite.DepthEnable = TRUE;
 	DepthStateReadWrite.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	DepthStateReadWrite.DepthFunc = D3D12_COMPARISON_FUNC_EQUAL;
+	DepthStateReadWrite.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
 	DepthStateReadOnly = DepthStateReadWrite;
 	DepthStateReadOnly.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;

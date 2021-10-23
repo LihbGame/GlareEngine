@@ -1,9 +1,5 @@
 #include "../Misc/CommonResource.hlsli"
 
-StructuredBuffer<MaterialData> gMaterialData : register(t1, space1);
-StructuredBuffer<InstanceData> gInstanceData : register(t0, space1);
-
-
 PosNorTanTexOut main(PosNorTanTexIn vin, uint instanceID : SV_InstanceID)
 {
     PosNorTanTexOut vout = (PosNorTanTexOut) 0.0f;
@@ -32,8 +28,7 @@ PosNorTanTexOut main(PosNorTanTexIn vin, uint instanceID : SV_InstanceID)
     vout.TexC = mul(float4(vin.TexC, 0.0f, 1.0f), instData.TexTransform).xy;
     //vout.TexC = mul(float4(vin.TexC, 0.0f, 1.0f), matData.mMatTransform).xy;
     
-
 	// Generate projective tex-coords to project shadow map onto scene.
-    //vout.ShadowPosH = mul(posW, gShadowTransform);
+    vout.ShadowPosH = mul(posW, gShadowTransform);
     return vout;
 }

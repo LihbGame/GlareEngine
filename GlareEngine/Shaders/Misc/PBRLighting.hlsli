@@ -145,9 +145,7 @@ float3 ComputeDirectionalLight(Light L, Material mat, float3 normal, float3 toEy
     // The light vector aims opposite the direction the light rays travel.
     float3 lightVec = -L.Direction;
 
-    // Scale light down by Lambert's cosine law.
-    float ndotl = max(dot(lightVec, normal), 0.0f);
-    float3 lightStrength = L.Strength * ndotl;
+    float3 lightStrength = L.Strength;
 
     float3 Half = normalize(toEye + lightVec);
 
@@ -238,7 +236,7 @@ float4 ComputeLighting(Light gLights[MaxLights], Material mat,
 #if (NUM_DIR_LIGHTS > 0)
     for(i = 0; i < NUM_DIR_LIGHTS; ++i)
     {
-        result += shadowFactor[i] * ComputeDirectionalLight(gLights[i], mat, normal, toEye,F0);
+        result += ComputeDirectionalLight(gLights[i], mat, normal, toEye, F0);
     }
 #endif
 

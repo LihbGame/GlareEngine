@@ -1,6 +1,5 @@
 #include "InstanceModel.h"
 
-
 //Shader
 #include "CompiledShaders/InstanceModelVS.h"
 #include "CompiledShaders/InstanceModelPS.h"
@@ -13,14 +12,22 @@ InstanceModel::InstanceModel(wstring Name,InstanceRenderData InstanceData)
 	SetName(Name);
 }
 
-void InstanceModel::Draw(GraphicsContext& Context)
+void InstanceModel::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 {
 	for (int SubModelIndex = 0; SubModelIndex < mInstanceData.mInstanceConstants.size(); ++SubModelIndex)
 	{
 		//Set Instance data
 		const vector<InstanceRenderConstants>& InstanceData = mInstanceData.mInstanceConstants[SubModelIndex];
 		Context.SetDynamicSRV(5, sizeof(InstanceRenderConstants)* InstanceData.size(), (void*)InstanceData.data());
-		Context.SetPipelineState(mPSO);
+		
+		if (SpecificPSO)
+		{
+			Context.SetPipelineState(*SpecificPSO);
+		}
+		else
+		{
+			Context.SetPipelineState(mPSO);
+		}
 		Context.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		std::string SubMeshName = mInstanceData.mModelData->mSubModels[SubModelIndex].mMeshData.pModelMeshName;

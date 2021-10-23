@@ -6,9 +6,9 @@
 #include "CompiledShaders/SkyVS.h"
 #include "CompiledShaders/SkyPS.h"
 
-using namespace GlareEngine::DirectX12Graphics;
-
 GraphicsPSO CSky::mPSO;
+
+using namespace GlareEngine::DirectX12Graphics;
 
 CSky::CSky(ID3D12GraphicsCommandList* CommandList,
 	float radius, int sliceCount, int stackCount)
@@ -86,9 +86,16 @@ void CSky::BuildSkySRV(ID3D12GraphicsCommandList* CommandList)
 	g_Device->CreateShaderResourceView(SkyTex.Get(), &SkysrvDesc, m_Descriptor);
 }
 
-void CSky::Draw(GraphicsContext& Context)
+void CSky::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 {
-	Context.SetPipelineState(mPSO);
+	if (SpecificPSO)
+	{
+		Context.SetPipelineState(*SpecificPSO);
+	}
+	else
+	{
+		Context.SetPipelineState(mPSO);
+	}
 	Context.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	Context.SetDynamicDescriptor(2, 0, m_Descriptor);
 	Context.SetIndexBuffer(mSkyMesh->IndexBufferView());
@@ -110,5 +117,4 @@ void CSky::BuildPSO(const RootSignature& rootSignature)
 	mPSO.SetPixelShader(g_pSkyPS, sizeof(g_pSkyPS));
 	mPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat());
 	mPSO.Finalize();
-
 }

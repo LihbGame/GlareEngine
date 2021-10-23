@@ -11,6 +11,7 @@ Scene::Scene(string name, ID3D12GraphicsCommandList* pCommandList)
 
 void Scene::Update(float DeltaTime)
 {
+
 }
 
 void Scene::AddObjectToScene(RenderObject* Object)
@@ -44,59 +45,28 @@ void Scene::RenderScene(RenderPipelineType Type, GraphicsContext& Context)
 	
 }
 
-void Scene::CreateModelInstance(string ModelName, int Num_X, int Num_Y)
+void Scene::ReleaseScene()
 {
-	assert(m_pCommandList);
-	const ModelRenderData* ModelData = ModelLoader::GetModelLoader(m_pCommandList)->GetModelRenderData(ModelName);
-
-	InstanceRenderData InstanceData;
-	InstanceData.mModelData = ModelData;
-	InstanceData.mInstanceConstants.resize(ModelData->mSubModels.size());
-	for (int SubMeshIndex = 0; SubMeshIndex < ModelData->mSubModels.size(); SubMeshIndex++)
-	{
-		for (int i = 0; i < Num_X; ++i)
-		{
-			for (int y = 0; y < Num_Y; ++y)
-			{
-				InstanceRenderConstants IRC;
-				IRC.mMaterialIndex = ModelData->mSubModels[SubMeshIndex].mMaterial->mMatCBIndex;
-				XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMatrixRotationY(MathHelper::RandF() * MathHelper::Pi) * XMMatrixScaling(0.2f, 0.2f, 0.2f) * XMMatrixTranslation((i - Num_X / 2) * 50.0f, 0, (y - Num_Y / 2) * 50.0f)));
-				InstanceData.mInstanceConstants[SubMeshIndex].push_back(IRC);
-			}
-		}
-	}
-	mModels.push_back(InstanceModel(StringToWString(ModelName), InstanceData));
 }
 
-void Scene::CreateSimpleModelInstance(string ModelName, SimpleModelType Type, string MaterialName, int Num_X, int Num_Y)
+void Scene::ResizeViewport(uint32_t width, uint32_t height)
 {
-	assert(m_pCommandList);
-	const ModelRenderData* ModelData = SimpleModelGenerator::GetInstance(m_pCommandList)->CreateSimpleModelRanderData(ModelName, Type, MaterialName);
-	InstanceRenderData InstanceData;
-	InstanceData.mModelData = ModelData;
-	InstanceData.mInstanceConstants.resize(ModelData->mSubModels.size());
-	for (int SubMeshIndex = 0; SubMeshIndex < ModelData->mSubModels.size(); SubMeshIndex++)
-	{
-		for (int i = 0; i < Num_X; ++i)
-		{
-			for (int y = 0; y < Num_Y; ++y)
-			{
-				InstanceRenderConstants IRC;
+	m_MainViewport.Width = (float)g_SceneColorBuffer.GetWidth();
+	m_MainViewport.Height = (float)g_SceneColorBuffer.GetHeight();
+	m_MainViewport.MinDepth = 0.0f;
+	m_MainViewport.MaxDepth = 1.0f;
 
-				IRC.mMaterialIndex = ModelData->mSubModels[SubMeshIndex].mMaterial->mMatCBIndex;
-				XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMatrixScaling(4, 4, 4) * XMMatrixTranslation(i * 60.0f, 0, y * 60.0f)));
-				XMStoreFloat4x4(&IRC.mTexTransform, XMMatrixTranspose(XMMatrixScaling(10, 10, 10)));
-				InstanceData.mInstanceConstants[SubMeshIndex].push_back(IRC);
-			}
-		}
-	}
-	mModels.push_back(InstanceModel(StringToWString(ModelName), InstanceData));
+	m_MainScissor.left = 0;
+	m_MainScissor.top = 0;
+	m_MainScissor.right = (LONG)g_SceneColorBuffer.GetWidth();
+	m_MainScissor.bottom = (LONG)g_SceneColorBuffer.GetHeight();
 }
 
-void Scene::CreateShadowMap(GraphicsContext& Context)
+
+void Scene::CreateShadowMap(GraphicsContext& Context,vector<RenderObject*> RenderObjects)
 {
-
-
+	assert(m_pShadowMap);
+	m_pShadowMap->Draw(Context,RenderObjects);
 }
 
 void Scene::ForwardRendering(GraphicsContext& Context)
@@ -108,9 +78,13 @@ void Scene::ForwardRendering(GraphicsContext& Context)
 	Context.SetDynamicSRV(4, sizeof(MaterialConstant) * MaterialData.size(), MaterialData.data());
 
 	Context.PIXBeginEvent(L"Shadow Pass");
-	CreateShadowMap(Context);
-	Context.PIXBeginEvent(L"Shadow Pass");
+	CreateShadowMap(Context,pRenderObjects);
+	Context.PIXEndEvent();
 
+	//set Viewport And Scissor
+	Context.SetViewportAndScissor(m_MainViewport, m_MainScissor);
+	//set scene render target & Depth Stencil target
+	Context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
 
 	Context.PIXBeginEvent(L"Main Pass");
 	for (auto& RenderObject : pRenderObjects)
@@ -119,13 +93,7 @@ void Scene::ForwardRendering(GraphicsContext& Context)
 		RenderObject->Draw(Context);
 		Context.PIXEndEvent();
 	}
-	for (auto& Model : mModels)
-	{
-		Context.PIXBeginEvent(Model.GetName().c_str());
-		Model.Draw(Context);
-		Context.PIXEndEvent();
-	}
-	Context.PIXBeginEvent(L"Main Pass");
+	Context.PIXEndEvent();
 }
 
 void Scene::ForwardPlusRendering(GraphicsContext& Context)

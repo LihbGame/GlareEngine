@@ -74,6 +74,10 @@ public:
 	void UpdateMainConstantBuffer(float DeltaTime);
 
 	void InitializeScene(ID3D12GraphicsCommandList* CommandList);
+
+	void CreateModelInstance(ID3D12GraphicsCommandList* CommandList,string ModelName, int Num_X, int Num_Y);
+
+	void CreateSimpleModelInstance(ID3D12GraphicsCommandList* CommandList,string ModelName, SimpleModelType Type, string MaterialName, int Num_X, int Num_Y);
 protected:
 	// 处理鼠标输入的重载函数
 	virtual void OnMouseDown(WPARAM btnState, int x, int y);
@@ -82,6 +86,8 @@ protected:
 private:
 	//Only one scene
 	static Scene* gScene;
+	//Scene data 
+	vector<unique_ptr<InstanceModel>> mModels;
 
 	//Main Constant Buffer
 	MainConstants mMainConstants;
@@ -95,10 +101,6 @@ private:
 	RootSignature mRootSignature;
 	//UI
 	unique_ptr<EngineGUI> mEngineUI;
-
-	//Viewport and Scissor
-	D3D12_VIEWPORT m_MainViewport = { 0 };
-	D3D12_RECT m_MainScissor = { 0 };
 	
 	float mCameraSpeed = 100.0f;
 
@@ -136,18 +138,23 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList)
 	//////Build Scene//////////
 	assert(mSceneManager);
 	gScene = mSceneManager->CreateScene("Test Scene");
-
 	{
+		assert(gScene);
 		//Shadow map
 		gScene->SetShadowMap(mShadowMap.get());
-		//sky
+		//Sky
 		gScene->AddObjectToScene(mSky.get());
-		//instance models
-		gScene->CreateSimpleModelInstance("Grid_01", SimpleModelType::Grid, "PBRharshbricks", 1, 1);
-		gScene->CreateModelInstance("BlueTree/Blue_Tree_02a.FBX", 5, 5);
-		//gScene->CreateSimpleModelInstance("Sphere_01", SimpleModelType::Sphere, "PBRharshbricks", 1, 1);
-		//gScene->CreateSimpleModelInstance("Sphere_01", SimpleModelType::Cylinder, "PBRharshbricks", 2, 1);
-		//gScene->CreateModelInstance("mercMaleMarksman/mercMaleMarksman.FBX", 5, 5);
+		//Instance models
+		CreateSimpleModelInstance(CommandList,"Grid_01", SimpleModelType::Grid, "PBRGrass01", 1, 1);
+		CreateModelInstance(CommandList, "BlueTree/Blue_Tree_02a.FBX", 5, 5);
+		//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRharshbricks", 1, 1);
+		//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Cylinder, "PBRharshbricks", 2, 1);
+		//CreateModelInstance(CommandList,"mercMaleMarksman/mercMaleMarksman.FBX", 5, 5);
+		for (auto& model : mModels)
+		{
+			gScene->AddObjectToScene(model.get());
+		}
+		
 	}
 
 	//Create all Materials Constant Buffer
@@ -180,9 +187,14 @@ void App::Cleanup(void)
 
 void App::Update(float DeltaTime)
 {
+	//update shadow map
+	mShadowMap->UpdateShadowTransform(DeltaTime);
+
 	UpdateWindow(DeltaTime);
 	UpdateCamera(DeltaTime);
 	UpdateMainConstantBuffer(DeltaTime);
+	//update scene
+	gScene->Update(DeltaTime);
 }
 
 void App::BuildRootSignature()
@@ -190,7 +202,7 @@ void App::BuildRootSignature()
 	mRootSignature.Reset(6, 8);
 	//Main Constant Buffer
 	mRootSignature[0].InitAsConstantBuffer(0);
-	//Objects Constant Buffer
+	//Objects Constant Buffer;Shadow Constant Buffer
 	mRootSignature[1].InitAsConstantBuffer(1);
 	//Sky Cube Texture
 	mRootSignature[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1);
@@ -218,6 +230,7 @@ void App::BuildPSO()
 {
 	CSky::BuildPSO(mRootSignature);
 	InstanceModel::BuildPSO(mRootSignature);
+	ShadowMap::BuildPSO(mRootSignature);
 }
 
 void App::UpdateWindow(float DeltaTime)
@@ -308,6 +321,8 @@ void App::UpdateMainConstantBuffer(float DeltaTime)
 		mMainConstants.Lights[2].FalloffEnd = 50.0f;
 		mMainConstants.Lights[2].Position = { 20,20,20 };
 	}
+
+	mMainConstants.mShadowMapIndex = mShadowMap->GetShadowMapIndex();
 }
 
 void App::RenderScene(void)
@@ -316,18 +331,12 @@ void App::RenderScene(void)
 #pragma region Scene
 	RenderContext.PIXBeginEvent(L"Scene");
 
-	RenderContext.SetViewportAndScissor(m_MainViewport, m_MainScissor);
-
 	RenderContext.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 	RenderContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
-
 	RenderContext.ClearDepth(g_SceneDepthBuffer);
 	RenderContext.ClearRenderTarget(g_SceneColorBuffer);
 
 	RenderContext.SetRootSignature(mRootSignature);
-
-	//set scene render target & Depth Stencli target
-	RenderContext.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
 
 	//set main constant buffer
 	RenderContext.SetDynamicConstantBufferView(0, sizeof(mMainConstants), &mMainConstants);
@@ -359,30 +368,19 @@ void App::RenderUI()
 
 void App::OnResize(uint32_t width, uint32_t height)
 {
-
 	DirectX12Graphics::Resize(width, height);
 
 	//窗口调整大小，因此更新宽高比并重新计算投影矩阵;
 	mCamera->SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, FAR_Z);
-
-	m_MainViewport.Width = (float)g_SceneColorBuffer.GetWidth();
-	m_MainViewport.Height = (float)g_SceneColorBuffer.GetHeight();
-	m_MainViewport.MinDepth = 0.0f;
-	m_MainViewport.MaxDepth = 1.0f;
-
-	m_MainScissor.left = 0;
-	m_MainScissor.top = 0;
-	m_MainScissor.right = (LONG)g_SceneColorBuffer.GetWidth();
-	m_MainScissor.bottom = (LONG)g_SceneColorBuffer.GetHeight();
-
+	//resize Viewport and Scissor
+	gScene->ResizeViewport(width, height);
 
 	//Client Rect
 	mClientRect = { static_cast<LONG>(mClientWidth * CLIENT_FROMLEFT),
 		static_cast<LONG>(MainMenuBarHeight),
-		static_cast<LONG>(static_cast<float>(mClientWidth *(1-CLIENT_FROMLEFT))),
+		static_cast<LONG>(static_cast<float>(mClientWidth * (1 - CLIENT_FROMLEFT))),
 		static_cast<LONG>(static_cast<float>(mClientHeight * CLIENT_HEIGHT))
 	};
-
 }
 
 
@@ -453,4 +451,58 @@ void App::OnMouseMove(WPARAM btnState, int x, int y)
 			mCursorType = CursorType::SIZEWE;
 		}
 	}
+}
+
+
+void App::CreateModelInstance(ID3D12GraphicsCommandList* CommandList,string ModelName, int Num_X, int Num_Y)
+{
+	assert(CommandList);
+	const ModelRenderData* ModelData = ModelLoader::GetModelLoader(CommandList)->GetModelRenderData(ModelName);
+
+	InstanceRenderData InstanceData;
+	InstanceData.mModelData = ModelData;
+	InstanceData.mInstanceConstants.resize(ModelData->mSubModels.size());
+	for (int SubMeshIndex = 0; SubMeshIndex < ModelData->mSubModels.size(); SubMeshIndex++)
+	{
+		for (int i = 0; i < Num_X; ++i)
+		{
+			for (int y = 0; y < Num_Y; ++y)
+			{
+				InstanceRenderConstants IRC;
+				IRC.mMaterialIndex = ModelData->mSubModels[SubMeshIndex].mMaterial->mMatCBIndex;
+				XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMatrixRotationY(MathHelper::RandF() * MathHelper::Pi) * XMMatrixScaling(0.2f, 0.2f, 0.2f) * XMMatrixTranslation((i - Num_X / 2) * 50.0f, 0, (y - Num_Y / 2) * 50.0f)));
+				InstanceData.mInstanceConstants[SubMeshIndex].push_back(IRC);
+			}
+		}
+	}
+	auto lModel = make_unique<InstanceModel>(StringToWString(ModelName), InstanceData);
+	lModel->SetShadowFlag(true);
+	mModels.push_back(std::move(lModel));
+}
+
+void App::CreateSimpleModelInstance(ID3D12GraphicsCommandList* CommandList, string ModelName, SimpleModelType Type, string MaterialName, int Num_X, int Num_Y)
+{
+	assert(CommandList);
+	const ModelRenderData* ModelData = SimpleModelGenerator::GetInstance(CommandList)->CreateSimpleModelRanderData(ModelName, Type, MaterialName);
+	InstanceRenderData InstanceData;
+	InstanceData.mModelData = ModelData;
+	InstanceData.mInstanceConstants.resize(ModelData->mSubModels.size());
+	for (int SubMeshIndex = 0; SubMeshIndex < ModelData->mSubModels.size(); SubMeshIndex++)
+	{
+		for (int i = 0; i < Num_X; ++i)
+		{
+			for (int y = 0; y < Num_Y; ++y)
+			{
+				InstanceRenderConstants IRC;
+
+				IRC.mMaterialIndex = ModelData->mSubModels[SubMeshIndex].mMaterial->mMatCBIndex;
+				XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMatrixScaling(4, 4, 4) * XMMatrixTranslation(i * 60.0f, 0, y * 60.0f)));
+				XMStoreFloat4x4(&IRC.mTexTransform, XMMatrixTranspose(XMMatrixScaling(3, 3, 3)));
+				InstanceData.mInstanceConstants[SubMeshIndex].push_back(IRC);
+			}
+		}
+	}
+	auto lModel = make_unique<InstanceModel>(StringToWString(ModelName), InstanceData);
+	//lModel->SetShadowFlag(true);
+	mModels.push_back(std::move(lModel));
 }
