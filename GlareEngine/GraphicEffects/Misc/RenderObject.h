@@ -22,9 +22,10 @@ struct InstanceRenderConstants
 	int							mPAD3;
 };
 
-enum class PSOType :int
+enum class ObjectType :int
 {
-	Default,
+	Sky,
+	Model,
 	Shadow,
 	Count
 };
@@ -44,15 +45,23 @@ public:
 public:
 	void SetName(wstring name) { mName = name; }
 	wstring GetName() const { return mName; }
+
 	void SetShadowFlag(bool IsCastShadow) { mShouldCastShadow = IsCastShadow; }
-	bool GetShadowFlag() { return mShouldCastShadow; }
+	bool GetShadowFlag()const { return mShouldCastShadow; }
+
+	void SetVisible(bool isVisible) { mIsVisible = isVisible; }
+	bool GetVisible()const { return mIsVisible; }
 
 	virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr) = 0;
 	static void BuildPSO(const RootSignature& rootSignature) {};
+
+public:
+	ObjectType mObjectType;
 protected:
 	//Name
 	wstring mName;
 	bool mShouldCastShadow = false;
+	bool mIsVisible = true;
 };
 
 

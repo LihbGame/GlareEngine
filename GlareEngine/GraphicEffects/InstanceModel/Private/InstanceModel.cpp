@@ -9,6 +9,7 @@ GraphicsPSO InstanceModel::mPSO;
 InstanceModel::InstanceModel(wstring Name,InstanceRenderData InstanceData)
 	:mInstanceData(InstanceData)
 {
+	mObjectType = ObjectType::Model;
 	SetName(Name);
 }
 

@@ -61,8 +61,8 @@ private:
 	bool mShowControlPanel = true;
 	bool mShowDebugwindow = true;
 
-	bool show_shadow = false;
-	bool show_model = false;
+	bool show_shadow = true;
+	bool show_model = true;
 	bool show_water = false;
 	bool show_land = false;
 	bool show_sky = true;

@@ -14,6 +14,27 @@ void Scene::Update(float DeltaTime)
 
 }
 
+void Scene::VisibleUpdateForType(unordered_map<ObjectType, bool> TypeVisible)
+{
+	bool ShadowVisible = TypeVisible[ObjectType::Shadow];
+	for (auto& object : pRenderObjects)
+	{
+		//update visible
+		if (TypeVisible[object->mObjectType] != object->GetVisible())
+		{
+			object->SetVisible(TypeVisible[object->mObjectType]);
+		}
+		//update Model shadow visible
+		if (object->mObjectType == ObjectType::Model && ShadowVisible != object->GetShadowFlag())
+		{
+			object->SetShadowFlag(ShadowVisible);
+		}
+
+	}
+}
+
+
+
 void Scene::AddObjectToScene(RenderObject* Object)
 {
 	pRenderObjects.push_back(Object);
@@ -89,9 +110,12 @@ void Scene::ForwardRendering(GraphicsContext& Context)
 	Context.PIXBeginEvent(L"Main Pass");
 	for (auto& RenderObject : pRenderObjects)
 	{
-		Context.PIXBeginEvent(RenderObject->GetName().c_str());
-		RenderObject->Draw(Context);
-		Context.PIXEndEvent();
+		if (RenderObject->GetVisible())
+		{
+			Context.PIXBeginEvent(RenderObject->GetName().c_str());
+			RenderObject->Draw(Context);
+			Context.PIXEndEvent();
+		}
 	}
 	Context.PIXEndEvent();
 }

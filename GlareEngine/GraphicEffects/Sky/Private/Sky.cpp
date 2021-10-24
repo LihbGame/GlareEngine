@@ -13,9 +13,10 @@ using namespace GlareEngine::DirectX12Graphics;
 CSky::CSky(ID3D12GraphicsCommandList* CommandList,
 	float radius, int sliceCount, int stackCount)
 {
+	mObjectType = ObjectType::Sky;
+
 	BuildSkyMesh(CommandList, radius, sliceCount, stackCount);
 	BuildSkySRV(CommandList);
-
 	//world mat
 	XMStoreFloat4x4(&mWorld, XMMatrixScaling(5000.0f, 5000.0f, 5000.0f));
 }

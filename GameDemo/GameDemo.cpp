@@ -67,6 +67,8 @@ public:
 
 	void BuildPSO();
 
+	void UpdateScene(float DeltaTime);
+
 	void UpdateWindow(float DeltaTime);
 
 	void UpdateCamera(float DeltaTime);
@@ -122,7 +124,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList)
 {
 	//Main Camera
 	mCamera = make_unique<Camera>();
-	mCamera->LookAt(XMFLOAT3(100, 100, 100), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 1, 0));
+	mCamera->LookAt(XMFLOAT3(-200, 200, 200), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 1, 0));
 	//Sky Initialize
 	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
 	//Shadow map Initialize
@@ -193,6 +195,7 @@ void App::Update(float DeltaTime)
 	UpdateWindow(DeltaTime);
 	UpdateCamera(DeltaTime);
 	UpdateMainConstantBuffer(DeltaTime);
+	UpdateScene(DeltaTime);
 	//update scene
 	gScene->Update(DeltaTime);
 }
@@ -233,6 +236,16 @@ void App::BuildPSO()
 	ShadowMap::BuildPSO(mRootSignature);
 }
 
+void App::UpdateScene(float DeltaTime)
+{
+	assert(gScene);
+	unordered_map<ObjectType, bool> TypeVisible;
+	TypeVisible[ObjectType::Sky] = mEngineUI->IsShowSky();
+	TypeVisible[ObjectType::Model] = mEngineUI->IsShowModel();
+	TypeVisible[ObjectType::Shadow] = mEngineUI->IsShowShadow();
+	gScene->VisibleUpdateForType(TypeVisible);
+}
+
 void App::UpdateWindow(float DeltaTime)
 {
 	if (EngineGUI::mWindowMaxSize && !mMaximized)
@@ -268,6 +281,8 @@ void App::UpdateCamera(float DeltaTime)
 	{
 		mCamera->Strafe(mCameraSpeed * DeltaTime);
 	}
+
+	mEngineUI->SetCameraPosition(mCamera->GetPosition3f());
 
 	//update camera matrix
 	mCamera->UpdateViewMatrix();

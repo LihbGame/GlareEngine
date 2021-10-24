@@ -123,7 +123,7 @@ void ShadowMap::Draw(GraphicsContext& Context,vector<RenderObject*> RenderObject
 
 	for (auto& object:RenderObjects)
 	{
-		if (object->GetShadowFlag())
+		if (object->GetVisible() && object->GetShadowFlag())
 		{
 			object->Draw(Context, &mShadowPSO);
 		}

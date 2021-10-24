@@ -13,11 +13,9 @@ public:
 	void ReleaseScene();
 	//resize Viewport and Scissor
 	void ResizeViewport(uint32_t width, uint32_t height);
-
 	void SetShadowMap(ShadowMap* shadowMap) { m_pShadowMap = shadowMap; }
-
+	void VisibleUpdateForType(unordered_map<ObjectType, bool> TypeVisible);
 private:
-	
 	void CreateShadowMap(GraphicsContext& Context,vector<RenderObject*> RenderObjects);
 	void ForwardRendering(GraphicsContext& Context);
 	void ForwardPlusRendering(GraphicsContext& Context);
