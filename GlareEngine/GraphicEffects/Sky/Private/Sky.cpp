@@ -13,8 +13,8 @@ using namespace GlareEngine::DirectX12Graphics;
 CSky::CSky(ID3D12GraphicsCommandList* CommandList,
 	float radius, int sliceCount, int stackCount)
 {
+	SetName(L"Sky");
 	mObjectType = ObjectType::Sky;
-
 	BuildSkyMesh(CommandList, radius, sliceCount, stackCount);
 	BuildSkySRV(CommandList);
 	//world mat
