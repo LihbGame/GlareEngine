@@ -8,6 +8,15 @@ namespace GlareEngine
 		class CommandContext;
 		class RootSignature;
 
+
+		struct PSOCommonProperty
+		{
+			RootSignature* pRootSignature = nullptr;
+			bool IsWireframe = false;
+		};
+
+
+
 		class PSO
 		{
 		public:

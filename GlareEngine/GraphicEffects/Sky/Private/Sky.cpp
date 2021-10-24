@@ -105,10 +105,17 @@ void CSky::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 	Context.DrawIndexed(mSkyMesh->DrawArgs["Sky"].IndexCount, mSkyMesh->DrawArgs["Sky"].StartIndexLocation, mSkyMesh->DrawArgs["Sky"].BaseVertexLocation);
 }
 
-void CSky::BuildPSO(const RootSignature& rootSignature)
+void CSky::BuildPSO(const PSOCommonProperty CommonProperty)
 {
-	mPSO.SetRootSignature(rootSignature);
-	mPSO.SetRasterizerState(RasterizerDefault);
+	mPSO.SetRootSignature(*CommonProperty.pRootSignature);
+	if (CommonProperty.IsWireframe)
+	{
+		mPSO.SetRasterizerState(RasterizerWireframe);
+	}
+	else
+	{
+		mPSO.SetRasterizerState(RasterizerDefault);
+	}
 	mPSO.SetBlendState(BlendDisable);
 	mPSO.SetDepthStencilState(DepthStateDisabled);
 	mPSO.SetSampleMask(0xFFFFFFFF);

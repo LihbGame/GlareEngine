@@ -15,6 +15,9 @@ public:
 	void ResizeViewport(uint32_t width, uint32_t height);
 	void SetShadowMap(ShadowMap* shadowMap) { m_pShadowMap = shadowMap; }
 	void VisibleUpdateForType(unordered_map<ObjectType, bool> TypeVisible);
+
+public:
+	bool IsWireFrame = false;
 private:
 	void CreateShadowMap(GraphicsContext& Context,vector<RenderObject*> RenderObjects);
 	void ForwardRendering(GraphicsContext& Context);

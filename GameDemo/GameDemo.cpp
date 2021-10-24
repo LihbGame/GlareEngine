@@ -110,6 +110,8 @@ private:
 	//scene manager
 	unique_ptr<SceneManager> mSceneManager;
 
+	//PSO Common Property
+	PSOCommonProperty mCommonProperty;
 };
 
 Scene* App::gScene = nullptr;
@@ -227,13 +229,15 @@ void App::BuildRootSignature()
 	mRootSignature.InitStaticSampler(7, SamplerLinearBorderDesc);
 
 	mRootSignature.Finalize(L"Forward Rendering", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+	mCommonProperty.pRootSignature = &mRootSignature;
 }
 
 void App::BuildPSO()
 {
-	CSky::BuildPSO(mRootSignature);
-	InstanceModel::BuildPSO(mRootSignature);
-	ShadowMap::BuildPSO(mRootSignature);
+	CSky::BuildPSO(mCommonProperty);
+	InstanceModel::BuildPSO(mCommonProperty);
+	ShadowMap::BuildPSO(mCommonProperty);
 }
 
 void App::UpdateScene(float DeltaTime)
@@ -244,6 +248,14 @@ void App::UpdateScene(float DeltaTime)
 	TypeVisible[ObjectType::Model] = mEngineUI->IsShowModel();
 	TypeVisible[ObjectType::Shadow] = mEngineUI->IsShowShadow();
 	gScene->VisibleUpdateForType(TypeVisible);
+
+	if (mEngineUI->IsWireframe() != gScene->IsWireFrame)
+	{
+		gScene->IsWireFrame = mEngineUI->IsWireframe();
+		mCommonProperty.IsWireframe = gScene->IsWireFrame;
+		BuildPSO();
+	}
+
 }
 
 void App::UpdateWindow(float DeltaTime)

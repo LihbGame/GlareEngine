@@ -29,6 +29,7 @@ namespace GlareEngine
 		D3D12_CPU_DESCRIPTOR_HANDLE SamplerLinearBorder;
 
 		D3D12_RASTERIZER_DESC RasterizerDefault;    // Counter-clockwise
+		D3D12_RASTERIZER_DESC RasterizerWireframe;
 		D3D12_RASTERIZER_DESC RasterizerDefaultMsaa;
 		D3D12_RASTERIZER_DESC RasterizerDefaultCw;    // Clockwise winding
 		D3D12_RASTERIZER_DESC RasterizerDefaultCwMsaa;
@@ -126,6 +127,10 @@ void GlareEngine::DirectX12Graphics::InitializeRasterizer(void)
 	RasterizerDefault.AntialiasedLineEnable = FALSE;
 	RasterizerDefault.ForcedSampleCount = 0;
 	RasterizerDefault.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+	RasterizerWireframe = RasterizerDefault;
+	RasterizerWireframe.CullMode = D3D12_CULL_MODE_NONE;
+	RasterizerWireframe.FillMode = D3D12_FILL_MODE_WIREFRAME;
 
 	RasterizerDefaultMsaa = RasterizerDefault;
 	RasterizerDefaultMsaa.MultisampleEnable = TRUE;

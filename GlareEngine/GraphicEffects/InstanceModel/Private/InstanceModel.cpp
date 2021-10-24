@@ -40,10 +40,17 @@ void InstanceModel::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 	}
 }
 
-void InstanceModel::BuildPSO(const RootSignature& rootSignature)
+void InstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 {
-	mPSO.SetRootSignature(rootSignature);
-	mPSO.SetRasterizerState(RasterizerTwoSided);
+	mPSO.SetRootSignature(*CommonProperty.pRootSignature);
+	if (CommonProperty.IsWireframe)
+	{
+		mPSO.SetRasterizerState(RasterizerWireframe);
+	}
+	else
+	{
+		mPSO.SetRasterizerState(RasterizerTwoSided);
+	}
 	mPSO.SetBlendState(BlendDisable);
 	mPSO.SetDepthStencilState(CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT));
 	mPSO.SetSampleMask(0xFFFFFFFF);

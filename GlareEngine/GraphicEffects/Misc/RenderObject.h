@@ -53,7 +53,7 @@ public:
 	bool GetVisible()const { return mIsVisible; }
 
 	virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr) = 0;
-	static void BuildPSO(const RootSignature& rootSignature) {};
+	static void BuildPSO(const PSOCommonProperty CommonProperty) {};
 
 public:
 	ObjectType mObjectType;
