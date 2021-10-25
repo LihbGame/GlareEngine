@@ -54,7 +54,9 @@ void InstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 	}
 	mPSO.SetRootSignature(*CommonProperty.pRootSignature);
 	mPSO.SetRasterizerState(Rasterizer);
-	mPSO.SetBlendState(BlendDisable);
+	D3D12_BLEND_DESC Blend=BlendDisable;
+	Blend.AlphaToCoverageEnable = TRUE;
+	mPSO.SetBlendState(Blend);
 	mPSO.SetDepthStencilState(CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT));
 	mPSO.SetSampleMask(0xFFFFFFFF);
 	mPSO.SetInputLayout((UINT)InputLayout::InstancePosNormalTangentTexc.size(), InputLayout::InstancePosNormalTangentTexc.data());
