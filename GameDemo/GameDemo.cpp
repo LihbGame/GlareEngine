@@ -249,13 +249,31 @@ void App::UpdateScene(float DeltaTime)
 	TypeVisible[ObjectType::Shadow] = mEngineUI->IsShowShadow();
 	gScene->VisibleUpdateForType(TypeVisible);
 
+	bool IsStateChange = false;
 	if (mEngineUI->IsWireframe() != gScene->IsWireFrame)
 	{
 		gScene->IsWireFrame = mEngineUI->IsWireframe();
 		mCommonProperty.IsWireframe = gScene->IsWireFrame;
+		IsStateChange = true;
+	}
+	if (mEngineUI->IsMSAA() != gScene->IsMSAA)
+	{
+		gScene->IsMSAA = mEngineUI->IsMSAA();
+		mCommonProperty.IsMSAA = gScene->IsMSAA;
+		if (gScene->IsMSAA)
+		{
+			mCommonProperty.MSAACount = MSAACOUNT;
+		}
+		else
+		{
+			mCommonProperty.MSAACount = 1;
+		}
+		IsStateChange = true;
+	}
+	if (IsStateChange)
+	{
 		BuildPSO();
 	}
-
 }
 
 void App::UpdateWindow(float DeltaTime)

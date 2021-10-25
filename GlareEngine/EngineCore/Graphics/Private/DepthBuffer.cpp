@@ -21,6 +21,7 @@ void DepthBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Heig
 	ResourceDesc.SampleDesc.Count = NumSamples;
 
 	D3D12_CLEAR_VALUE ClearValue = {};
+	ClearValue.DepthStencil.Depth = 1.0f;
 	ClearValue.Format = Format;
 	CreateTextureResource(DirectX12Graphics::g_Device, Name, ResourceDesc, ClearValue, VidMemPtr);
 	CreateDerivedViews(DirectX12Graphics::g_Device, Format);

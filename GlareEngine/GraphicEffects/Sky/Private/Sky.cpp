@@ -107,15 +107,19 @@ void CSky::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 
 void CSky::BuildPSO(const PSOCommonProperty CommonProperty)
 {
-	mPSO.SetRootSignature(*CommonProperty.pRootSignature);
+	D3D12_RASTERIZER_DESC Rasterizer = RasterizerDefault;
 	if (CommonProperty.IsWireframe)
 	{
-		mPSO.SetRasterizerState(RasterizerWireframe);
+		Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
+		Rasterizer.FillMode = D3D12_FILL_MODE_WIREFRAME;
 	}
-	else
+	if (CommonProperty.IsMSAA)
 	{
-		mPSO.SetRasterizerState(RasterizerDefault);
+		Rasterizer.MultisampleEnable = true;
 	}
+
+	mPSO.SetRootSignature(*CommonProperty.pRootSignature);
+	mPSO.SetRasterizerState(Rasterizer);
 	mPSO.SetBlendState(BlendDisable);
 	mPSO.SetDepthStencilState(DepthStateDisabled);
 	mPSO.SetSampleMask(0xFFFFFFFF);
@@ -123,6 +127,6 @@ void CSky::BuildPSO(const PSOCommonProperty CommonProperty)
 	mPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 	mPSO.SetVertexShader(g_pSkyVS, sizeof(g_pSkyVS));
 	mPSO.SetPixelShader(g_pSkyPS, sizeof(g_pSkyPS));
-	mPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat());
+	mPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
 	mPSO.Finalize();
 }

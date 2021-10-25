@@ -24,7 +24,6 @@ public:
 	bool IsShowShadow()const { return show_shadow; }
 	bool IsShowModel()const { return show_model; }
 	bool IsShowWater()const { return show_water; }
-	bool IsShowLand() const { return show_land; }
 	bool IsShowSky()const { return show_sky; }
 	bool IsShowFog()const { return FogEnabled; }
 	bool IsShowTerrain() const { return show_HeightMapTerrain; }
@@ -45,6 +44,7 @@ public:
 	float GetWaterTransparent()const { return mWaterTransparent; }
 
 	bool IsWireframe()const { return mWireframe; }
+	bool IsMSAA()const { return mMSAA; }
 
 	static bool mWindowMaxSize;
 private:
@@ -64,7 +64,7 @@ private:
 	bool show_shadow = true;
 	bool show_model = true;
 	bool show_water = false;
-	bool show_land = false;
+
 	bool show_sky = true;
 	bool show_HeightMapTerrain = true;
 	bool show_Grass = false;
@@ -82,7 +82,8 @@ private:
 	bool mIsGrassRandom = true;
 	float mWaterTransparent = 100.0f;
 
-	bool mWireframe = 0;
+	bool mWireframe = false;
+	bool mMSAA = false;
 
 	float mGrassColor[3] = { 0.39f,0.196f,0.0f };
 	XMFLOAT3 mCameraPosition = { 0.0f,0.0f,0.0f };

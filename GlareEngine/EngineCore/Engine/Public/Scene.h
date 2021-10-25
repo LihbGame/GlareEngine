@@ -18,6 +18,7 @@ public:
 
 public:
 	bool IsWireFrame = false;
+	bool IsMSAA = false;
 private:
 	void CreateShadowMap(GraphicsContext& Context,vector<RenderObject*> RenderObjects);
 	void ForwardRendering(GraphicsContext& Context);

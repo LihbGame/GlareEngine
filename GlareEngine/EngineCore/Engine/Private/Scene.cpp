@@ -104,8 +104,22 @@ void Scene::ForwardRendering(GraphicsContext& Context)
 
 	//set Viewport And Scissor
 	Context.SetViewportAndScissor(m_MainViewport, m_MainScissor);
-	//set scene render target & Depth Stencil target
-	Context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
+	
+	//MSAA
+	if (IsMSAA)
+	{
+		Context.TransitionResource(g_SceneMSAAColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+		Context.TransitionResource(g_SceneMSAADepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+		Context.ClearDepth(g_SceneMSAADepthBuffer);
+		Context.ClearRenderTarget(g_SceneMSAAColorBuffer);
+		//set scene render target & Depth Stencil target
+		Context.SetRenderTarget(g_SceneMSAAColorBuffer.GetRTV(), g_SceneMSAADepthBuffer.GetDSV());
+	}
+	else
+	{
+		//set scene render target & Depth Stencil target
+		Context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
+	}
 
 	Context.PIXBeginEvent(L"Main Pass");
 	for (auto& RenderObject : pRenderObjects)
@@ -118,6 +132,15 @@ void Scene::ForwardRendering(GraphicsContext& Context)
 		}
 	}
 	Context.PIXEndEvent();
+
+	//MSAA
+	if (IsMSAA)
+	{
+		Context.TransitionResource(g_SceneMSAAColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_SOURCE, true);
+		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, true);
+		Context.GetCommandList()->ResolveSubresource(g_SceneColorBuffer.GetResource(), 0, g_SceneMSAAColorBuffer.GetResource(), 0, DefaultHDRColorFormat);
+	}
+
 }
 
 void Scene::ForwardPlusRendering(GraphicsContext& Context)

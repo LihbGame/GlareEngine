@@ -5,6 +5,8 @@
 #include "GPUBuffer.h"
 #include "GraphicsCore.h"
 
+#define  MSAACOUNT 4
+
 namespace GlareEngine
 {
 	namespace DirectX12Graphics
@@ -12,6 +14,9 @@ namespace GlareEngine
 		extern DepthBuffer g_SceneDepthBuffer;    // D32_FLOAT_S8_UINT
 		extern ColorBuffer g_SceneColorBuffer;    // R11G11B10_FLOAT
 		
+		extern ColorBuffer g_SceneMSAAColorBuffer;
+		extern DepthBuffer g_SceneMSAADepthBuffer;
+
 		//extern ColorBuffer g_PostEffectsBuffer;    // R32_UINT (to support Read-Modify-Write with a UAV)								   
 		//extern ColorBuffer g_OverlayBuffer;        // R8G8B8A8_UNORM
 		//extern ColorBuffer g_HorizontalBuffer;    // For separable (bicubic) upsampling

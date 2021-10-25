@@ -9,6 +9,10 @@ namespace GlareEngine
 		DepthBuffer g_SceneDepthBuffer;
 		ColorBuffer g_SceneColorBuffer;
 
+		//MSAA Buffer
+		DepthBuffer g_SceneMSAADepthBuffer;
+		ColorBuffer g_SceneMSAAColorBuffer;
+
 		//ColorBuffer g_PostEffectsBuffer;
 		//ColorBuffer g_VelocityBuffer;
 		//ColorBuffer g_OverlayBuffer;
@@ -96,6 +100,12 @@ void GlareEngine::DirectX12Graphics::InitializeRenderingBuffers(uint32_t NativeW
 	g_SceneColorBuffer.Create(L"Main Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 	g_SceneDepthBuffer.Create(L"Scene Depth Buffer", NativeWidth, NativeHeight, DSV_FORMAT);
 	
+	//MSAA
+	//g_SceneMSAADepthBuffer
+	g_SceneMSAAColorBuffer.SetMsaaMode(MSAACOUNT, MSAACOUNT);
+	g_SceneMSAAColorBuffer.Create(L"Main MSAA Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
+	g_SceneMSAADepthBuffer.Create(L"Scene MSAA Depth Buffer", NativeWidth, NativeHeight, MSAACOUNT, DSV_FORMAT);
+
 	//g_VelocityBuffer.Create(L"Motion Vectors", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT);
 	//g_PostEffectsBuffer.Create(L"Post Effects Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT);
 
@@ -197,6 +207,9 @@ void GlareEngine::DirectX12Graphics::ResizeDisplayDependentBuffers(uint32_t Nati
 	//resize display buffer
 	g_SceneColorBuffer.Create(L"Main Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 	g_SceneDepthBuffer.Create(L"Scene Depth Buffer", NativeWidth, NativeHeight, DSV_FORMAT);
+	//resize  MSAA buffer
+	g_SceneMSAAColorBuffer.Create(L"Main MSAA Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
+	g_SceneMSAADepthBuffer.Create(L"Scene MSAA Depth Buffer", NativeWidth, NativeHeight, MSAACOUNT, DSV_FORMAT);
 }
 
 void GlareEngine::DirectX12Graphics::DestroyRenderingBuffers()

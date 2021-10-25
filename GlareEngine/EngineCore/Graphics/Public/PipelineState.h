@@ -13,6 +13,9 @@ namespace GlareEngine
 		{
 			RootSignature* pRootSignature = nullptr;
 			bool IsWireframe = false;
+			bool IsMSAA = false;
+			int MSAACount = 1;
+			int MSAAQuality = 0;
 		};
 
 

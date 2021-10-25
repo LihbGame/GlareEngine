@@ -42,15 +42,18 @@ void InstanceModel::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 
 void InstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 {
-	mPSO.SetRootSignature(*CommonProperty.pRootSignature);
+	D3D12_RASTERIZER_DESC Rasterizer = RasterizerTwoSided;
 	if (CommonProperty.IsWireframe)
 	{
-		mPSO.SetRasterizerState(RasterizerWireframe);
+		Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
+		Rasterizer.FillMode = D3D12_FILL_MODE_WIREFRAME;
 	}
-	else
+	if (CommonProperty.IsMSAA)
 	{
-		mPSO.SetRasterizerState(RasterizerTwoSided);
+		Rasterizer.MultisampleEnable = true;
 	}
+	mPSO.SetRootSignature(*CommonProperty.pRootSignature);
+	mPSO.SetRasterizerState(Rasterizer);
 	mPSO.SetBlendState(BlendDisable);
 	mPSO.SetDepthStencilState(CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT));
 	mPSO.SetSampleMask(0xFFFFFFFF);
@@ -58,6 +61,6 @@ void InstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 	mPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 	mPSO.SetVertexShader(g_pInstanceModelVS, sizeof(g_pInstanceModelVS));
 	mPSO.SetPixelShader(g_pInstanceModelPS, sizeof(g_pInstanceModelPS));
-	mPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat());
+	mPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
 	mPSO.Finalize();
 }

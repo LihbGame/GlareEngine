@@ -252,7 +252,7 @@ void EngineGUI::DrawControlPanel(float IconWindowHigh)
 	ImGui::Checkbox("Shadow", &show_shadow);
 	ImGui::Checkbox("Model", &show_model);
 	ImGui::Checkbox("Sky", &show_sky);
-	ImGui::Checkbox("Land", &show_land);
+	ImGui::Checkbox("MSAA", &mMSAA);
 	ImGui::Checkbox("HeightMapTerrain", &show_HeightMapTerrain);
 
 	if (ImGui::CollapsingHeader("Water", ImGuiTreeNodeFlags_DefaultOpen))
