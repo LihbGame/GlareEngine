@@ -43,6 +43,7 @@ void InstanceModel::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 void InstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 {
 	D3D12_RASTERIZER_DESC Rasterizer = RasterizerTwoSided;
+	D3D12_BLEND_DESC Blend = BlendDisable;
 	if (CommonProperty.IsWireframe)
 	{
 		Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
@@ -51,11 +52,10 @@ void InstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 	if (CommonProperty.IsMSAA)
 	{
 		Rasterizer.MultisampleEnable = true;
+		Blend.AlphaToCoverageEnable = true;
 	}
 	mPSO.SetRootSignature(*CommonProperty.pRootSignature);
 	mPSO.SetRasterizerState(Rasterizer);
-	D3D12_BLEND_DESC Blend=BlendDisable;
-	Blend.AlphaToCoverageEnable = TRUE;
 	mPSO.SetBlendState(Blend);
 	mPSO.SetDepthStencilState(CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT));
 	mPSO.SetSampleMask(0xFFFFFFFF);
