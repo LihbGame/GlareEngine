@@ -35,7 +35,7 @@
 
 #include "d3dx12.h"
 #include "DDSTextureLoader.h"
-#include "WICTextureLoader12.h"
+#include "WICTextureLoader.h"
 #include "pix3.h"
 #include "MathHelper.h"
 #include "GameTimer.h"

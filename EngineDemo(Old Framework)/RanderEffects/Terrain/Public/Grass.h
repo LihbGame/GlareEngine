@@ -22,9 +22,9 @@ public:
 
 	int GetRGBNoiseMapIndex() { return mRGBNoiseMapIndex; }
 private:
-	ID3D11ShaderResourceView* mGrassTexSRV;
-	ID3D11ShaderResourceView* mGrassBlendTexSRV;
-	ID3D11ShaderResourceView* mRandomSRV;
+	//ID3D11ShaderResourceView* mGrassTexSRV;
+	//ID3D11ShaderResourceView* mGrassBlendTexSRV;
+	//ID3D11ShaderResourceView* mRandomSRV;
 
 	ID3D12Device* mDevice;
 

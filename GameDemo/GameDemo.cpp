@@ -168,7 +168,6 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList)
 void App::Startup(void)
 {
 	GraphicsContext& InitializeContext = GraphicsContext::Begin(L"Initialize");
-
 	ID3D12GraphicsCommandList* CommandList = InitializeContext.GetCommandList();
 
 	//UI Init
@@ -389,6 +388,7 @@ void App::RenderScene(void)
 #pragma region Test Scene
 	gScene->RenderScene(RenderPipelineType::Forward, RenderContext);
 #pragma endregion
+
 
 
 	RenderContext.PIXEndEvent();

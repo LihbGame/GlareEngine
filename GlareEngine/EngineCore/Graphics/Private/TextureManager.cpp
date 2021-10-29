@@ -1,7 +1,6 @@
 #include "TextureManager.h"
 #include "GraphicsCore.h"
 
-
 string  PBRTextureFileType[] = {
 	"_albedo",
 	"_normal",

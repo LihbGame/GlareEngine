@@ -85,6 +85,7 @@ void CSky::BuildSkySRV(ID3D12GraphicsCommandList* CommandList)
 	SkysrvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
 	SkysrvDesc.Format = SkyTex->GetDesc().Format;
 	g_Device->CreateShaderResourceView(SkyTex.Get(), &SkysrvDesc, m_Descriptor);
+
 }
 
 void CSky::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
