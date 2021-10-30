@@ -127,45 +127,45 @@
     <ClInclude Include="EngineCore\Engine\Public\Scene.h" />
     <ClInclude Include="GraphicEffects\Misc\RenderObject.h" />
     <ClInclude Include="GraphicEffects\Shadow\Public\ShadowMap.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\Audio.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\BufferHelpers.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\CommonStates.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\DescriptorHeap.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\DirectXHelpers.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\EffectPipelineStateDescription.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\Effects.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\GamePad.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\GeometricPrimitive.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\GraphicsMemory.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\Keyboard.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\Model.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\Mouse.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\PostProcess.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\PrimitiveBatch.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\RenderTargetState.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\ResourceUploadBatch.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\ScreenGrab.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\SimpleMath.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\SpriteBatch.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\SpriteFont.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\VertexTypes.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Src\AlignedNew.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Src\Bezier.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Src\BinaryReader.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Src\d3dx12.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Src\DDS.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Src\DemandCreate.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Src\EffectCommon.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Src\Geometry.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Src\LoaderHelpers.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Src\pch.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Src\PlatformHelpers.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Src\SDKMesh.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Src\SharedResourcePool.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Src\vbo.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Src\DXLinearAllocator.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\DDSTextureLoader.h" />
-    <ClInclude Include="EngineCore\DirectXTK12\Inc\WICTextureLoader.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\Audio.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\BufferHelpers.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\CommonStates.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\DDSTextureLoader.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\DescriptorHeap.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\DirectXHelpers.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\EffectPipelineStateDescription.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\Effects.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\GamePad.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\GeometricPrimitive.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\GraphicsMemory.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\Keyboard.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\Model.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\Mouse.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\PostProcess.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\PrimitiveBatch.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\RenderTargetState.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\ResourceUploadBatch.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\ScreenGrab.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\SimpleMath.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\SpriteBatch.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\SpriteFont.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\VertexTypes.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Inc\WICTextureLoader.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Src\AlignedNew.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Src\Bezier.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Src\BinaryReader.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Src\d3dx12.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Src\DDS.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Src\DemandCreate.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Src\DXLinearAllocator.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Src\EffectCommon.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Src\Geometry.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Src\LoaderHelpers.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Src\pch.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Src\PlatformHelpers.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Src\SDKMesh.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Src\SharedResourcePool.h" />
+    <ClInclude Include="Dependences\include\DirectXTK12\Src\vbo.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
@@ -330,130 +330,130 @@
     <ClCompile Include="GraphicEffects\Shadow\Private\ShadowMap.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\AlphaTestEffect.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\AlphaTestEffect.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\BasicEffect.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\BasicEffect.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\BasicPostProcess.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\BasicPostProcess.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\BinaryReader.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\BinaryReader.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\BufferHelpers.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\BufferHelpers.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\CommonStates.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\CommonStates.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\DebugEffect.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\DDSTextureLoader.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\DirectXHelpers.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\DebugEffect.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\DualPostProcess.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\DirectXHelpers.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\DualTextureEffect.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\DualPostProcess.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\EffectCommon.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\DualTextureEffect.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\EffectFactory.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\DXDescriptorHeap.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\EffectPipelineStateDescription.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\DXLinearAllocator.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\EffectTextureFactory.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\EffectCommon.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\EnvironmentMapEffect.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\EffectFactory.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\GamePad.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\EffectPipelineStateDescription.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\GeometricPrimitive.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\EffectTextureFactory.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\Geometry.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\EnvironmentMapEffect.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\GraphicsMemory.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\GamePad.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\Keyboard.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\GeometricPrimitive.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\Model.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\Geometry.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\ModelLoadCMO.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\GraphicsMemory.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\ModelLoadSDKMESH.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\Keyboard.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\ModelLoadVBO.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\Model.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\Mouse.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\ModelLoadCMO.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\NormalMapEffect.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\ModelLoadSDKMESH.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\PBREffect.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\ModelLoadVBO.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\PBREffectFactory.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\Mouse.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\pch.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\NormalMapEffect.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\PrimitiveBatch.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\PBREffect.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\ResourceUploadBatch.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\PBREffectFactory.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\ScreenGrab.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\pch.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\SimpleMath.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\PrimitiveBatch.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\SkinnedEffect.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\ResourceUploadBatch.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\SpriteBatch.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\ScreenGrab.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\SpriteFont.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\SimpleMath.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\ToneMapPostProcess.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\SkinnedEffect.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\VertexTypes.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\SpriteBatch.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\DDSTextureLoader.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\SpriteFont.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\WICTextureLoader.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\ToneMapPostProcess.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\DXDescriptorHeap.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\VertexTypes.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\DirectXTK12\Src\DXLinearAllocator.cpp">
+    <ClCompile Include="Dependences\include\DirectXTK12\Src\WICTextureLoader.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
@@ -508,162 +508,162 @@
     <None Include="Shaders\Misc\ColorSpaceUtility.hlsli" />
     <None Include="Shaders\Misc\CommonResource.hlsli" />
     <None Include="Shaders\Misc\PBRLighting.hlsli" />
-    <None Include="EngineCore\DirectXTK12\Inc\SimpleMath.inl" />
-    <None Include="EngineCore\DirectXTK12\Src\TeapotData.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestEqNe.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestEqNeNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestLtGt.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestLtGtNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_VSAlphaTest.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_VSAlphaTestNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_VSAlphaTestVc.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_VSAlphaTestVcNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasic.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicPixelLighting.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicPixelLightingTx.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicTx.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicTxNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicVertexLighting.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicVertexLightingNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicVertexLightingTx.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicVertexLightingTxNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasic.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLighting.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTx.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTxBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTxVc.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTxVcBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingVc.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingVcBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicTx.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicTxNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicTxVc.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicTxVcNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVc.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVcNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLighting.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTx.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTxBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTxVc.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTxVcBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingVc.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingVcBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\DebugEffect_PSHemiAmbient.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\DebugEffect_PSRGBBiTangents.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\DebugEffect_PSRGBNormals.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\DebugEffect_PSRGBTangents.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebug.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugBnInst.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugInst.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugVc.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugVcBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugVcBnInst.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugVcInst.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\DualTextureEffect_PSDualTexture.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\DualTextureEffect_PSDualTextureNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\DualTextureEffect_VSDualTexture.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\DualTextureEffect_VSDualTextureNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\DualTextureEffect_VSDualTextureVc.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\DualTextureEffect_VSDualTextureVcNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMap.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLighting.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingFresnel.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingFresnelNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLighting.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLightingFresnel.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLightingFresnelNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLightingNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpecular.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpecularNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLighting.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingFresnel.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingFresnelNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMap.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapFresnel.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapFresnelBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapPixelLighting.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapPixelLightingBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\GenerateMips_main.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTx.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTxNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTxNoFogSpec.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTxNoSpec.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTx.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxBnInst.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxInst.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxNoSpec.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxNoSpecBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxNoSpecBnInst.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxNoSpecInst.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVc.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcBnInst.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcInst.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcNoSpec.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcNoSpecBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcNoSpecBnInst.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcNoSpecInst.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSSkinnedPixelLightingTx.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSSkinnedPixelLightingTxBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSSkinnedPixelLightingTxNoSpec.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSSkinnedPixelLightingTxNoSpecBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PBREffect_PSConstant.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PBREffect_PSTextured.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PBREffect_PSTexturedEmissive.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PBREffect_PSTexturedEmissiveVelocity.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PBREffect_PSTexturedVelocity.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSConstant.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSConstantBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSConstantBnInst.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSConstantInst.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSConstantVelocity.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSConstantVelocityBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSSkinned.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSSkinnedBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSBloomBlur.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSBloomCombine.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSBloomExtract.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSCopy.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSDownScale2x2.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSDownScale4x4.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSGaussianBlur5x5.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSMerge.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSMonochrome.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSSepia.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PostProcess_VSQuad.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PostProcess_VSQuadDual.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\PostProcess_VSQuadNoCB.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_PSSkinnedPixelLighting.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_PSSkinnedVertexLighting.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_PSSkinnedVertexLightingNoFog.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_VSSkinnedPixelLightingFourBones.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_VSSkinnedPixelLightingFourBonesBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_VSSkinnedVertexLightingFourBones.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_VSSkinnedVertexLightingFourBonesBn.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\SpriteEffect_SpritePixelShader.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\SpriteEffect_SpritePixelShaderHeap.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\SpriteEffect_SpriteVertexShader.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\SpriteEffect_SpriteVertexShaderHeap.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\ToneMap_PS_SRGB.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSACESFilmic.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSACESFilmic_SRGB.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSCopy.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSHDR10.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSReinhard.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSReinhard_SRGB.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSSaturate.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSSaturate_SRGB.inc" />
-    <None Include="EngineCore\DirectXTK12\Src\Shaders\Compiled\ToneMap_VSQuad.inc" />
+    <None Include="Dependences\include\DirectXTK12\Inc\SimpleMath.inl" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestEqNe.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestEqNeNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestLtGt.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestLtGtNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_VSAlphaTest.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_VSAlphaTestNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_VSAlphaTestVc.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_VSAlphaTestVcNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasic.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicPixelLighting.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicPixelLightingTx.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicTx.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicTxNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicVertexLighting.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicVertexLightingNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicVertexLightingTx.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicVertexLightingTxNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasic.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLighting.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTx.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTxBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTxVc.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTxVcBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingVc.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingVcBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicTx.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicTxNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicTxVc.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicTxVcNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVc.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVcNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLighting.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTx.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTxBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTxVc.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTxVcBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingVc.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingVcBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_PSHemiAmbient.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_PSRGBBiTangents.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_PSRGBNormals.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_PSRGBTangents.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebug.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugBnInst.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugInst.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugVc.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugVcBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugVcBnInst.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugVcInst.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DualTextureEffect_PSDualTexture.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DualTextureEffect_PSDualTextureNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DualTextureEffect_VSDualTexture.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DualTextureEffect_VSDualTextureNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DualTextureEffect_VSDualTextureVc.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DualTextureEffect_VSDualTextureVcNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMap.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLighting.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingFresnel.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingFresnelNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLighting.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLightingFresnel.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLightingFresnelNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLightingNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpecular.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpecularNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLighting.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingFresnel.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingFresnelNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMap.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapFresnel.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapFresnelBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapPixelLighting.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapPixelLightingBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\GenerateMips_main.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTx.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTxNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTxNoFogSpec.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTxNoSpec.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTx.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxBnInst.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxInst.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxNoSpec.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxNoSpecBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxNoSpecBnInst.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxNoSpecInst.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVc.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcBnInst.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcInst.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcNoSpec.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcNoSpecBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcNoSpecBnInst.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcNoSpecInst.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSSkinnedPixelLightingTx.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSSkinnedPixelLightingTxBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSSkinnedPixelLightingTxNoSpec.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSSkinnedPixelLightingTxNoSpecBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_PSConstant.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_PSTextured.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_PSTexturedEmissive.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_PSTexturedEmissiveVelocity.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_PSTexturedVelocity.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSConstant.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSConstantBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSConstantBnInst.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSConstantInst.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSConstantVelocity.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSConstantVelocityBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSSkinned.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSSkinnedBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSBloomBlur.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSBloomCombine.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSBloomExtract.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSCopy.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSDownScale2x2.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSDownScale4x4.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSGaussianBlur5x5.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSMerge.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSMonochrome.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSSepia.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_VSQuad.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_VSQuadDual.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_VSQuadNoCB.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_PSSkinnedPixelLighting.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_PSSkinnedVertexLighting.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_PSSkinnedVertexLightingNoFog.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_VSSkinnedPixelLightingFourBones.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_VSSkinnedPixelLightingFourBonesBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_VSSkinnedVertexLightingFourBones.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_VSSkinnedVertexLightingFourBonesBn.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SpriteEffect_SpritePixelShader.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SpriteEffect_SpritePixelShaderHeap.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SpriteEffect_SpriteVertexShader.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SpriteEffect_SpriteVertexShaderHeap.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PS_SRGB.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSACESFilmic.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSACESFilmic_SRGB.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSCopy.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSHDR10.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSReinhard.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSReinhard_SRGB.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSSaturate.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSSaturate_SRGB.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_VSQuad.inc" />
+    <None Include="Dependences\include\DirectXTK12\Src\TeapotData.inc" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Dependences\lib\ozz\debug\ozz_animation_d.lib" />

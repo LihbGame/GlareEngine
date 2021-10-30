@@ -1,7 +1,5 @@
 #include "Scene.h"
 #include "ModelLoader.h"
-#include "ScreenGrab.h"
-#include "CommandListManager.h"
 /// Scene/////////////////////////////////////////////
 
 Scene::Scene(string name, ID3D12GraphicsCommandList* pCommandList)
@@ -136,10 +134,6 @@ void Scene::ForwardRendering(GraphicsContext& Context)
 		}
 	}
 	Context.PIXEndEvent();
-
-
-	//SaveDDSTextureToFile(g_CommandManager.GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT).GetCommandQueue(), g_SceneColorBuffer.m_pResource.Get(),
-		//L"dd.dds",D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 	//MSAA
 	if (IsMSAA)
