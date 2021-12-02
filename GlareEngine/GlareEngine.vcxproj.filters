@@ -166,6 +166,7 @@
     <ClInclude Include="Dependences\include\DirectXTK12\Src\SDKMesh.h" />
     <ClInclude Include="Dependences\include\DirectXTK12\Src\SharedResourcePool.h" />
     <ClInclude Include="Dependences\include\DirectXTK12\Src\vbo.h" />
+    <ClInclude Include="GraphicEffects\GI\IBL\IBL.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
@@ -454,6 +455,9 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="Dependences\include\DirectXTK12\Src\WICTextureLoader.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicEffects\GI\IBL\IBL.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>

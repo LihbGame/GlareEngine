@@ -530,11 +530,6 @@ namespace GlareEngine
 
 	void DirectX12Graphics::Present(void)
 	{
-		//SaveDDSTextureToFile(g_CommandManager.GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT).GetCommandQueue(), g_SceneColorBuffer.m_pResource.Get(),
-	//L"dd.dds",D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-
-
 		g_CurrentBuffer = (g_CurrentBuffer + 1) % SWAP_CHAIN_BUFFER_COUNT;
 
 		UINT PresentInterval = s_EnableVSync ? min(4, (int)round(s_FrameTime * 60.0f)) : 0;
