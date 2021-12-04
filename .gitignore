@@ -7,7 +7,8 @@
 /GlareEngine/Debug/
 /GlareEngine/x64/
 /GlareEngine/Release/
-/Resource/Textures/HDRSky/
+/Resource/Textures/HDRSky/Sky.dds
+/Resource/Textures/HDRSky/Sky1.dds
 /GlareEngine/Dependences/lib/assimp-vc142-mt.lib
 /GlareEngine/EngineEditor/NoesisUIEditor/Data/.vs/
 /GlareEngine/EngineEditor/NoesisUIEditor/Data/bin/
