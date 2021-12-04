@@ -1,5 +1,8 @@
 #include "ColorSpaceUtility.hlsli"
 
+#ifndef SHADER_UTILITY
+#define SHADER_UTILITY
+
 #pragma warning( disable : 3571 )
 
 //编码平滑的对数梯度，以实现视觉自然精度的均匀分布
@@ -119,3 +122,5 @@ float3 ConvertColor(float3 x, int FromFormat, int ToFormat)
 
     return ApplyDisplayProfile(RemoveDisplayProfile(x, FromFormat), ToFormat);
 }
+
+#endif

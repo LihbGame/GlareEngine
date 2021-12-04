@@ -7,15 +7,23 @@ class Scene
 public:
 	Scene(string name, ID3D12GraphicsCommandList* pCommandList);
 	~Scene() {};
+public:
+	//Update Scene 
 	void Update(float DeltaTime);
+	//Add Objects to Scene
 	void AddObjectToScene(RenderObject* Object);
+	//Render Scene
 	void RenderScene(RenderPipelineType Type,GraphicsContext& Context);
+	//Release Scene
 	void ReleaseScene();
-	//resize Viewport and Scissor
+	//Resize Viewport and Scissor
 	void ResizeViewport(uint32_t width, uint32_t height);
+	//Set Shadow Class Type
 	void SetShadowMap(ShadowMap* shadowMap) { m_pShadowMap = shadowMap; }
+	//Update objects visible
 	void VisibleUpdateForType(unordered_map<ObjectType, bool> TypeVisible);
-
+	//Baking Scene's Global illumination data
+	void BakingGIData();
 public:
 	bool IsWireFrame = false;
 	bool IsMSAA = false;

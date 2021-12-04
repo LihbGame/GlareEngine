@@ -8,10 +8,10 @@ class IBL
 public:
 	IBL();
 	~IBL();
+
+	static void BakingEnvironmentDiffuse();
+	static void BakingEnvironmentSpecular();
+	static void PreBakeGIData();
 private:
-
-
-
-
 };
 

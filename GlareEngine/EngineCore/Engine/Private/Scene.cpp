@@ -33,6 +33,10 @@ void Scene::VisibleUpdateForType(unordered_map<ObjectType, bool> TypeVisible)
 	}
 }
 
+void Scene::BakingGIData()
+{
+}
+
 
 
 void Scene::AddObjectToScene(RenderObject* Object)

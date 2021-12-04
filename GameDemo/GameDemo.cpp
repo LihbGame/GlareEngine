@@ -30,7 +30,7 @@ using namespace GlareEngine::EngineInput;
 #define MAXSRVSIZE 256
 #define SHADOWMAPSIZE 2048
 #define  FAR_Z 5000.0f
-
+#define CAMERA_SPEED 100.0f
 const int gNumFrameResources = 3;
 
 
@@ -67,7 +67,7 @@ public:
 
 	void BuildPSO();
 
-	void UpdateScene(float DeltaTime);
+	void UpdateSceneState(float DeltaTime);
 
 	void UpdateWindow(float DeltaTime);
 
@@ -87,7 +87,7 @@ protected:
 	virtual void OnMouseMove(WPARAM btnState, int x, int y);
 private:
 	//Only one scene
-	static Scene* gScene;
+	Scene* gScene = nullptr;
 	//Scene data 
 	vector<unique_ptr<InstanceModel>> mModels;
 
@@ -104,7 +104,7 @@ private:
 	//UI
 	unique_ptr<EngineGUI> mEngineUI;
 	
-	float mCameraSpeed = 100.0f;
+	float mCameraSpeed = CAMERA_SPEED;
 
 	D3D12_RECT mClientRect = { 0 };
 	//scene manager
@@ -113,8 +113,6 @@ private:
 	//PSO Common Property
 	PSOCommonProperty mCommonProperty;
 };
-
-Scene* App::gScene = nullptr;
 //////////////////////////////////////////////////////////////
 
 //Game App entry
@@ -144,9 +142,9 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList)
 	gScene = mSceneManager->CreateScene("Test Scene");
 	{
 		assert(gScene);
-		//Shadow map
+		//set Shadow map type
 		gScene->SetShadowMap(mShadowMap.get());
-		//Sky
+		//add hdr Sky
 		gScene->AddObjectToScene(mSky.get());
 		//Instance models
 		CreateSimpleModelInstance(CommandList,"Grid_01", SimpleModelType::Grid, "PBRGrass01", 1, 1);
@@ -154,11 +152,16 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList)
 		//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRharshbricks", 1, 1);
 		//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Cylinder, "PBRharshbricks", 2, 1);
 		//CreateModelInstance(CommandList,"mercMaleMarksman/mercMaleMarksman.FBX", 5, 5);
+
+		//add models
 		for (auto& model : mModels)
 		{
 			gScene->AddObjectToScene(model.get());
 		}
 		
+		//Baking GI Data
+		gScene->BakingGIData();
+
 	}
 
 	//Create all Materials Constant Buffer
@@ -196,7 +199,7 @@ void App::Update(float DeltaTime)
 	UpdateWindow(DeltaTime);
 	UpdateCamera(DeltaTime);
 	UpdateMainConstantBuffer(DeltaTime);
-	UpdateScene(DeltaTime);
+	UpdateSceneState(DeltaTime);
 	//update scene
 	gScene->Update(DeltaTime);
 }
@@ -239,7 +242,7 @@ void App::BuildPSO()
 	ShadowMap::BuildPSO(mCommonProperty);
 }
 
-void App::UpdateScene(float DeltaTime)
+void App::UpdateSceneState(float DeltaTime)
 {
 	assert(gScene);
 	unordered_map<ObjectType, bool> TypeVisible;

@@ -375,6 +375,7 @@
     <ClInclude Include="EngineCore\Engine\Public\SceneManager.h" />
     <ClInclude Include="EngineCore\Graphics\Public\TextureManager.h" />
     <ClInclude Include="EngineCore\Math\Random.h" />
+    <ClInclude Include="GraphicEffects\Misc\CubeRenderTarget.h" />
     <ClInclude Include="GraphicEffects\GI\IBL\IBL.h" />
     <ClInclude Include="GraphicEffects\InstanceModel\Public\InstanceModel.h" />
     <ClInclude Include="GraphicEffects\InstanceModel\Public\SimpleModelGenerator.h" />
@@ -452,11 +453,13 @@
     <None Include="Shaders\Misc\CommonResource.hlsli" />
     <None Include="Shaders\Misc\PBRLighting.hlsli" />
     <None Include="Shaders\Misc\ShaderUtility.hlsli" />
+    <None Include="Shaders\Misc\ToneMappingUtility.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animation\ModelLoader.cpp" />
     <None Include="EngineCore\Graphics\Private\Color.cpp" />
     <ClCompile Include="Animation\ModelMesh.cpp" />
+    <ClCompile Include="GraphicEffects\Misc\CubeRenderTarget.cpp" />
     <ClCompile Include="Dependences\include\DirectXTK12\Src\AlphaTestEffect.cpp" />
     <ClCompile Include="Dependences\include\DirectXTK12\Src\BasicEffect.cpp" />
     <ClCompile Include="Dependences\include\DirectXTK12\Src\BasicPostProcess.cpp" />

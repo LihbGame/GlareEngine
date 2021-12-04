@@ -4,6 +4,9 @@
 #include "CommandListManager.h"
 #include "RootSignature.h"
 
+
+#define MaxDescriptorsPerCopy  256
+
 namespace GlareEngine
 {
 	namespace DirectX12Graphics
@@ -211,7 +214,7 @@ namespace GlareEngine
 
 			m_StaleRootParamsBitMap = 0;
 
-			static const uint32_t kMaxDescriptorsPerCopy = 256;
+			static const uint32_t kMaxDescriptorsPerCopy = MaxDescriptorsPerCopy;
 			UINT NumDestDescriptorRanges = 0;
 			D3D12_CPU_DESCRIPTOR_HANDLE pDestDescriptorRangeStarts[kMaxDescriptorsPerCopy];
 			UINT pDestDescriptorRangeSizes[kMaxDescriptorsPerCopy];
@@ -306,9 +309,6 @@ namespace GlareEngine
 					CurDest.ptr += SetHandles * DescriptorSize;
 				}
 			}
-
-
-
 
 			g_Device->CopyDescriptors(
 				NumDestDescriptorRanges, pDestDescriptorRangeStarts, pDestDescriptorRangeSizes,

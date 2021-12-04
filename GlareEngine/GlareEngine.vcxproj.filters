@@ -167,6 +167,7 @@
     <ClInclude Include="Dependences\include\DirectXTK12\Src\SharedResourcePool.h" />
     <ClInclude Include="Dependences\include\DirectXTK12\Src\vbo.h" />
     <ClInclude Include="GraphicEffects\GI\IBL\IBL.h" />
+    <ClInclude Include="GraphicEffects\Misc\CubeRenderTarget.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
@@ -460,6 +461,9 @@
     <ClCompile Include="GraphicEffects\GI\IBL\IBL.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
+    <ClCompile Include="GraphicEffects\Misc\CubeRenderTarget.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -668,6 +672,7 @@
     <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSSaturate_SRGB.inc" />
     <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_VSQuad.inc" />
     <None Include="Dependences\include\DirectXTK12\Src\TeapotData.inc" />
+    <None Include="Shaders\Misc\ToneMappingUtility.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Dependences\lib\ozz\debug\ozz_animation_d.lib" />

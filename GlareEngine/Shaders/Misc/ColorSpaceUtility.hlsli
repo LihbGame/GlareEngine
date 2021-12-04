@@ -10,7 +10,8 @@
 //当 sRGB 编码的颜色被传递到 LCD 显示器时，它们在屏幕上看起来是正确的，
 //因为显示器期望颜色用 sRGB 编码，并且它删除了 sRGB 曲线以使值线性化。 
 //当纹理用 sRGB 编码时，需要删除 sRGB 曲线。
-
+#ifndef COLOR_SPACE_UTILITY
+#define COLOR_SPACE_UTILITY
 
 float3 ApplySRGBCurve(float3 x)
 {
@@ -131,3 +132,5 @@ float3 DCIP3toREC709(float3 RGB709)
     };
     return mul(ConvMat, RGB709);
 }
+
+#endif

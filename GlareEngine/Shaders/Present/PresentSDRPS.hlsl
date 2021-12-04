@@ -1,6 +1,8 @@
 #include "../Misc/ShaderUtility.hlsli"
+#include "../Misc/ToneMappingUtility.hlsli"
 
 Texture2D<float3> ColorTex : register(t0);
+
 
 float4 main(float4 position : SV_Position) : SV_Target0
 {

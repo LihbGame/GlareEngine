@@ -18,7 +18,7 @@ CSky::CSky(ID3D12GraphicsCommandList* CommandList,
 	BuildSkyMesh(CommandList, radius, sliceCount, stackCount);
 	BuildSkySRV(CommandList);
 	//world mat
-	XMStoreFloat4x4(&mWorld, XMMatrixScaling(5000.0f, 5000.0f, 5000.0f));
+	XMStoreFloat4x4(&mWorld, XMMatrixScaling(50.0f, 50.0f, 50.0f));
 }
 
 CSky::~CSky()

@@ -54,7 +54,7 @@ namespace GlareEngine
 
 			Microsoft::WRL::ComPtr<ID3D12Resource> m_pResource;
 
-			//使用VirtualAlloc（）直接分配内存时，请在此处记录分配，以便可以释放它。 
+			//使用VirtualAlloc()直接分配内存时，请在此处记录分配，以便可以释放它。 
 			//GpuVirtualAddress可能会偏离实际分配开始位置。
 			void* m_UserAllocatedMemory;
 		};
