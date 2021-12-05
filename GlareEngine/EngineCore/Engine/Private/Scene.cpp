@@ -17,7 +17,7 @@ void Scene::Update(float DeltaTime)
 void Scene::VisibleUpdateForType(unordered_map<ObjectType, bool> TypeVisible)
 {
 	bool ShadowVisible = TypeVisible[ObjectType::Shadow];
-	for (auto& object : pRenderObjects)
+	for (auto& object : m_pRenderObjects)
 	{
 		//update visible
 		if (TypeVisible[object->mObjectType] != object->GetVisible())
@@ -35,13 +35,22 @@ void Scene::VisibleUpdateForType(unordered_map<ObjectType, bool> TypeVisible)
 
 void Scene::BakingGIData()
 {
+	mIBLGI.Initialize();
+	mIBLGI.PreBakeGIData(m_pRenderObjectsType[(int)ObjectType::Sky].front());
+
+
 }
 
 
 
 void Scene::AddObjectToScene(RenderObject* Object)
 {
-	pRenderObjects.push_back(Object);
+	m_pRenderObjects.push_back(Object);
+
+	if (Object->mObjectType == ObjectType::Sky)
+	{
+		m_pRenderObjectsType[(int)ObjectType::Sky].push_back(Object);
+	}
 }
 
 void Scene::RenderScene(RenderPipelineType Type, GraphicsContext& Context)
@@ -103,7 +112,7 @@ void Scene::ForwardRendering(GraphicsContext& Context)
 	Context.SetDynamicSRV(4, sizeof(MaterialConstant) * MaterialData.size(), MaterialData.data());
 
 	Context.PIXBeginEvent(L"Shadow Pass");
-	CreateShadowMap(Context,pRenderObjects);
+	CreateShadowMap(Context,m_pRenderObjects);
 	Context.PIXEndEvent();
 
 	//set Viewport And Scissor
@@ -128,7 +137,7 @@ void Scene::ForwardRendering(GraphicsContext& Context)
 	}
 
 	Context.PIXBeginEvent(L"Main Pass");
-	for (auto& RenderObject : pRenderObjects)
+	for (auto& RenderObject : m_pRenderObjects)
 	{
 		if (RenderObject->GetVisible())
 		{

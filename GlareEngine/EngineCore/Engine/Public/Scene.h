@@ -2,6 +2,7 @@
 #include "InstanceModel.h"
 #include "SimpleModelGenerator.h"
 #include "ShadowMap.h"
+#include "IBL.h"
 class Scene
 {
 public:
@@ -40,8 +41,12 @@ private:
 	D3D12_VIEWPORT m_MainViewport = { 0 };
 	D3D12_RECT m_MainScissor = { 0 };
 
-	vector<RenderObject*> pRenderObjects;
+	vector<RenderObject*> m_pRenderObjects;
+	vector<RenderObject*> m_pRenderObjectsType[(int)ObjectType::Count];
 
 	ShadowMap* m_pShadowMap = nullptr;
+	//IBL Global illumination
+	IBL mIBLGI;
+
 };
 

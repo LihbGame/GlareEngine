@@ -40,7 +40,7 @@ half Fresnel(half NdotL, half fresnelBias, half fresnelPow)
 float4 PS(VertexOut pin) : SV_Target
 {
     float3 vEye = normalize(pin.Eye);
-
+    float3 toEye = normalize(gEyePosW.xyz - pin.PosW);
     // Get bump layers WavesBump
     float3 vBumpTexA = gSRVMap[gWaterDumpWaveIndex].Sample(gsamLinearWrap, pin.Wave0.xy).xyz;
     float3 vBumpTexB = gSRVMap[gWaterDumpWaveIndex].Sample(gsamLinearWrap, pin.Wave1.xy).xyz;
@@ -99,17 +99,17 @@ float4 PS(VertexOut pin) : SV_Target
 
     //lighting
     {
-        Material mat = { float4(waterColor, 1.0f), float3(0.01f,0.01f,0.01f), 0.3f,0.0f,1.0f };
+        Material mat = { float4(waterColor, 1.0f), float3(0.01f,0.01f,0.01f), 0.2f,0.0f,1.0f };
         // Only the first light casts a shadow.
         float3 shadowFactor = float3(1.0f, 1.0f, 1.0f);
         //shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
 
         //tansform normal
-        float3 bumpedNormalW = mul(vBumpTex * float3(0.6, 0.6, 1.0), GetTangentSpaceBasis(float3(1.0f, 0.0f, 0.0f), float3(0.0f, 1.0f, 0.0f)));
+        float3 bumpedNormalW = mul(normalize(vBumpTex * float3(0.4, 0.4, 1)), GetTangentSpaceBasis(float3(1.0f, 0.0f, 0.0f), float3(0.0f, 1.0f, 0.0f)));
         bumpedNormalW = normalize(bumpedNormalW);
 
         texColor = ComputeLighting(gLights, mat, pin.PosW,
-           bumpedNormalW, vEye, shadowFactor) + texColor;
+           bumpedNormalW, toEye, shadowFactor) + texColor;
     }
 
      // Fogging

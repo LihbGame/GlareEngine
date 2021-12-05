@@ -16,6 +16,9 @@
     <Filter Include="Animation">
       <UniqueIdentifier>{0594649a-76ee-4be4-a7d8-bbdc709270f5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{4b0f09ad-8c71-47c0-8191-2a5d4cb84ee8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -246,5 +249,10 @@
     <None Include="..\Resource\Textures\ICONS\Arrow.cur">
       <Filter>资源文件</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\ShockWaveWaterPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

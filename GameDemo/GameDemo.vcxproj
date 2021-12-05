@@ -79,7 +79,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\GlareEngine\Dependences\include\DirectXTK12\Inc;..\GlareEngine\Dependences\include\DirectXTK12\Src;..\GlareEngine\Dependences\include\DirectXTK12\Src\Shaders\Compiled;..\GlareEngine\GraphicEffects\Shadow\Public;..\GlareEngine\GraphicEffects\InstanceModel\Public;..\GlareEngine\Dependences\include;..\GlareEngine\Animation;..\GlareEngine\EngineEditor\ImgUIEditor;..\GlareEngine\GraphicEffects\Misc;..\GlareEngine\GraphicEffects\Sky\Public;..\GlareEngine\EngineCore\Math;..\GlareEngine\EngineCore\Graphics\Public;..\GlareEngine\EngineCore\Public;..\GlareEngine\EngineCore\Engine\Public;$(IncludePath)</IncludePath>
+    <IncludePath>..\GlareEngine\GraphicEffects\GI\IBL;..\GlareEngine\Dependences\include\DirectXTK12\Inc;..\GlareEngine\Dependences\include\DirectXTK12\Src;..\GlareEngine\Dependences\include\DirectXTK12\Src\Shaders\Compiled;..\GlareEngine\GraphicEffects\Shadow\Public;..\GlareEngine\GraphicEffects\InstanceModel\Public;..\GlareEngine\Dependences\include;..\GlareEngine\Animation;..\GlareEngine\EngineEditor\ImgUIEditor;..\GlareEngine\GraphicEffects\Misc;..\GlareEngine\GraphicEffects\Sky\Public;..\GlareEngine\EngineCore\Math;..\GlareEngine\EngineCore\Graphics\Public;..\GlareEngine\EngineCore\Public;..\GlareEngine\EngineCore\Engine\Public;$(IncludePath)</IncludePath>
     <LibraryPath>..\GlareEngine\Dependences\lib;..\x64\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -154,7 +154,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

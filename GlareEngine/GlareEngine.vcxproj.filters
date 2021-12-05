@@ -168,6 +168,7 @@
     <ClInclude Include="Dependences\include\DirectXTK12\Src\vbo.h" />
     <ClInclude Include="GraphicEffects\GI\IBL\IBL.h" />
     <ClInclude Include="GraphicEffects\Misc\CubeRenderTarget.h" />
+    <ClInclude Include="GraphicEffects\Misc\ConstantBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
@@ -693,5 +694,7 @@
     <FxCompile Include="Shaders\PBRInstanceModel\InstanceModelPS.hlsl" />
     <FxCompile Include="Shaders\Shadow\ModelShadowVS.hlsl" />
     <FxCompile Include="Shaders\Shadow\ModelShadowPS.hlsl" />
+    <FxCompile Include="Shaders\GI\BakingEnvDiffuseVS.hlsl" />
+    <FxCompile Include="Shaders\GI\BakingEnvDiffusePS.hlsl" />
   </ItemGroup>
 </Project>

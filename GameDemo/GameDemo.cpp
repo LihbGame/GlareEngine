@@ -458,7 +458,7 @@ void App::OnMouseUp(WPARAM btnState, int x, int y)
 
 void App::OnMouseMove(WPARAM btnState, int x, int y)
 {
-	if ((btnState & MK_LBUTTON) != 0)
+	if ((btnState & MK_RBUTTON) != 0)
 	{
 		if (x >= mClientRect.left && y >= mClientRect.top
 			&& y <= (mClientRect.top + (mClientRect.bottom - mClientRect.top))

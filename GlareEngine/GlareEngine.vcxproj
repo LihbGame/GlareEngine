@@ -375,6 +375,7 @@
     <ClInclude Include="EngineCore\Engine\Public\SceneManager.h" />
     <ClInclude Include="EngineCore\Graphics\Public\TextureManager.h" />
     <ClInclude Include="EngineCore\Math\Random.h" />
+    <ClInclude Include="GraphicEffects\Misc\ConstantBuffer.h" />
     <ClInclude Include="GraphicEffects\Misc\CubeRenderTarget.h" />
     <ClInclude Include="GraphicEffects\GI\IBL\IBL.h" />
     <ClInclude Include="GraphicEffects\InstanceModel\Public\InstanceModel.h" />
@@ -586,6 +587,18 @@
     <Library Include="Dependences\lib\ozz\debug\sample_framework_d.lib" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Shaders\GI\BakingEnvDiffusePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\GI\BakingEnvDiffuseVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
     <FxCompile Include="Shaders\PBRInstanceModel\InstanceModelPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
