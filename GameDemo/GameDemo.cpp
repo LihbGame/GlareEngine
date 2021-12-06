@@ -75,7 +75,7 @@ public:
 
 	void UpdateMainConstantBuffer(float DeltaTime);
 
-	void InitializeScene(ID3D12GraphicsCommandList* CommandList);
+	void InitializeScene(ID3D12GraphicsCommandList* CommandList, GraphicsContext& InitializeContext);
 
 	void CreateModelInstance(ID3D12GraphicsCommandList* CommandList,string ModelName, int Num_X, int Num_Y);
 
@@ -120,7 +120,7 @@ CREATE_APPLICATION(App);
 
 
 //////////////////////////////////////////////////////////////
-void App::InitializeScene(ID3D12GraphicsCommandList* CommandList)
+void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext& InitializeContext)
 {
 	//Main Camera
 	mCamera = make_unique<Camera>();
@@ -160,7 +160,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList)
 		}
 		
 		//Baking GI Data
-		gScene->BakingGIData();
+		//gScene->BakingGIData(InitializeContext);
 
 	}
 
@@ -178,7 +178,7 @@ void App::Startup(void)
 	//Scene Manager
 	mSceneManager = make_unique<SceneManager>(CommandList);
 	//Create scene
-	InitializeScene(CommandList);
+	InitializeScene(CommandList, InitializeContext);
 
 	InitializeContext.Finish(true);
 }
@@ -240,6 +240,7 @@ void App::BuildPSO()
 	CSky::BuildPSO(mCommonProperty);
 	InstanceModel::BuildPSO(mCommonProperty);
 	ShadowMap::BuildPSO(mCommonProperty);
+	IBL::BuildPSOs(mCommonProperty);
 }
 
 void App::UpdateSceneState(float DeltaTime)
@@ -375,6 +376,8 @@ void App::UpdateMainConstantBuffer(float DeltaTime)
 void App::RenderScene(void)
 {
 	GraphicsContext& RenderContext = GraphicsContext::Begin(L"RenderScene");
+	//Baking GI Data
+	gScene->BakingGIData(RenderContext);
 #pragma region Scene
 	RenderContext.PIXBeginEvent(L"Scene");
 

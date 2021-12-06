@@ -16,15 +16,21 @@ public:
 	IBL(const IBL& rhs) = delete;
 	IBL& operator=(const IBL& rhs) = delete;
 public:
-	void PreBakeGIData(RenderObject* Object);
+	void PreBakeGIData(GraphicsContext& Context, RenderObject* Object);
 	void Initialize();
+	static void BuildPSOs(const PSOCommonProperty CommonProperty);
 private:
-	void BakingEnvironmentDiffuse();
-	void BakingEnvironmentSpecular();
+	void BakingEnvironmentDiffuse(GraphicsContext& Context);
+	void BakingEnvironmentSpecular(GraphicsContext& Context);
+
 private:
 	unique_ptr<CubeRenderTarget> mIndirectDiffuseCube;
 	unique_ptr<CubeRenderTarget> mIndirectSpecularCube;
 
 	RenderObject* m_pSky = nullptr;
+
+
+	static RootSignature* m_pRootSignature;
+	static GraphicsPSO mIndirectDiffusePSO;
 };
 

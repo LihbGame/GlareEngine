@@ -1,8 +1,9 @@
+#include "../Misc/CommonResource.hlsli"
 
+TextureCube gCubeMap : register(t0);
 
-
-
-float4 main() : SV_TARGET
+float4 main(PosVSOut pin) : SV_TARGET
 {
-	return float4(1.0f, 1.0f, 1.0f, 1.0f);
+    float4 litColor = gCubeMap.Sample(gSamplerLinearWrap, pin.PosL);
+    return litColor;
 }

@@ -20,9 +20,9 @@ CubeRenderTarget::~CubeRenderTarget()
 	mCubeMap.Destroy();
 }
 
-ID3D12Resource* CubeRenderTarget::Resource()
+ColorBuffer& CubeRenderTarget::Resource()
 {
-	return mCubeMap.GetResource();
+	return mCubeMap;
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE CubeRenderTarget::SRV()

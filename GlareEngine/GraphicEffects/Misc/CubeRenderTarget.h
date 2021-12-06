@@ -26,12 +26,12 @@ public:
 	void OnResize(UINT newWidth, UINT newHeight);
 	D3D12_VIEWPORT Viewport()const;
 	D3D12_RECT ScissorRect()const;
-	ID3D12Resource* Resource();
+	ColorBuffer& Resource();
 
 	D3D12_CPU_DESCRIPTOR_HANDLE SRV();
 	D3D12_CPU_DESCRIPTOR_HANDLE RTV(int index);
 
-	CubeMapConstants GeCubeCameraCBV(int index) { return mCubeMapCBV[index]; }
+	CubeMapConstants GetCubeCameraCBV(int index) { return mCubeMapCBV[index]; }
 private:
 	void BuildDescriptors();
 	void BuildResource();

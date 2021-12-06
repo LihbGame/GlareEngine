@@ -33,12 +33,10 @@ void Scene::VisibleUpdateForType(unordered_map<ObjectType, bool> TypeVisible)
 	}
 }
 
-void Scene::BakingGIData()
+void Scene::BakingGIData(GraphicsContext& Context)
 {
 	mIBLGI.Initialize();
-	mIBLGI.PreBakeGIData(m_pRenderObjectsType[(int)ObjectType::Sky].front());
-
-
+	mIBLGI.PreBakeGIData(Context, m_pRenderObjectsType[(int)ObjectType::Sky].front());
 }
 
 

@@ -24,7 +24,7 @@ public:
 	//Update objects visible
 	void VisibleUpdateForType(unordered_map<ObjectType, bool> TypeVisible);
 	//Baking Scene's Global illumination data
-	void BakingGIData();
+	void BakingGIData(GraphicsContext& Context);
 public:
 	bool IsWireFrame = false;
 	bool IsMSAA = false;

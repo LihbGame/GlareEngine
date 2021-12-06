@@ -98,9 +98,9 @@ void CSky::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 	{
 		Context.SetPipelineState(mPSO);
 		Context.SetDynamicConstantBufferView(1, sizeof(mWorld), &mWorld);
+		Context.SetDynamicDescriptor(2, 0, m_Descriptor);
 	}
 	Context.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	Context.SetDynamicDescriptor(2, 0, m_Descriptor);
 	Context.SetIndexBuffer(mSkyMesh->IndexBufferView());
 	Context.SetVertexBuffer(0,mSkyMesh->VertexBufferView());
 	Context.DrawIndexed(mSkyMesh->DrawArgs["Sky"].IndexCount, mSkyMesh->DrawArgs["Sky"].StartIndexLocation, mSkyMesh->DrawArgs["Sky"].BaseVertexLocation);
