@@ -1,7 +1,5 @@
 #include "../Misc/CommonResource.hlsli"
 
-TextureCube gCubeMap : register(t0);
-
 float4 main(PosVSOut pin) : SV_TARGET
 {
       // the sample direction equals the hemisphere's orientation 
@@ -13,7 +11,7 @@ float4 main(PosVSOut pin) : SV_TARGET
     float3 right = normalize(cross(up, normal));
     up = normalize(cross(normal, right));
 
-    float sampleDelta = 0.025;
+    float sampleDelta = 0.05;
     float Samples = 0.0;
     for (float phi = 0.0; phi < 2.0 * PI; phi += sampleDelta)
     {
@@ -24,7 +22,7 @@ float4 main(PosVSOut pin) : SV_TARGET
             // tangent space to world
             float3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal;
 
-            irradiance += gCubeMap.Sample(gSamplerLinearWrap, sampleVec).rgb * cos(theta) * sin(theta);
+            irradiance += gCubeMaps[0].Sample(gSamplerLinearWrap, sampleVec).rgb * cos(theta) * sin(theta);
             Samples++;
         }
     }

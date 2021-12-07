@@ -35,15 +35,13 @@ void IBL::BakingEnvironmentDiffuse(GraphicsContext& Context)
 	Context.SetScissor(mIndirectDiffuseCube->ScissorRect());
 	Context.PIXBeginEvent(L"Baking Environment Diffuse");
 	Context.TransitionResource(mIndirectDiffuseCube->Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-	CSky* l_Sky = dynamic_cast<CSky*>(m_pSky);
-	Context.SetDynamicDescriptor(2, 0, l_Sky->GetSkyCubeDescriptor());
+	Context.SetDynamicDescriptors(2, 0, (UINT)g_CubeSRV.size(), g_CubeSRV.data());
 	for (int i = 0; i < 6; i++)
 	{
 		Context.SetRenderTarget(mIndirectDiffuseCube->RTV(i));
 		Context.SetDynamicConstantBufferView(1, sizeof(mIndirectDiffuseCube->GetCubeCameraCBV(i)), &mIndirectDiffuseCube->GetCubeCameraCBV(i));
 		m_pSky->Draw(Context, &mIndirectDiffusePSO);
 	}
-	AddToGlobalTextureSRVDescriptor(mIndirectDiffuseCube->SRV());
 	Context.PIXEndEvent();
 }
 

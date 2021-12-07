@@ -1,6 +1,7 @@
 #include "PBRLighting.hlsli"
 
-#define MAXSRVSIZE 256
+#define MAX2DSRVSIZE 256
+#define MAXCUBESRVSIZE 32
 
 struct InstanceData
 {
@@ -40,7 +41,9 @@ SamplerComparisonState gSamplerShadow   : register(s2);
 
 //纹理数组，仅着色器模型5.1+支持。 与Texture2DArray不同，
 //此数组中的纹理可以具有不同的大小和格式，使其比纹理数组更灵活。
-Texture2D gSRVMap[MAXSRVSIZE] : register(t1);
+TextureCube gCubeMaps[MAXCUBESRVSIZE]   : register(t0);
+Texture2D gSRVMap[MAX2DSRVSIZE]         : register(t32);
+
 
 StructuredBuffer<MaterialData> gMaterialData : register(t1, space1);
 StructuredBuffer<InstanceData> gInstanceData : register(t0, space1);

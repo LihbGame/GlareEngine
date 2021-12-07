@@ -40,6 +40,13 @@ float3 fresnelSchlick(float cosTheta, float3 F0)
     return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
+
+float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
+{
+    float InvRoughness = 1.0f - roughness;
+    return F0 + (max(float3(InvRoughness, InvRoughness, InvRoughness), F0) - F0) * pow(1.0f - cosTheta, 5.0f);
+}
+
 //BRDF-D
 float DistributionGGX(float3 N, float3 H, float roughness)
 {

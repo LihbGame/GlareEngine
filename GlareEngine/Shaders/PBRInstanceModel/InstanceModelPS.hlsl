@@ -20,14 +20,17 @@ float4 main(PosNorTanTexOut pin) : SV_Target
     }
 
 
-    float4 diffuseAlbedo = gSRVMap[matData.mDiffuseMapIndex].Sample(gSamplerAnisoWrap, UV);
+    float4 diffuseAlbedo = gSRVMap[matData.mDiffuseMapIndex].Sample(gSamplerAnisoWrap, UV) ;
     float Roughness = gSRVMap[matData.mRoughnessMapIndex].Sample(gSamplerAnisoWrap, UV).x;
     float Metallic = gSRVMap[matData.mMetallicMapIndex].Sample(gSamplerAnisoWrap, UV).x;
     float AO = gSRVMap[matData.mAOMapIndex].Sample(gSamplerAnisoWrap, UV).x;
 
 
 // Indirect lighting.
-    float4 ambient = gAmbientLight * diffuseAlbedo * AO;
+    float3 kS = fresnelSchlickRoughness(max(dot(pin.NormalW, toEyeW), 0.0), matData.mFresnelR0, Roughness);
+    float3 kD = 1.0 - kS;
+    float4 Diffuse = diffuseAlbedo * gCubeMaps[1].Sample(gSamplerLinearWrap, pin.NormalW);
+    float4 ambient = float4(kD * Diffuse.rgb * AO, 1.0f);
 
 //Sample normal
     float3 normalMapSample = gSRVMap[matData.mNormalMapIndex].Sample(gSamplerAnisoWrap, UV).xyz;

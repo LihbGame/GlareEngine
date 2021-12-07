@@ -83,6 +83,13 @@ namespace GlareEngine
 			return int(g_TextureSRV.size() - 1);
 		}
 
+		extern vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_CubeSRV;
+		inline int AddToGlobalCubeSRVDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes)
+		{
+			g_CubeSRV.push_back(SRVdes);
+			return int(g_CubeSRV.size() - 1);
+		}
+
 
 		extern RootSignature g_GenerateMipsRS;
 		extern ComputePSO g_GenerateMipsLinearPSO[4];

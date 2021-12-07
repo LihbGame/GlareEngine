@@ -103,6 +103,8 @@ void Scene::CreateShadowMap(GraphicsContext& Context,vector<RenderObject*> Rende
 
 void Scene::ForwardRendering(GraphicsContext& Context)
 {
+	//Set Cube SRV
+	Context.SetDynamicDescriptors(2, 0, (UINT)g_CubeSRV.size(), g_CubeSRV.data());
 	//Set Textures SRV
 	Context.SetDynamicDescriptors(3, 0, (UINT)g_TextureSRV.size(), g_TextureSRV.data());
 	//Set Material Data

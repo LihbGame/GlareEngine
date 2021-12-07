@@ -1,7 +1,7 @@
 #include "../Misc/CommonResource.hlsli"
 
 
-TextureCube gCubeMap : register(t0);
+
 
 //曝光参数
 #define exposure 1.0f
@@ -9,7 +9,7 @@ TextureCube gCubeMap : register(t0);
 
 float4 main(PosVSOut pin) : SV_Target
 {
-    float4 litColor = gCubeMap.Sample(gSamplerLinearWrap, pin.PosL);
+    float4 litColor = gCubeMaps[0].Sample(gSamplerLinearWrap, pin.PosL);
 
 	// Reinhard色调映射
 	//litColor.rgb = litColor.rgb / (litColor.rgb + float3(1.0f, 1.0f, 1.0f));

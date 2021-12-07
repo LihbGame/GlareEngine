@@ -110,6 +110,7 @@ void CubeRenderTarget::BuildDescriptors()
 	mCubeSrv = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	g_Device->CreateShaderResourceView(mCubeMap.GetResource(), &srvDesc, mCubeSrv);
 
+	AddToGlobalCubeSRVDescriptor(mCubeSrv);
 
 	// Create RTV to each cube face.
 	for (int i = 0; i < 6; ++i)

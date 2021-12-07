@@ -27,7 +27,8 @@ using namespace GlareEngine::GameCore;
 using namespace GlareEngine::DirectX12Graphics;
 using namespace GlareEngine::EngineInput;
 
-#define MAXSRVSIZE 256
+#define MAX2DSRVSIZE 256
+#define MAXCUBESRVSIZE 32
 #define SHADOWMAPSIZE 2048
 #define  FAR_Z 5000.0f
 #define CAMERA_SPEED 100.0f
@@ -212,9 +213,9 @@ void App::BuildRootSignature()
 	//Objects Constant Buffer;Shadow Constant Buffer
 	mRootSignature[1].InitAsConstantBuffer(1);
 	//Sky Cube Texture
-	mRootSignature[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1);
+	mRootSignature[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAXCUBESRVSIZE);
 	//Cook BRDF PBR Textures 
-	mRootSignature[3].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, MAXSRVSIZE);
+	mRootSignature[3].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MAXCUBESRVSIZE, MAX2DSRVSIZE);
 	//Material Constant Data
 	mRootSignature[4].InitAsBufferSRV(1, 1);
 	//Instance Constant Data 
@@ -349,7 +350,7 @@ void App::UpdateMainConstantBuffer(float DeltaTime)
 
 	//lights constant buffer
 	{
-		mMainConstants.gAmbientLight = { 0.25f, 0.25f, 0.25f, 1.0f };
+		mMainConstants.gAmbientLight = { 0.05f, 0.05f, 0.05f, 1.0f };
 
 		mMainConstants.Lights[0].Direction = mShadowMap->GetShadowedLightDir();
 		mMainConstants.Lights[0].Strength = { 1.0f, 1.0f, 1.0f };

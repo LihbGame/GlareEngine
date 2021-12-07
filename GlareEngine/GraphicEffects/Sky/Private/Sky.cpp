@@ -86,6 +86,8 @@ void CSky::BuildSkySRV(ID3D12GraphicsCommandList* CommandList)
 	SkysrvDesc.Format = SkyTex->GetDesc().Format;
 	g_Device->CreateShaderResourceView(SkyTex.Get(), &SkysrvDesc, m_Descriptor);
 
+	AddToGlobalCubeSRVDescriptor(m_Descriptor);
+
 }
 
 void CSky::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
@@ -98,7 +100,6 @@ void CSky::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 	{
 		Context.SetPipelineState(mPSO);
 		Context.SetDynamicConstantBufferView(1, sizeof(mWorld), &mWorld);
-		Context.SetDynamicDescriptor(2, 0, m_Descriptor);
 	}
 	Context.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	Context.SetIndexBuffer(mSkyMesh->IndexBufferView());
