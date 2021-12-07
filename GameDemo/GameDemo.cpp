@@ -160,7 +160,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 		}
 		
 		//Baking GI Data
-		//gScene->BakingGIData(InitializeContext);
+		gScene->BakingGIData(InitializeContext);
 
 	}
 
@@ -376,8 +376,6 @@ void App::UpdateMainConstantBuffer(float DeltaTime)
 void App::RenderScene(void)
 {
 	GraphicsContext& RenderContext = GraphicsContext::Begin(L"RenderScene");
-	//Baking GI Data
-	gScene->BakingGIData(RenderContext);
 #pragma region Scene
 	RenderContext.PIXBeginEvent(L"Scene");
 

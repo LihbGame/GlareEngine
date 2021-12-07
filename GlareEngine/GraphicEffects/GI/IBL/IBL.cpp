@@ -43,6 +43,7 @@ void IBL::BakingEnvironmentDiffuse(GraphicsContext& Context)
 		Context.SetDynamicConstantBufferView(1, sizeof(mIndirectDiffuseCube->GetCubeCameraCBV(i)), &mIndirectDiffuseCube->GetCubeCameraCBV(i));
 		m_pSky->Draw(Context, &mIndirectDiffusePSO);
 	}
+	AddToGlobalTextureSRVDescriptor(mIndirectDiffuseCube->SRV());
 	Context.PIXEndEvent();
 }
 
