@@ -465,6 +465,9 @@
     <ClCompile Include="GraphicEffects\Misc\CubeRenderTarget.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
+    <ClCompile Include="GraphicEffects\Misc\ConstantBuffer.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">

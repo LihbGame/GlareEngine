@@ -1,5 +1,17 @@
 #include "../Misc/CommonResource.hlsli"
 
+cbuffer CubePass : register(b1)
+{
+    float4x4 View;
+    float4x4 Proj;
+    float4x4 ViewProj;
+    float3 EyePosW = { 0.0f, 0.0f, 0.0f };
+    float ObjectPad1 = 0.0f;
+    float2 RenderTargetSize = { 0.0f, 0.0f };
+    float2 InvRenderTargetSize = { 0.0f, 0.0f };
+    int mSkyCubeIndex = 0;
+}
+
 float4 main(PosVSOut pin) : SV_TARGET
 {
       // the sample direction equals the hemisphere's orientation 
@@ -11,7 +23,7 @@ float4 main(PosVSOut pin) : SV_TARGET
     float3 right = normalize(cross(up, normal));
     up = normalize(cross(normal, right));
 
-    float sampleDelta = 0.05;
+    float sampleDelta = 0.2;
     float Samples = 0.0;
     for (float phi = 0.0; phi < 2.0 * PI; phi += sampleDelta)
     {
@@ -22,7 +34,7 @@ float4 main(PosVSOut pin) : SV_TARGET
             // tangent space to world
             float3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal;
 
-            irradiance += gCubeMaps[0].Sample(gSamplerLinearWrap, sampleVec).rgb * cos(theta) * sin(theta);
+            irradiance += gCubeMaps[mSkyCubeIndex].Sample(gSamplerLinearWrap, sampleVec).rgb * cos(theta) * sin(theta);
             Samples++;
         }
     }

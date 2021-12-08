@@ -14,7 +14,6 @@
 #include "ModelLoader.h"
 #include "SceneManager.h"
 #include "ShadowMap.h"
-
 //lib
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "comsuppw.lib")
@@ -372,6 +371,11 @@ void App::UpdateMainConstantBuffer(float DeltaTime)
 	}
 
 	mMainConstants.mShadowMapIndex = mShadowMap->GetShadowMapIndex();
+
+	assert(GlobleSRVIndex::gSkyCubeSRVIndex >= 0);
+	assert(GlobleSRVIndex::mBakingDiffuseCubeIndex >= 0);
+	mMainConstants.mSkyCubeIndex = GlobleSRVIndex::gSkyCubeSRVIndex;
+	mMainConstants.mBakingDiffuseCubeIndex = GlobleSRVIndex::mBakingDiffuseCubeIndex;
 }
 
 void App::RenderScene(void)

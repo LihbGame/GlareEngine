@@ -38,6 +38,7 @@ namespace GlareEngine
 {
 	using namespace GlareEngine::Math;
 
+
 	namespace GameCore
 	{
 		extern HWND g_hWnd;

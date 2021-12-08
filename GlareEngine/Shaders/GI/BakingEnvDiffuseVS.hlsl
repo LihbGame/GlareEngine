@@ -9,6 +9,7 @@ cbuffer CubePass : register(b1)
     float ObjectPad1 = 0.0f;
     float2 RenderTargetSize = { 0.0f, 0.0f };
     float2 InvRenderTargetSize = { 0.0f, 0.0f };
+    int mSkyCubeIndex = 0;
 }
 
 

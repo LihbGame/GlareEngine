@@ -91,6 +91,8 @@ namespace GlareEngine
 		}
 
 
+
+
 		extern RootSignature g_GenerateMipsRS;
 		extern ComputePSO g_GenerateMipsLinearPSO[4];
 		extern ComputePSO g_GenerateMipsGammaPSO[4];

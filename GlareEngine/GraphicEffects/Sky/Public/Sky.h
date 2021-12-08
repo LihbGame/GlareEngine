@@ -32,5 +32,6 @@ private:
     std::unique_ptr<MeshGeometry> mSkyMesh;
     //Sky SRV Descriptor
     CD3DX12_CPU_DESCRIPTOR_HANDLE m_Descriptor;
+
 };
 

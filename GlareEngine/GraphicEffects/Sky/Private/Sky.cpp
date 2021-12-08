@@ -1,7 +1,7 @@
 #include "Sky.h"
 #include "GeometryGenerator.h"
 #include "TextureManager.h"
-
+#include "ConstantBuffer.h"
 //shader
 #include "CompiledShaders/SkyVS.h"
 #include "CompiledShaders/SkyPS.h"
@@ -85,8 +85,8 @@ void CSky::BuildSkySRV(ID3D12GraphicsCommandList* CommandList)
 	SkysrvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
 	SkysrvDesc.Format = SkyTex->GetDesc().Format;
 	g_Device->CreateShaderResourceView(SkyTex.Get(), &SkysrvDesc, m_Descriptor);
-
-	AddToGlobalCubeSRVDescriptor(m_Descriptor);
+	//set cube sky SRV index
+	GlobleSRVIndex::gSkyCubeSRVIndex = AddToGlobalCubeSRVDescriptor(m_Descriptor);
 
 }
 

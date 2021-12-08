@@ -9,7 +9,7 @@
 
 float4 main(PosVSOut pin) : SV_Target
 {
-    float4 litColor = gCubeMaps[0].Sample(gSamplerLinearWrap, pin.PosL);
+    float4 litColor = gCubeMaps[gSkyCubeIndex].Sample(gSamplerLinearWrap, pin.PosL);
 
 	// ReinhardÉ«µ÷Ó³Éä
 	//litColor.rgb = litColor.rgb / (litColor.rgb + float3(1.0f, 1.0f, 1.0f));

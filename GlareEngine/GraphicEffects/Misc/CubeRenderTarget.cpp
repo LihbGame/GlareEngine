@@ -92,6 +92,8 @@ void CubeRenderTarget::BuildCubeMapFacePassCBs()
 		CubeFacePassCB.EyePosW = mCubeMapCamera[i].GetPosition3f();
 		CubeFacePassCB.RenderTargetSize = XMFLOAT2((float)mWidth, (float)mHeight);
 		CubeFacePassCB.InvRenderTargetSize = XMFLOAT2(1.0f / mWidth, 1.0f / mHeight);
+		assert(GlobleSRVIndex::gSkyCubeSRVIndex >= 0);
+		CubeFacePassCB.mSkyCubeIndex = GlobleSRVIndex::gSkyCubeSRVIndex;
 	}
 }
 
@@ -110,7 +112,7 @@ void CubeRenderTarget::BuildDescriptors()
 	mCubeSrv = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	g_Device->CreateShaderResourceView(mCubeMap.GetResource(), &srvDesc, mCubeSrv);
 
-	AddToGlobalCubeSRVDescriptor(mCubeSrv);
+	GlobleSRVIndex::mBakingDiffuseCubeIndex = AddToGlobalCubeSRVDescriptor(mCubeSrv);
 
 	// Create RTV to each cube face.
 	for (int i = 0; i < 6; ++i)

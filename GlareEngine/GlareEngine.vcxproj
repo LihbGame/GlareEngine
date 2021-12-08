@@ -460,6 +460,7 @@
     <ClCompile Include="Animation\ModelLoader.cpp" />
     <None Include="EngineCore\Graphics\Private\Color.cpp" />
     <ClCompile Include="Animation\ModelMesh.cpp" />
+    <ClCompile Include="GraphicEffects\Misc\ConstantBuffer.cpp" />
     <ClCompile Include="GraphicEffects\Misc\CubeRenderTarget.cpp" />
     <ClCompile Include="Dependences\include\DirectXTK12\Src\AlphaTestEffect.cpp" />
     <ClCompile Include="Dependences\include\DirectXTK12\Src\BasicEffect.cpp" />

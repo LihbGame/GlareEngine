@@ -75,6 +75,8 @@ cbuffer MainPass : register(b0)
     Light gLights[MaxLights];
     
     int gShadowMapIndex;
+    int gSkyCubeIndex;
+    int gBakingDiffuseCubeIndex;
 };    
 
 //Position

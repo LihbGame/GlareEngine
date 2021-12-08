@@ -30,8 +30,8 @@ struct MainConstants
 
 	//ShadowMap Index
 	int mShadowMapIndex = 0;
-	int mPad01 = 0;
-	int mPad02 = 0;
+	int mSkyCubeIndex = 0;
+	int mBakingDiffuseCubeIndex = 0;
 	int mPad03 = 0;
 };
 
@@ -45,4 +45,15 @@ struct CubeMapConstants
 	float cbPerObjectPad1 = 0.0f;
 	DirectX::XMFLOAT2 RenderTargetSize = { 0.0f, 0.0f };
 	DirectX::XMFLOAT2 InvRenderTargetSize = { 0.0f, 0.0f };
+	int mSkyCubeIndex = 0;
+	int mPad01 = 0;
+	int mPad02 = 0;
+	int mPad03 = 0;
+};
+
+
+struct GlobleSRVIndex
+{
+	static int gSkyCubeSRVIndex;
+	static int mBakingDiffuseCubeIndex;
 };
