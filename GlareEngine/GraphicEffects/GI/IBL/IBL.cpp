@@ -64,6 +64,10 @@ void IBL::BuildPSOs(const PSOCommonProperty CommonProperty)
 	mIndirectDiffusePSO.SetPixelShader(g_pBakingEnvDiffusePS, sizeof(g_pBakingEnvDiffusePS));
 	mIndirectDiffusePSO.SetRenderTargetFormat(DefaultHDRColorFormat, DXGI_FORMAT_D32_FLOAT);
 	mIndirectDiffusePSO.Finalize();
+
+
+
+
 }
 
 void IBL::PreBakeGIData(GraphicsContext& Context, RenderObject* Object)
