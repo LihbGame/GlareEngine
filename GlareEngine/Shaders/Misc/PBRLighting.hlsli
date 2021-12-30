@@ -142,21 +142,25 @@ float3 BlinnPhong(float3 lightStrength, float3 lightVec, float3 normal, float3 t
 // cook-torrance BRDF
 float3 CookTorranceBRDF(float3 radiance, float3 N, float3 H, float3 V, float3 L, float3 F0, Material mat)
 {
+    float NdotV = saturate(dot(N, V));
+    float NdotL = saturate(dot(N, L));
+    float LdotH = saturate(dot(L, H));
+    
+    
     float NDF = DistributionGGX(N, H, mat.Roughness);
     float G = GeometrySmith(N, V, L, mat.Roughness);
     float3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
 
     float3 kS = F;
     //float3 kD = float3(1.0f, 1.0f, 1.0f) - kS;
-    float3 kD = Fr_DisneyDiffuse(saturate(dot(N, V)), saturate(dot(N, L)), saturate(dot(L, H)), mat.Roughness);
+    float3 kD = Fr_DisneyDiffuse(NdotV, NdotL, LdotH, mat.Roughness);
     kD *= 1.0 - mat.metallic;
 
     float3 nominator = NDF * G * F;
-    float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001;
+    float denominator = 4.0 * NdotV * NdotL + 0.001;
     float3 specular = nominator / denominator;
 
     // outgoing radiance Lo
-    float NdotL = max(dot(N, L), 0.0);
     return (kD * mat.DiffuseAlbedo.rgb / PI + specular) * radiance * NdotL;
 
 }

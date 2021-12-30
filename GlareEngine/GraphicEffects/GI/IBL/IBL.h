@@ -25,12 +25,13 @@ private:
 
 private:
 	unique_ptr<CubeRenderTarget> mIndirectDiffuseCube;
-	unique_ptr<CubeRenderTarget> mIndirectSpecularCube;
+	unique_ptr<CubeRenderTarget> mPreFilteredEnvCube;
 
 	RenderObject* m_pSky = nullptr;
 
 
 	static RootSignature* m_pRootSignature;
 	static GraphicsPSO mIndirectDiffusePSO;
+	static GraphicsPSO mPreFilteredEnvMapPSO;
 };
 

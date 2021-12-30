@@ -46,7 +46,7 @@ struct CubeMapConstants
 	DirectX::XMFLOAT2 RenderTargetSize = { 0.0f, 0.0f };
 	DirectX::XMFLOAT2 InvRenderTargetSize = { 0.0f, 0.0f };
 	int mSkyCubeIndex = 0;
-	int mPad01 = 0;
+	float mRoughness = 0;
 	int mPad02 = 0;
 	int mPad03 = 0;
 };

@@ -1,8 +1,9 @@
 #include "CubeRenderTarget.h"
 #include "GraphicsCore.h"
-CubeRenderTarget::CubeRenderTarget(UINT width, UINT height, XMFLOAT3 CameraPostion, DXGI_FORMAT format)
+CubeRenderTarget::CubeRenderTarget(UINT width, UINT height,UINT mipmap, XMFLOAT3 CameraPostion, DXGI_FORMAT format)
 	:mWidth(width),
 	mHeight(height),
+	mMipMap(mipmap),
 	mCameraPostion(CameraPostion),
 	mFormat(format)
 {
@@ -32,6 +33,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE CubeRenderTarget::SRV()
 
 D3D12_CPU_DESCRIPTOR_HANDLE CubeRenderTarget::RTV(int faceIndex)
 {
+	assert(faceIndex < mRenderTargetDes.size());
 	return mRenderTargetDes[faceIndex];
 }
 
@@ -112,15 +114,16 @@ void CubeRenderTarget::BuildDescriptors()
 	mCubeSrv = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	g_Device->CreateShaderResourceView(mCubeMap.GetResource(), &srvDesc, mCubeSrv);
 
-	GlobleSRVIndex::mBakingDiffuseCubeIndex = AddToGlobalCubeSRVDescriptor(mCubeSrv);
+	mSrvIndex = AddToGlobalCubeSRVDescriptor(mCubeSrv);
 
 	// Create RTV to each cube face.
-	for (int i = 0; i < 6; ++i)
+	mRenderTargetDes.resize((size_t)6 * mMipMap);
+	for (UINT i = 0; i < 6; ++i)
 	{
 		D3D12_RENDER_TARGET_VIEW_DESC rtvDesc;
 		rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
 		rtvDesc.Format = mFormat;
-		rtvDesc.Texture2DArray.MipSlice = 0;
+
 		rtvDesc.Texture2DArray.PlaneSlice = 0;
 
 		// Render target to ith element.
@@ -129,15 +132,20 @@ void CubeRenderTarget::BuildDescriptors()
 		// Only view one element of the array.
 		rtvDesc.Texture2DArray.ArraySize = 1;
 
-		// Create RTV to ith cube map face.
-		mRenderTargetDes[i] = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-		g_Device->CreateRenderTargetView(mCubeMap.GetResource(), &rtvDesc, mRenderTargetDes[i]);
+		for (UINT mip = 0; mip < mMipMap; ++mip)
+		{
+			rtvDesc.Texture2DArray.MipSlice = mip;
+			// Create RTV to ith cube map face.
+			UINT DesIndex = i * mMipMap + mip;
+			mRenderTargetDes[DesIndex] = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+			g_Device->CreateRenderTargetView(mCubeMap.GetResource(), &rtvDesc, mRenderTargetDes[DesIndex]);
+		}
 	}
 }
 
 void CubeRenderTarget::BuildResource()
 {
-	mCubeMap.CreateArray(L"Cube Map",mWidth, mHeight, 6, mFormat);
+	mCubeMap.CreateArray(L"Cube Map", mWidth, mHeight, mMipMap, 6, mFormat);
 }
 
 void CubeRenderTarget::OnResize(UINT newWidth, UINT newHeight)

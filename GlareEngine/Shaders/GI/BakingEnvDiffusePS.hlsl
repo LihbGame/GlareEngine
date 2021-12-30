@@ -10,6 +10,7 @@ cbuffer CubePass : register(b1)
     float2 RenderTargetSize = { 0.0f, 0.0f };
     float2 InvRenderTargetSize = { 0.0f, 0.0f };
     int mSkyCubeIndex = 0;
+    float mRoughness = 0.0f;
 }
 
 float4 main(PosVSOut pin) : SV_TARGET
