@@ -699,5 +699,7 @@
     <FxCompile Include="Shaders\Shadow\ModelShadowPS.hlsl" />
     <FxCompile Include="Shaders\GI\BakingEnvDiffuseVS.hlsl" />
     <FxCompile Include="Shaders\GI\BakingEnvDiffusePS.hlsl" />
+    <FxCompile Include="Shaders\GI\PreFilteredEnvironmentMapPS.hlsl" />
+    <FxCompile Include="Shaders\GI\BakingBRDFPS.hlsl" />
   </ItemGroup>
 </Project>

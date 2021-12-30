@@ -149,9 +149,9 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 		//Instance models
 		CreateSimpleModelInstance(CommandList,"Grid_01", SimpleModelType::Grid, "PBRGrass01", 1, 1);
 		CreateModelInstance(CommandList, "BlueTree/Blue_Tree_02a.FBX", 5, 5);
-		//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRharshbricks", 1, 1);
+		//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRwhite_spruce_tree_bark", 1, 1);
 		//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Cylinder, "PBRharshbricks", 2, 1);
-		//CreateModelInstance(CommandList,"mercMaleMarksman/mercMaleMarksman.FBX", 5, 5);
+		//CreateModelInstance(CommandList,"TraumaGuard/TraumaGuard.FBX", 5, 5);
 
 		//add models
 		for (auto& model : mModels)
@@ -373,9 +373,14 @@ void App::UpdateMainConstantBuffer(float DeltaTime)
 	mMainConstants.mShadowMapIndex = mShadowMap->GetShadowMapIndex();
 
 	assert(GlobleSRVIndex::gSkyCubeSRVIndex >= 0);
-	assert(GlobleSRVIndex::mBakingDiffuseCubeIndex >= 0);
+	assert(GlobleSRVIndex::gBakingDiffuseCubeIndex >= 0);
+	assert(GlobleSRVIndex::gBakingPreFilteredEnvIndex >= 0);
+	assert(GlobleSRVIndex::gBakingIntegrationBRDFIndex >= 0);
+	//GI DATA
 	mMainConstants.mSkyCubeIndex = GlobleSRVIndex::gSkyCubeSRVIndex;
-	mMainConstants.mBakingDiffuseCubeIndex = GlobleSRVIndex::mBakingDiffuseCubeIndex;
+	mMainConstants.mBakingDiffuseCubeIndex = GlobleSRVIndex::gBakingDiffuseCubeIndex;
+	mMainConstants.gBakingPreFilteredEnvIndex = GlobleSRVIndex::gBakingPreFilteredEnvIndex;
+	mMainConstants.gBakingIntegrationBRDFIndex = GlobleSRVIndex::gBakingIntegrationBRDFIndex;
 }
 
 void App::RenderScene(void)

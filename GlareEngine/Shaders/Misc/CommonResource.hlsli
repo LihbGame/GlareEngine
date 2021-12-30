@@ -77,14 +77,24 @@ cbuffer MainPass : register(b0)
     int gShadowMapIndex;
     int gSkyCubeIndex;
     int gBakingDiffuseCubeIndex;
+    int gBakingPreFilteredEnvIndex;
+    int gBakingIntegrationBRDFIndex;
 };    
 
 //Position
 struct PosVSOut
 {
     float4 PosH : SV_POSITION;
-    float3 PosL : POSITION;
+    float3 PosL : POSITION0;
 };
+
+//Tex
+struct TexVSOut
+{
+    float4 PosH : SV_POSITION;
+    float2 Tex : TEXCOORD0;
+};
+
 
 //PosNormalTangentTexc
 struct PosNorTanTexIn
@@ -111,17 +121,17 @@ struct PosNorTanTexOut
 //---------------------------------------------------------------------------------------
 float3 NormalSampleToModelSpace(float3 normalMapSample, float3 unitNormalW, float3 tangentW)
 {
-    //from [0,1] to [-1,1].
+   // Uncompress each component from [0,1] to [-1,1].
     float3 normalT = 2.0f * normalMapSample - 1.0f;
 
-    // Build TBN basis.
+	// Build orthonormal basis.
     float3 N = unitNormalW;
     float3 T = normalize(tangentW - dot(tangentW, N) * N);
     float3 B = cross(N, T);
 
     float3x3 TBN = float3x3(T, B, N);
 
-    // Transform from tangent space to world space.
+	// Transform from tangent space to world space.
     float3 bumpedNormalW = mul(normalT, TBN);
 
     return bumpedNormalW;

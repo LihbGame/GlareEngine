@@ -32,6 +32,11 @@ struct MainConstants
 	int mShadowMapIndex = 0;
 	int mSkyCubeIndex = 0;
 	int mBakingDiffuseCubeIndex = 0;
+	int gBakingPreFilteredEnvIndex = 0;
+
+	int gBakingIntegrationBRDFIndex = 0;
+	int mPad01 = 0;
+	int mPad02 = 0;
 	int mPad03 = 0;
 };
 
@@ -46,7 +51,7 @@ struct CubeMapConstants
 	DirectX::XMFLOAT2 RenderTargetSize = { 0.0f, 0.0f };
 	DirectX::XMFLOAT2 InvRenderTargetSize = { 0.0f, 0.0f };
 	int mSkyCubeIndex = 0;
-	int mPad01 = 0;
+	float mRoughness = 0;
 	int mPad02 = 0;
 	int mPad03 = 0;
 };
@@ -55,5 +60,7 @@ struct CubeMapConstants
 struct GlobleSRVIndex
 {
 	static int gSkyCubeSRVIndex;
-	static int mBakingDiffuseCubeIndex;
+	static int gBakingDiffuseCubeIndex;
+	static int gBakingPreFilteredEnvIndex;
+	static int gBakingIntegrationBRDFIndex;
 };

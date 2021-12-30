@@ -77,7 +77,7 @@ namespace GlareEngine
 
 		//SRV Descriptors Manager ,return Descriptor index
 		extern vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_TextureSRV;
-		inline int AddToGlobalTextureSRVDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes)
+		inline int AddToGlobalTextureSRVDescriptor(const D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes)
 		{
 			g_TextureSRV.push_back(SRVdes);
 			return int(g_TextureSRV.size() - 1);

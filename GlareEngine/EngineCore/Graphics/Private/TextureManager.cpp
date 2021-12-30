@@ -42,10 +42,11 @@ namespace GlareEngine
 		void TextureManager::CreatePBRTextures(string PathName, vector<Texture*>& Textures)
 		{
 			string Fullfilename = "";
+			bool bSRGB = true;
 			for (auto Type : PBRTextureFileType)
 			{
 				Fullfilename = PathName + Type;
-				Textures.push_back(GetModelTexture(StringToWString(Fullfilename)).get());
+				Textures.push_back(GetModelTexture(StringToWString(Fullfilename), bSRGB).get());
 			}
 		}
 

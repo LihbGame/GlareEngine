@@ -62,6 +62,46 @@ float DistributionGGX(float3 N, float3 H, float roughness)
     return nom / denom;
 }
 
+float RadicalInverse_VdC(uint bits)
+{
+    bits = (bits << 16u) | (bits >> 16u);
+    bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
+    bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
+    bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
+    bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
+    return float(bits) * 2.3283064365386963e-10; // / 0x100000000
+}
+
+float2 Hammersley(uint i, uint N)
+{
+    return float2(float(i) / float(N), RadicalInverse_VdC(i));
+}
+
+float3 ImportanceSampleGGX(float2 Xi, float3 N, float roughness)
+{
+    float a = roughness * roughness;
+
+    float phi = 2.0 * PI * Xi.x;
+    float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a * a - 1.0) * Xi.y));
+    float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
+
+    // from spherical coordinates to cartesian coordinates
+    float3 H;
+    H.x = cos(phi) * sinTheta;
+    H.y = sin(phi) * sinTheta;
+    H.z = cosTheta;
+
+    // from tangent-space vector to world-space sample vector
+    float3 up = abs(N.z) < 0.999 ? float3(0.0, 0.0, 1.0) : float3(1.0, 0.0, 0.0);
+    float3 tangent = normalize(cross(up, N));
+    float3 bitangent = cross(N, tangent);
+
+    float3 sampleVec = tangent * H.x + bitangent * H.y + N * H.z;
+    return normalize(sampleVec);
+}
+
+
+
 float GeometrySchlickGGX(float NdotV, float roughness)
 {
     float r = (roughness + 1.0);
@@ -142,21 +182,25 @@ float3 BlinnPhong(float3 lightStrength, float3 lightVec, float3 normal, float3 t
 // cook-torrance BRDF
 float3 CookTorranceBRDF(float3 radiance, float3 N, float3 H, float3 V, float3 L, float3 F0, Material mat)
 {
+    float NdotV = saturate(dot(N, V));
+    float NdotL = saturate(dot(N, L));
+    float LdotH = saturate(dot(L, H));
+    
+    
     float NDF = DistributionGGX(N, H, mat.Roughness);
     float G = GeometrySmith(N, V, L, mat.Roughness);
     float3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
 
     float3 kS = F;
-    //float3 kD = float3(1.0f, 1.0f, 1.0f) - kS;
-    float3 kD = Fr_DisneyDiffuse(saturate(dot(N, V)), saturate(dot(N, L)), saturate(dot(L, H)), mat.Roughness);
+    float3 kD = float3(1.0f, 1.0f, 1.0f) - kS;
+    //float3 kD = Fr_DisneyDiffuse(NdotV, NdotL, LdotH, mat.Roughness);
     kD *= 1.0 - mat.metallic;
 
     float3 nominator = NDF * G * F;
-    float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001;
+    float denominator = 4.0 * NdotV * NdotL + 0.001;
     float3 specular = nominator / denominator;
 
     // outgoing radiance Lo
-    float NdotL = max(dot(N, L), 0.0);
     return (kD * mat.DiffuseAlbedo.rgb / PI + specular) * radiance * NdotL;
 
 }

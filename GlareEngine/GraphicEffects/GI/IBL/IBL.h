@@ -21,16 +21,20 @@ public:
 	static void BuildPSOs(const PSOCommonProperty CommonProperty);
 private:
 	void BakingEnvironmentDiffuse(GraphicsContext& Context);
-	void BakingEnvironmentSpecular(GraphicsContext& Context);
-
+	void BakingPreFilteredEnvironment(GraphicsContext& Context);
+	void BakingBRDF(GraphicsContext& Context);
 private:
 	unique_ptr<CubeRenderTarget> mIndirectDiffuseCube;
-	unique_ptr<CubeRenderTarget> mIndirectSpecularCube;
+	unique_ptr<CubeRenderTarget> mPreFilteredEnvCube;
+	ColorBuffer mBRDFLUT;
+
 
 	RenderObject* m_pSky = nullptr;
 
 
 	static RootSignature* m_pRootSignature;
 	static GraphicsPSO mIndirectDiffusePSO;
+	static GraphicsPSO mPreFilteredEnvMapPSO;
+	static GraphicsPSO mBRDFPSO;
 };
 
