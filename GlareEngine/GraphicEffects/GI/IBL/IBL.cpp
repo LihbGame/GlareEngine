@@ -8,6 +8,7 @@
 #include "CompiledShaders/ScreenQuadVS.h"
 #include "CompiledShaders/BakingBRDFPS.h"
 
+#define  MaxMipLevels 5
 
 
 #define  MaxMipLevels 5
@@ -39,6 +40,7 @@ void IBL::Initialize()
 	GlobleSRVIndex::gBakingIntegrationBRDFIndex= AddToGlobalTextureSRVDescriptor(mBRDFLUT.GetSRV());
 	GlobleSRVIndex::gBakingPreFilteredEnvIndex = mPreFilteredEnvCube->GetSRVIndex();
 	GlobleSRVIndex::gBakingDiffuseCubeIndex = mIndirectDiffuseCube->GetSRVIndex();
+	GlobleSRVIndex::mBakingDiffuseCubeIndex = mIndirectDiffuseCube->GetSRVIndex();
 }
 
 void IBL::BakingEnvironmentDiffuse(GraphicsContext& Context)
