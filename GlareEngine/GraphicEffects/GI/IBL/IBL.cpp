@@ -40,7 +40,7 @@ void IBL::Initialize()
 	GlobleSRVIndex::gBakingIntegrationBRDFIndex= AddToGlobalTextureSRVDescriptor(mBRDFLUT.GetSRV());
 	GlobleSRVIndex::gBakingPreFilteredEnvIndex = mPreFilteredEnvCube->GetSRVIndex();
 	GlobleSRVIndex::gBakingDiffuseCubeIndex = mIndirectDiffuseCube->GetSRVIndex();
-	GlobleSRVIndex::mBakingDiffuseCubeIndex = mIndirectDiffuseCube->GetSRVIndex();
+	GlobleSRVIndex::gBakingDiffuseCubeIndex = mIndirectDiffuseCube->GetSRVIndex();
 }
 
 void IBL::BakingEnvironmentDiffuse(GraphicsContext& Context)
