@@ -138,6 +138,8 @@ namespace GlareEngine
 			// Only one GameApp can be constructed.
 			assert(mGameApp == nullptr);
 			mGameApp = this;
+			//init MonitorInfo
+			mMonitorInfo.cbSize = sizeof(MONITORINFO);
 		}
 
 		// Default implementation to be overridden by the application
@@ -218,10 +220,13 @@ namespace GlareEngine
 					{
 						//monitor full screen
 						//SetWindowPos(hWnd, NULL, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), 0);
+						//SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
 
 						//Client area full screen
 						RECT rect;
-						SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
+						DWORD flag = 0;
+						GetMonitorInfo(MonitorFromWindow(hWnd, flag), &mMonitorInfo);
+						rect = mMonitorInfo.rcWork;
 						SetWindowPos(hWnd, NULL, rect.left, rect.top, rect.right- rect.left, rect.bottom- rect.top, 0);
 
 						mAppPaused = false;

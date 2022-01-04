@@ -65,6 +65,7 @@ namespace GlareEngine
 			uint32_t mClientWidth = 1600;
 			uint32_t mClientHeight = 900;
 
+			MONITORINFO mMonitorInfo;
 			POINT mLastMousePos;
 			CursorType mCursorType = CursorType::Count;
 		};
