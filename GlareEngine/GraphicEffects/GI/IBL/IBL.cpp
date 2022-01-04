@@ -10,10 +10,6 @@
 
 #define  MaxMipLevels 5
 
-
-#define  MaxMipLevels 5
-
-
 GraphicsPSO IBL::mIndirectDiffusePSO;
 GraphicsPSO IBL::mPreFilteredEnvMapPSO;
 GraphicsPSO IBL::mBRDFPSO;

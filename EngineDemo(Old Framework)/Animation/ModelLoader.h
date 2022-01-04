@@ -3,7 +3,7 @@
 #include "Animations.h"
 #include "ModelMesh.h"
 #include "..\EngineDemo(Old Framework)/TextureManage.h"
-#include "../../../GlareEngine/Animation/ModelMesh.h"
+#include "../../../GlareEngine/GraphicEffects/Animation/ModelMesh.h"
 
 
 class ModelLoader

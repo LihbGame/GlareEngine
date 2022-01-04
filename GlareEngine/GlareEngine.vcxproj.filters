@@ -89,7 +89,6 @@
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_textedit.h" />
     <ClInclude Include="EngineEditor\ImgUIEditor\imstb_truetype.h" />
     <ClInclude Include="EngineCore\Math\Hash.h" />
-    <ClInclude Include="DXR\D3D12RaytracingHelper.h" />
     <ClInclude Include="EngineCore\Engine\Public\EngineInput.h" />
     <ClInclude Include="EngineCore\Engine\Public\EngineAdjust.h" />
     <ClInclude Include="EngineCore\Engine\Public\GameCore.h" />
@@ -117,10 +116,7 @@
     <ClInclude Include="GraphicEffects\Particles\Public\ParticleEffectProperties.h" />
     <ClInclude Include="GraphicEffects\Particles\Public\ParticleEffect.h" />
     <ClInclude Include="EngineCore\Math\Random.h" />
-    <ClInclude Include="Animation\ModelMesh.h" />
-    <ClInclude Include="Animation\ModelLoader.h" />
     <ClInclude Include="EngineCore\Engine\Public\SceneManager.h" />
-    <ClInclude Include="Animation\MeshStruct.h" />
     <ClInclude Include="EngineCore\Engine\Public\Materials.h" />
     <ClInclude Include="GraphicEffects\InstanceModel\Public\InstanceModel.h" />
     <ClInclude Include="GraphicEffects\InstanceModel\Public\SimpleModelGenerator.h" />
@@ -169,6 +165,10 @@
     <ClInclude Include="GraphicEffects\GI\IBL\IBL.h" />
     <ClInclude Include="GraphicEffects\Misc\CubeRenderTarget.h" />
     <ClInclude Include="GraphicEffects\Misc\ConstantBuffer.h" />
+    <ClInclude Include="GraphicEffects\Animation\MeshStruct.h" />
+    <ClInclude Include="GraphicEffects\Animation\ModelLoader.h" />
+    <ClInclude Include="GraphicEffects\Animation\ModelMesh.h" />
+    <ClInclude Include="GraphicEffects\DXR\D3D12RaytracingHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
@@ -193,9 +193,6 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Graphics\Private\WICTextureLoader12.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="DXR\D3D12RaytracingHelper.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Engine\Private\GameCore.cpp">
@@ -304,12 +301,6 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Math\Random.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation\ModelMesh.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation\ModelLoader.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Engine\Private\SceneManager.cpp">
@@ -466,6 +457,15 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="GraphicEffects\Misc\ConstantBuffer.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicEffects\Animation\ModelLoader.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicEffects\Animation\ModelMesh.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicEffects\DXR\D3D12RaytracingHelper.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
