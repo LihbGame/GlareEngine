@@ -60,7 +60,7 @@ namespace GlareEngine
 			bool      mMinimized = false;  // is the application minimized?
 			bool      mMaximized = false;  // is the application maximized?
 			bool      mResizing = false;
-
+			bool	  mIsHideUI = false;
 		public:
 			uint32_t mClientWidth = 1600;
 			uint32_t mClientHeight = 900;

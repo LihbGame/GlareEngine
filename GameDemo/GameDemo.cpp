@@ -414,15 +414,18 @@ void App::RenderScene(void)
 
 void App::RenderUI()
 {
-	GraphicsContext& RenderContext = GraphicsContext::Begin(L"Render UI");
-	//Draw UI
-	RenderContext.PIXBeginEvent(L"Render UI");
-	RenderContext.SetRenderTarget(GetCurrentBuffer().GetRTV());
-	RenderContext.TransitionResource(GetCurrentBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-	mEngineUI->Draw(RenderContext.GetCommandList());
-	RenderContext.PIXEndEvent();
-	RenderContext.TransitionResource(GetCurrentBuffer(), D3D12_RESOURCE_STATE_PRESENT, true);
-	RenderContext.Finish(true);
+	if (!mIsHideUI)
+	{
+		GraphicsContext& RenderContext = GraphicsContext::Begin(L"Render UI");
+		//Draw UI
+		RenderContext.PIXBeginEvent(L"Render UI");
+		RenderContext.SetRenderTarget(GetCurrentBuffer().GetRTV());
+		RenderContext.TransitionResource(GetCurrentBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+		mEngineUI->Draw(RenderContext.GetCommandList());
+		RenderContext.PIXEndEvent();
+		RenderContext.TransitionResource(GetCurrentBuffer(), D3D12_RESOURCE_STATE_PRESENT, true);
+		RenderContext.Finish(true);
+	}
 }
 
 void App::OnResize(uint32_t width, uint32_t height)

@@ -329,7 +329,12 @@ namespace GlareEngine
 				break;
 			case WM_MOUSEMOVE:
 				OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-				
+				break;
+			case WM_KEYUP:
+				if (wParam == VK_F1)
+				{
+					mIsHideUI = !mIsHideUI;
+				}
 				break;
 			// 抓住此消息以防止窗口变得太小。
 			case WM_GETMINMAXINFO:
