@@ -329,6 +329,25 @@
     <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_VSQuad.inc" />
     <None Include="Dependences\include\DirectXTK12\Src\TeapotData.inc" />
     <None Include="EngineCore\Graphics\Public\Color.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_connected_components.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_c_lexer.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_divide.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_ds.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_dxt.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_easy_font.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_herringbone_wang_tile.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_hexwave.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_image.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_image_resize.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_image_write.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_include.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_leakcheck.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_rect_pack.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_sprintf.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_textedit.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_tilemap_editor.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_truetype.h" />
+    <ClInclude Include="Dependences\include\stb_image\stb_voxel_render.h" />
     <ClInclude Include="GraphicEffects\Animation\MeshStruct.h" />
     <ClInclude Include="GraphicEffects\Animation\ModelMesh.h" />
     <ClInclude Include="Dependences\include\DirectXTK12\Inc\Audio.h" />
@@ -457,6 +476,7 @@
     <None Include="Shaders\Misc\ToneMappingUtility.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Dependences\include\stb_image\stb_vorbis.c" />
     <ClCompile Include="GraphicEffects\Animation\ModelLoader.cpp" />
     <None Include="EngineCore\Graphics\Private\Color.cpp" />
     <ClCompile Include="GraphicEffects\Animation\ModelMesh.cpp" />

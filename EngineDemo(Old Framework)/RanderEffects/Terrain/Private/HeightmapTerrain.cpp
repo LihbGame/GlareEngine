@@ -3,6 +3,8 @@
 #include "Vertex.h"
 #include "Grass.h"
 #include "Material.h"
+#include "stb_image/stb_image.h"
+
 using namespace DirectX::PackedVector;
 
 HeightmapTerrain::HeightmapTerrain(
@@ -163,6 +165,50 @@ void HeightmapTerrain::FillSRVDescriptorHeap(int* SRVIndex, CD3DX12_CPU_DESCRIPT
 	BuildHeightmapSRV(BlendMapDescriptor, HeightMapDescriptor);
 }
 
+void HeightmapTerrain::LoadHeightMapFromFile(string filename)
+{
+	//check file type
+	string FileType = filename.substr(filename.find_last_of('.') + 1);
+	transform(FileType.begin(), FileType.end(), FileType.begin(), ::toupper);
+
+	if (FileType == "RAW")
+	{
+		int MapSize = mInfo.HeightmapHeight * mInfo.HeightmapWidth;
+		mHeightmap.resize(MapSize, 0);
+		std::vector<unsigned char> MapData(MapSize);
+		// Open the file.
+		std::ifstream inFile;
+		inFile.open(mInfo.HeightMapFilename.c_str(), std::ios_base::binary);
+		if (inFile)
+		{
+			// Read the RAW bytes.
+			inFile.read((char*)&MapData[0], (std::streamsize)MapData.size());
+			// Done with file.
+			inFile.close();
+
+			for (UINT i = 0; i < MapSize; ++i)
+			{
+				mHeightmap[i] = MapData[i] / 255.0f * mInfo.HeightScale;
+			}
+		}
+	}
+	else
+	{
+		int width, height, numComponents;
+		float* MapData = stbi_loadf(mInfo.HeightMapFilename.c_str(), &width, &height, &numComponents, 1);
+		mInfo.HeightmapHeight = height;
+		mInfo.HeightmapWidth = width;
+		int MapSize = mInfo.HeightmapHeight * mInfo.HeightmapWidth;
+		mHeightmap.resize((UINT)(MapSize), 0);
+
+		for (UINT i = 0; i < MapSize; ++i)
+		{
+			mHeightmap[i] = (1.0f - MapData[i]) * mInfo.HeightScale;
+		}
+		STBI_FREE(MapData);
+	}
+}
+
 void HeightmapTerrain::LoadHeightmapAsset()
 {
 	vector<string> AllTerrainTextureNames;
@@ -181,40 +227,19 @@ void HeightmapTerrain::LoadHeightmapAsset()
 		TerrainTextures[mInfo.LayerMapFilename[i/6]].push_back(pTextureManage->GetTexture(wstring(AllTerrainTextureNames[i].begin(), AllTerrainTextureNames[i].end())).get());
 	}
 
-
-	// A height for each vertex
-	std::vector<unsigned char> in(mInfo.HeightmapWidth * mInfo.HeightmapHeight);
-
-	// Open the file.
-	std::ifstream inFile;
-	inFile.open(mInfo.HeightMapFilename.c_str(), std::ios_base::binary);
-
-	if (inFile)
-	{
-		// Read the RAW bytes.
-		inFile.read((char*)&in[0], (std::streamsize)in.size());
-		// Done with file.
-		inFile.close();
-	}
-
-	// Copy the array data into a float array and scale it.
-	mHeightmap.resize(mInfo.HeightmapHeight * mInfo.HeightmapWidth, 0);
-	for (UINT i = 0; i < mInfo.HeightmapHeight * mInfo.HeightmapWidth; ++i)
-	{
-		mHeightmap[i] = (in[i] / 255.0f) * mInfo.HeightScale-80.0f;
-	}
-
+	LoadHeightMapFromFile(mInfo.HeightMapFilename.c_str());
 }
 
 void HeightmapTerrain::Smooth()
 {
 	std::vector<float> dest(mHeightmap.size());
-
+	int Index = 0;
 	for (UINT i = 0; i < mInfo.HeightmapHeight; ++i)
 	{
 		for (UINT j = 0; j < mInfo.HeightmapWidth; ++j)
 		{
-			dest[i * mInfo.HeightmapWidth + j] = Average(i, j);
+			Index = i * mInfo.HeightmapWidth + j;
+			dest[Index] = Average(i, j);
 		}
 	}
 
@@ -440,7 +465,7 @@ void HeightmapTerrain::GetTerrainConstant(TerrainConstants& TerrainConstant)
 {
 	TerrainConstant.gMinDist = 200.0f;
 	TerrainConstant.gMaxDist = 4000.0f;
-	TerrainConstant.gMinTess = 1.0f;
+	TerrainConstant.gMinTess = 5.0f;
 	TerrainConstant.gMaxTess = 5.0f;
 
 	TerrainConstant.gTexelCellSpaceU = 1.0f / mInfo.HeightmapWidth;

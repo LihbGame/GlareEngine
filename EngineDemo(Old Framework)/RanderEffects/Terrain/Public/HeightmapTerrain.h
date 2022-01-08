@@ -58,6 +58,9 @@ public:
 
 	int GetHeightMapIndex()const{ return mHeightMapIndex; }
 	int GetBlendMapIndex()const { return mBlendMapIndex; }
+
+	void LoadHeightMapFromFile(string filename);
+
 private:
 	void LoadHeightmapAsset();
 	void Smooth();

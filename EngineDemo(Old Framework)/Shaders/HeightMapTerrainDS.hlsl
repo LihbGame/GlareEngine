@@ -1,7 +1,7 @@
 #include "TerrainConstBuffer.hlsli"
 #include "Fog.hlsli"
 
-#define gTexScale float2(25.0f,25.0f)
+#define gTexScale float2(50.0f,50.0f)
 
 struct DomainOut
 {
@@ -51,7 +51,7 @@ DomainOut DS(PatchTess patchTess,
 	//dout.PosW = mul(float4(dout.PosW, 1.0f),gWorld).xyz;
 
 	// Displacement mapping
-	float height = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, dout.Tex, 0).r;
+    float height = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearClamp, dout.Tex, 0).r;
 	
 	dout.PosW+=gSRVMap[mRGBNoiseMapIndex].SampleLevel(gsamLinearWrap, dout.Tex, 0).rgb*2;
 	//在世界空间，对于乘以裁剪面小于零的进行裁剪，裁剪不满足条件的几何体部分

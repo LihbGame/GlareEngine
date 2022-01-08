@@ -135,7 +135,7 @@ void GameApp::OnResize()
 	D3DApp::OnResize();
 
 	//窗口调整大小，因此更新宽高比并重新计算投影矩阵;
-	mCamera.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 40000.0f);
+	mCamera.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 400000.0f);
 	//窗口调整大小重新计算视锥包围体。
 	BoundingFrustum::CreateFromMatrix(mCamFrustum, mCamera.GetProj());
 	//Shock Wave Water map resize
@@ -1941,17 +1941,17 @@ void GameApp::DrawGrass(const GameTimer& gr, bool IsReflection)
 HeightmapTerrain::InitInfo GameApp::HeightmapTerrainInit()
 {
 	HeightmapTerrain::InitInfo TerrainInfo;
-	TerrainInfo.HeightMapFilename = "../Resource/Textures/Terrain/terrain.raw";
+	TerrainInfo.HeightMapFilename = "../Resource/Textures/Terrain/heightmap.png";
 	TerrainInfo.LayerMapFilename[0] = "Terrain/grass";
 	TerrainInfo.LayerMapFilename[1] = "Terrain/darkdirt";
 	TerrainInfo.LayerMapFilename[2] = "Terrain/stone";
 	TerrainInfo.LayerMapFilename[3] = "Terrain/lightdirt";
 	TerrainInfo.LayerMapFilename[4] = "Terrain/snow";
 	TerrainInfo.BlendMapFilename = "Terrain/blend";
-	TerrainInfo.HeightScale = 200.0f;
-	TerrainInfo.HeightmapWidth = 2049;
-	TerrainInfo.HeightmapHeight = 2049;
-	TerrainInfo.CellSpacing = 2.0f;
+	TerrainInfo.HeightScale = 20000.0f;
+	TerrainInfo.HeightmapWidth = 2048;
+	TerrainInfo.HeightmapHeight = 2048;
+	TerrainInfo.CellSpacing = 200.0f;
 
 	return TerrainInfo;
 }
