@@ -458,6 +458,7 @@
     <None Include="EngineCore\Graphics\Public\GPUBuffer.h" />
     <ClInclude Include="GraphicEffects\Misc\RenderObject.h" />
     <ClInclude Include="GraphicEffects\Animation\ModelLoader.h" />
+    <ClInclude Include="GraphicEffects\Terrain\Terrain.h" />
     <ClInclude Include="ShaderSource\Public\BaseShader.h" />
     <ClInclude Include="ShaderSource\Public\ComplexStaticModelInstanceShader.h" />
     <ClInclude Include="ShaderSource\Public\GrassShader.h" />
@@ -478,6 +479,7 @@
   <ItemGroup>
     <ClCompile Include="Dependences\include\stb_image\stb_vorbis.c" />
     <ClCompile Include="GraphicEffects\Animation\ModelLoader.cpp" />
+    <ClCompile Include="GraphicEffects\Terrain\Terrain.cpp" />
     <None Include="EngineCore\Graphics\Private\Color.cpp" />
     <ClCompile Include="GraphicEffects\Animation\ModelMesh.cpp" />
     <ClCompile Include="GraphicEffects\Misc\ConstantBuffer.cpp" />

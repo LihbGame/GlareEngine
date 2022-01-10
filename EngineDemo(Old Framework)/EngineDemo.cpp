@@ -135,7 +135,7 @@ void GameApp::OnResize()
 	D3DApp::OnResize();
 
 	//窗口调整大小，因此更新宽高比并重新计算投影矩阵;
-	mCamera.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 400000.0f);
+	mCamera.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 0.1f, 400000.0f);
 	//窗口调整大小重新计算视锥包围体。
 	BoundingFrustum::CreateFromMatrix(mCamFrustum, mCamera.GetProj());
 	//Shock Wave Water map resize
@@ -1948,10 +1948,10 @@ HeightmapTerrain::InitInfo GameApp::HeightmapTerrainInit()
 	TerrainInfo.LayerMapFilename[3] = "Terrain/lightdirt";
 	TerrainInfo.LayerMapFilename[4] = "Terrain/snow";
 	TerrainInfo.BlendMapFilename = "Terrain/blend";
-	TerrainInfo.HeightScale = 20000.0f;
+	TerrainInfo.HeightScale = 1000.0f;
 	TerrainInfo.HeightmapWidth = 2048;
 	TerrainInfo.HeightmapHeight = 2048;
-	TerrainInfo.CellSpacing = 200.0f;
+	TerrainInfo.CellSpacing = 10.0f;
 
 	return TerrainInfo;
 }

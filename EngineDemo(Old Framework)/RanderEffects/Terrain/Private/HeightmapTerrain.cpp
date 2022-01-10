@@ -173,7 +173,7 @@ void HeightmapTerrain::LoadHeightMapFromFile(string filename)
 
 	if (FileType == "RAW")
 	{
-		int MapSize = mInfo.HeightmapHeight * mInfo.HeightmapWidth;
+		UINT MapSize = mInfo.HeightmapHeight * mInfo.HeightmapWidth;
 		mHeightmap.resize(MapSize, 0);
 		std::vector<unsigned char> MapData(MapSize);
 		// Open the file.
@@ -198,12 +198,12 @@ void HeightmapTerrain::LoadHeightMapFromFile(string filename)
 		float* MapData = stbi_loadf(mInfo.HeightMapFilename.c_str(), &width, &height, &numComponents, 1);
 		mInfo.HeightmapHeight = height;
 		mInfo.HeightmapWidth = width;
-		int MapSize = mInfo.HeightmapHeight * mInfo.HeightmapWidth;
-		mHeightmap.resize((UINT)(MapSize), 0);
+		UINT MapSize = mInfo.HeightmapHeight * mInfo.HeightmapWidth;
+		mHeightmap.resize(MapSize, 0);
 
 		for (UINT i = 0; i < MapSize; ++i)
 		{
-			mHeightmap[i] = (1.0f - MapData[i]) * mInfo.HeightScale;
+			mHeightmap[i] = MapData[i] * mInfo.HeightScale;
 		}
 		STBI_FREE(MapData);
 	}
@@ -464,8 +464,8 @@ void HeightmapTerrain::BuildHeightmapSRV(CD3DX12_CPU_DESCRIPTOR_HANDLE BlendMapD
 void HeightmapTerrain::GetTerrainConstant(TerrainConstants& TerrainConstant)
 {
 	TerrainConstant.gMinDist = 200.0f;
-	TerrainConstant.gMaxDist = 4000.0f;
-	TerrainConstant.gMinTess = 5.0f;
+	TerrainConstant.gMaxDist = mInfo.HeightmapWidth * mInfo.CellSpacing/2;
+	TerrainConstant.gMinTess = 1.0f;
 	TerrainConstant.gMaxTess = 5.0f;
 
 	TerrainConstant.gTexelCellSpaceU = 1.0f / mInfo.HeightmapWidth;

@@ -188,6 +188,7 @@
     <ClInclude Include="Dependences\include\stb_image\stb_tilemap_editor.h" />
     <ClInclude Include="Dependences\include\stb_image\stb_truetype.h" />
     <ClInclude Include="Dependences\include\stb_image\stb_voxel_render.h" />
+    <ClInclude Include="GraphicEffects\Terrain\Terrain.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
@@ -488,6 +489,9 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="Dependences\include\stb_image\stb_vorbis.c">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicEffects\Terrain\Terrain.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
