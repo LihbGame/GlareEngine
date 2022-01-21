@@ -515,3 +515,14 @@ void CheckFileExist(const std::wstring& FileName)
 			exit(0);
 		}
 }
+
+bool IsFileExist(const std::wstring& FileName)
+{
+	ifstream f(FileName);
+	if (!f.good())
+	{
+		return false;
+	}
+	return true;
+}
+

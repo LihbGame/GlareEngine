@@ -24,9 +24,11 @@ struct InstanceRenderConstants
 
 enum class ObjectType :int
 {
+	None,
 	Sky,
 	Model,
 	Shadow,
+	Terrain,
 	Count
 };
 
@@ -56,7 +58,7 @@ public:
 	static void BuildPSO(const PSOCommonProperty CommonProperty) {};
 
 public:
-	ObjectType mObjectType;
+	ObjectType mObjectType = ObjectType::None;
 protected:
 	//Name
 	wstring mName;

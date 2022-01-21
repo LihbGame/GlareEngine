@@ -10,6 +10,10 @@ GraphicsPSO CSky::mPSO;
 
 using namespace GlareEngine::DirectX12Graphics;
 
+#define  HDR_SKY L"HDRSky\\SKY_HDR"
+#define  LDR_SKY L"HDRSky\\SKY_LDR"
+
+
 CSky::CSky(ID3D12GraphicsCommandList* CommandList,
 	float radius, int sliceCount, int stackCount)
 {
@@ -74,7 +78,18 @@ void CSky::BuildSkyMesh(ID3D12GraphicsCommandList* CommandList, float radius, in
 
 void CSky::BuildSkySRV(ID3D12GraphicsCommandList* CommandList)
 {
-	auto SkyTex = TextureManager::GetInstance(CommandList)->GetTexture(L"HDRSky\\Sky",false)->Resource;
+	wstring SkyPath;
+	if (IsFileExist(L"..\\Resource\\Textures\\HDRSky\\SKY_HDR.DDS"))
+	{
+		SkyPath = HDR_SKY;
+	}
+	else
+	{
+		CheckFileExist(L"..\\Resource\\Textures\\HDRSky\\SKY_LDR.DDS");
+		SkyPath = LDR_SKY;
+	}
+
+	auto SkyTex = TextureManager::GetInstance(CommandList)->GetTexture(SkyPath,false)->Resource;
 	m_Descriptor= AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC SkysrvDesc = {};
