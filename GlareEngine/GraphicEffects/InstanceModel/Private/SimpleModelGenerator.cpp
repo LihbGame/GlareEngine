@@ -10,7 +10,8 @@ const char* ModelPBRMaterials[]
 	"PBRIndustrial_narrow_brick",
 	"PBRrocky_shoreline1",
 	"PBRstylized_grass1",
-	"PBRwhite_spruce_tree_bark"
+	"PBRwhite_spruce_tree_bark",
+	"PBRRock046S"
 };
 
 

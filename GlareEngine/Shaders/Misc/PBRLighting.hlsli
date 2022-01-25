@@ -194,7 +194,7 @@ float3 CookTorranceBRDF(float3 radiance, float3 N, float3 H, float3 V, float3 L,
     float3 kS = F;
     float3 kD = float3(1.0f, 1.0f, 1.0f) - kS;
     //float3 kD = Fr_DisneyDiffuse(NdotV, NdotL, LdotH, mat.Roughness);
-    kD *= 1.0 - mat.metallic;
+    kD *= (1.0 - mat.metallic);
 
     float3 nominator = NDF * G * F;
     float denominator = 4.0 * NdotV * NdotL + 0.001;
