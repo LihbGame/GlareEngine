@@ -30,7 +30,7 @@ void SimpleModelGenerator::CreatePBRMaterials()
 		MaterialManager::GetMaterialInstance()->BuildMaterials(
 			StringToWString(ModelPBRMaterials[i]),
 			ModelTextures,
-			0.02f,
+			0.04f,
 			XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 			XMFLOAT3(0.1f, 0.1f, 0.1f),
 			MathHelper::Identity4x4());

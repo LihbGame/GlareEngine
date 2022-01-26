@@ -50,6 +50,10 @@ namespace GlareEngine
 				{
 					bSRGB = true;
 				}
+				else
+				{
+					bSRGB = false;
+				}
 				Textures.push_back(GetModelTexture(StringToWString(Fullfilename), bSRGB).get());
 			}
 		}

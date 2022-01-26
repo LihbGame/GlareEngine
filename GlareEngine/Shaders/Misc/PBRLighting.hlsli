@@ -185,7 +185,7 @@ float3 CookTorranceBRDF(float3 radiance, float3 N, float3 H, float3 V, float3 L,
     float NdotV = saturate(dot(N, V));
     float NdotL = saturate(dot(N, L));
     float LdotH = saturate(dot(L, H));
-    
+   
     
     float NDF = DistributionGGX(N, H, mat.Roughness);
     float G = GeometrySmith(N, V, L, mat.Roughness);
@@ -297,7 +297,8 @@ float4 ComputeLighting(Light gLights[MaxLights], Material mat,
 
     int i = 0;
 
-    //FO
+    // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
+    // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
     float3 F0 = float3(0.04f, 0.04f, 0.04f);
     F0 = lerp(F0, mat.DiffuseAlbedo.rgb, mat.metallic);
 

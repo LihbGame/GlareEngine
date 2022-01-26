@@ -149,8 +149,8 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 		//Instance models
 		CreateSimpleModelInstance(CommandList,"Grid_01", SimpleModelType::Grid, "PBRGrass01", 1, 1);
 		CreateModelInstance(CommandList, "BlueTree/Blue_Tree_02a.FBX", 5, 5);
-		//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRwhite_spruce_tree_bark", 1, 1);
-		//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Cylinder, "PBRharshbricks", 2, 1);
+		//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRrocky_shoreline1", 1, 1);
+		//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRRock046S", 1, 1);
 		//CreateModelInstance(CommandList,"TraumaGuard/TraumaGuard.FBX", 5, 5);
 
 		//add models
@@ -532,7 +532,7 @@ void App::CreateModelInstance(ID3D12GraphicsCommandList* CommandList,string Mode
 			{
 				InstanceRenderConstants IRC;
 				IRC.mMaterialIndex = ModelData->mSubModels[SubMeshIndex].mMaterial->mMatCBIndex;
-				XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMatrixRotationY(MathHelper::RandF() * MathHelper::Pi) * XMMatrixScaling(0.2f, 0.2f, 0.2f) * XMMatrixTranslation((i - Num_X / 2) * 50.0f, 0, (y - Num_Y / 2) * 50.0f)));
+				XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(/*XMMatrixRotationX(MathHelper::Pi/2) * */XMMatrixRotationY(MathHelper::RandF() * MathHelper::Pi) * XMMatrixScaling(0.2f, 0.2f, 0.2f) * XMMatrixTranslation((i - Num_X / 2) * 50.0f, 0, (y - Num_Y / 2) * 50.0f)));
 				InstanceData.mInstanceConstants[SubMeshIndex].push_back(IRC);
 			}
 		}
