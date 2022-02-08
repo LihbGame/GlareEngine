@@ -42,17 +42,17 @@ namespace GlareEngine
 		void TextureManager::CreatePBRTextures(string PathName, vector<Texture*>& Textures)
 		{
 			string Fullfilename = "";
-			bool bSRGB = false;
+			bool bSRGB = true;
 			for (auto Type : PBRTextureFileType)
 			{
 				Fullfilename = PathName + Type;
-				if (Type == "_albedo")
+				if (Type == "_normal")
 				{
-					bSRGB = true;
+					bSRGB = false;
 				}
 				else
 				{
-					bSRGB = false;
+					bSRGB = true;
 				}
 				Textures.push_back(GetModelTexture(StringToWString(Fullfilename), bSRGB).get());
 			}

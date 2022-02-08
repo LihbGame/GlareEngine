@@ -82,7 +82,7 @@ void Sky::BuildMaterials()
 
 void Sky::FillSRVDescriptorHeap(int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor)
 {
-	auto SkyTex = pTextureManage->GetTexture(L"HDRSky\\Sky")->Resource;
+	auto SkyTex = pTextureManage->GetTexture(L"HDRSky\\SKY_LDR")->Resource;
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC SkysrvDesc = {};
 	SkysrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
