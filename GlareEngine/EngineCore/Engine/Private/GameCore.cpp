@@ -8,11 +8,11 @@
 #include "EngineProfiling.h"
 #include "EngineGUI.h"
 
+#include <dwmapi.h>
 #include <windowsx.h>
 #include "resource.h"
 #pragma comment(lib, "runtimeobject.lib")
-
-
+#pragma comment(lib, "Dwmapi.lib")
 namespace GlareEngine
 {
 	namespace DirectX12Graphics
@@ -190,6 +190,22 @@ namespace GlareEngine
 
 		}
 
+
+		//Pretest  for windows 11
+		enum DWMWINDOWATTRIBUTE
+		{
+			DWMWA_WINDOW_CORNER_PREFERENCE = 33
+		};
+		
+		enum DWM_WINDOW_CORNER_PREFERENCE
+		{
+			DWMWCP_DEFAULT = 0,
+			DWMWCP_DONOTROUND = 1,
+			DWMWCP_ROUND = 2,
+			DWMWCP_ROUNDSMALL = 3
+		};
+
+
 		//--------------------------------------------------------------------------------------
 		// Called every time the application receives a message
 		//--------------------------------------------------------------------------------------6
@@ -201,6 +217,17 @@ namespace GlareEngine
 			{
 				break;
 			}
+			case WM_CREATE:
+			{
+				//Apply rounded corners in desktop apps for Windows 11
+				if (hWnd)
+				{
+					DWORD preference = DWMWCP_ROUND;
+					DwmSetWindowAttribute(hWnd, DWMWA_WINDOW_CORNER_PREFERENCE, &preference, sizeof(preference));
+				}
+				break;
+			}
+
 			case WM_SIZE:
 			{
 				// Save the new client area dimensions.
