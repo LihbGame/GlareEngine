@@ -45,7 +45,8 @@ void IBL::BakingEnvironmentDiffuse(GraphicsContext& Context)
 	assert(m_pRootSignature);
 	Context.PIXBeginEvent(L"Baking Environment Diffuse");
 	Context.SetRootSignature(*m_pRootSignature);
-	Context.SetViewport(mIndirectDiffuseCube->Viewport());
+	//just need top mipmap size viewport
+	Context.SetViewport(mIndirectDiffuseCube->Viewport(0));
 	Context.SetScissor(mIndirectDiffuseCube->ScissorRect());
 	Context.TransitionResource(mIndirectDiffuseCube->Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 	Context.SetDynamicDescriptors(2, 0, (UINT)g_CubeSRV.size(), g_CubeSRV.data());
@@ -64,12 +65,13 @@ void IBL::BakingPreFilteredEnvironment(GraphicsContext& Context)
 	assert(m_pRootSignature);
 	Context.PIXBeginEvent(L"Pre_Filtered Environment Map");
 	Context.SetRootSignature(*m_pRootSignature);
-	Context.SetViewport(mPreFilteredEnvCube->Viewport());
 	Context.SetScissor(mPreFilteredEnvCube->ScissorRect());
 	Context.TransitionResource(mPreFilteredEnvCube->Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 	for (unsigned int mip = 0; mip < MaxMipLevels; ++mip)
 	{
 		float Roughness = (float)mip / (float)(MaxMipLevels - 1);
+		//reset viewport size for each Mipmap
+		Context.SetViewport(mPreFilteredEnvCube->Viewport(mip));
 		for (unsigned int i = 0; i < 6; ++i)
 		{
 			UINT RTVIndex = i * MaxMipLevels + mip;

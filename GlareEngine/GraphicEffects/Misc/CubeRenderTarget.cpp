@@ -7,7 +7,10 @@ CubeRenderTarget::CubeRenderTarget(UINT width, UINT height,UINT mipmap, XMFLOAT3
 	mCameraPostion(CameraPostion),
 	mFormat(format)
 {
-	mViewport = { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f };
+	for (UINT MipIndex = 0; MipIndex < mMipMap; ++MipIndex)
+	{
+		mViewport.push_back({ 0.0f, 0.0f, (float)(width>>MipIndex), (float)(height >> MipIndex), 0.0f, 1.0f });
+	}
 	mScissorRect = { 0, 0, (int)width, (int)height };
 
 	BuildResource();
@@ -161,9 +164,9 @@ void CubeRenderTarget::OnResize(UINT newWidth, UINT newHeight)
 	}
 }
 
-D3D12_VIEWPORT CubeRenderTarget::Viewport() const
+D3D12_VIEWPORT CubeRenderTarget::Viewport(UINT mipmap) const
 {
-	return mViewport;
+	return mViewport.at(mipmap);
 }
 
 D3D12_RECT CubeRenderTarget::ScissorRect() const

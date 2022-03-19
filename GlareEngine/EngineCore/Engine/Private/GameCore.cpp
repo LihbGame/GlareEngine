@@ -217,6 +217,25 @@ namespace GlareEngine
 			{
 				break;
 			}
+
+			//case WM_NCHITTEST:
+			//{
+			//	if (hWnd)
+			//	{
+			//		// Get the point in screen coordinates.
+			//		// GET_X_LPARAM and GET_Y_LPARAM are defined in windowsx.h
+			//		POINT point = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+			//		// Map the point to client coordinates.
+			//		::MapWindowPoints(nullptr, hWnd, &point, 1);
+			//		// If the point is in your maximize button then return HTMAXBUTTON
+			//		if (::PtInRect(&m_maximizeButtonRect, point))
+			//		{
+			//			return HTMAXBUTTON;
+			//		}
+			//	}
+			//	break;
+			//}
+
 			case WM_CREATE:
 			{
 				//Apply rounded corners in desktop apps for Windows 11

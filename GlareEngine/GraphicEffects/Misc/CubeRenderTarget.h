@@ -24,7 +24,7 @@ public:
 	CubeRenderTarget& operator=(const CubeRenderTarget& rhs) = delete;
 public:
 	void OnResize(UINT newWidth, UINT newHeight);
-	D3D12_VIEWPORT Viewport()const;
+	D3D12_VIEWPORT Viewport(UINT mipmap)const;
 	D3D12_RECT ScissorRect()const;
 	ColorBuffer& Resource();
 
@@ -45,7 +45,7 @@ private:
 	DXGI_FORMAT mFormat;
 	XMFLOAT3 mCameraPostion;
 
-	D3D12_VIEWPORT mViewport;
+	vector<D3D12_VIEWPORT> mViewport;
 	D3D12_RECT mScissorRect;
 
 	vector<D3D12_CPU_DESCRIPTOR_HANDLE> mRenderTargetDes;
