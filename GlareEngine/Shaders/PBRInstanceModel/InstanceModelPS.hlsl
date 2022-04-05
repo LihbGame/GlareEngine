@@ -15,7 +15,7 @@ float4 main(PosNorTanTexOut pin) : SV_Target
 //ÊÓ²îÕÚµ²Ó³Éä
     if (matData.mHeightScale>0.0f)
     {
-        float3 ModeSpacetoEye = normalize(WorldSpaceToTBN(toEyeW, pin.NormalW, pin.TangentW));
+        float3 ModeSpacetoEye = WorldSpaceToTBN(toEyeW, pin.NormalW, pin.TangentW);
         UV = ParallaxMapping(matData.mHeightMapIndex, pin.TexC, ModeSpacetoEye, matData.mHeightScale);
     }
 

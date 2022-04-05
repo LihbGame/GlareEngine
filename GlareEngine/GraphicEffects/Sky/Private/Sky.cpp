@@ -79,13 +79,13 @@ void CSky::BuildSkyMesh(ID3D12GraphicsCommandList* CommandList, float radius, in
 void CSky::BuildSkySRV(ID3D12GraphicsCommandList* CommandList)
 {
 	wstring SkyPath;
-	if (IsFileExist(L"..\\Resource\\Textures\\HDRSky\\SKY_HDR.DDS"))
+	if (IsFileExist(StringToWString(EngineGlobal::SkyAssetPath)+L"SKY_HDR.DDS"))
 	{
 		SkyPath = HDR_SKY;
 	}
 	else
 	{
-		CheckFileExist(L"..\\Resource\\Textures\\HDRSky\\SKY_LDR.DDS");
+		CheckFileExist(StringToWString(EngineGlobal::SkyAssetPath) + L"SKY_LDR.DDS");
 		SkyPath = LDR_SKY;
 	}
 
@@ -146,4 +146,8 @@ void CSky::BuildPSO(const PSOCommonProperty CommonProperty)
 	mPSO.SetPixelShader(g_pSkyPS, sizeof(g_pSkyPS));
 	mPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
 	mPSO.Finalize();
+}
+
+void CSky::Update(float dt)
+{
 }

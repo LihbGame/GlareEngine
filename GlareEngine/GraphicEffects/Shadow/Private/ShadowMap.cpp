@@ -32,12 +32,12 @@ ShadowMap::ShadowMap(XMFLOAT3 LightDirection, UINT width, UINT height)
 }
 
 
-void ShadowMap::UpdateShadowTransform(float Detailtime)
+void ShadowMap::Update(float DeltaTime)
 {
 	// Animate the lights (and hence shadows).
-	//need light manager but we not have it now .now we just let shadow to manage it.
-	//we well add it when we coding scene manager.
-	//mLightRotationAngle += 0.01f * gt.DeltaTime();
+//need light manager but we not have it now .now we just let shadow to manage it.
+//we well add it when we coding scene manager.
+//mLightRotationAngle += 0.01f * gt.DeltaTime();
 	if (IsShadowTransformed)
 	{
 		XMMATRIX R = XMMatrixRotationY(mLightRotationAngle);

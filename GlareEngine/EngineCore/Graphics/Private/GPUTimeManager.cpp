@@ -110,9 +110,12 @@ void GPUTimeManager::EndReadBack(void)
 	sm_TimeStampBuffer = nullptr;
 
 	DirectX12Graphics::CommandContext& Context = DirectX12Graphics::CommandContext::Begin();
-	Context.InsertTimeStamp(sm_QueryHeap, 1);
+	for (UINT i = 0; i < sm_NumTimers * 2; i++)
+	{
+		Context.InsertTimeStamp(sm_QueryHeap, i);
+	}
 	Context.ResolveTimeStamps(sm_ReadBackBuffer, sm_QueryHeap, sm_NumTimers * 2);
-	Context.InsertTimeStamp(sm_QueryHeap, 0);
+
 	sm_Fence = Context.Finish();
 }
 

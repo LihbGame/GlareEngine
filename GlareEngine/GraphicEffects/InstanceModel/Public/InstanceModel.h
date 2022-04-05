@@ -15,6 +15,8 @@ public:
 	virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr);
 
 	static void BuildPSO(const PSOCommonProperty CommonProperty);
+
+	void Update(float dt) {}
 private:
 	//PSO
 	static GraphicsPSO mPSO;

@@ -36,7 +36,7 @@ public:
 
 	int GetShadowMapIndex() { return mShadowMapIndex; }
 
-	void UpdateShadowTransform(float Detailtime);
+	void Update(float DeltaTime);
 
 	XMFLOAT4X4 GetShadowTransform()const { return mShadowTransform; }
 

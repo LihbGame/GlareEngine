@@ -5,22 +5,22 @@
 
 struct MainConstants
 {
-	DirectX::XMFLOAT4X4 View = MathHelper::Identity4x4();
-	DirectX::XMFLOAT4X4 InvView = MathHelper::Identity4x4();
-	DirectX::XMFLOAT4X4 Proj = MathHelper::Identity4x4();
-	DirectX::XMFLOAT4X4 InvProj = MathHelper::Identity4x4();
-	DirectX::XMFLOAT4X4 ViewProj = MathHelper::Identity4x4();
-	DirectX::XMFLOAT4X4 InvViewProj = MathHelper::Identity4x4();
-	DirectX::XMFLOAT4X4 ShadowTransform = MathHelper::Identity4x4();
-	DirectX::XMFLOAT3 EyePosW = { 0.0f, 0.0f, 0.0f };
+	XMFLOAT4X4 View = MathHelper::Identity4x4();
+	XMFLOAT4X4 InvView = MathHelper::Identity4x4();
+	XMFLOAT4X4 Proj = MathHelper::Identity4x4();
+	XMFLOAT4X4 InvProj = MathHelper::Identity4x4();
+	XMFLOAT4X4 ViewProj = MathHelper::Identity4x4();
+	XMFLOAT4X4 InvViewProj = MathHelper::Identity4x4();
+	XMFLOAT4X4 ShadowTransform = MathHelper::Identity4x4();
+	XMFLOAT3 EyePosW = { 0.0f, 0.0f, 0.0f };
 	float cbPerObjectPad1 = 0.0f;
-	DirectX::XMFLOAT2 RenderTargetSize = { 0.0f, 0.0f };
-	DirectX::XMFLOAT2 InvRenderTargetSize = { 0.0f, 0.0f };
+	XMFLOAT2 RenderTargetSize = { 0.0f, 0.0f };
+	XMFLOAT2 InvRenderTargetSize = { 0.0f, 0.0f };
 	float NearZ = 0.0f;
 	float FarZ = 0.0f;
 	float TotalTime = 0.0f;
 	float DeltaTime = 0.0f;
-	DirectX::XMFLOAT4 gAmbientLight = { 0.0f, 0.0f, 0.0f ,0.0f };
+	XMFLOAT4 gAmbientLight = { 0.0f, 0.0f, 0.0f ,0.0f };
 
 	// 索引[0，NUM_DIR_LIGHTS）是方向灯；
 	 //索引[NUM_DIR_LIGHTS，NUM_DIR_LIGHTS + NUM_POINT_LIGHTS）是点光源；
@@ -40,16 +40,41 @@ struct MainConstants
 	int mPad03 = 0;
 };
 
+struct TerrainConstants
+{
+	XMFLOAT4 gWorldFrustumPlanes[6];
+	// When distance is minimum, the tessellation is maximum.
+	// When distance is maximum, the tessellation is minimum.
+	float gMinDist;
+	float gMaxDist;
+
+	// Exponents for power of 2 tessellation.  The tessellation
+	// range is [2^(gMinTess), 2^(gMaxTess)].  Since the maximum
+	// tessellation is 64, this means gMaxTess can be at most 6
+	// since 2^6 = 64.
+	float gMinTess;
+	float gMaxTess;
+
+	float gTexelCellSpaceU;
+	float gTexelCellSpaceV;
+	float gWorldCellSpace;
+
+	int gHeightMapIndex = 0;
+	int gBlendMapIndex = 0;
+	int gRGBNoiseMapIndex = 0;
+};
+
+
 
 struct CubeMapConstants
 {
-	DirectX::XMFLOAT4X4 View = MathHelper::Identity4x4();
-	DirectX::XMFLOAT4X4 Proj = MathHelper::Identity4x4();
-	DirectX::XMFLOAT4X4 ViewProj = MathHelper::Identity4x4();
-	DirectX::XMFLOAT3 EyePosW = { 0.0f, 0.0f, 0.0f };
+	XMFLOAT4X4 View = MathHelper::Identity4x4();
+	XMFLOAT4X4 Proj = MathHelper::Identity4x4();
+	XMFLOAT4X4 ViewProj = MathHelper::Identity4x4();
+	XMFLOAT3 EyePosW = { 0.0f, 0.0f, 0.0f };
 	float cbPerObjectPad1 = 0.0f;
-	DirectX::XMFLOAT2 RenderTargetSize = { 0.0f, 0.0f };
-	DirectX::XMFLOAT2 InvRenderTargetSize = { 0.0f, 0.0f };
+	XMFLOAT2 RenderTargetSize = { 0.0f, 0.0f };
+	XMFLOAT2 InvRenderTargetSize = { 0.0f, 0.0f };
 	int mSkyCubeIndex = 0;
 	float mRoughness = 0;
 	int mPad02 = 0;

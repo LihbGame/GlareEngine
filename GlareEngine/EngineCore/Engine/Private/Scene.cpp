@@ -11,7 +11,10 @@ Scene::Scene(string name, ID3D12GraphicsCommandList* pCommandList)
 
 void Scene::Update(float DeltaTime)
 {
-
+	for (auto &object: m_pRenderObjects)
+	{
+		object->Update(DeltaTime);
+	}
 }
 
 void Scene::VisibleUpdateForType(unordered_map<ObjectType, bool> TypeVisible)

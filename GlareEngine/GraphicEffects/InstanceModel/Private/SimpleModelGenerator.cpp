@@ -24,7 +24,7 @@ void SimpleModelGenerator::CreatePBRMaterials()
 	for (int i = 0; i < MaterialNum; ++i)
 	{
 		vector<Texture*> ModelTextures;
-		string Filename = "../Resource/Textures/";
+		string Filename = EngineGlobal::TextureAssetPath;
 		Filename += ModelPBRMaterials[i]+ string("/") + ModelPBRMaterials[i];
 		TextureManager::GetInstance(pCommandList)->CreatePBRTextures(Filename, ModelTextures);
 		MaterialManager::GetMaterialInstance()->BuildMaterials(

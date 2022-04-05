@@ -441,10 +441,11 @@ namespace GlareEngine
 		//Initialize Present PSO
 		InitializePersentPSO();
 
-		//g_PreDisplayBuffer.Create(L"PreDisplay Buffer", g_DisplayWidth, g_DisplayHeight, 1, g_SwapChainFormat);
-
 		GPUTimeManager::Initialize(4096);
 		SetNativeResolution();
+
+		//g_PreDisplayBuffer.Create(L"PreDisplay Buffer", g_DisplayWidth, g_DisplayHeight, 1, g_SwapChainFormat);
+
 		//TemporalEffects::Initialize();
 		//PostEffects::Initialize();
 		//SSAO::Initialize();

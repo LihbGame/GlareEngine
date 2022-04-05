@@ -348,6 +348,7 @@
     <ClInclude Include="Dependences\include\stb_image\stb_tilemap_editor.h" />
     <ClInclude Include="Dependences\include\stb_image\stb_truetype.h" />
     <ClInclude Include="Dependences\include\stb_image\stb_voxel_render.h" />
+    <ClInclude Include="EngineCore\Engine\Public\EngineGlobal.h" />
     <ClInclude Include="GraphicEffects\Animation\MeshStruct.h" />
     <ClInclude Include="GraphicEffects\Animation\ModelMesh.h" />
     <ClInclude Include="Dependences\include\DirectXTK12\Inc\Audio.h" />
@@ -478,6 +479,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Dependences\include\stb_image\stb_vorbis.c" />
+    <ClCompile Include="EngineCore\Engine\Private\EngineGlobal.cpp" />
     <ClCompile Include="GraphicEffects\Animation\ModelLoader.cpp" />
     <ClCompile Include="GraphicEffects\Terrain\Terrain.cpp" />
     <None Include="EngineCore\Graphics\Private\Color.cpp" />

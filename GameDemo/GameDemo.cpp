@@ -142,13 +142,19 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	gScene = mSceneManager->CreateScene("Test Scene");
 	{
 		assert(gScene);
+		//set global scene
+		EngineGlobal::gCurrentScene = gScene;
+		//Set UI
+		gScene->SetSceneUI(mEngineUI.get());
+		//set camera
+		gScene->SetCamera(mCamera.get());
 		//set Shadow map type
 		gScene->SetShadowMap(mShadowMap.get());
 		//add hdr Sky
 		gScene->AddObjectToScene(mSky.get());
 		//Instance models
 		CreateSimpleModelInstance(CommandList,"Grid_01", SimpleModelType::Grid, "PBRGrass01", 1, 1);
-		CreateModelInstance(CommandList, "BlueTree/Blue_Tree_02a.FBX", 5, 5);
+	    CreateModelInstance(CommandList, "BlueTree/Blue_Tree_02a.FBX", 5, 5);
 		//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRrocky_shoreline1", 1, 1);
 		//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRRock046S", 1, 1);
 		//CreateModelInstance(CommandList,"TraumaGuard/TraumaGuard.FBX", 5, 5);
@@ -194,7 +200,7 @@ void App::Cleanup(void)
 void App::Update(float DeltaTime)
 {
 	//update shadow map
-	mShadowMap->UpdateShadowTransform(DeltaTime);
+	mShadowMap->Update(DeltaTime);
 
 	UpdateWindow(DeltaTime);
 	UpdateCamera(DeltaTime);
@@ -209,7 +215,10 @@ void App::BuildRootSignature()
 	mRootSignature.Reset(6, 8);
 	//Main Constant Buffer
 	mRootSignature[0].InitAsConstantBuffer(0);
-	//Objects Constant Buffer;Shadow Constant Buffer
+	//Common Constant Buffer
+		//1.Objects Constant Buffer
+		//2.Shadow  Constant Buffer
+		//3.Terrain Constant buffer
 	mRootSignature[1].InitAsConstantBuffer(1);
 	//Sky Cube Texture
 	mRootSignature[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAXCUBESRVSIZE);

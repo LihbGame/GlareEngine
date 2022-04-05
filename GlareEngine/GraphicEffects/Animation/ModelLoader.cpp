@@ -45,7 +45,7 @@ void ModelLoader::SetCommandList(ID3D12GraphicsCommandList* CommandList)
 
 bool ModelLoader::LoadModel(string filename)
 {
-	mDirectory = "../Resource/Model/";
+	mDirectory = EngineGlobal::ModelAssetPath;
 	string FullName = mDirectory + filename;
 	const aiScene* pScene = mImporter.ReadFile(FullName,
 		aiProcessPreset_TargetRealtime_Quality |

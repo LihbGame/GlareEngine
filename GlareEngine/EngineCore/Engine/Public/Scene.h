@@ -3,6 +3,7 @@
 #include "SimpleModelGenerator.h"
 #include "ShadowMap.h"
 #include "IBL.h"
+#include "EngineGUI.h"
 class Scene
 {
 public:
@@ -21,11 +22,18 @@ public:
 	void ResizeViewport(uint32_t width, uint32_t height);
 	//Set Shadow Class Type
 	void SetShadowMap(ShadowMap* shadowMap) { m_pShadowMap = shadowMap; }
+	//Set Camera 
+	void SetCamera(Camera* camera) { m_pCamera = camera; }
+	//Set UI
+	void SetSceneUI(EngineGUI* UI) { m_pGUI = UI; }
 	//Update objects visible
 	void VisibleUpdateForType(unordered_map<ObjectType, bool> TypeVisible);
 	//Baking Scene's Global illumination data
 	void BakingGIData(GraphicsContext& Context);
 public:
+	Camera* m_pCamera = nullptr;
+	EngineGUI* m_pGUI = nullptr;
+
 	bool IsWireFrame = false;
 	bool IsMSAA = false;
 private:
@@ -45,6 +53,7 @@ private:
 	vector<RenderObject*> m_pRenderObjectsType[(int)ObjectType::Count];
 
 	ShadowMap* m_pShadowMap = nullptr;
+
 	//IBL Global illumination
 	IBL mIBLGI;
 

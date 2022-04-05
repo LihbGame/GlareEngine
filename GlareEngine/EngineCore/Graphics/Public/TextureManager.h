@@ -1,5 +1,6 @@
 #pragma once
 #include "EngineUtility.h"
+
 namespace GlareEngine
 {
 	namespace DirectX12Graphics

@@ -127,6 +127,7 @@ namespace GlareEngine
 
 			
 			void InsertTimeStamp(ID3D12QueryHeap* pQueryHeap, uint32_t QueryIdx);
+			void BeginTimeStamp(ID3D12QueryHeap* pQueryHeap, uint32_t QueryIdx);
 			void ResolveTimeStamps(ID3D12Resource* pReadbackHeap, ID3D12QueryHeap* pQueryHeap, uint32_t NumQueries);
 
 			void PIXBeginEvent(const wchar_t* label);
@@ -361,6 +362,11 @@ namespace GlareEngine
 		inline void CommandContext::InsertTimeStamp(ID3D12QueryHeap* pQueryHeap, uint32_t QueryIdx)
 		{
 			m_CommandList->EndQuery(pQueryHeap, D3D12_QUERY_TYPE_TIMESTAMP, QueryIdx);
+		}
+
+		inline void CommandContext::BeginTimeStamp(ID3D12QueryHeap* pQueryHeap, uint32_t QueryIdx)
+		{
+			m_CommandList->BeginQuery(pQueryHeap, D3D12_QUERY_TYPE_TIMESTAMP, QueryIdx);
 		}
 
 		inline void CommandContext::ResolveTimeStamps(ID3D12Resource* pReadbackHeap, ID3D12QueryHeap* pQueryHeap, uint32_t NumQueries)

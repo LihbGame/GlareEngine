@@ -396,10 +396,7 @@ namespace GlareEngine
 			default:
 				return DefWindowProc(hWnd, message, wParam, lParam);
 			}
-
 			return 0;
 		}
-
-
 	}
 }

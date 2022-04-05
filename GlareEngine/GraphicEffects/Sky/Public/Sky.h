@@ -23,6 +23,8 @@ public:
     static void BuildPSO(const PSOCommonProperty CommonProperty);
 
     CD3DX12_CPU_DESCRIPTOR_HANDLE GetSkyCubeDescriptor() { return m_Descriptor; }
+
+    void Update(float dt);
 private:
 	//PSO
 	static GraphicsPSO mPSO;
