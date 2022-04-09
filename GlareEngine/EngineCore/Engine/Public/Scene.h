@@ -1,9 +1,9 @@
 #pragma once
-#include "InstanceModel.h"
-#include "SimpleModelGenerator.h"
-#include "ShadowMap.h"
 #include "IBL.h"
-#include "EngineGUI.h"
+
+class ShadowMap;
+class EngineGUI;
+
 class Scene
 {
 public:
@@ -16,6 +16,8 @@ public:
 	void AddObjectToScene(RenderObject* Object);
 	//Render Scene
 	void RenderScene(RenderPipelineType Type,GraphicsContext& Context);
+	//Draw UI
+	void DrawUI();
 	//Release Scene
 	void ReleaseScene();
 	//Resize Viewport and Scissor

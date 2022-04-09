@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
+
 class Scene;
 using namespace std;
-
 class EngineGlobal
 {
 public:

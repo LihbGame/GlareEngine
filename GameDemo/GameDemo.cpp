@@ -430,7 +430,9 @@ void App::RenderUI()
 		RenderContext.PIXBeginEvent(L"Render UI");
 		RenderContext.SetRenderTarget(GetCurrentBuffer().GetRTV());
 		RenderContext.TransitionResource(GetCurrentBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-		mEngineUI->Draw(RenderContext.GetCommandList());
+		mEngineUI->BeginDraw(RenderContext.GetCommandList());
+		gScene->DrawUI();
+		mEngineUI->EndDraw(RenderContext.GetCommandList());
 		RenderContext.PIXEndEvent();
 		RenderContext.TransitionResource(GetCurrentBuffer(), D3D12_RESOURCE_STATE_PRESENT, true);
 		RenderContext.Finish(true);

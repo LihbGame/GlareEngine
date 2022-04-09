@@ -28,6 +28,8 @@ public:
 
 	void Update(float dt);
 
+	virtual void DrawUI();
+
 	float GetWidth()const;
 	float GetDepth()const;
 	float GetHeight(float x, float z)const;
@@ -43,12 +45,19 @@ private:
 	void BuildQuadPatchGeometry(ID3D12GraphicsCommandList* CommandList);
 	void BuildTerrainTransform();
 	void UpdateTerrainConstantBuffer();
+	void BuildTerrainSRV();
 private:
 	//PSO
 	static GraphicsPSO mPSO;
 	ID3D12GraphicsCommandList* m_pCommandList = nullptr;
+
 	CD3DX12_CPU_DESCRIPTOR_HANDLE m_HeightMapDescriptor;
+	CD3DX12_CPU_DESCRIPTOR_HANDLE m_BlendMapDescriptor;
+
 	TerrainInitInfo mTerrainInfo;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> mHeightMapSRV;
+	Microsoft::WRL::ComPtr<ID3D12Resource> mHeightMapUploader;
 
 	TerrainConstants mTerrainConstant;
 

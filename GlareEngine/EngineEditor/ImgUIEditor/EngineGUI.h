@@ -18,7 +18,8 @@ public:
 	EngineGUI(ID3D12GraphicsCommandList* d3dCommandList);
 	~EngineGUI();
 public:
-	void Draw(ID3D12GraphicsCommandList* d3dCommandList);
+	void BeginDraw(ID3D12GraphicsCommandList* d3dCommandList);
+	void EndDraw(ID3D12GraphicsCommandList* d3dCommandList);
 	void ShutDown();
 
 	bool IsShowShadow()const { return show_shadow; }
@@ -34,6 +35,8 @@ public:
 
 	float GetGrassMinWind()const { return GrassMinWind; }
 	float GetGrassMaxWind()const { return GrassMaxWind; }
+
+	XMFLOAT2 GetEngineLogoSize();
 
 	void SetCameraPosition(const XMFLOAT3& position) { mCameraPosition = position; }
 

@@ -2,7 +2,12 @@
 #include "GeometryGenerator.h"
 #include "Vertex.h"
 #include "EngineGlobal.h"
+#include "Scene.h"
+#include "EngineGUI.h"
 #include "stb_image/stb_image.h"
+
+
+using namespace DirectX::PackedVector;
 
 GraphicsPSO Terrain::mPSO;
 
@@ -61,6 +66,12 @@ void Terrain::Update(float dt)
 
 }
 
+void Terrain::DrawUI()
+{
+
+
+}
+
 float Terrain::GetWidth() const
 {
 	return mTerrainSize;
@@ -79,15 +90,15 @@ float Terrain::GetHeight(float x, float z) const
 
 void Terrain::CreateMaterials()
 {
-	int MaterialNum = sizeof(TerrainLayerPBRMaterials) / sizeof(char*);
+	int MaterialNum = sizeof(mTerrainInfo.LayerMapFilename) / sizeof(string);
 	for (int i = 0; i < MaterialNum; ++i)
 	{
 		vector<Texture*> ModelTextures;
 		string Filename = EngineGlobal::TerrainAssetPath;
-		Filename += TerrainLayerPBRMaterials[i];
+		Filename += mTerrainInfo.LayerMapFilename[i];
 		TextureManager::GetInstance(m_pCommandList)->CreatePBRTextures(Filename, ModelTextures);
 		MaterialManager::GetMaterialInstance()->BuildMaterials(
-			StringToWString(TerrainLayerPBRMaterials[i]),
+			StringToWString(mTerrainInfo.LayerMapFilename[i]),
 			ModelTextures,
 			0.04f,
 			XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
@@ -99,7 +110,9 @@ void Terrain::CreateMaterials()
 void Terrain::LoadHeightMapAsset()
 {
 
-	///load height maps
+	/// <summary>
+	/// load height maps
+	/// </summary>
 
 	//check file type
 	string FileType = mTerrainInfo.HeightMapFilename.substr(mTerrainInfo.HeightMapFilename.find_last_of('.') + 1);
@@ -142,7 +155,15 @@ void Terrain::LoadHeightMapAsset()
 		STBI_FREE(MapData);
 	}
 
-	///create terrain layer Materials
+	/// <summary>
+	/// Build Terrain SRV
+	/// </summary>
+	BuildTerrainSRV();
+	
+
+	/// <summary>
+	/// create terrain layer Materials
+	/// </summary>
 	CreateMaterials();
 }
 
@@ -197,7 +218,7 @@ float Terrain::Average(int i, int j)
 		{
 			if (InBounds(m, n))
 			{
-				avg += mHeightmap[m * mTerrainInfo.HeightmapWidth + n];
+				avg += mHeightmap[static_cast<size_t>(m) * mTerrainInfo.HeightmapWidth + n];
 				num += 1.0f;
 			}
 		}
@@ -280,11 +301,11 @@ void Terrain::BuildQuadPatchGeometry(ID3D12GraphicsCommandList* CommandList)
 		{
 			// Top row of 2x2 quad patch
 			indices[k] = i * mNumPatchVertCols + j;
-			indices[k + 1] = i * mNumPatchVertCols + j + 1;
+			indices[static_cast<size_t>(k) + 1] = i * mNumPatchVertCols + j + 1;
 
 			// Bottom row of 2x2 quad patch
-			indices[k + 2] = (i + 1) * mNumPatchVertCols + j;
-			indices[k + 3] = (i + 1) * mNumPatchVertCols + j + 1;
+			indices[static_cast<size_t>(k) + 2] = (i + 1) * mNumPatchVertCols + j;
+			indices[static_cast<size_t>(k) + 3] = (i + 1) * mNumPatchVertCols + j + 1;
 
 			k += 4; // next quad
 		}
@@ -325,11 +346,11 @@ void Terrain::BuildQuadPatchGeometry(ID3D12GraphicsCommandList* CommandList)
 			{
 				float x = -halfWidth + j * patchWidth;
 
-				patchVertices[offset + i * mNumPatchVertCols + j].Position = XMFLOAT3(x, 0.0f, z);
+				patchVertices[offset + static_cast<size_t>(i) * mNumPatchVertCols + j].Position = XMFLOAT3(x, 0.0f, z);
 
 				// Stretch texture over grid.
-				patchVertices[offset + i * mNumPatchVertCols + j].Tex.x = j * du + offsetU;
-				patchVertices[offset + i * mNumPatchVertCols + j].Tex.y = i * dv + offsetV;
+				patchVertices[offset + static_cast<size_t>(i) * mNumPatchVertCols + j].Tex.x = j * du + offsetU;
+				patchVertices[offset + static_cast<size_t>(i) * mNumPatchVertCols + j].Tex.y = i * dv + offsetV;
 			}
 		}
 
@@ -339,7 +360,7 @@ void Terrain::BuildQuadPatchGeometry(ID3D12GraphicsCommandList* CommandList)
 			for (UINT j = 0; j < mNumPatchVertCols - 1; ++j)
 			{
 				UINT patchID = i * (mNumPatchVertCols - 1) + j;
-				patchVertices[offset + i * mNumPatchVertCols + j].BoundsY = mAllPatchBoundsY[TileID][patchID];
+				patchVertices[offset + static_cast<size_t>(i) * mNumPatchVertCols + j].BoundsY = mAllPatchBoundsY[TileID][patchID];
 			}
 		}
 
@@ -391,5 +412,53 @@ void Terrain::UpdateTerrainConstantBuffer()
 {
 	assert(EngineGlobal::gCurrentScene);
 
+	XMMATRIX viewProj = EngineGlobal::gCurrentScene->m_pCamera->GetView() * EngineGlobal::gCurrentScene->m_pCamera->GetProj();
 
+	XMFLOAT4 worldPlanes[6];
+	ExtractFrustumPlanes(worldPlanes, viewProj);
+	int CopySize = sizeof(worldPlanes) * sizeof(XMFLOAT4);
+	memcpy(mTerrainConstant.gWorldFrustumPlanes, worldPlanes, CopySize);
+
+	mTerrainConstant.gBlendMapIndex = mBlendMapIndex;
+	mTerrainConstant.gHeightMapIndex = mHeightMapIndex;
+
+	mTerrainConstant.gMinDist = 200.0f;
+	mTerrainConstant.gMaxDist = mTerrainInfo.HeightmapWidth * mTerrainInfo.CellSize / 2;
+	mTerrainConstant.gMinTess = 1.0f;
+	mTerrainConstant.gMaxTess = 5.0f;
+
+	mTerrainConstant.gTexelCellSpaceU = 1.0f / mTerrainInfo.HeightmapWidth;
+	mTerrainConstant.gTexelCellSpaceV = 1.0f / mTerrainInfo.HeightmapHeight;
+	mTerrainConstant.gWorldCellSpace = mTerrainInfo.CellSize;
+}
+
+void Terrain::BuildTerrainSRV()
+{
+	//blend map
+	auto BlendMapTex = TextureManager::GetInstance(m_pCommandList)->GetTexture(wstring(mTerrainInfo.BlendMapFilename.begin(), mTerrainInfo.BlendMapFilename.end()))->Resource;
+	D3D12_SHADER_RESOURCE_VIEW_DESC BlendMapDesc = {};
+	BlendMapDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	BlendMapDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	BlendMapDesc.Texture2D.MostDetailedMip = 0;
+	BlendMapDesc.Texture2D.MipLevels = BlendMapTex->GetDesc().MipLevels;
+	BlendMapDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+	BlendMapDesc.Format = BlendMapTex->GetDesc().Format;
+	m_BlendMapDescriptor = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	g_Device->CreateShaderResourceView(BlendMapTex.Get(), &BlendMapDesc, m_BlendMapDescriptor);
+	mBlendMapIndex= AddToGlobalTextureSRVDescriptor(m_BlendMapDescriptor);
+
+	//height map
+	vector<HALF> HalfHeightMapData;
+	HalfHeightMapData.resize(mHeightmap.size());
+	std::transform(mHeightmap.begin(), mHeightmap.end(), HalfHeightMapData.begin(), XMConvertFloatToHalf);
+	mHeightMapSRV = EngineUtility::CreateDefault2DTexture(g_Device,
+		m_pCommandList, HalfHeightMapData.data(), sizeof(HALF) * mHeightmap.size(), DXGI_FORMAT_R16_FLOAT, mTerrainInfo.HeightmapWidth, mTerrainInfo.HeightmapHeight, mHeightMapUploader);
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC HeightMapDesc = BlendMapDesc;
+	HeightMapDesc.Texture2D.MipLevels = -1;
+	HeightMapDesc.Texture2D.MostDetailedMip = 0;
+	HeightMapDesc.Format = DXGI_FORMAT_R16_FLOAT;
+	m_HeightMapDescriptor = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	g_Device->CreateShaderResourceView(mHeightMapSRV.Get(), &HeightMapDesc, m_HeightMapDescriptor);
+	mHeightMapIndex = AddToGlobalTextureSRVDescriptor(m_HeightMapDescriptor);
 }

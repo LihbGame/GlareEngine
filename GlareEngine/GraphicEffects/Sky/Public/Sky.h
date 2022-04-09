@@ -20,6 +20,8 @@ public:
 
     virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr);
 
+    virtual void DrawUI();
+
     static void BuildPSO(const PSOCommonProperty CommonProperty);
 
     CD3DX12_CPU_DESCRIPTOR_HANDLE GetSkyCubeDescriptor() { return m_Descriptor; }

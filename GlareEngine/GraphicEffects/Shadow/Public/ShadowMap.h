@@ -27,6 +27,8 @@ public:
 	virtual void Draw(GraphicsContext& Context, GraphicsPSO* PSO = nullptr) {};
 	void Draw(GraphicsContext& Context, vector<RenderObject*> RenderObjects);
 
+	virtual void DrawUI() {}
+
 	static void BuildPSO(const PSOCommonProperty CommonProperty);
 
 	void OnResize(UINT newWidth, UINT newHeight);

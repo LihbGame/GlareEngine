@@ -1,5 +1,7 @@
 #include "Scene.h"
 #include "ModelLoader.h"
+#include "ShadowMap.h"
+#include "EngineGUI.h"
 /// Scene/////////////////////////////////////////////
 
 Scene::Scene(string name, ID3D12GraphicsCommandList* pCommandList)
@@ -78,6 +80,17 @@ void Scene::RenderScene(RenderPipelineType Type, GraphicsContext& Context)
 		break;
 	}
 	
+}
+
+void Scene::DrawUI()
+{
+	for (auto& RenderObject : m_pRenderObjects)
+	{
+		if (RenderObject->GetVisible())
+		{
+			RenderObject->DrawUI();
+		}
+	}
 }
 
 void Scene::ReleaseScene()

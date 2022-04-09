@@ -2,6 +2,7 @@
 #include "GeometryGenerator.h"
 #include "TextureManager.h"
 #include "ConstantBuffer.h"
+#include "EngineGUI.h"
 //shader
 #include "CompiledShaders/SkyVS.h"
 #include "CompiledShaders/SkyPS.h"
@@ -120,6 +121,10 @@ void CSky::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 	Context.SetIndexBuffer(mSkyMesh->IndexBufferView());
 	Context.SetVertexBuffer(0,mSkyMesh->VertexBufferView());
 	Context.DrawIndexed(mSkyMesh->DrawArgs["Sky"].IndexCount, mSkyMesh->DrawArgs["Sky"].StartIndexLocation, mSkyMesh->DrawArgs["Sky"].BaseVertexLocation);
+}
+
+void CSky::DrawUI()
+{
 }
 
 void CSky::BuildPSO(const PSOCommonProperty CommonProperty)

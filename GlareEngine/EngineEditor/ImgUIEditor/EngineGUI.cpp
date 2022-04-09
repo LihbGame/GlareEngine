@@ -22,6 +22,12 @@ EngineGUI::~EngineGUI()
 
 }
 
+XMFLOAT2 EngineGUI::GetEngineLogoSize()
+{
+	float IconSize = g->IO.DisplaySize.x * 0.075f;
+	return XMFLOAT2(IconSize, IconSize * 1.15f);
+}
+
 void EngineGUI::InitGUI()
 {
 	// Setup Dear ImGui context
@@ -116,50 +122,51 @@ void EngineGUI::CreateUIDescriptorHeap(ID3D12GraphicsCommandList* d3dCommandList
 	mEngineCloseTexDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
 }
 
-void EngineGUI::Draw(ID3D12GraphicsCommandList* d3dCommandList)
+
+void EngineGUI::BeginDraw(ID3D12GraphicsCommandList* d3dCommandList)
 {
-	//DRAW UI
+	ID3D12DescriptorHeap* descriptorHeaps[] = { mGUISrvDescriptorHeap };
+	d3dCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+	// Our state
+
+	// Start the Dear ImGui frame
+	ImGui_ImplDX12_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+	ImGui::SetNextWindowBgAlpha(1);
+
+	XMFLOAT2 LogoSize = GetEngineLogoSize();
+	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+	if (mShowControlPanel)
 	{
-		ID3D12DescriptorHeap* descriptorHeaps[] = { mGUISrvDescriptorHeap };
-		d3dCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-		// Our state
-
-		// Start the Dear ImGui frame
-		ImGui_ImplDX12_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
-		ImGui::SetNextWindowBgAlpha(1);
-		
-		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-		if (mShowControlPanel)
-		{	
-			DrawMainMenuBar(&mWindowMaxSize, gFullSreenMode);
-			ImGui::ShowDemoWindow(&mShowControlPanel,&mWindowMaxSize);
-		}
-		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-		{
-			float IconSize = g->IO.DisplaySize.x * 0.075f;
-			float IconWindowHigh = IconSize * 1.15f;
-			//Engine Icon
-			DrawEngineIcon(IconSize, IconWindowHigh);
-			//ControlPanel
-			DrawControlPanel(IconWindowHigh);
-		}
-
-		// 3. Show Output log window.
-		if (mShowDebugwindow)
-		{
-			DrawDebugWindow();
-		}
-
-		//Stat Windows
-		{
-			DrawStatWindow();
-		}
-
-		ImGui::Render();
-		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), d3dCommandList);
+		DrawMainMenuBar(&mWindowMaxSize, gFullSreenMode);
+		ImGui::ShowDemoWindow(&mShowControlPanel, &mWindowMaxSize);
 	}
+
+	//2.Engine Logo
+    DrawEngineIcon(LogoSize.x, LogoSize.y);
+
+	// 3. Show Output log window.
+	if (mShowDebugwindow)
+	{
+		DrawDebugWindow();
+	}
+
+	//4. Stat Windows
+	DrawStatWindow();
+
+	//5. Control Panel
+	DrawControlPanel(LogoSize.y);
+}
+
+void EngineGUI::EndDraw(ID3D12GraphicsCommandList* d3dCommandList)
+{
+	//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	//end Control Panel window
+	ImGui::End();
+
+	ImGui::Render();
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), d3dCommandList);
 }
 
 void EngineGUI::ShutDown()
@@ -255,33 +262,31 @@ void EngineGUI::DrawControlPanel(float IconWindowHigh)
 	ImGui::Checkbox("MSAA", &mMSAA);
 	ImGui::Checkbox("HeightMapTerrain", &show_HeightMapTerrain);
 
-	if (ImGui::CollapsingHeader("Water", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		ImGui::Checkbox("Water Rendering", &show_water);
-		ImGui::SliderFloat("Transparent", &mWaterTransparent, 0.0f, 500.0f);
-	}
+	//if (ImGui::CollapsingHeader("Water", ImGuiTreeNodeFlags_DefaultOpen))
+	//{
+	//	ImGui::Checkbox("Water Rendering", &show_water);
+	//	ImGui::SliderFloat("Transparent", &mWaterTransparent, 0.0f, 500.0f);
+	//}
 
-	if (ImGui::CollapsingHeader("Grass", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		ImGui::Checkbox("Grass Rendering", &show_Grass);
-		ImGui::Checkbox("RandomSize", &mIsGrassRandom);
-		ImGui::ColorEdit3("Grass color", mGrassColor, 0);
-		ImGui::SliderFloat("Height", &mPerGrassHeight, 3.0f, 10.0f);
-		ImGui::SliderFloat("Width", &mPerGrassWidth, 0.5f, 3.0f);
-		ImGui::SliderFloat("MinWind", &GrassMinWind, 0.0f, 1.0f);
-		ImGui::SliderFloat("MaxWind", &GrassMaxWind, 1.0f, 2.5f);
-	}
+	//if (ImGui::CollapsingHeader("Grass", ImGuiTreeNodeFlags_DefaultOpen))
+	//{
+	//	ImGui::Checkbox("Grass Rendering", &show_Grass);
+	//	ImGui::Checkbox("RandomSize", &mIsGrassRandom);
+	//	ImGui::ColorEdit3("Grass color", mGrassColor, 0);
+	//	ImGui::SliderFloat("Height", &mPerGrassHeight, 3.0f, 10.0f);
+	//	ImGui::SliderFloat("Width", &mPerGrassWidth, 0.5f, 3.0f);
+	//	ImGui::SliderFloat("MinWind", &GrassMinWind, 0.0f, 1.0f);
+	//	ImGui::SliderFloat("MaxWind", &GrassMaxWind, 1.0f, 2.5f);
+	//}
 
-	if (ImGui::CollapsingHeader("Fog", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		ImGui::Checkbox("Fog Rendering", &FogEnabled);
-		ImGui::Text("Fog Start");
-		ImGui::SliderFloat(" ", &FogStart, 0.0f, 1000.0f);
-		ImGui::Text("Fog Range");
-		ImGui::SliderFloat("  ", &FogRange, 0.0f, 1000.0f);
-	}
-	//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-	ImGui::End();
+	//if (ImGui::CollapsingHeader("Fog", ImGuiTreeNodeFlags_DefaultOpen))
+	//{
+	//	ImGui::Checkbox("Fog Rendering", &FogEnabled);
+	//	ImGui::Text("Fog Start");
+	//	ImGui::SliderFloat(" ", &FogStart, 0.0f, 1000.0f);
+	//	ImGui::Text("Fog Range");
+	//	ImGui::SliderFloat("  ", &FogRange, 0.0f, 1000.0f);
+	//}
 }
 
 void EngineGUI::DrawDebugWindow()
