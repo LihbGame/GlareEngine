@@ -15,7 +15,7 @@ public:
 	//Add Objects to Scene
 	void AddObjectToScene(RenderObject* Object);
 	//Render Scene
-	void RenderScene(RenderPipelineType Type,GraphicsContext& Context);
+	void RenderScene(RenderPipelineType Type);
 	//Draw UI
 	void DrawUI();
 	//Release Scene
@@ -29,9 +29,13 @@ public:
 	//Set UI
 	void SetSceneUI(EngineGUI* UI) { m_pGUI = UI; }
 	//Update objects visible
-	void VisibleUpdateForType(unordered_map<ObjectType, bool> TypeVisible);
+	void VisibleUpdateForType();
 	//Baking Scene's Global illumination data
 	void BakingGIData(GraphicsContext& Context);
+	//Set Scene lights
+	void SetSceneLights(Light* light);
+	//Set RootSignature
+	void SetRootSignature(RootSignature* rootSignature);
 public:
 	Camera* m_pCamera = nullptr;
 	EngineGUI* m_pGUI = nullptr;
@@ -39,13 +43,17 @@ public:
 	bool IsWireFrame = false;
 	bool IsMSAA = false;
 private:
-	void CreateShadowMap(GraphicsContext& Context,vector<RenderObject*> RenderObjects);
-	void ForwardRendering(GraphicsContext& Context);
-	void ForwardPlusRendering(GraphicsContext& Context);
-	void DeferredRendering(GraphicsContext& Context);
+	void UpdateMainConstantBuffer(float DeltaTime);
+	void CreateShadowMap(GraphicsContext& Context, vector<RenderObject*> RenderObjects);
+	void ForwardRendering();
+	void ForwardPlusRendering();
+	void DeferredRendering();
 private:
 	ID3D12GraphicsCommandList* m_pCommandList = nullptr;
 	string mName;
+
+	//Main Constant Buffer
+	MainConstants mMainConstants;
 
 	//Viewport and Scissor
 	D3D12_VIEWPORT m_MainViewport = { 0 };
@@ -59,5 +67,9 @@ private:
 	//IBL Global illumination
 	IBL mIBLGI;
 
+	//scene lights
+	Light mSceneLights[MaxLights];
+
+	RootSignature* m_pRootSignature;
 };
 

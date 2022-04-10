@@ -73,8 +73,6 @@ public:
 
 	void UpdateCamera(float DeltaTime);
 
-	void UpdateMainConstantBuffer(float DeltaTime);
-
 	void InitializeScene(ID3D12GraphicsCommandList* CommandList, GraphicsContext& InitializeContext);
 
 	void CreateModelInstance(ID3D12GraphicsCommandList* CommandList,string ModelName, int Num_X, int Num_Y);
@@ -90,17 +88,12 @@ private:
 	Scene* gScene = nullptr;
 	//Scene data 
 	vector<unique_ptr<InstanceModel>> mModels;
-
-	//Main Constant Buffer
-	MainConstants mMainConstants;
 	//Main Camera
 	unique_ptr<Camera> mCamera;
 	//Sky
 	unique_ptr<CSky> mSky;
 	//Shadow map
 	unique_ptr<ShadowMap> mShadowMap;
-	//Root Signature
-	RootSignature mRootSignature;
 	//UI
 	unique_ptr<EngineGUI> mEngineUI;
 	
@@ -112,6 +105,9 @@ private:
 
 	//PSO Common Property
 	PSOCommonProperty mCommonProperty;
+
+	//Root Signature
+	RootSignature mRootSignature;
 };
 //////////////////////////////////////////////////////////////
 
@@ -141,13 +137,36 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	assert(mSceneManager);
 	gScene = mSceneManager->CreateScene("Test Scene");
 	{
+		Light SceneLights[3];
+		SceneLights[0].Direction = mShadowMap->GetShadowedLightDir();
+		SceneLights[0].Strength = { 1.0f, 1.0f, 1.0f };
+		SceneLights[0].FalloffStart = 1.0f;
+		SceneLights[0].FalloffEnd = 50.0f;
+		SceneLights[0].Position = { 20,20,20 };
+
+		SceneLights[1].Direction = XMFLOAT3(-0.57735f, -0.47735f, 0.57735f);
+		SceneLights[1].Strength = { 1.0f, 1.0f, 1.0f };
+		SceneLights[1].FalloffStart = 1.0f;
+		SceneLights[1].FalloffEnd = 50.0f;
+		SceneLights[1].Position = { 20,20,20 };
+
+		SceneLights[2].Direction = XMFLOAT3(0.57735f, -0.47735f, -0.57735f);
+		SceneLights[2].Strength = { 1.0f, 1.0f, 1.0f };
+		SceneLights[2].FalloffStart = 1.0f;
+		SceneLights[2].FalloffEnd = 50.0f;
+		SceneLights[2].Position = { 20,20,20 };
+
 		assert(gScene);
 		//set global scene
 		EngineGlobal::gCurrentScene = gScene;
+		//set Root Signature
+		gScene->SetRootSignature(&mRootSignature);
 		//Set UI
 		gScene->SetSceneUI(mEngineUI.get());
 		//set camera
 		gScene->SetCamera(mCamera.get());
+		//set scene lights
+		gScene->SetSceneLights(SceneLights);
 		//set Shadow map type
 		gScene->SetShadowMap(mShadowMap.get());
 		//add hdr Sky
@@ -199,12 +218,8 @@ void App::Cleanup(void)
 
 void App::Update(float DeltaTime)
 {
-	//update shadow map
-	mShadowMap->Update(DeltaTime);
-
 	UpdateWindow(DeltaTime);
 	UpdateCamera(DeltaTime);
-	UpdateMainConstantBuffer(DeltaTime);
 	UpdateSceneState(DeltaTime);
 	//update scene
 	gScene->Update(DeltaTime);
@@ -255,11 +270,7 @@ void App::BuildPSO()
 void App::UpdateSceneState(float DeltaTime)
 {
 	assert(gScene);
-	unordered_map<ObjectType, bool> TypeVisible;
-	TypeVisible[ObjectType::Sky] = mEngineUI->IsShowSky();
-	TypeVisible[ObjectType::Model] = mEngineUI->IsShowModel();
-	TypeVisible[ObjectType::Shadow] = mEngineUI->IsShowShadow();
-	gScene->VisibleUpdateForType(TypeVisible);
+	gScene->VisibleUpdateForType();
 
 	bool IsStateChange = false;
 	if (mEngineUI->IsWireframe() != gScene->IsWireFrame)
@@ -330,94 +341,10 @@ void App::UpdateCamera(float DeltaTime)
 	mCamera->UpdateViewMatrix();
 }
 
-void App::UpdateMainConstantBuffer(float DeltaTime)
-{
-	XMMATRIX View = XMLoadFloat4x4(&mCamera->GetView4x4f());
-	XMMATRIX Proj = XMLoadFloat4x4(&mCamera->GetProj4x4f());
-
-	XMMATRIX ViewProj = XMMatrixMultiply(View, Proj);
-	XMMATRIX InvView = XMMatrixInverse(&XMMatrixDeterminant(View), View);
-	XMMATRIX InvProj = XMMatrixInverse(&XMMatrixDeterminant(Proj), Proj);
-	XMMATRIX InvViewProj = XMMatrixInverse(&XMMatrixDeterminant(ViewProj), ViewProj);
-
-	XMStoreFloat4x4(&mMainConstants.View, XMMatrixTranspose(View));
-	XMStoreFloat4x4(&mMainConstants.InvView, XMMatrixTranspose(InvView));
-	XMStoreFloat4x4(&mMainConstants.Proj, XMMatrixTranspose(Proj));
-	XMStoreFloat4x4(&mMainConstants.InvProj, XMMatrixTranspose(InvProj));
-	XMStoreFloat4x4(&mMainConstants.ViewProj, XMMatrixTranspose(ViewProj));
-	XMStoreFloat4x4(&mMainConstants.InvViewProj, XMMatrixTranspose(InvViewProj));
-	XMStoreFloat4x4(&mMainConstants.ShadowTransform, XMMatrixTranspose(XMLoadFloat4x4(&mShadowMap->GetShadowTransform())));
-
-	mMainConstants.EyePosW = mCamera->GetPosition3f();
-	mMainConstants.RenderTargetSize = XMFLOAT2((float)mClientWidth, (float)mClientHeight);
-	mMainConstants.InvRenderTargetSize = XMFLOAT2(1.0f / mClientWidth, 1.0f / mClientHeight);
-	mMainConstants.NearZ = 1.0f;
-	mMainConstants.FarZ = FAR_Z;
-	mMainConstants.TotalTime = GameTimer::TotalTime();
-	mMainConstants.DeltaTime = DeltaTime;
-
-	//lights constant buffer
-	{
-		mMainConstants.gAmbientLight = { 0.05f, 0.05f, 0.05f, 1.0f };
-
-		mMainConstants.Lights[0].Direction = mShadowMap->GetShadowedLightDir();
-		mMainConstants.Lights[0].Strength = { 1.0f, 1.0f, 1.0f };
-		mMainConstants.Lights[0].FalloffStart = 1.0f;
-		mMainConstants.Lights[0].FalloffEnd = 50.0f;
-		mMainConstants.Lights[0].Position = { 20,20,20 };
-
-		mMainConstants.Lights[1].Direction = XMFLOAT3(-0.57735f, -0.47735f, 0.57735f);
-		mMainConstants.Lights[1].Strength = { 1.0f, 1.0f, 1.0f };
-		mMainConstants.Lights[1].FalloffStart = 1.0f;
-		mMainConstants.Lights[1].FalloffEnd = 50.0f;
-		mMainConstants.Lights[1].Position = { 20,20,20 };
-
-		mMainConstants.Lights[2].Direction = XMFLOAT3(0.57735f, -0.47735f, -0.57735f);
-		mMainConstants.Lights[2].Strength = { 1.0f, 1.0f, 1.0f };
-		mMainConstants.Lights[2].FalloffStart = 1.0f;
-		mMainConstants.Lights[2].FalloffEnd = 50.0f;
-		mMainConstants.Lights[2].Position = { 20,20,20 };
-	}
-
-	mMainConstants.mShadowMapIndex = mShadowMap->GetShadowMapIndex();
-
-	assert(GlobleSRVIndex::gSkyCubeSRVIndex >= 0);
-	assert(GlobleSRVIndex::gBakingDiffuseCubeIndex >= 0);
-	assert(GlobleSRVIndex::gBakingPreFilteredEnvIndex >= 0);
-	assert(GlobleSRVIndex::gBakingIntegrationBRDFIndex >= 0);
-	//GI DATA
-	mMainConstants.mSkyCubeIndex = GlobleSRVIndex::gSkyCubeSRVIndex;
-	mMainConstants.mBakingDiffuseCubeIndex = GlobleSRVIndex::gBakingDiffuseCubeIndex;
-	mMainConstants.gBakingPreFilteredEnvIndex = GlobleSRVIndex::gBakingPreFilteredEnvIndex;
-	mMainConstants.gBakingIntegrationBRDFIndex = GlobleSRVIndex::gBakingIntegrationBRDFIndex;
-}
 
 void App::RenderScene(void)
 {
-	GraphicsContext& RenderContext = GraphicsContext::Begin(L"RenderScene");
-#pragma region Scene
-	RenderContext.PIXBeginEvent(L"Scene");
-
-	RenderContext.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-	RenderContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
-	RenderContext.ClearDepth(g_SceneDepthBuffer);
-	RenderContext.ClearRenderTarget(g_SceneColorBuffer);
-
-	RenderContext.SetRootSignature(mRootSignature);
-
-	//set main constant buffer
-	RenderContext.SetDynamicConstantBufferView(0, sizeof(mMainConstants), &mMainConstants);
-
-#pragma region Test Scene
-	gScene->RenderScene(RenderPipelineType::Forward, RenderContext);
-#pragma endregion
-
-
-
-	RenderContext.PIXEndEvent();
-#pragma endregion
-	RenderContext.Finish(true);
-
+	gScene->RenderScene(RenderPipelineType::Forward);
 }
 
 
@@ -425,17 +352,7 @@ void App::RenderUI()
 {
 	if (!mIsHideUI)
 	{
-		GraphicsContext& RenderContext = GraphicsContext::Begin(L"Render UI");
-		//Draw UI
-		RenderContext.PIXBeginEvent(L"Render UI");
-		RenderContext.SetRenderTarget(GetCurrentBuffer().GetRTV());
-		RenderContext.TransitionResource(GetCurrentBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-		mEngineUI->BeginDraw(RenderContext.GetCommandList());
 		gScene->DrawUI();
-		mEngineUI->EndDraw(RenderContext.GetCommandList());
-		RenderContext.PIXEndEvent();
-		RenderContext.TransitionResource(GetCurrentBuffer(), D3D12_RESOURCE_STATE_PRESENT, true);
-		RenderContext.Finish(true);
 	}
 }
 
