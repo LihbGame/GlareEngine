@@ -255,12 +255,12 @@ void EngineGUI::DrawControlPanel(float IconWindowHigh)
 	ImGui::Text("Camera Move Speed");
 	ImGui::SliderFloat("   ", &CameraMoveSpeed, 0.0f, 500.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 
-	ImGui::Text("Show Sence");
+	ImGui::Text("Show Scene");
 	ImGui::Checkbox("Shadow", &show_shadow);
 	ImGui::Checkbox("Model", &show_model);
 	ImGui::Checkbox("Sky", &show_sky);
 	ImGui::Checkbox("MSAA", &mMSAA);
-	ImGui::Checkbox("HeightMapTerrain", &show_HeightMapTerrain);
+	ImGui::Checkbox("Terrain", &show_HeightMapTerrain);
 
 	//if (ImGui::CollapsingHeader("Water", ImGuiTreeNodeFlags_DefaultOpen))
 	//{

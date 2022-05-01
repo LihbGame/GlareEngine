@@ -14,6 +14,7 @@
 #include "ModelLoader.h"
 #include "SceneManager.h"
 #include "ShadowMap.h"
+#include "Terrain.h"
 //lib
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "comsuppw.lib")
@@ -136,6 +137,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	//////Build Scene//////////
 	assert(mSceneManager);
 	gScene = mSceneManager->CreateScene("Test Scene");
+	auto InitScene = [&]
 	{
 		Light SceneLights[3];
 		SceneLights[0].Direction = mShadowMap->GetShadowedLightDir();
@@ -167,13 +169,13 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 		gScene->SetCamera(mCamera.get());
 		//set scene lights
 		gScene->SetSceneLights(SceneLights);
-		//set Shadow map type
-		gScene->SetShadowMap(mShadowMap.get());
+		//set Shadow map 
+		gScene->AddObjectToScene(mShadowMap.get());
 		//add hdr Sky
 		gScene->AddObjectToScene(mSky.get());
 		//Instance models
-		CreateSimpleModelInstance(CommandList,"Grid_01", SimpleModelType::Grid, "PBRGrass01", 1, 1);
-	    CreateModelInstance(CommandList, "BlueTree/Blue_Tree_02a.FBX", 5, 5);
+		CreateSimpleModelInstance(CommandList, "Grid_01", SimpleModelType::Grid, "PBRGrass01", 1, 1);
+		CreateModelInstance(CommandList, "BlueTree/Blue_Tree_02a.FBX", 5, 5);
 		//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRrocky_shoreline1", 1, 1);
 		//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRRock046S", 1, 1);
 		//CreateModelInstance(CommandList,"TraumaGuard/TraumaGuard.FBX", 5, 5);
@@ -183,12 +185,11 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 		{
 			gScene->AddObjectToScene(model.get());
 		}
-		
+
 		//Baking GI Data
 		gScene->BakingGIData(InitializeContext);
 
-	}
-
+	};InitScene();
 	//Create all Materials Constant Buffer
 	MaterialManager::GetMaterialInstance()->CreateMaterialsConstantBuffer();
 }
@@ -229,20 +230,20 @@ void App::BuildRootSignature()
 {
 	mRootSignature.Reset(6, 8);
 	//Main Constant Buffer
-	mRootSignature[0].InitAsConstantBuffer(0);
+	mRootSignature[(int)RootSignatureType::MainConstantBuffer].InitAsConstantBuffer(0);
 	//Common Constant Buffer
 		//1.Objects Constant Buffer
 		//2.Shadow  Constant Buffer
 		//3.Terrain Constant buffer
-	mRootSignature[1].InitAsConstantBuffer(1);
+	mRootSignature[(int)RootSignatureType::CommonConstantBuffer].InitAsConstantBuffer(1);
 	//Sky Cube Texture
-	mRootSignature[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAXCUBESRVSIZE);
+	mRootSignature[(int)RootSignatureType::CubeTextures].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAXCUBESRVSIZE);
 	//Cook BRDF PBR Textures 
-	mRootSignature[3].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MAXCUBESRVSIZE, MAX2DSRVSIZE);
+	mRootSignature[(int)RootSignatureType::PBRTextures].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MAXCUBESRVSIZE, MAX2DSRVSIZE);
 	//Material Constant Data
-	mRootSignature[4].InitAsBufferSRV(1, 1);
+	mRootSignature[(int)RootSignatureType::MaterialConstantData].InitAsBufferSRV(1, 1);
 	//Instance Constant Data 
-	mRootSignature[5].InitAsBufferSRV(0, 1);
+	mRootSignature[(int)RootSignatureType::InstancConstantData].InitAsBufferSRV(0, 1);
 
 	//Static Samplers
 	mRootSignature.InitStaticSampler(0, SamplerLinearWrapDesc);
@@ -265,6 +266,7 @@ void App::BuildPSO()
 	InstanceModel::BuildPSO(mCommonProperty);
 	ShadowMap::BuildPSO(mCommonProperty);
 	IBL::BuildPSOs(mCommonProperty);
+	Terrain::BuildPSO(mCommonProperty);
 }
 
 void App::UpdateSceneState(float DeltaTime)

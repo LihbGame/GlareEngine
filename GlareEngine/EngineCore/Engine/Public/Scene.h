@@ -1,8 +1,11 @@
 #pragma once
 #include "IBL.h"
+#include <typeinfo>
 
 class ShadowMap;
 class EngineGUI;
+
+typedef void (*BuildPSO)(PSOCommonProperty);
 
 class Scene
 {
@@ -22,8 +25,6 @@ public:
 	void ReleaseScene();
 	//Resize Viewport and Scissor
 	void ResizeViewport(uint32_t width, uint32_t height);
-	//Set Shadow Class Type
-	void SetShadowMap(ShadowMap* shadowMap) { m_pShadowMap = shadowMap; }
 	//Set Camera 
 	void SetCamera(Camera* camera) { m_pCamera = camera; }
 	//Set UI

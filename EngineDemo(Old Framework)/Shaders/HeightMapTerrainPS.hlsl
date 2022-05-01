@@ -29,10 +29,12 @@ float4 PS(DomainOut pin) : SV_TARGET
 	float topY = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearWrap, topTex, 0).r;
 
 	float3 tangent = normalize(float3(2.0f * gWorldCellSpace, rightY - leftY, 0.0f));
-	float3 bitan = normalize(float3(0.0f, bottomY - topY, -2.0f * gWorldCellSpace));
-	float3 normalW = cross(tangent, bitan);
-
-
+	//float3 bitan = normalize(float3(0.0f, bottomY - topY, -2.0f * gWorldCellSpace));
+	//float3 normalW = cross(tangent, bitan);
+	
+	// normal = (-dh/dx, 1, -dh/dz) : for height map normal
+	float3 normalW = normalize(float3(leftY - rightY, 2.0f * gWorldCellSpace, topY - bottomY));
+	
 	// The toEye vector is used in lighting.
 	float3 toEye = gEyePosW - pin.PosW;
 	// Cache the distance to the eye from this surface point.

@@ -65,14 +65,27 @@ void Scene::SetRootSignature(RootSignature* rootSignature)
 }
 
 
-
 void Scene::AddObjectToScene(RenderObject* Object)
 {
-	m_pRenderObjects.push_back(Object);
-
-	if (Object->mObjectType == ObjectType::Sky)
+	switch (Object->mObjectType)
 	{
+	case ObjectType::Sky: {
 		m_pRenderObjectsType[(int)ObjectType::Sky].push_back(Object);
+		m_pRenderObjects.push_back(Object);
+		break;
+	}
+	case ObjectType::Shadow:{
+		m_pShadowMap = dynamic_cast<ShadowMap*>(Object);
+		break;
+	}
+	case ObjectType::Model:{
+		m_pRenderObjects.push_back(Object);
+		break;
+	}
+	default:{
+		m_pRenderObjects.push_back(Object);
+		break;
+	}
 	}
 }
 
@@ -228,16 +241,16 @@ void Scene::ForwardRendering()
 	Context.SetRootSignature(*m_pRootSignature);
 
 	//set main constant buffer
-	Context.SetDynamicConstantBufferView(0, sizeof(mMainConstants), &mMainConstants);
+	Context.SetDynamicConstantBufferView((int)RootSignatureType::MainConstantBuffer, sizeof(mMainConstants), &mMainConstants);
 
 
 	//Set Cube SRV
-	Context.SetDynamicDescriptors(2, 0, (UINT)g_CubeSRV.size(), g_CubeSRV.data());
+	Context.SetDynamicDescriptors((int)RootSignatureType::CubeTextures, 0, (UINT)g_CubeSRV.size(), g_CubeSRV.data());
 	//Set Textures SRV
-	Context.SetDynamicDescriptors(3, 0, (UINT)g_TextureSRV.size(), g_TextureSRV.data());
+	Context.SetDynamicDescriptors((int)RootSignatureType::PBRTextures, 0, (UINT)g_TextureSRV.size(), g_TextureSRV.data());
 	//Set Material Data
 	const vector<MaterialConstant>& MaterialData = MaterialManager::GetMaterialInstance()->GetMaterialsConstantBuffer();
-	Context.SetDynamicSRV(4, sizeof(MaterialConstant) * MaterialData.size(), MaterialData.data());
+	Context.SetDynamicSRV((int)RootSignatureType::MaterialConstantData, sizeof(MaterialConstant) * MaterialData.size(), MaterialData.data());
 
 	Context.PIXBeginEvent(L"Shadow Pass");
 	CreateShadowMap(Context,m_pRenderObjects);

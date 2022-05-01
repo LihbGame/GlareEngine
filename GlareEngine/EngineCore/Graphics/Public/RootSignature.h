@@ -1,5 +1,16 @@
 #pragma once
 #include "EngineUtility.h"
+
+enum class RootSignatureType :int
+{
+	MainConstantBuffer,
+	CommonConstantBuffer,
+	CubeTextures,
+	PBRTextures,
+	MaterialConstantData,
+	InstancConstantData
+};
+
 namespace GlareEngine
 {
 	namespace DirectX12Graphics
@@ -90,8 +101,6 @@ namespace GlareEngine
 		protected:
 			CD3DX12_ROOT_PARAMETER m_RootParam;
 		};
-
-
 
 		// Maximum 64 DWORDS divied up amongst all root parameters.
 		// Root constants = 1 DWORD * NumConstants

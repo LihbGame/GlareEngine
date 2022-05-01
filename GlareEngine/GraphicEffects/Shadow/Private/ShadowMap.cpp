@@ -14,6 +14,7 @@ ShadowMap::ShadowMap(XMFLOAT3 LightDirection, UINT width, UINT height)
 	mRotatedLightDirection(0, 0, 0),
 	mLightPosW(0, 0, 0)
 {
+	mObjectType = ObjectType::Shadow;
 	mWidth = width;
 	mHeight = height;
 
@@ -119,7 +120,7 @@ void ShadowMap::Draw(GraphicsContext& Context,vector<RenderObject*> RenderObject
 	Context.ClearDepth(mShadowBuffer);
 	Context.SetDepthStencilTarget(GetDSV());
 	//set shadow constant buffer
-	Context.SetDynamicConstantBufferView(1, sizeof(ShadowConstantBuffer), &mConstantBuffer);
+	Context.SetDynamicConstantBufferView((int)RootSignatureType::CommonConstantBuffer, sizeof(ShadowConstantBuffer), &mConstantBuffer);
 
 	for (auto& object:RenderObjects)
 	{

@@ -26,6 +26,8 @@ Terrain::Terrain(ID3D12GraphicsCommandList* CommandList,TerrainInitInfo TerrainI
 	:mTerrainInfo(TerrainInfo),
 	m_pCommandList(CommandList)
 {
+	mObjectType = ObjectType::Terrain;
+
 	mTileNum = mTerrainInfo.TerrainTileSize * mTerrainInfo.TerrainTileSize;
 	mWorldTransforms.reserve(mTileNum);
 
@@ -68,8 +70,14 @@ void Terrain::Update(float dt)
 
 void Terrain::DrawUI()
 {
+	if (ImGui::CollapsingHeader("Terrain", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::SliderFloat("Tess Scale", &mTessellationScale, 0.0f, 2.0f);
+	}
+}
 
-
+void Terrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
+{
 }
 
 float Terrain::GetWidth() const
@@ -86,6 +94,13 @@ float Terrain::GetDepth() const
 float Terrain::GetHeight(float x, float z) const
 {
 	return 0.0f;
+}
+
+void Terrain::BuildPSO(const PSOCommonProperty CommonProperty)
+{
+
+
+
 }
 
 void Terrain::CreateMaterials()
@@ -422,11 +437,7 @@ void Terrain::UpdateTerrainConstantBuffer()
 	mTerrainConstant.gBlendMapIndex = mBlendMapIndex;
 	mTerrainConstant.gHeightMapIndex = mHeightMapIndex;
 
-	mTerrainConstant.gMinDist = 200.0f;
-	mTerrainConstant.gMaxDist = mTerrainInfo.HeightmapWidth * mTerrainInfo.CellSize / 2;
-	mTerrainConstant.gMinTess = 1.0f;
-	mTerrainConstant.gMaxTess = 5.0f;
-
+	mTerrainConstant.gTessellationScale = mTessellationScale;
 	mTerrainConstant.gTexelCellSpaceU = 1.0f / mTerrainInfo.HeightmapWidth;
 	mTerrainConstant.gTexelCellSpaceV = 1.0f / mTerrainInfo.HeightmapHeight;
 	mTerrainConstant.gWorldCellSpace = mTerrainInfo.CellSize;

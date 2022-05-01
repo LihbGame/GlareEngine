@@ -84,7 +84,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>.\GraphicEffects\GI\IBL;.\Dependences\include\DirectXTK12\Src;.\Dependences\include\DirectXTK12\Src\Shaders\Compiled;.\Dependences\include\DirectXTK12\Inc;.\GraphicEffects\Shadow\Public;.\GraphicEffects\InstanceModel\Public;.\GraphicEffects\Particles\Public;.\;..\x64\Debug;.\GraphicEffects\Sky\Public;.\GraphicEffects\Misc;.\EngineCore\Engine\Public;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\EngineCore\Graphics\Public;.\Dependences\include;.\GraphicEffects\Animation;.\EngineCore\Public;$(IncludePath)</IncludePath>
+    <IncludePath>.\GraphicEffects\Terrain;.\GraphicEffects\GI\IBL;.\Dependences\include\DirectXTK12\Src;.\Dependences\include\DirectXTK12\Src\Shaders\Compiled;.\Dependences\include\DirectXTK12\Inc;.\GraphicEffects\Shadow\Public;.\GraphicEffects\InstanceModel\Public;.\GraphicEffects\Particles\Public;.\;..\x64\Debug;.\GraphicEffects\Sky\Public;.\GraphicEffects\Misc;.\EngineCore\Engine\Public;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\EngineCore\Graphics\Public;.\Dependences\include;.\GraphicEffects\Animation;.\EngineCore\Public;$(IncludePath)</IncludePath>
     <LibraryPath>.\Dependences\lib\ozz\debug;.\Dependences\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

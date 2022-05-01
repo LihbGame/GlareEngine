@@ -29,10 +29,13 @@ public:
 	void Update(float dt);
 
 	virtual void DrawUI();
+	virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO /* = nullptr */);
 
 	float GetWidth()const;
 	float GetDepth()const;
 	float GetHeight(float x, float z)const;
+
+	static void BuildPSO(const PSOCommonProperty CommonProperty);
 private:
 	void CreateMaterials();
 	void LoadHeightMapAsset();
@@ -76,6 +79,7 @@ private:
 	//Height map data (only have one map for now)
 	vector<float> mHeightmap;
 
+	float mTessellationScale;
 	float mTerrainSize;
 	float mTerrainTileWidth;
 	UINT mTileNum;

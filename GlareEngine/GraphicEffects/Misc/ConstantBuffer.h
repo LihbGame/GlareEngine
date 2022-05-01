@@ -43,18 +43,8 @@ struct MainConstants
 struct TerrainConstants
 {
 	XMFLOAT4 gWorldFrustumPlanes[6];
-	// When distance is minimum, the tessellation is maximum.
-	// When distance is maximum, the tessellation is minimum.
-	float gMinDist;
-	float gMaxDist;
 
-	// Exponents for power of 2 tessellation.  The tessellation
-	// range is [2^(gMinTess), 2^(gMaxTess)].  Since the maximum
-	// tessellation is 64, this means gMaxTess can be at most 6
-	// since 2^6 = 64.
-	float gMinTess;
-	float gMaxTess;
-
+	float gTessellationScale;
 	float gTexelCellSpaceU;
 	float gTexelCellSpaceV;
 	float gWorldCellSpace;
