@@ -1,5 +1,5 @@
-#include "IBL.h"
-#include "Sky.h"
+#include "GI/IBL.h"
+#include "Sky/Sky.h"
 
 //shader
 #include "CompiledShaders/BakingEnvDiffusePS.h"

@@ -1,8 +1,8 @@
 #pragma once
 #include "GraphicsCore.h"
 #include "ModelMesh.h"
-#include "InstanceModel.h"
-#include "SimpleModelGenerator.h"
+#include "InstanceModel/InstanceModel.h"
+#include "InstanceModel/SimpleModelGenerator.h"
 #include "Scene.h"
 
 

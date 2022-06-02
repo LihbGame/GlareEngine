@@ -39,8 +39,8 @@ SamplerState gSamplerPointBorder        : register(s6);
 SamplerState gSamplerLinearBorder       : register(s7);
 SamplerComparisonState gSamplerShadow   : register(s2);
 
-//纹理数组，仅着色器模型5.1+支持。 与Texture2DArray不同，
-//此数组中的纹理可以具有不同的大小和格式，使其比纹理数组更灵活。
+//Texture array, only supported for shader model 5.1+. Unlike Texture2DArray,
+//Textures in this array can have different sizes and formats, making it more flexible than texture arrays.
 TextureCube gCubeMaps[MAXCUBESRVSIZE]   : register(t0);
 Texture2D gSRVMap[MAX2DSRVSIZE]         : register(t32);
 
@@ -48,7 +48,7 @@ Texture2D gSRVMap[MAX2DSRVSIZE]         : register(t32);
 StructuredBuffer<MaterialData> gMaterialData : register(t1, space1);
 StructuredBuffer<InstanceData> gInstanceData : register(t0, space1);
 
-// 每帧常量数据。
+//Constant data per frame.
 cbuffer MainPass : register(b0)
 {
     float4x4 gView;
@@ -80,6 +80,58 @@ cbuffer MainPass : register(b0)
     int gBakingPreFilteredEnvIndex;
     int gBakingIntegrationBRDFIndex;
 };    
+
+
+//Terrain
+#if defined(TERRAIN)
+
+#define NUM_CONTROL_POINTS 4
+
+struct VertexIn
+{
+    float3 PosL     : POSITION;
+    float2 Tex      : TEXCOORD;
+    float2 BoundsY  : BoundY;
+};
+
+struct VertexOut
+{
+    float3 PosW     : POSITION;
+    float2 Tex      : TEXCOORD;
+    float2 BoundsY  : BoundY;
+};
+
+struct PatchTess
+{
+    float EdgeTess[4]   : SV_TessFactor;
+    float InsideTess[2] : SV_InsideTessFactor;
+};
+
+struct HullOut
+{
+    float3 PosW     : POSITION;
+    float2 Tex      : TEXCOORD;
+};
+
+cbuffer TerrainCBPass : register(b1)
+{
+    float4 gWorldFrustumPlanes[6];
+
+    float gTessellationScale;
+    float gTexelCellSpaceU;
+    float gTexelCellSpaceV;
+    float gWorldCellSpace;
+
+    int gHeightMapIndex;
+    int gBlendMapIndex;
+
+    float gMinDist;
+    float gMaxDist;
+    float gMinTess;
+    float gMaxTess;
+};
+#endif
+
 
 //Position
 struct PosVSOut

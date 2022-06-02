@@ -202,7 +202,7 @@ namespace GlareEngine
 				if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
 					continue;
 
-				if (desc.DedicatedVideoMemory > MaxSize && SUCCEEDED(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&pDevice))))
+				if (desc.DedicatedVideoMemory > MaxSize && SUCCEEDED(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_1, IID_PPV_ARGS(&pDevice))))
 				{
 					pAdapter->GetDesc1(&desc);
 					EngineLog::AddLog(L"D3D12-Capable HardWare found:  %s (%d MB)\0", desc.Description, desc.DedicatedVideoMemory >> 20);

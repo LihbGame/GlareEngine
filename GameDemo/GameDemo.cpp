@@ -10,11 +10,13 @@
 #include "resource.h"
 
 #include "Camera.h"
-#include "Sky.h"
+#include "Sky/Sky.h"
 #include "ModelLoader.h"
 #include "SceneManager.h"
-#include "ShadowMap.h"
-#include "Terrain.h"
+#include "Shadow/ShadowMap.h"
+#include "Terrain/Terrain.h"
+
+
 //lib
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "comsuppw.lib")

@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30225.117
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32126.317
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GlareEngine", "GlareEngine\GlareEngine.vcxproj", "{819B941B-3428-4FAA-A97E-5A0611C634E6}"
 EndProject
@@ -11,7 +11,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameDemo", "GameDemo\GameDe
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EngineDemo(Old Framework)", "EngineDemo(Old Framework)\EngineDemo(Old Framework).vcxproj", "{D45CF84C-7CDB-4F17-8995-A7F55D58BF79}"
 	ProjectSection(ProjectDependencies) = postProject
-		{A0BBF2F5-5EE7-46AB-8B74-2779591EC727} = {A0BBF2F5-5EE7-46AB-8B74-2779591EC727}
+		{819B941B-3428-4FAA-A97E-5A0611C634E6} = {819B941B-3428-4FAA-A97E-5A0611C634E6}
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Engine", "Engine", "{DBE6FCC7-D04C-48DE-9AC3-35042E2CEDAD}"

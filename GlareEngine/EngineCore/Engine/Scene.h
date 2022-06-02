@@ -1,5 +1,5 @@
 #pragma once
-#include "IBL.h"
+#include "GI/IBL.h"
 #include <typeinfo>
 
 class ShadowMap;

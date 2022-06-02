@@ -41,7 +41,7 @@
 #include "MathHelper.h"
 #include "GameTimer.h"
 #include "VectorMath.h"
-#include  "Color.h"
+#include "Color.h"
 #include "EngineAdjust.h"
 #include "Camera.h"
 #include "EngineGlobal.h"

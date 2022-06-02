@@ -1,6 +1,6 @@
 #include "Scene.h"
 #include "ModelLoader.h"
-#include "ShadowMap.h"
+#include "Shadow/ShadowMap.h"
 #include "EngineGUI.h"
 /// Scene/////////////////////////////////////////////
 

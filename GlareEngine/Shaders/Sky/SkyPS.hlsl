@@ -1,8 +1,6 @@
 #include "../Misc/CommonResource.hlsli"
 
 
-
-
 //ÆØ¹â²ÎÊý
 #define exposure 1.0f
 
