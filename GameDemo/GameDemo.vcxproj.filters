@@ -13,6 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{7b4804d5-2213-49bd-9cdf-aab127e82d67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Model">
+      <UniqueIdentifier>{3ffd7e84-0945-4300-952e-b429c150ac13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Texture">
+      <UniqueIdentifier>{24362cf0-3836-497b-b815-f5c936946d6b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\UImisc">
+      <UniqueIdentifier>{c77d3796-6bf2-4f6e-bd03-df6f1c3af22c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameDemo.cpp">
@@ -57,5 +69,451 @@
     <Image Include="..\Resource\Textures\ICONS\gamecontroller_16px.ico">
       <Filter>资源文件</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\Resource\Textures\HDRSky\SKY_LDR.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\ICONS\close.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\ICONS\gamecontrolle.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\ICONS\max.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\ICONS\min.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Water\202_norm.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Water\242-normal.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\blend.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\darkdirt_albedo.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\darkdirt_ao.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\darkdirt_height.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\darkdirt_metallic.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\darkdirt_normal.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\darkdirt_roughness.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\grass_albedo.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\grass_ao.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\grass_height.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\grass_metallic.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\grass_normal.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\grass_roughness.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\heightmap.png">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\heightmap1.png">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\heightmap3.png">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\heightmap4.png">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\lightdirt_albedo.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\lightdirt_ao.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\lightdirt_height.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\lightdirt_metallic.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\lightdirt_normal.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\lightdirt_roughness.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Water\OIP.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRBrass\PBRbrass_albedo.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRBrass\PBRbrass_ao.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRBrass\PBRbrass_height.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRBrass\PBRbrass_metallic.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRBrass\PBRbrass_normal.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRBrass\PBRbrass_roughness.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRGrass\PBRGrass_albedo.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRGrass\PBRGrass_ao.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRGrass\PBRGrass_height.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRGrass\PBRGrass_metallic.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRGrass\PBRGrass_normal.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRGrass\PBRGrass_roughness.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRGrass01\PBRGrass01_albedo.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRGrass01\PBRGrass01_ao.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRGrass01\PBRGrass01_height.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRGrass01\PBRGrass01_metallic.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRGrass01\PBRGrass01_normal.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRGrass01\PBRGrass01_roughness.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRharshbricks\PBRharshbricks_albedo.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRharshbricks\PBRharshbricks_ao.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRharshbricks\PBRharshbricks_height.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRharshbricks\PBRharshbricks_metallic.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRharshbricks\PBRharshbricks_normal.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRharshbricks\PBRharshbricks_roughness.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRIndustrial_narrow_brick\PBRindustrial_narrow_brick_albedo.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRIndustrial_narrow_brick\PBRindustrial_narrow_brick_ao.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRIndustrial_narrow_brick\PBRindustrial_narrow_brick_height.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRIndustrial_narrow_brick\PBRindustrial_narrow_brick_metallic.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRIndustrial_narrow_brick\PBRindustrial_narrow_brick_normal.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRIndustrial_narrow_brick\PBRindustrial_narrow_brick_roughness.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRRock046S\PBRRock046S_albedo.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRRock046S\PBRRock046S_ao.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRRock046S\PBRRock046S_height.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRRock046S\PBRRock046S_metallic.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRRock046S\PBRRock046S_normal.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRRock046S\PBRRock046S_Roughness.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRrocky_shoreline1\PBRrocky_shoreline1_albedo.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRrocky_shoreline1\PBRrocky_shoreline1_ao.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRrocky_shoreline1\PBRrocky_shoreline1_height.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRrocky_shoreline1\PBRrocky_shoreline1_metallic.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRrocky_shoreline1\PBRrocky_shoreline1_normal.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRrocky_shoreline1\PBRrocky_shoreline1_roughness.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRstylized_grass1\PBRstylized_grass1_albedo.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRstylized_grass1\PBRstylized_grass1_ao.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRstylized_grass1\PBRstylized_grass1_height.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRstylized_grass1\PBRstylized_grass1_metallic.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRstylized_grass1\PBRstylized_grass1_normal.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRstylized_grass1\PBRstylized_grass1_roughness.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRwhite_spruce_tree_bark\PBRwhite_spruce_tree_bark_albedo.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRwhite_spruce_tree_bark\PBRwhite_spruce_tree_bark_ao.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRwhite_spruce_tree_bark\PBRwhite_spruce_tree_bark_height.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRwhite_spruce_tree_bark\PBRwhite_spruce_tree_bark_metallic.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRwhite_spruce_tree_bark\PBRwhite_spruce_tree_bark_normal.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\PBRwhite_spruce_tree_bark\PBRwhite_spruce_tree_bark_roughness.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\RGB_Noise.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\snow_albedo.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\snow_ao.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\snow_height.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\snow_metallic.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\snow_normal.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\snow_roughness.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\stone_albedo.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\stone_ao.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\stone_height.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\stone_metallic.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\stone_normal.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\stone_roughness.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Terrain\terrain.raw">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Textures\Water\WavesBump.dds">
+      <Filter>Resource Files\Texture</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\BlueTree\Blue_Tree_02a.FBX">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\BlueTree\Blue_Tree_03a.FBX">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\BlueTree\Blue_Tree_03b.FBX">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\BlueTree\Blue_Tree_03c.FBX">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\BlueTree\Blue_Tree_03d.FBX">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\BlueTree\PBRTextures\Blue_Tree_albedo.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\BlueTree\PBRTextures\Blue_Tree_ao.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\BlueTree\PBRTextures\Blue_Tree_height.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\BlueTree\PBRTextures\Blue_Tree_metallic.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\BlueTree\PBRTextures\Blue_Tree_normal.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\BlueTree\PBRTextures\Blue_Tree_roughness.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\mercMaleMarksman\PBRTextures\enaryMale_albedo.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\mercMaleMarksman\PBRTextures\enaryMale_ao.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\mercMaleMarksman\PBRTextures\enaryMale_height.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\mercMaleMarksman\PBRTextures\enaryMale_metallic.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\mercMaleMarksman\PBRTextures\enaryMale_normal.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\mercMaleMarksman\PBRTextures\enaryMale_roughness.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\mercMaleMarksman\PBRTextures\enaryMale_Weapon_albedo.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\mercMaleMarksman\PBRTextures\enaryMale_Weapon_ao.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\mercMaleMarksman\PBRTextures\enaryMale_Weapon_height.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\mercMaleMarksman\PBRTextures\enaryMale_Weapon_metallic.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\mercMaleMarksman\PBRTextures\enaryMale_Weapon_normal.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\mercMaleMarksman\PBRTextures\enaryMale_Weapon_roughness.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\mercMaleMarksman\mercMaleMarksman.FBX">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\mercMaleMarksman\mercMaleMarksman_Run.FBX">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\TraumaGuard\TraumaGuard.FBX">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\TraumaGuard\TraumaGuard-.FBX">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\TraumaGuard\TraumaGuard%40ActiveIdleLoop.FBX">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\TraumaGuard\TraumaGuard%40ActiveIdleLoop-.FBX">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\TraumaGuard\PBRTextures\TraumaGuard_albedo.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\TraumaGuard\PBRTextures\TraumaGuard_ao.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\TraumaGuard\PBRTextures\TraumaGuard_height.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\TraumaGuard\PBRTextures\TraumaGuard_metallic.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\TraumaGuard\PBRTextures\TraumaGuard_normal.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\Model\TraumaGuard\PBRTextures\TraumaGuard_roughness.dds">
+      <Filter>Resource Files\Model</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\binary_to_compressed_c.cpp">
+      <Filter>Resource Files\UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\Cousine-Regular.ttf">
+      <Filter>Resource Files\UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\DroidSans.ttf">
+      <Filter>Resource Files\UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\Karla-Regular.ttf">
+      <Filter>Resource Files\UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\ProggyClean.ttf">
+      <Filter>Resource Files\UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\ProggyTiny.ttf">
+      <Filter>Resource Files\UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\Roboto-Medium.ttf">
+      <Filter>Resource Files\UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\natvis\imgui.natvis">
+      <Filter>Resource Files\UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\freetype\imgui_freetype.cpp">
+      <Filter>Resource Files\UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\freetype\imgui_freetype.h">
+      <Filter>Resource Files\UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\single_file\imgui_single_file.h">
+      <Filter>Resource Files\UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\cpp\imgui_stdlib.cpp">
+      <Filter>Resource Files\UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\cpp\imgui_stdlib.h">
+      <Filter>Resource Files\UImisc</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

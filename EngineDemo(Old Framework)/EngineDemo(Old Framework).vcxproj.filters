@@ -19,6 +19,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{4b0f09ad-8c71-47c0-8191-2a5d4cb84ee8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UImisc">
+      <UniqueIdentifier>{3f431656-8148-495a-be29-f0e0fc1d3162}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -251,8 +254,122 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\ShockWaveWaterPS.hlsl">
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\binary_to_compressed_c.cpp">
+      <Filter>UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\Cousine-Regular.ttf">
+      <Filter>UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\DroidSans.ttf">
+      <Filter>UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\Karla-Regular.ttf">
+      <Filter>UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\ProggyClean.ttf">
+      <Filter>UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\ProggyTiny.ttf">
+      <Filter>UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\Roboto-Medium.ttf">
+      <Filter>UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\cpp\imgui_stdlib.cpp">
+      <Filter>UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\cpp\imgui_stdlib.h">
+      <Filter>UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\freetype\imgui_freetype.cpp">
+      <Filter>UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\freetype\imgui_freetype.h">
+      <Filter>UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\natvis\imgui.natvis">
+      <Filter>UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\single_file\imgui_single_file.h">
+      <Filter>UImisc</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\Common.hlsli">
       <Filter>Shaders</Filter>
-    </FxCompile>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\ComplexModelInstancePS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\DefaultPS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\DefaultVS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\Fog.hlsli">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\GrassGS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\GrassPS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\GrassShadowGS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\GrassShadowVS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\GrassVS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\HeightMapTerrainDS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\HeightMapTerrainHS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\HeightMapTerrainPS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\HeightMapTerrainVS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\PBRLighting.hlsli">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\ShockWaveWaterPS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\ShockWaveWaterVS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\SimpleGeoInstancePS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\SimpleGeoInstanceShadowPS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\SimpleGeoInstanceShadowVS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\SimpleGeoInstanceVS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\SkyPS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\SkyVS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\TerrainConstBuffer.hlsli">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\WaterRefractionMaskPS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Shaders\WaterRefractionMaskVS.hlsl">
+      <Filter>Shaders</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

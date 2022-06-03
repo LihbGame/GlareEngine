@@ -737,4 +737,30 @@
     <FxCompile Include="Shaders\Terrain\TerrainVS.hlsl" />
     <FxCompile Include="Shaders\Terrain\TerrainPS.hlsl" />
   </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="Dependences\lib\assimp-vc142-mtd.dll" />
+    <CopyFileToFolders Include="UImisc\fonts\binary_to_compressed_c.cpp">
+      <Filter>MainSource</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="UImisc\fonts\Cousine-Regular.ttf" />
+    <CopyFileToFolders Include="UImisc\fonts\DroidSans.ttf" />
+    <CopyFileToFolders Include="UImisc\fonts\Karla-Regular.ttf" />
+    <CopyFileToFolders Include="UImisc\fonts\ProggyClean.ttf" />
+    <CopyFileToFolders Include="UImisc\fonts\ProggyTiny.ttf" />
+    <CopyFileToFolders Include="UImisc\fonts\Roboto-Medium.ttf" />
+    <CopyFileToFolders Include="UImisc\cpp\imgui_stdlib.cpp">
+      <Filter>MainSource</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="UImisc\cpp\imgui_stdlib.h" />
+    <CopyFileToFolders Include="UImisc\cpp\README.txt" />
+    <CopyFileToFolders Include="UImisc\freetype\imgui_freetype.cpp">
+      <Filter>MainSource</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="UImisc\freetype\imgui_freetype.h" />
+    <CopyFileToFolders Include="UImisc\freetype\README.md" />
+    <CopyFileToFolders Include="UImisc\README.txt" />
+    <CopyFileToFolders Include="UImisc\single_file\imgui_single_file.h" />
+    <CopyFileToFolders Include="UImisc\natvis\README.txt" />
+    <CopyFileToFolders Include="UImisc\natvis\imgui.natvis" />
+  </ItemGroup>
 </Project>

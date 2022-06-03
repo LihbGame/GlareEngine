@@ -331,6 +331,11 @@
     <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PS_SRGB.inc" />
     <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_VSQuad.inc" />
     <None Include="Dependences\include\DirectXTK12\Src\TeapotData.inc" />
+    <CopyFileToFolders Include="Dependences\lib\assimp-vc142-mtd.dll">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DestinationFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename)%(Extension)</DestinationFileName>
+    </CopyFileToFolders>
     <None Include="EngineCore\Graphics\Color.h" />
     <ClInclude Include="Dependences\include\stb_image\stb_connected_components.h" />
     <ClInclude Include="Dependences\include\stb_image\stb_c_lexer.h" />
