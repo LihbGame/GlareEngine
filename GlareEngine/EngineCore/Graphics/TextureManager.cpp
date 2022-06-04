@@ -94,5 +94,13 @@ namespace GlareEngine
 			return mTextures[name];
 		}
 
+		void TextureManager::ReleaseUploadTextures()
+		{
+			for (auto &texture: mTextures)
+			{
+				texture.second.get()->UploadHeap.Get()->Release();
+			}
+		}
+
 	}
 }

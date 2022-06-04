@@ -18,6 +18,7 @@ namespace GlareEngine
 			std::unique_ptr<Texture>& GetTexture(std::wstring name, bool ForceSRGB = true);
 			std::unique_ptr<Texture>& GetModelTexture(std::wstring name, bool ForceSRGB = true);
 
+			void ReleaseUploadTextures();
 		private:
 			
 			std::unordered_map<std::wstring, std::unique_ptr<Texture>> mTextures;

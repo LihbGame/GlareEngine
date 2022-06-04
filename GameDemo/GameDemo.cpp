@@ -200,7 +200,6 @@ void App::Startup(void)
 {
 	GraphicsContext& InitializeContext = GraphicsContext::Begin(L"Initialize");
 	ID3D12GraphicsCommandList* CommandList = InitializeContext.GetCommandList();
-
 	//UI Init
 	mEngineUI = make_unique<EngineGUI>(CommandList);
 	//Scene Manager
@@ -208,6 +207,9 @@ void App::Startup(void)
 	//Create scene
 	InitializeScene(CommandList, InitializeContext);
 
+	InitializeContext.Flush(true);
+	//Release Upload Temporary Textures (must flush GPU command wait for texture already load in GPU)
+	TextureManager::GetInstance(CommandList)->ReleaseUploadTextures();
 	InitializeContext.Finish(true);
 }
 
