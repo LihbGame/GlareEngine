@@ -1,5 +1,6 @@
 #include "Materials.h"
 #include "GraphicsCore.h"
+#include "GraphicsCommon.h"
 
 namespace GlareEngine
 {
@@ -79,10 +80,17 @@ namespace GlareEngine
 		for (int i = 0; i < Textures.size(); ++i)
 		{
 			CD3DX12_CPU_DESCRIPTOR_HANDLE Descriptor;
-			Descriptor = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-			srvDesc.Format = Textures[i]->Resource->GetDesc().Format;
-			srvDesc.Texture2D.MipLevels = Textures[i]->Resource->GetDesc().MipLevels;
-			g_Device->CreateShaderResourceView(Textures[i]->Resource.Get(), &srvDesc, Descriptor);
+			if (Textures[i] != nullptr)
+			{
+				Descriptor = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+				srvDesc.Format = Textures[i]->Resource->GetDesc().Format;
+				srvDesc.Texture2D.MipLevels = Textures[i]->Resource->GetDesc().MipLevels;
+				g_Device->CreateShaderResourceView(Textures[i]->Resource.Get(), &srvDesc, Descriptor);
+			}
+			else
+			{
+				Descriptor = GetDefaultTexture(kBlackOpaque2D);
+			}
 			int TextureSrvIndex = DirectX12Graphics::AddToGlobalTextureSRVDescriptor(Descriptor);
 			Mat->mDescriptorsIndex.push_back(TextureSrvIndex);
 		}

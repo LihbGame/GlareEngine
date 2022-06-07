@@ -80,30 +80,38 @@ void CSky::BuildSkyMesh(ID3D12GraphicsCommandList* CommandList, float radius, in
 void CSky::BuildSkySRV(ID3D12GraphicsCommandList* CommandList)
 {
 	wstring SkyPath;
-	if (IsFileExist(StringToWString(EngineGlobal::SkyAssetPath)+L"SKY_HDR.DDS"))
+	Microsoft::WRL::ComPtr<ID3D12Resource> skyTex = nullptr;
+	m_Descriptor = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	auto BuildDescriptor = [&]
+	{
+		skyTex = TextureManager::GetInstance(CommandList)->GetTexture(SkyPath, false)->Resource;
+		D3D12_SHADER_RESOURCE_VIEW_DESC SkysrvDesc = {};
+		SkysrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		SkysrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+		SkysrvDesc.TextureCube.MostDetailedMip = 0;
+		SkysrvDesc.TextureCube.MipLevels = skyTex->GetDesc().MipLevels;
+		SkysrvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
+		SkysrvDesc.Format = skyTex->GetDesc().Format;
+		g_Device->CreateShaderResourceView(skyTex.Get(), &SkysrvDesc, m_Descriptor);
+	};
+
+	if (CheckFileExist(StringToWString(EngineGlobal::SkyAssetPath)+L"SKY_HDR.DDS"))
 	{
 		SkyPath = HDR_SKY;
+		BuildDescriptor();
+	}
+	else if(CheckFileExist(StringToWString(EngineGlobal::SkyAssetPath) + L"SKY_LDR.DDS"))
+	{
+		SkyPath = LDR_SKY;
+		BuildDescriptor();
 	}
 	else
 	{
-		CheckFileExist(StringToWString(EngineGlobal::SkyAssetPath) + L"SKY_LDR.DDS");
-		SkyPath = LDR_SKY;
+		m_Descriptor = GetDefaultTexture(kBlackCubeMap);
 	}
-
-	auto SkyTex = TextureManager::GetInstance(CommandList)->GetTexture(SkyPath,false)->Resource;
-	m_Descriptor= AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-	D3D12_SHADER_RESOURCE_VIEW_DESC SkysrvDesc = {};
-	SkysrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	SkysrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
-	SkysrvDesc.TextureCube.MostDetailedMip = 0;
-	SkysrvDesc.TextureCube.MipLevels = SkyTex->GetDesc().MipLevels;
-	SkysrvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
-	SkysrvDesc.Format = SkyTex->GetDesc().Format;
-	g_Device->CreateShaderResourceView(SkyTex.Get(), &SkysrvDesc, m_Descriptor);
 	//set cube sky SRV index
 	GlobleSRVIndex::gSkyCubeSRVIndex = AddToGlobalCubeSRVDescriptor(m_Descriptor);
-
 }
 
 void CSky::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)

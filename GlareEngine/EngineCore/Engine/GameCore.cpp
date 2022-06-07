@@ -27,6 +27,8 @@ namespace GlareEngine
 {
 	namespace GameCore
 	{
+		using namespace GlareEngine::Display;
+
 		GameApp* GameApp::mGameApp = nullptr;
 		HWND g_hWnd = nullptr;
 
@@ -78,12 +80,12 @@ namespace GlareEngine
 
 		void PreRender(GameApp& Game)
 		{
-			//HDR OR LDR
-			DirectX12Graphics::PreparePresent();
+			//hdr or ldr
+			Display::PreparePresent();
 			//RenderUI
 			Game.RenderUI();
 			//Present
-			DirectX12Graphics::Present();
+			Display::Present();
 		}
 
 		void InitializeApplication(GameApp& Game)
@@ -109,7 +111,7 @@ namespace GlareEngine
 		bool UpdateApplication(GameApp& Game)
 		{
 			GameTimer::Tick();
-			float DeltaTime = DirectX12Graphics::GetFrameTime();
+			float DeltaTime = Display::GetFrameTime();
 
 			EngineProfiling::Update();
 			EngineInput::Update(DeltaTime);
@@ -122,12 +124,12 @@ namespace GlareEngine
 
 			//PostEffects::Render();
 
-			//HDR OR LDR
-			DirectX12Graphics::PreparePresent();
+			//hdr or ldr
+			Display::PreparePresent();
 			//RenderUI
 			Game.RenderUI();
 			//Present
-			DirectX12Graphics::Present();
+			Display::Present();
 
 			return !Game.IsDone();
 		}
@@ -184,10 +186,8 @@ namespace GlareEngine
 
 			} while (UpdateApplication(app) && !gExit);    // Returns false to quit loop
 
-			DirectX12Graphics::Terminate();
 			TerminateApplication(app);
 			DirectX12Graphics::Shutdown();
-
 		}
 
 

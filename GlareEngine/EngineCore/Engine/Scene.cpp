@@ -2,6 +2,7 @@
 #include "ModelLoader.h"
 #include "Shadow/ShadowMap.h"
 #include "EngineGUI.h"
+
 /// Scene/////////////////////////////////////////////
 
 Scene::Scene(string name, ID3D12GraphicsCommandList* pCommandList)
@@ -120,8 +121,8 @@ void Scene::DrawUI()
 	GraphicsContext& RenderContext = GraphicsContext::Begin(L"Render UI");
 	//Draw UI
 	RenderContext.PIXBeginEvent(L"Render UI");
-	RenderContext.SetRenderTarget(GetCurrentBuffer().GetRTV());
-	RenderContext.TransitionResource(GetCurrentBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+	RenderContext.SetRenderTarget(Display::GetCurrentBuffer().GetRTV());
+	RenderContext.TransitionResource(Display::GetCurrentBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 	m_pGUI->BeginDraw(RenderContext.GetCommandList());
 
 	for (auto& RenderObject : m_pRenderObjects)
@@ -134,7 +135,7 @@ void Scene::DrawUI()
 
 	m_pGUI->EndDraw(RenderContext.GetCommandList());
 	RenderContext.PIXEndEvent();
-	RenderContext.TransitionResource(GetCurrentBuffer(), D3D12_RESOURCE_STATE_PRESENT, true);
+	RenderContext.TransitionResource(Display::GetCurrentBuffer(), D3D12_RESOURCE_STATE_PRESENT, true);
 	RenderContext.Finish(true);
 }
 

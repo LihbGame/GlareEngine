@@ -357,6 +357,7 @@
     <ClInclude Include="Dependences\include\stb_image\stb_tilemap_editor.h" />
     <ClInclude Include="Dependences\include\stb_image\stb_truetype.h" />
     <ClInclude Include="Dependences\include\stb_image\stb_voxel_render.h" />
+    <ClInclude Include="EngineCore\Graphics\Display.h" />
     <ClInclude Include="EngineCore\Engine\EngineGlobal.h" />
     <ClInclude Include="GraphicEffects\Animation\MeshStruct.h" />
     <ClInclude Include="GraphicEffects\Animation\ModelMesh.h" />
@@ -489,6 +490,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Dependences\include\stb_image\stb_vorbis.c" />
+    <ClCompile Include="EngineCore\Graphics\Display.cpp" />
     <ClCompile Include="EngineCore\Engine\EngineGlobal.cpp" />
     <ClCompile Include="GraphicEffects\Animation\ModelLoader.cpp" />
     <ClCompile Include="GraphicEffects\InstanceModel\InstanceModel.cpp" />

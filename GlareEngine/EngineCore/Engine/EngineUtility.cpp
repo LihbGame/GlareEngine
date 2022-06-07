@@ -1,8 +1,10 @@
 
 #include "EngineUtility.h"
+#include "EngineLog.h"
 #include "Common.h"
 #include <comdef.h>
 #include <fstream>
+
 
 #define RandomSize 1024
 
@@ -503,26 +505,20 @@ std::string WStringToString(const std::wstring& str)
 	return result;
 }
 
-void CheckFileExist(const std::wstring& FileName)
+bool CheckFileExist(const std::wstring& FileName)
 {
 		ifstream f(FileName);
 		if (!f.good())
 		{
+#ifdef _DEBUG
 			wstring Message = L"File ";
 			Message += FileName.c_str();
-			Message += L" do not exist!";
-			MessageBox(NULL, Message.c_str(), L"Error", 0);
-			exit(0);
+			Message += L" do not exist!\n";
+			EngineLog::AddLog(Message.c_str());
+			::OutputDebugString(Message.c_str());
+#endif // DEBUG
+			return false;
 		}
-}
-
-bool IsFileExist(const std::wstring& FileName)
-{
-	ifstream f(FileName);
-	if (!f.good())
-	{
-		return false;
-	}
-	return true;
+		return true;
 }
 

@@ -14,7 +14,8 @@ namespace GlareEngine
 			{
 				m_SRVHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
 				m_RTVHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
-				std::memset(m_UAVHandle, 0xFF, sizeof(m_UAVHandle));
+				for (int i = 0; i < _countof(m_UAVHandle); ++i)
+					m_UAVHandle[i].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
 			}
 
 			//从交换链缓冲区创建一个颜色缓冲区。 无序访问受到限制。

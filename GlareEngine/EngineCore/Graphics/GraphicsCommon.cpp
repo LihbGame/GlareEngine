@@ -2,6 +2,7 @@
 #include "GraphicsCommon.h"
 #include "SamplerManager.h"
 #include "CommandSignature.h"
+#include "ColorBuffer.h"
 //#include "BitonicSort.h"
 
 using namespace GlareEngine::DirectX12Graphics;
@@ -27,6 +28,13 @@ namespace GlareEngine
 		D3D12_CPU_DESCRIPTOR_HANDLE SamplerPointClamp;
 		D3D12_CPU_DESCRIPTOR_HANDLE SamplerPointBorder;
 		D3D12_CPU_DESCRIPTOR_HANDLE SamplerLinearBorder;
+
+		ColorBuffer DefaultTextures[kNumDefaultTextures];
+		D3D12_CPU_DESCRIPTOR_HANDLE GetDefaultTexture(eDefaultTexture texID)
+		{
+			assert(texID < kNumDefaultTextures);
+			return DefaultTextures[texID].GetSRV();
+		}
 
 		D3D12_RASTERIZER_DESC RasterizerDefault;    // Counter-clockwise
 		D3D12_RASTERIZER_DESC RasterizerWireframe;
@@ -64,6 +72,22 @@ void GlareEngine::DirectX12Graphics::InitializeAllCommonState(void)
 	InitializeRasterizer();
 	InitializeDepthState();
 	InitializeBlendState();
+
+	DefaultTextures[kMagenta2D].SetClearColor(Color(1.0f, 0.0f, 1.0f, 1.0f));
+	DefaultTextures[kMagenta2D].Create(L"Magenta Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	DefaultTextures[kBlackOpaque2D].SetClearColor(Color(0.0f, 0.0f, 0.0f, 1.0f));
+	DefaultTextures[kBlackOpaque2D].Create(L"BlackOpaque Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	DefaultTextures[kBlackTransparent2D].SetClearColor(Color(0.0f, 0.0f, 0.0f, 0.0f));
+	DefaultTextures[kBlackTransparent2D].Create(L"BlackTransparent Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	DefaultTextures[kWhiteOpaque2D].SetClearColor(Color(1.0f, 1.0f, 1.0f, 1.0f));
+	DefaultTextures[kWhiteOpaque2D].Create(L"WhiteOpaque Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	DefaultTextures[kWhiteTransparent2D].SetClearColor(Color(1.0f, 1.0f, 1.0f, 0.0f));
+	DefaultTextures[kWhiteTransparent2D].Create(L"WhiteTransparent Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	DefaultTextures[kDefaultNormalMap].SetClearColor(Color(0.0f, 0.0f, 1.0f, 0.0f));
+	DefaultTextures[kDefaultNormalMap].Create(L"DefaultNormalMap Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	DefaultTextures[kBlackCubeMap].SetClearColor(Color(0.0f, 0.0f, 0.0f, 0.0f));
+	DefaultTextures[kBlackCubeMap].CreateArray(L"BlackCubeMap Default Texture", 1, 1, 1, 6, DXGI_FORMAT_R8G8B8A8_UNORM);
+
 
 	DispatchIndirectCommandSignature[0].Dispatch();
 	DispatchIndirectCommandSignature.Finalize();
@@ -115,7 +139,7 @@ void GlareEngine::DirectX12Graphics::InitializeSampler(void)
 
 void GlareEngine::DirectX12Graphics::InitializeRasterizer(void)
 {
-	// Default rasterizer states
+	// Default Rasterizer states
 	RasterizerDefault.FillMode = D3D12_FILL_MODE_SOLID;
 	RasterizerDefault.CullMode = D3D12_CULL_MODE_BACK;
 	RasterizerDefault.FrontCounterClockwise = TRUE;
@@ -223,6 +247,9 @@ void GlareEngine::DirectX12Graphics::InitializeBlendState(void)
 
 void GlareEngine::DirectX12Graphics::DestroyCommonState(void)
 {
+	for (uint32_t i = 0; i < kNumDefaultTextures; ++i)
+		DefaultTextures[i].Destroy();
+
 	DispatchIndirectCommandSignature.Destroy();
 	DrawIndirectCommandSignature.Destroy();
 }

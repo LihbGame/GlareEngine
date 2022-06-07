@@ -5,6 +5,7 @@
 #include "GraphicsCore.h"
 #include "DescriptorHeap.h"
 #include "EngineProfiling.h"
+#include "ReadbackBuffer.h"
 
 namespace GlareEngine
 {
@@ -310,6 +311,25 @@ namespace GlareEngine
 			m_CommandList->CopyTextureRegion(&DestLocation, 0, 0, 0, &SrcLocation, nullptr);
 		}
 
+		void CommandContext::CopyTextureRegion(GPUResource& Dest, UINT x, UINT y, UINT z, GPUResource& Source, RECT& rect)
+		{
+			TransitionResource(Dest, D3D12_RESOURCE_STATE_COPY_DEST);
+			TransitionResource(Source, D3D12_RESOURCE_STATE_COPY_SOURCE);
+			FlushResourceBarriers();
+
+			D3D12_TEXTURE_COPY_LOCATION destLoc = CD3DX12_TEXTURE_COPY_LOCATION(Dest.GetResource(), 0);
+			D3D12_TEXTURE_COPY_LOCATION srcLoc = CD3DX12_TEXTURE_COPY_LOCATION(Source.GetResource(), 0);
+
+			D3D12_BOX box = {};
+			box.back = 1;
+			box.left = rect.left;
+			box.right = rect.right;
+			box.top = rect.top;
+			box.bottom = rect.bottom;
+
+			m_CommandList->CopyTextureRegion(&destLoc, x, y, z, &srcLoc, &box);
+		}
+
 
 		void CommandContext::InitializeTexture(GPUResource& Dest, UINT NumSubresources, D3D12_SUBRESOURCE_DATA SubData[])
 		{
@@ -384,23 +404,24 @@ namespace GlareEngine
 			Context.Finish(true);
 		}
 
-		void CommandContext::ReadbackTexture2D(GPUResource& ReadbackBuffer, PixelBuffer& SrcBuffer)
+		uint32_t CommandContext::ReadbackTexture(ReadbackBuffer& DstBuffer, PixelBuffer& SrcBuffer)
 		{
+			uint64_t CopySize = 0;
+
 			// The footprint may depend on the device of the resource, but we assume there is only one device.
 			D3D12_PLACED_SUBRESOURCE_FOOTPRINT PlacedFootprint;
-			g_Device->GetCopyableFootprints(&SrcBuffer.GetResource()->GetDesc(), 0, 1, 0, &PlacedFootprint, nullptr, nullptr, nullptr);
+			g_Device->GetCopyableFootprints(&SrcBuffer.GetResource()->GetDesc(), 0, 1, 0,
+				&PlacedFootprint, nullptr, nullptr, &CopySize);
 
-			// This very short command list only issues one API call and will be synchronized so we can immediately read
-			// the buffer contents.
-			CommandContext& Context = CommandContext::Begin(L"Copy texture to memory");
+			DstBuffer.Create(L"Read back", (uint32_t)CopySize, 1);
 
-			Context.TransitionResource(SrcBuffer, D3D12_RESOURCE_STATE_COPY_SOURCE, true);
+			TransitionResource(SrcBuffer, D3D12_RESOURCE_STATE_COPY_SOURCE, true);
 
-			Context.m_CommandList->CopyTextureRegion(
-				&CD3DX12_TEXTURE_COPY_LOCATION(ReadbackBuffer.GetResource(), PlacedFootprint), 0, 0, 0,
+			m_CommandList->CopyTextureRegion(
+				&CD3DX12_TEXTURE_COPY_LOCATION(DstBuffer.GetResource(), PlacedFootprint), 0, 0, 0,
 				&CD3DX12_TEXTURE_COPY_LOCATION(SrcBuffer.GetResource(), 0), nullptr);
 
-			Context.Finish(true);
+			return PlacedFootprint.Footprint.RowPitch;
 		}
 
 		void CommandContext::WriteBuffer(GPUResource& Dest, size_t DestOffset, const void* Data, size_t NumBytes)
@@ -451,6 +472,7 @@ namespace GlareEngine
 #pragma region GraphicsContext
 		void GraphicsContext::ClearUAV(GPUBuffer& Target)
 		{
+			FlushResourceBarriers();
 			// After binding a UAV, we can get a GPU handle that is required to clear it as a UAV (because it essentially runs
 			// a shader to set all of the values).
 			D3D12_GPU_DESCRIPTOR_HANDLE GPUVisibleHandle = m_DynamicViewDescriptorHeap.UploadDirect(Target.GetUAV());
@@ -460,6 +482,7 @@ namespace GlareEngine
 
 		void GraphicsContext::ClearUAV(ColorBuffer& Target)
 		{
+			FlushResourceBarriers();
 			// After binding a UAV, we can get a GPU handle that is required to clear it as a UAV (because it essentially runs
 			// a shader to set all of the values).
 			D3D12_GPU_DESCRIPTOR_HANDLE GpuVisibleHandle = m_DynamicViewDescriptorHeap.UploadDirect(Target.GetUAV());
@@ -472,23 +495,38 @@ namespace GlareEngine
 
 		void GraphicsContext::ClearRenderTarget(ColorBuffer& Target)
 		{
-
+			FlushResourceBarriers();
 			m_CommandList->ClearRenderTargetView(Target.GetRTV(), Target.GetClearColor().GetPtr(), 0, nullptr);
 		}
 
 		void GraphicsContext::ClearDepth(DepthBuffer& Target)
 		{
+			FlushResourceBarriers();
 			m_CommandList->ClearDepthStencilView(Target.GetDSV(), D3D12_CLEAR_FLAG_DEPTH, Target.GetClearDepth(), Target.GetClearStencil(), 0, nullptr);
 		}
 
 		void GraphicsContext::ClearStencil(DepthBuffer& Target)
 		{
+			FlushResourceBarriers();
 			m_CommandList->ClearDepthStencilView(Target.GetDSV(), D3D12_CLEAR_FLAG_STENCIL, Target.GetClearDepth(), Target.GetClearStencil(), 0, nullptr);
 		}
 
 		void GraphicsContext::ClearDepthAndStencil(DepthBuffer& Target)
 		{
+			FlushResourceBarriers();
 			m_CommandList->ClearDepthStencilView(Target.GetDSV(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, Target.GetClearDepth(), Target.GetClearStencil(), 0, nullptr);
+		}
+
+		void GraphicsContext::ClearColor(ColorBuffer& Target, D3D12_RECT* Rect)
+		{
+			FlushResourceBarriers();
+			m_CommandList->ClearRenderTargetView(Target.GetRTV(), Target.GetClearColor().GetPtr(), (Rect == nullptr) ? 0 : 1, Rect);
+		}
+
+		void GraphicsContext::ClearColor(ColorBuffer& Target, float Colour[4], D3D12_RECT* Rect)
+		{
+			FlushResourceBarriers();
+			m_CommandList->ClearRenderTargetView(Target.GetRTV(), Colour, (Rect == nullptr) ? 0 : 1, Rect);
 		}
 
 		void GraphicsContext::SetRootSignature(const RootSignature& RootSig)
@@ -543,10 +581,6 @@ namespace GlareEngine
 			m_CommandList->RSSetScissorRects(1, &rect);
 		}
 
-
-
-
-
 		void GraphicsContext::BeginQuery(ID3D12QueryHeap* QueryHeap, D3D12_QUERY_TYPE Type, UINT HeapIndex)
 		{
 			m_CommandList->BeginQuery(QueryHeap, Type, HeapIndex);
@@ -581,6 +615,7 @@ namespace GlareEngine
 
 		void ComputeContext::ClearUAV(GPUBuffer& Target)
 		{
+			FlushResourceBarriers();
 			// After binding a UAV, we can get a GPU handle that is required to clear it as a UAV (because it essentially runs
 			// a shader to set all of the values).
 			D3D12_GPU_DESCRIPTOR_HANDLE GpuVisibleHandle = m_DynamicViewDescriptorHeap.UploadDirect(Target.GetUAV());
@@ -590,6 +625,7 @@ namespace GlareEngine
 
 		void ComputeContext::ClearUAV(ColorBuffer& Target)
 		{
+			FlushResourceBarriers();
 			// After binding a UAV, we can get a GPU handle that is required to clear it as a UAV (because it essentially runs
 			// a shader to set all of the values).
 			D3D12_GPU_DESCRIPTOR_HANDLE GpuVisibleHandle = m_DynamicViewDescriptorHeap.UploadDirect(Target.GetUAV());

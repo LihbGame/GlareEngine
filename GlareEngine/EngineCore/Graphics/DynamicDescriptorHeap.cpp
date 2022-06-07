@@ -49,9 +49,9 @@ namespace GlareEngine
 			DescriptorHandle DestHandle = m_FirstDescriptor + m_CurrentOffset * m_DescriptorSize;
 			m_CurrentOffset += 1;
 
-			g_Device->CopyDescriptorsSimple(1, DestHandle.GetCPUHandle(), Handles, m_DescriptorType);
+			g_Device->CopyDescriptorsSimple(1, DestHandle, Handles, m_DescriptorType);
 
-			return DestHandle.GetGPUHandle();
+			return DestHandle;
 		}
 
 		ID3D12DescriptorHeap* DynamicDescriptorHeap::RequestDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE HeapType)
@@ -226,13 +226,13 @@ namespace GlareEngine
 			for (uint32_t i = 0; i < StaleParamCount; ++i)
 			{
 				RootIndex = RootIndices[i];
-				(CmdList->*SetFunc)(RootIndex, DestHandleStart.GetGPUHandle());
+				(CmdList->*SetFunc)(RootIndex, DestHandleStart);
 
 				DescriptorTableCache& RootDescTable = m_RootDescriptorTable[RootIndex];
 
 				D3D12_CPU_DESCRIPTOR_HANDLE* SrcHandles = RootDescTable.TableStart;
 				uint32_t SetHandles = (uint64_t)RootDescTable.AssignedHandlesBitMap;
-				D3D12_CPU_DESCRIPTOR_HANDLE CurDest = DestHandleStart.GetCPUHandle();
+				D3D12_CPU_DESCRIPTOR_HANDLE CurDest = DestHandleStart;
 				DestHandleStart += TableSize[i] * DescriptorSize;
 
 				//unsigned long SkipCount;

@@ -259,5 +259,4 @@ void SIMDMemoryFill(void* __restrict Dest, __m128 FillVector, size_t NumQuadword
 std::wstring StringToWString(const std::string& str);
 std::string WStringToString(const std::wstring& str);
 
-void CheckFileExist(const std::wstring& FileName);
-bool IsFileExist(const std::wstring& FileName);
+bool CheckFileExist(const std::wstring& FileName);

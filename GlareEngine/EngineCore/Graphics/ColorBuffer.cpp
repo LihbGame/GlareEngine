@@ -51,7 +51,7 @@ namespace GlareEngine
 			ClearValue.Color[3] = m_ClearColor.A();
 
 			CreateTextureResource(DirectX12Graphics::g_Device, Name, ResourceDesc, ClearValue, VidMemPtr);
-			CreateDerivedViews(DirectX12Graphics::g_Device, Format, ArrayCount, 1);
+			CreateDerivedViews(DirectX12Graphics::g_Device, Format, ArrayCount, MipMap);
 		}
 
 
@@ -60,7 +60,7 @@ namespace GlareEngine
 			//if (m_NumMipMaps == 0)
 			//	return;
 
-			//ComputeContext& Context = BaseContext.GetComputeContext();
+			//ComputeContext& Context = Context.GetComputeContext();
 
 			//Context.SetRootSignature(Graphics::g_GenerateMipsRS);
 
@@ -117,9 +117,6 @@ namespace GlareEngine
 
 		void ColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format, uint32_t ArraySize, uint32_t NumMips)
 		{
-			//We don't support auto-mips on texture arrays
-			assert(ArraySize == 1 || NumMips == 1);
-
 			m_NumMipMaps = NumMips - 1;
 
 			D3D12_RENDER_TARGET_VIEW_DESC RTVDesc = {};

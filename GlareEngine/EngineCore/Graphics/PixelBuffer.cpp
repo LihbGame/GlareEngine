@@ -9,25 +9,26 @@ namespace GlareEngine
 	{
 		void PixelBuffer::ExportToFile(const std::wstring& FilePath)
 		{
-			// 创建缓冲区。 全部完成后，我们将释放它。
+			// This very short command list only issues one API call and will be synchronized so we can immediately read
+		    // the buffer contents.
 			ReadbackBuffer TempBuffer;
-			TempBuffer.Create(L"Temporary Read back Buffer", m_Width * m_Height, (uint32_t)BytesPerPixel(m_Format));
+			CommandContext& Context = CommandContext::Begin(L"Copy texture to memory");
+			uint32_t RowPitch = Context.ReadbackTexture(TempBuffer, *this);
+			Context.Finish(true);
 
-			CommandContext::ReadbackTexture2D(TempBuffer, *this);
-
-			//检索CPU可见的缓冲区内存指针。 映射整个范围进行读取。
+			// Retrieve a CPU-visible pointer to the buffer memory.  Map the whole range for reading.
 			void* Memory = TempBuffer.Map();
 
-			//打开文件，写下文件头，然后是texel数据。
+			// Open the file and write the header followed by the texel data.
 			std::ofstream OutFile(FilePath, std::ios::out | std::ios::binary);
 			OutFile.write((const char*)&m_Format, 4);
-			OutFile.write((const char*)&m_Width, 4); // Pitch
+			OutFile.write((const char*)&RowPitch, 4);
 			OutFile.write((const char*)&m_Width, 4);
 			OutFile.write((const char*)&m_Height, 4);
 			OutFile.write((const char*)Memory, TempBuffer.GetBufferSize());
 			OutFile.close();
 
-			//没有向缓冲区写入任何值，所以解映射时使用空范围。
+			// No values were written to the buffer, so use a null range when unmapping.
 			TempBuffer.Unmap();
 		}
 

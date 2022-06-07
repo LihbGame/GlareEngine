@@ -21,7 +21,7 @@ namespace GlareEngine
 		class TextureManage;
 		class GraphicsContext;
 		class ComputeContext;
-
+		class ReadbackBuffer;
 
 		struct DWParam
 		{
@@ -112,6 +112,7 @@ namespace GlareEngine
 
 			void CopyBuffer(GPUResource& Dest, GPUResource& Src);
 			void CopyBufferRegion(GPUResource& Dest, size_t DestOffset, GPUResource& Src, size_t SrcOffset, size_t NumBytes);
+			void CopyTextureRegion(GPUResource& Dest, UINT x, UINT y, UINT z, GPUResource& Source, RECT& rect);
 			void CopySubresource(GPUResource& Dest, UINT DestSubIndex, GPUResource& Src, UINT SrcSubIndex);
 			void CopyCounter(GPUResource& Dest, size_t DestOffset, StructuredBuffer& Src);
 			void ResetCounter(StructuredBuffer& Buf, uint32_t Value = 0);
@@ -120,7 +121,7 @@ namespace GlareEngine
 			static void InitializeTexture(GPUResource& Dest, UINT NumSubresources, D3D12_SUBRESOURCE_DATA SubData[]);
 			static void InitializeBuffer(GPUResource& Dest, const void* Data, size_t NumBytes, size_t Offset = 0);
 			static void InitializeTextureArraySlice(GPUResource& Dest, UINT SliceIndex, GPUResource& Src);
-			static void ReadbackTexture2D(GPUResource& ReadbackBuffer, PixelBuffer& SrcBuffer);
+			uint32_t ReadbackTexture(ReadbackBuffer& ReadbackBuffer, PixelBuffer& SrcBuffer);
 
 			void WriteBuffer(GPUResource& Dest, size_t DestOffset, const void* Data, size_t NumBytes);
 			void FillBuffer(GPUResource& Dest, size_t DestOffset, DWParam Value, size_t NumBytes);
@@ -214,6 +215,9 @@ namespace GlareEngine
 			void ClearDepth(DepthBuffer& Target);
 			void ClearStencil(DepthBuffer& Target);
 			void ClearDepthAndStencil(DepthBuffer& Target);
+			void ClearColor(ColorBuffer& Target, D3D12_RECT* Rect = nullptr);
+			void ClearColor(ColorBuffer& Target, float Colour[4], D3D12_RECT* Rect = nullptr);
+
 
 			void SetRootSignature(const RootSignature& RootSig);
 

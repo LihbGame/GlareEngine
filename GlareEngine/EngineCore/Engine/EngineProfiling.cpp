@@ -266,7 +266,7 @@ namespace GlareEngine
 		static void Update(void);
 		static void UpdateTimes(void)
 		{
-			uint32_t FrameIndex = (uint32_t)GlareEngine::DirectX12Graphics::GetFrameCount();
+			uint32_t FrameIndex = (uint32_t)GlareEngine::Display::GetFrameCount();
 
 			//开始GPU Time Buffer 的读取
 			GPUTimeManager::BeginReadBack();

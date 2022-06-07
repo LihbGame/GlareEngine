@@ -11,6 +11,7 @@
 #include "EngineLog.h"
 #include "BufferManager.h"
 #include "TextureManager.h"
+#include "Display.h"
 
 #include "ScreenGrab.h"
 //Shaders
@@ -32,133 +33,30 @@
 #endif
 #include <winreg.h>        // To read the registry
 
-
+#ifdef _DEBUG
+#include <dxgidebug.h>
+#endif
 
 namespace GlareEngine
 {
 	using namespace GlareEngine::Math;
-
-
-	namespace GameCore
-	{
-		extern HWND g_hWnd;
-	}
-
-
-	float s_FrameTime = 0.0f;
-	uint64_t s_FrameIndex = 0;
-	int64_t s_FrameStartTick = 0;
-
-	BoolVar s_LimitTo30Hz("Timing/Limit To 30Hz", false);
-
-
-	
+	using namespace GlareEngine::Display;
 
 	namespace DirectX12Graphics
 	{
-		
-		void CreateD3DDevice();
-		void CheckUAVFormatSupport();
-		void CheckHDRSupport();
-		void InitializePersentPSO();
-
-		void PreparePresentLDR();
-		void PreparePresentHDR();
-
-		const uint32_t MaxNativeWidth = 3840;
-		const uint32_t MaxNativeHeight = 2160;
-		const uint32_t NumPredefinedResolutions = 6;
-
-		const char* ResolutionLabels[] = { "1280x720", "1600x900", "1920x1080", "2560x1440", "3200x1800", "3840x2160" };
-		//Use 900P
-		EnumVar TargetResolution("Graphics/Display/Native Resolution", E900p, NumPredefinedResolutions, ResolutionLabels);
-
-		BoolVar s_EnableVSync("Timing/VSync", true);
-
 		//HDR FORMAT
 		bool g_bTypedUAVLoadSupport_R11G11B10_FLOAT = false;
 		bool g_bTypedUAVLoadSupport_R16G16B16A16_FLOAT = false;
 
-		bool g_bEnableHDROutput = false;
-
-		//Color range
-		NumVar g_HDRPaperWhite("Graphics/Display/Paper White (nits)", 200.0f, 100.0f, 500.0f, 50.0f);
-		NumVar g_MaxDisplayLuminance("Graphics/Display/Peak Brightness (nits)", 1000.0f, 500.0f, 10000.0f, 100.0f);
-
-		const char* HDRModeLabels[] = { "HDR", "SDR", "Side-by-Side" };
-		EnumVar HDRDebugMode("Graphics/Display/HDR Debug Mode", 0, 3, HDRModeLabels);
-
-		uint32_t g_NativeWidth = 0;
-		uint32_t g_NativeHeight = 0;
-		uint32_t g_DisplayWidth = 1600;
-		uint32_t g_DisplayHeight = 900;
-		ColorBuffer g_PreDisplayBuffer;
-
-
-		void SetNativeResolution(void)
-		{
-			uint32_t NativeWidth, NativeHeight;
-
-			switch (eResolution((int)TargetResolution))
-			{
-			default:
-			case E720p:
-				NativeWidth = 1280;
-				NativeHeight = 720;
-				break;
-			case E900p:
-				NativeWidth = 1600;
-				NativeHeight = 900;
-				break;
-			case E1080p:
-				NativeWidth = 1920;
-				NativeHeight = 1080;
-				break;
-			case E1440p:
-				NativeWidth = 2560;
-				NativeHeight = 1440;
-				break;
-			case E1800p:
-				NativeWidth = 3200;
-				NativeHeight = 1800;
-				break;
-			case E2160p:
-				NativeWidth = 3840;
-				NativeHeight = 2160;
-				break;
-			}
-
-			if (g_NativeWidth == NativeWidth && g_NativeHeight == NativeHeight)
-				return;
-
-			g_NativeWidth = NativeWidth;
-			g_NativeHeight = NativeHeight;
-
-			g_CommandManager.IdleGPU();
-
-			//Resize Render Buffer
-			InitializeRenderingBuffers(NativeWidth, NativeHeight);
-		}
-
+		bool g_bUseGPUBasedValidation = true;
+		bool g_bUseWarpDriver = false;
 		//Device
 		ID3D12Device* g_Device = nullptr;
 		CommandListManager g_CommandManager;
 		ContextManager g_ContextManager;
 
-		//SwapChainFormat
-		DXGI_FORMAT g_SwapChainFormat = DXGI_FORMAT_R10G10B10A2_UNORM;
-
 		//FEATURE LEVEL 11
 		D3D_FEATURE_LEVEL g_D3DFeatureLevel = D3D_FEATURE_LEVEL_11_0;
-
-		//Display Buffer(三缓存)
-		ColorBuffer g_DisplayBuffers[SWAP_CHAIN_BUFFER_COUNT];
-		UINT g_CurrentBuffer = 0;
-
-		ColorBuffer& GetCurrentBuffer() { return g_DisplayBuffers[g_CurrentBuffer]; }
-
-		//Swap Chain
-		IDXGISwapChain1* s_SwapChain1 = nullptr;
 
 		//Descriptor Allocator
 		DescriptorAllocator g_DescriptorAllocator[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES] =
@@ -169,29 +67,129 @@ namespace GlareEngine
 			D3D12_DESCRIPTOR_HEAP_TYPE_DSV,
 		};
 
+		static const uint32_t vendorID_NVIDIA = 0x10DE;
+		static const uint32_t vendorID_AMD = 0x1002;
+		static const uint32_t vendorID_Intel = 0x8086;
+
 		//SRV Descriptors Manager ,return Descriptor index
 		vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_TextureSRV;
 		vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_CubeSRV;
 
-		RootSignature s_PresentRS;
-		GraphicsPSO s_PresentPSO;
-		GraphicsPSO PresentSDRPS;
-		GraphicsPSO PresentHDRPS;
+		// Check adapter support for DirectX Raytracing.
+		bool IsDirectXRaytracingSupported(ID3D12Device* testDevice)
+		{
+			D3D12_FEATURE_DATA_D3D12_OPTIONS5 featureSupport = {};
+
+			if (FAILED(testDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &featureSupport, sizeof(featureSupport))))
+				return false;
+
+			return featureSupport.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
+		}
+
+		uint32_t GetVendorIdFromDevice(ID3D12Device* pDevice)
+		{
+			LUID luid = pDevice->GetAdapterLuid();
+
+			// Obtain the DXGI factory
+			Microsoft::WRL::ComPtr<IDXGIFactory4> dxgiFactory;
+			SUCCEEDED(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgiFactory)));
+
+			Microsoft::WRL::ComPtr<IDXGIAdapter1> pAdapter;
+
+			if (SUCCEEDED(dxgiFactory->EnumAdapterByLuid(luid, IID_PPV_ARGS(&pAdapter))))
+			{
+				DXGI_ADAPTER_DESC1 desc;
+				if (SUCCEEDED(pAdapter->GetDesc1(&desc)))
+				{
+					return desc.VendorId;
+				}
+			}
+			return 0;
+		}
+
+		bool IsDeviceNVIDIA(ID3D12Device* pDevice)
+		{
+			return GetVendorIdFromDevice(pDevice) == vendorID_NVIDIA;
+		}
+
+		bool IsDeviceAMD(ID3D12Device* pDevice)
+		{
+			return GetVendorIdFromDevice(pDevice) == vendorID_AMD;
+		}
+
+		bool IsDeviceIntel(ID3D12Device* pDevice)
+		{
+			return GetVendorIdFromDevice(pDevice) == vendorID_Intel;
+		}
+
 	}
 
-	void DirectX12Graphics::CreateD3DDevice()
+	
+
+	void DirectX12Graphics::Initialize(bool RequireDXRSupport)
 	{
 		Microsoft::WRL::ComPtr<ID3D12Device> pDevice;
+
+		uint32_t useDebugLayers = 0;
+#if _DEBUG
+		// Default to true for debug builds
+		useDebugLayers = 1;
+#endif
+
+		DWORD dxgiFactoryFlags = 0;
+
+		if (useDebugLayers)
+		{
+			Microsoft::WRL::ComPtr<ID3D12Debug> debugInterface;
+			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface))))
+			{
+				debugInterface->EnableDebugLayer();
+
+				if (g_bUseGPUBasedValidation)
+				{
+					Microsoft::WRL::ComPtr<ID3D12Debug1> debugInterface1;
+					if (SUCCEEDED((debugInterface->QueryInterface(IID_PPV_ARGS(&debugInterface1)))))
+					{
+						debugInterface1->SetEnableGPUBasedValidation(true);
+					}
+				}
+			}
+			else
+			{
+				EngineLog::AddLog(L"WARNING:  Unable to enable D3D12 debug validation layer\n");
+			}
+
+#if _DEBUG
+			Microsoft::WRL::ComPtr<IDXGIInfoQueue> dxgiInfoQueue;
+			if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(dxgiInfoQueue.GetAddressOf()))))
+			{
+				dxgiFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
+
+				dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, true);
+				dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true);
+
+				DXGI_INFO_QUEUE_MESSAGE_ID hide[] =
+				{
+					80 /* IDXGISwapChain::GetContainingOutput: The swapchain's adapter does not control the output on which the swapchain's window resides. */,
+				};
+				DXGI_INFO_QUEUE_FILTER filter = {};
+				filter.DenyList.NumIDs = _countof(hide);
+				filter.DenyList.pIDList = hide;
+				dxgiInfoQueue->AddStorageFilterEntries(DXGI_DEBUG_DXGI, &filter);
+			}
+#endif
+		}
 		// Obtain the DXGI factory
-		Microsoft::WRL::ComPtr<IDXGIFactory4> dxgiFactory;
-		ThrowIfFailed(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgiFactory)));
+		Microsoft::WRL::ComPtr<IDXGIFactory6> dxgiFactory;
+		SUCCEEDED(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&dxgiFactory)));
 
 		// Create the D3D graphics device
 		Microsoft::WRL::ComPtr<IDXGIAdapter1> pAdapter;
-		//是否使用Windows软光栅
-		static const bool bUseWarpDriver = false;
 
-		if (!bUseWarpDriver)
+		// Temporary workaround because SetStablePowerState() is crashing
+		D3D12EnableExperimentalFeatures(0, nullptr, nullptr, nullptr);
+
+		if (!g_bUseWarpDriver)
 		{
 			SIZE_T MaxSize = 0;
 
@@ -199,55 +197,115 @@ namespace GlareEngine
 			{
 				DXGI_ADAPTER_DESC1 desc;
 				pAdapter->GetDesc1(&desc);
+
+				// Is a software adapter?
 				if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
 					continue;
 
-				if (desc.DedicatedVideoMemory > MaxSize && SUCCEEDED(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_1, IID_PPV_ARGS(&pDevice))))
-				{
-					pAdapter->GetDesc1(&desc);
-					EngineLog::AddLog(L"D3D12-Capable HardWare found:  %s (%d MB)\0", desc.Description, desc.DedicatedVideoMemory >> 20);
-					MaxSize = desc.DedicatedVideoMemory;
-				}
-			}
+				// Can create a D3D12 device?
+				if (FAILED(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&pDevice))))
+					continue;
 
-			if (MaxSize > 0)
+				// Does support DXR if required?
+				if (RequireDXRSupport && !IsDirectXRaytracingSupported(pDevice.Get()))
+					continue;
+
+				// By default, search for the adapter with the most memory because that's usually the dGPU.
+				if (desc.DedicatedVideoMemory < MaxSize)
+					continue;
+
+				MaxSize = desc.DedicatedVideoMemory;
+
+				if (g_Device != nullptr)
+					g_Device->Release();
+
 				g_Device = pDevice.Detach();
+
+				EngineLog::AddLog(L"Selected GPU:  %s (%u MB)\n", desc.Description, desc.DedicatedVideoMemory >> 20);
+			}
+		}
+
+		if (RequireDXRSupport && !g_Device)
+		{
+			EngineLog::AddLog(L"Unable to find a DXR-capable device. Halting.\n");
+			__debugbreak();
 		}
 
 		if (g_Device == nullptr)
 		{
-			if (bUseWarpDriver)
+			if (g_bUseWarpDriver)
 				EngineLog::AddLog(L"WARP software adapter requested.  Initializing...\n");
 			else
-				EngineLog::AddLog(L"Failed to find a hardware adapter.  Falling back to WARP.\n");
-			ThrowIfFailed(dxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&pAdapter)));
-			ThrowIfFailed(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&pDevice)));
+				EngineLog::AddLog(L"Failed to find a hardware adapter.Falling back to WARP.\n");
+			SUCCEEDED(dxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&pAdapter)));
+			SUCCEEDED(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&pDevice)));
 			g_Device = pDevice.Detach();
 		}
+#ifndef RELEASE
+		else
+		{
+			bool DeveloperModeEnabled = false;
 
-		g_CommandManager.Create(g_Device);
+			// Look in the Windows Registry to determine if Developer Mode is enabled
+			HKEY hKey;
+			LSTATUS result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock", 0, KEY_READ, &hKey);
+			if (result == ERROR_SUCCESS)
+			{
+				DWORD keyValue, keySize = sizeof(DWORD);
+				result = RegQueryValueEx(hKey, L"AllowDevelopmentWithoutDevLicense", 0, NULL, (byte*)&keyValue, &keySize);
+				if (result == ERROR_SUCCESS && keyValue == 1)
+					DeveloperModeEnabled = true;
+				RegCloseKey(hKey);
+			}
+			// Prevent the GPU from overclocking or underclocking to get consistent timings
+			if (DeveloperModeEnabled)
+				g_Device->SetStablePowerState(TRUE);
+		}
+#endif	
+#if _DEBUG
+		ID3D12InfoQueue* pInfoQueue = nullptr;
+		if (SUCCEEDED(g_Device->QueryInterface(IID_PPV_ARGS(&pInfoQueue))))
+		{
+			// Suppress messages based on their severity level
+			D3D12_MESSAGE_SEVERITY Severities[] =
+			{
+				D3D12_MESSAGE_SEVERITY_INFO
+			};
 
-		//Swap Chain
-		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
-		swapChainDesc.Width = g_DisplayWidth;
-		swapChainDesc.Height = g_DisplayHeight;
-		swapChainDesc.Format = g_SwapChainFormat;
-		swapChainDesc.Scaling = DXGI_SCALING_NONE;
-		swapChainDesc.SampleDesc.Quality = 0;
-		swapChainDesc.SampleDesc.Count = 1;
-		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferCount = SWAP_CHAIN_BUFFER_COUNT;
-		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+			// Suppress individual messages by their ID
+			D3D12_MESSAGE_ID DenyIds[] =
+			{
+				// This occurs when there are uninitialized descriptors in a descriptor table, even when a
+				// shader does not access the missing descriptors.  I find this is common when switching
+				// shader permutations and not wanting to change much code to reorder resources.
+				D3D12_MESSAGE_ID_INVALID_DESCRIPTOR_HANDLE,
 
-		ThrowIfFailed(dxgiFactory->CreateSwapChainForHwnd(g_CommandManager.GetCommandQueue(), GameCore::g_hWnd, &swapChainDesc, nullptr, nullptr, &s_SwapChain1));
+				// Triggered when a shader does not export all color components of a render target, such as
+				// when only writing RGB to an R10G10B10A2 buffer, ignoring alpha.
+				D3D12_MESSAGE_ID_CREATEGRAPHICSPIPELINESTATE_PS_OUTPUT_RT_OUTPUT_MISMATCH,
 
-		//禁止 alt+enter 全屏
-		dxgiFactory->MakeWindowAssociation(GameCore::g_hWnd, DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
-	}
+				// This occurs when a descriptor table is unbound even when a shader does not access the missing
+				// descriptors.  This is common with a root signature shared between disparate shaders that
+				// don't all need the same types of resources.
+				D3D12_MESSAGE_ID_COMMAND_LIST_DESCRIPTOR_TABLE_NOT_SET,
 
-	void DirectX12Graphics::CheckUAVFormatSupport()
-	{
+				// RESOURCE_BARRIER_DUPLICATE_SUBRESOURCE_TRANSITIONS
+				(D3D12_MESSAGE_ID)1008,
+			};
+
+			D3D12_INFO_QUEUE_FILTER NewFilter = {};
+			//NewFilter.DenyList.NumCategories = _countof(Categories);
+			//NewFilter.DenyList.pCategoryList = Categories;
+			NewFilter.DenyList.NumSeverities = _countof(Severities);
+			NewFilter.DenyList.pSeverityList = Severities;
+			NewFilter.DenyList.NumIDs = _countof(DenyIds);
+			NewFilter.DenyList.pIDList = DenyIds;
+
+			pInfoQueue->PushStorageFilter(&NewFilter);
+			pInfoQueue->Release();
+		}
+#endif
+
 		// We like to do read-modify-write operations on UAVs during post processing.  To support that, we
 		// need to either have the hardware do typed UAV loads of R11G11B10_FLOAT or we need to manually
 		// decode an R32_UINT representation of the same buffer.  This code determines if we get the hardware
@@ -277,233 +335,28 @@ namespace GlareEngine
 				}
 			}
 		}
-	}
 
-	void DirectX12Graphics::CheckHDRSupport()
-	{
-		//检查是否支持HDR
-#if CONDITIONALLY_ENABLE_HDR_OUTPUT && defined(NTDDI_WIN10_RS2) && (NTDDI_VERSION >= NTDDI_WIN10_RS2)
-		{
-			IDXGISwapChain4* swapChain = (IDXGISwapChain4*)s_SwapChain1;
-			ComPtr<IDXGIOutput> output;
-			ComPtr<IDXGIOutput6> output6;
-			DXGI_OUTPUT_DESC1 outputDesc;
-			UINT colorSpaceSupport;
+		g_CommandManager.Create(g_Device);
 
-			// Query support for ST.2084 on the display and set the color space accordingly
-			if (SUCCEEDED(swapChain->GetContainingOutput(&output)) &&
-				SUCCEEDED(output.As(&output6)) &&
-				SUCCEEDED(output6->GetDesc1(&outputDesc)) &&
-				outputDesc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020 &&
-				SUCCEEDED(swapChain->CheckColorSpaceSupport(DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020, &colorSpaceSupport)) &&
-				(colorSpaceSupport & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT) &&
-				SUCCEEDED(swapChain->SetColorSpace1(DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020)))
-			{
-				g_bEnableHDROutput = true;
-			}
-		}
-#endif
-	}
-
-	void DirectX12Graphics::InitializePersentPSO()
-	{
-		s_PresentRS.Reset(4, 2);
-		s_PresentRS[0].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2);
-		s_PresentRS[1].InitAsConstants(0, 6, D3D12_SHADER_VISIBILITY_ALL);
-		s_PresentRS[2].InitAsBufferSRV(2, D3D12_SHADER_VISIBILITY_PIXEL);
-		s_PresentRS[3].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1);
-		s_PresentRS.InitStaticSampler(0, SamplerLinearWrapDesc);
-		s_PresentRS.InitStaticSampler(1, SamplerPointClampDesc);
-		s_PresentRS.Finalize(L"Present");
-
-		// Initialize Present PSOs
-		s_PresentPSO.SetRootSignature(s_PresentRS);
-		s_PresentPSO.SetRasterizerState(RasterizerTwoSided);
-		s_PresentPSO.SetBlendState(BlendPreMultiplied);
-		s_PresentPSO.SetDepthStencilState(DepthStateDisabled);
-		s_PresentPSO.SetSampleMask(0xFFFFFFFF);
-		s_PresentPSO.SetInputLayout(0, nullptr);
-		s_PresentPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-		s_PresentPSO.SetVertexShader(g_pScreenQuadVS, sizeof(g_pScreenQuadVS));
-		s_PresentPSO.SetPixelShader(g_pBufferCopyPS, sizeof(g_pBufferCopyPS));
-		s_PresentPSO.SetRenderTargetFormat(g_SwapChainFormat, DXGI_FORMAT_UNKNOWN);
-		s_PresentPSO.Finalize();
-
-		//Create SDR PSO
-		PresentSDRPS = s_PresentPSO;
-		PresentSDRPS.SetBlendState(BlendDisable);
-		PresentSDRPS.SetPixelShader(g_pPresentSDRPS, sizeof(g_pPresentSDRPS));
-		PresentSDRPS.Finalize();
-
-		//Create HDR PSO
-		PresentHDRPS = PresentSDRPS;
-		//PresentHDRPS.SetPixelShader(g_pPresentHDRPS, sizeof(g_pPresentHDRPS));
-		//DXGI_FORMAT SwapChainFormats[2] = { DXGI_FORMAT_R10G10B10A2_UNORM, DXGI_FORMAT_R10G10B10A2_UNORM };
-		//PresentHDRPS.SetRenderTargetFormats(2, SwapChainFormats, DXGI_FORMAT_UNKNOWN);
-		//PresentHDRPS.Finalize();
-
-	}
-
-	void DirectX12Graphics::PreparePresentLDR()
-	{
-		GraphicsContext& Context = GraphicsContext::Begin(L"Present");
-		
-		Context.PIXBeginEvent(L"Prepare Present LDR");
-
-		// We're going to be reading these buffers to write to the swap chain buffer(s)
-		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-		Context.SetRootSignature(s_PresentRS);
-		Context.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		// Copy (and convert) the LDR buffer to the back buffer
-		Context.SetDynamicDescriptor(0, 0, g_SceneColorBuffer.GetSRV());;
-
-		Context.SetPipelineState(PresentSDRPS);
-		Context.TransitionResource(g_DisplayBuffers[g_CurrentBuffer], D3D12_RESOURCE_STATE_RENDER_TARGET);
-		Context.SetRenderTarget(g_DisplayBuffers[g_CurrentBuffer].GetRTV());
-		Context.SetViewportAndScissor(0, 0, g_DisplayWidth, g_DisplayHeight);
-		Context.Draw(3);
-		// Close the final context to be executed before frame present.
-		Context.PIXEndEvent();
-		Context.Finish();
-	}
-
-	void DirectX12Graphics::PreparePresentHDR()
-	{
-		GraphicsContext& Context = GraphicsContext::Begin(L"Present");
-
-		// We're going to be reading these buffers to write to the swap chain buffer(s)
-		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-		Context.TransitionResource(g_DisplayBuffers[g_CurrentBuffer], D3D12_RESOURCE_STATE_RENDER_TARGET);
-
-		Context.SetRootSignature(s_PresentRS);
-		Context.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		Context.SetDynamicDescriptor(0, 0, g_SceneColorBuffer.GetSRV());
-
-		D3D12_CPU_DESCRIPTOR_HANDLE RTVs[] =
-		{
-			g_DisplayBuffers[g_CurrentBuffer].GetRTV()
-		};
-
-		Context.SetPipelineState(PresentHDRPS);
-		Context.SetRenderTargets(_countof(RTVs), RTVs);
-		Context.SetViewportAndScissor(0, 0, g_NativeWidth, g_NativeHeight);
-		struct Constants
-		{
-			float RcpDstWidth;
-			float RcpDstHeight;
-			float PaperWhite;
-			float MaxBrightness;
-			int32_t DebugMode;
-		};
-		Constants consts = { 1.0f / g_NativeWidth, 1.0f / g_NativeHeight,
-			(float)g_HDRPaperWhite, (float)g_MaxDisplayLuminance, (int32_t)HDRDebugMode };
-		Context.SetConstantArray(1, sizeof(Constants) / 4, (float*)&consts);
-		Context.Draw(3);
-
-		Context.TransitionResource(g_DisplayBuffers[g_CurrentBuffer], D3D12_RESOURCE_STATE_PRESENT);
-
-		// Close the final context to be executed before frame present.
-		Context.Finish();
-	}
-
-
-	void DirectX12Graphics::Initialize(void)
-	{
-		assert(s_SwapChain1 == nullptr);
-
-#if _DEBUG
-		Microsoft::WRL::ComPtr<ID3D12Debug> debugInterface;
-		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface))))
-			debugInterface->EnableDebugLayer();
-		else
-			EngineLog::AddLog(L"WARNING:  Unable to enable D3D12 debug validation layer");
-#endif
-		//D3D Device
-		CreateD3DDevice();
-		//Check UAV Format Support
-		CheckUAVFormatSupport();
-		//Check HDR Support
-		CheckHDRSupport();
-
-		
-		for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
-		{
-			ComPtr<ID3D12Resource> DisplayPlane;
-			ThrowIfFailed(s_SwapChain1->GetBuffer(i, IID_PPV_ARGS(&DisplayPlane)));
-			g_DisplayBuffers[i].CreateFromSwapChain(L"Primary SwapChain Buffer", DisplayPlane.Detach());
-		}
-
-		// Common state 
+		// Common state was moved to GraphicsCommon.
 		InitializeAllCommonState();
-		//Initialize Present PSO
-		InitializePersentPSO();
+
+		Display::Initialize();
 
 		GPUTimeManager::Initialize(4096);
-		SetNativeResolution();
 
-		//g_PreDisplayBuffer.Create(L"PreDisplay Buffer", g_DisplayWidth, g_DisplayHeight, 1, g_SwapChainFormat);
-
-		//TemporalEffects::Initialize();
-		//PostEffects::Initialize();
-		//SSAO::Initialize();
-		//ParticleEffects::Initialize(kMaxNativeWidth, kMaxNativeHeight);
-	}
-
-	void DirectX12Graphics::Resize(uint32_t width, uint32_t height)
-	{
-		assert(s_SwapChain1 != nullptr);
-
-		// Check for invalid window dimensions
-		if (width == 0 || height == 0)
-			return;
-
-		// Check for an unneeded resize
-		if (width == g_DisplayWidth && height == g_DisplayHeight)
-			return;
-
-		g_CommandManager.IdleGPU();
-
-		g_DisplayWidth = width;
-		g_DisplayHeight = height;
-
-		//g_PreDisplayBuffer.Create(L"PreDisplay Buffer", width, height, 1, g_SwapChainFormat);
-
-		//Destroy old display buffers
-		for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
-			g_DisplayBuffers[i].Destroy();
-
-		//Resize Swap Chain 
-		ThrowIfFailed(s_SwapChain1->ResizeBuffers(SWAP_CHAIN_BUFFER_COUNT, width, height, g_SwapChainFormat, 0));
-
-		for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
-		{
-			ComPtr<ID3D12Resource> DisplayBuffer;
-			ThrowIfFailed(s_SwapChain1->GetBuffer(i, IID_PPV_ARGS(&DisplayBuffer)));
-			g_DisplayBuffers[i].CreateFromSwapChain(L"Primary SwapChain Buffer", DisplayBuffer.Detach());
-		}
-
-		//reset current buffer index
-		g_CurrentBuffer = 0;
-		g_CommandManager.IdleGPU();
-
-		ResizeDisplayDependentBuffers(width, height);
-	}
-
-	void DirectX12Graphics::Terminate(void)
-	{
-		g_CommandManager.IdleGPU();
-		s_SwapChain1->SetFullscreenState(FALSE, nullptr);
+		/*TemporalEffects::Initialize();
+		PostEffects::Initialize();
+		SSAO::Initialize();
+		ParticleEffectManager::Initialize(3840, 2160);*/
 	}
 
 	void DirectX12Graphics::Shutdown(void)
 	{
+		g_CommandManager.IdleGPU();
 		CommandContext::DestroyAllContexts();
 		g_CommandManager.Shutdown();
 		GPUTimeManager::Shutdown();
-		s_SwapChain1->Release();
 		PSO::DestroyAll();
 		RootSignature::DestroyAll();
 		DescriptorAllocator::DestroyAll();
@@ -516,8 +369,7 @@ namespace GlareEngine
 		//SSAO::Shutdown();
 		//ParticleEffects::Shutdown();
 
-		for (UINT i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
-			g_DisplayBuffers[i].Destroy();
+		Display::Shutdown();
 
 #if defined(_DEBUG)
 		ID3D12DebugDevice* debugInterface;
@@ -527,65 +379,8 @@ namespace GlareEngine
 			debugInterface->Release();
 		}
 #endif
-
 		SAFE_RELEASE(g_Device);
 	}
-
-	void DirectX12Graphics::Present(void)
-	{
-		g_CurrentBuffer = (g_CurrentBuffer + 1) % SWAP_CHAIN_BUFFER_COUNT;
-
-		UINT PresentInterval = s_EnableVSync ? min(4, (int)round(s_FrameTime * 60.0f)) : 0;
-		s_SwapChain1->Present(PresentInterval, 0);
-
-
-		float CurrentTick = GameTimer::TotalTime();
-
-		if (s_EnableVSync)
-		{
-			// 启用 VSync 后，帧之间的时间步长变为 16.666 ms 的倍数。 
-			//我们需要添加逻辑以在 1 和 2（或 3 个字段）之间变化。 
-			//这个增量时间还决定了前一帧应该显示多长时间（即当前间隔）。
-			s_FrameTime = (s_LimitTo30Hz ? 2.0f : 1.0f) / 60.0f;
-		}
-		else
-		{
-			//自由运行时，保留最近的总帧时间作为下一帧模拟的时间步长。 
-			//这不是非常准确，但假设帧时间平滑变化，它应该足够接近。
-			s_FrameTime = CurrentTick-s_FrameStartTick;
-		}
-
-		s_FrameStartTick = (int64_t)CurrentTick;
-
-		++s_FrameIndex;
-		//TemporalEffects::Update((uint32_t)s_FrameIndex);
-
-		SetNativeResolution();
-	}
-
-	void DirectX12Graphics::PreparePresent(void)
-	{
-		if (g_bEnableHDROutput)
-			PreparePresentHDR();
-		else
-			PreparePresentLDR();
-	}
-
-	uint64_t DirectX12Graphics::GetFrameCount(void)
-	{
-		return s_FrameIndex;
-	}
-
-	float DirectX12Graphics::GetFrameTime(void)
-	{
-		return s_FrameTime;
-	}
-
-	float DirectX12Graphics::GetFrameRate(void)
-	{
-		return s_FrameTime == 0.0f ? 0.0f : 1.0f / s_FrameTime;
-	}
-
 }
 
 

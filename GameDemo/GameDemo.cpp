@@ -6,6 +6,7 @@
 #include "ConstantBuffer.h"
 #include "EngineInput.h"
 #include "BufferManager.h"
+#include "SamplerManager.h"
 #include "EngineGUI.h"
 #include "resource.h"
 
@@ -364,7 +365,7 @@ void App::RenderUI()
 
 void App::OnResize(uint32_t width, uint32_t height)
 {
-	DirectX12Graphics::Resize(width, height);
+	Display::Resize(width, height);
 
 	//窗口调整大小，因此更新宽高比并重新计算投影矩阵;
 	mCamera->SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, FAR_Z);

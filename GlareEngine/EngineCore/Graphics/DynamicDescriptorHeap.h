@@ -109,6 +109,7 @@ namespace GlareEngine
 				void ClearCache()
 				{
 					m_RootDescriptorTablesBitMap = 0;
+					m_StaleRootParamsBitMap = 0;
 					m_MaxCachedDescriptors = 0;
 				}
 

@@ -14,7 +14,11 @@ namespace GlareEngine
 		class DescriptorAllocator
 		{
 		public:
-			DescriptorAllocator(D3D12_DESCRIPTOR_HEAP_TYPE Type) : m_Type(Type), m_CurrentHeap(nullptr) {}
+			DescriptorAllocator(D3D12_DESCRIPTOR_HEAP_TYPE Type) :
+				m_Type(Type), m_CurrentHeap(nullptr), m_DescriptorSize(0)
+			{
+				m_CurrentHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+			}
 
 			D3D12_CPU_DESCRIPTOR_HANDLE Allocate(uint32_t Count);
 
@@ -44,12 +48,6 @@ namespace GlareEngine
 				m_GPUHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
 			}
 
-			DescriptorHandle(D3D12_CPU_DESCRIPTOR_HANDLE CpuHandle)
-				: m_CPUHandle(CpuHandle)
-			{
-				m_GPUHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
-			}
-
 			DescriptorHandle(D3D12_CPU_DESCRIPTOR_HANDLE CpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE GpuHandle)
 				: m_CPUHandle(CpuHandle), m_GPUHandle(GpuHandle)
 			{
@@ -70,9 +68,12 @@ namespace GlareEngine
 					m_GPUHandle.ptr += OffsetScaledByDescriptorSize;
 			}
 
-			D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle() const { return m_CPUHandle; }
+			const D3D12_CPU_DESCRIPTOR_HANDLE* operator&() const { return &m_CPUHandle; }
+			operator D3D12_CPU_DESCRIPTOR_HANDLE() const { return m_CPUHandle; }
+			operator D3D12_GPU_DESCRIPTOR_HANDLE() const { return m_GPUHandle; }
 
-			D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle() const { return m_GPUHandle; }
+			size_t GetCPUPtr() const { return m_CPUHandle.ptr; }
+			uint64_t GetGPUPtr() const { return m_GPUHandle.ptr; }
 
 			bool IsNull() const { return m_CPUHandle.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN; }
 			bool IsShaderVisible() const { return m_GPUHandle.ptr != D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN; }
@@ -83,28 +84,30 @@ namespace GlareEngine
 		};
 
 
-		class UserDescriptorHeap
+		class DescriptorHeap
 		{
 		public:
 
-			UserDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE Type, uint32_t MaxCount)
-			{
-				m_HeapDesc.Type = Type;
-				m_HeapDesc.NumDescriptors = MaxCount;
-				m_HeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-				m_HeapDesc.NodeMask = 1;
-			}
+			DescriptorHeap(void) {}
+			~DescriptorHeap(void) { Destroy(); }
 
-			void Create(const std::wstring& DebugHeapName);
+			void Create(const std::wstring& DebugHeapName, D3D12_DESCRIPTOR_HEAP_TYPE Type, uint32_t MaxCount);
+			void Destroy(void) { m_Heap = nullptr; }
 
 			bool HasAvailableSpace(uint32_t Count) const { return Count <= m_NumFreeDescriptors; }
 			DescriptorHandle Alloc(uint32_t Count = 1);
 
-			DescriptorHandle GetHandleAtOffset(uint32_t Offset) const { return m_FirstHandle + Offset * m_DescriptorSize; }
+			DescriptorHandle operator[] (uint32_t arrayIdx) const { return m_FirstHandle + arrayIdx * m_DescriptorSize; }
+
+			uint32_t GetOffsetOfHandle(const DescriptorHandle& DHandle) {
+				return (uint32_t)(DHandle.GetCPUPtr() - m_FirstHandle.GetCPUPtr()) / m_DescriptorSize;
+			}
 
 			bool ValidateHandle(const DescriptorHandle& DHandle) const;
 
 			ID3D12DescriptorHeap* GetHeapPointer() const { return m_Heap.Get(); }
+
+			uint32_t GetDescriptorSize(void) const { return m_DescriptorSize; }
 
 		private:
 
