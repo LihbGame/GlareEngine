@@ -56,6 +56,7 @@ void IBL::BakingEnvironmentDiffuse(GraphicsContext& Context)
 		Context.SetDynamicConstantBufferView((int)RootSignatureType::CommonConstantBuffer, sizeof(mIndirectDiffuseCube->GetCubeCameraCBV(i)), &mIndirectDiffuseCube->GetCubeCameraCBV(i));
 		m_pSky->Draw(Context, &mIndirectDiffusePSO);
 	}
+	Context.TransitionResource(mIndirectDiffuseCube->Resource(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
 	Context.PIXEndEvent();
 }
 
@@ -82,6 +83,7 @@ void IBL::BakingPreFilteredEnvironment(GraphicsContext& Context)
 			m_pSky->Draw(Context, &mPreFilteredEnvMapPSO);
 		}
 	}
+	Context.TransitionResource(mPreFilteredEnvCube->Resource(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
 	Context.PIXEndEvent();
 }
 
@@ -96,6 +98,7 @@ void IBL::BakingBRDF(GraphicsContext& Context)
 	Context.SetViewportAndScissor(0, 0, BAKECUBESIZE / 2, BAKECUBESIZE / 2);
 	Context.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	Context.Draw(3);
+	Context.TransitionResource(mBRDFLUT, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
 	Context.PIXEndEvent();
 }
 

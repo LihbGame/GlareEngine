@@ -131,6 +131,7 @@ void ShadowMap::Draw(GraphicsContext& Context,vector<RenderObject*> RenderObject
 			Context.PIXEndEvent();
 		}
 	}
+	Context.TransitionResource(mShadowBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
 }
 
 void ShadowMap::BuildPSO(const PSOCommonProperty CommonProperty)

@@ -48,7 +48,7 @@ namespace GlareEngine
 		bool g_bTypedUAVLoadSupport_R11G11B10_FLOAT = false;
 		bool g_bTypedUAVLoadSupport_R16G16B16A16_FLOAT = false;
 
-		bool g_bUseGPUBasedValidation = true;
+		bool g_bUseGPUBasedValidation = false;
 		bool g_bUseWarpDriver = false;
 		//Device
 		ID3D12Device* g_Device = nullptr;
@@ -74,6 +74,8 @@ namespace GlareEngine
 		//SRV Descriptors Manager ,return Descriptor index
 		vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_TextureSRV;
 		vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_CubeSRV;
+
+		
 
 		// Check adapter support for DirectX Raytracing.
 		bool IsDirectXRaytracingSupported(ID3D12Device* testDevice)
@@ -124,7 +126,6 @@ namespace GlareEngine
 
 	}
 
-	
 
 	void DirectX12Graphics::Initialize(bool RequireDXRSupport)
 	{
@@ -380,6 +381,21 @@ namespace GlareEngine
 		}
 #endif
 		SAFE_RELEASE(g_Device);
+	}
+	D3D12_CPU_DESCRIPTOR_HANDLE DirectX12Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE Type, UINT Count)
+	{
+		return g_DescriptorAllocator[Type].Allocate(Count);
+	}
+
+	int DirectX12Graphics::AddToGlobalTextureSRVDescriptor(const D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes)
+	{
+		g_TextureSRV.push_back(SRVdes);
+		return int(g_TextureSRV.size() - 1);
+	}
+	int DirectX12Graphics::AddToGlobalCubeSRVDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes)
+	{
+		g_CubeSRV.push_back(SRVdes);
+		return int(g_CubeSRV.size() - 1);
 	}
 }
 

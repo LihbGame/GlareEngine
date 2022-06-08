@@ -1,6 +1,5 @@
 #pragma once
 #include "Display.h"
-#include "DescriptorHeap.h"
 namespace GlareEngine
 {
 	enum class RenderPipelineType:int
@@ -14,10 +13,10 @@ namespace GlareEngine
 	{
 		using namespace Microsoft::WRL;
 
-		class CommandContext;
 		class CommandListManager;
 		class CommandSignature;
 		class ContextManager;
+		class DescriptorAllocator;
 
 		void Initialize(bool RequireDXRSupport = false);
 		void Shutdown(void);
@@ -34,24 +33,16 @@ namespace GlareEngine
 
 		//Descriptor Allocator 
 		extern DescriptorAllocator g_DescriptorAllocator[];
-		inline D3D12_CPU_DESCRIPTOR_HANDLE AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE Type, UINT Count = 1)
-		{
-			return g_DescriptorAllocator[Type].Allocate(Count);
-		}
+		D3D12_CPU_DESCRIPTOR_HANDLE AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE Type, UINT Count = 1);
+		
 
 		//SRV Descriptors Manager ,return Descriptor index
 		extern vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_TextureSRV;
-		inline int AddToGlobalTextureSRVDescriptor(const D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes)
-		{
-			g_TextureSRV.push_back(SRVdes);
-			return int(g_TextureSRV.size() - 1);
-		}
+		int AddToGlobalTextureSRVDescriptor(const D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes);
+		
 
 		extern vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_CubeSRV;
-		inline int AddToGlobalCubeSRVDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes)
-		{
-			g_CubeSRV.push_back(SRVdes);
-			return int(g_CubeSRV.size() - 1);
-		}
+		int AddToGlobalCubeSRVDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes);
+		
 	}
 }
