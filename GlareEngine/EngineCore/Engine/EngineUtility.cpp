@@ -4,7 +4,7 @@
 #include "Common.h"
 #include <comdef.h>
 #include <fstream>
-
+#include <locale>
 
 #define RandomSize 1024
 
@@ -522,3 +522,95 @@ bool CheckFileExist(const std::wstring& FileName)
 		return true;
 }
 
+std::string GetBasePath(const std::string& filePath)
+{
+	size_t lastSlash;
+	if ((lastSlash = filePath.rfind('/')) != std::string::npos)
+		return filePath.substr(0, lastSlash + 1);
+	else if ((lastSlash = filePath.rfind('\\')) != std::string::npos)
+		return filePath.substr(0, lastSlash + 1);
+	else
+		return "";
+}
+
+std::wstring GetBasePath(const std::wstring& filePath)
+{
+	size_t lastSlash;
+	if ((lastSlash = filePath.rfind(L'/')) != std::wstring::npos)
+		return filePath.substr(0, lastSlash + 1);
+	else if ((lastSlash = filePath.rfind(L'\\')) != std::wstring::npos)
+		return filePath.substr(0, lastSlash + 1);
+	else
+		return L"";
+}
+
+std::string RemoveBasePath(const std::string& filePath)
+{
+	size_t lastSlash;
+	if ((lastSlash = filePath.rfind('/')) != std::string::npos)
+		return filePath.substr(lastSlash + 1, std::string::npos);
+	else if ((lastSlash = filePath.rfind('\\')) != std::string::npos)
+		return filePath.substr(lastSlash + 1, std::string::npos);
+	else
+		return filePath;
+}
+
+std::wstring RemoveBasePath(const std::wstring& filePath)
+{
+	size_t lastSlash;
+	if ((lastSlash = filePath.rfind(L'/')) != std::string::npos)
+		return filePath.substr(lastSlash + 1, std::string::npos);
+	else if ((lastSlash = filePath.rfind(L'\\')) != std::string::npos)
+		return filePath.substr(lastSlash + 1, std::string::npos);
+	else
+		return filePath;
+}
+
+std::string GetFileExtension(const std::string& filePath)
+{
+	std::string fileName = RemoveBasePath(filePath);
+	size_t extOffset = fileName.rfind('.');
+	if (extOffset == std::wstring::npos)
+		return "";
+
+	return fileName.substr(extOffset + 1);
+}
+
+std::wstring GetFileExtension(const std::wstring& filePath)
+{
+	std::wstring fileName = RemoveBasePath(filePath);
+	size_t extOffset = fileName.rfind(L'.');
+	if (extOffset == std::wstring::npos)
+		return L"";
+
+	return fileName.substr(extOffset + 1);
+}
+
+std::string RemoveExtension(const std::string& filePath)
+{
+	return filePath.substr(0, filePath.rfind("."));
+}
+
+std::wstring RemoveExtension(const std::wstring& filePath)
+{
+	return filePath.substr(0, filePath.rfind(L"."));
+}
+
+
+std::string ToLower(const std::string& str)
+{
+	std::string lower_case = str;
+	std::locale loc;
+	for (char& s : lower_case)
+		s = std::tolower(s, loc);
+	return lower_case;
+}
+
+std::wstring ToLower(const std::wstring& str)
+{
+	std::wstring lower_case = str;
+	std::locale loc;
+	for (wchar_t& s : lower_case)
+		s = std::tolower(s, loc);
+	return lower_case;
+}

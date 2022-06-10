@@ -162,7 +162,7 @@ void ShadowMap::UpdateShadowTransform(const GameTimer& gt)
 		}
 
 		// Only the first "main" light casts a shadow.
-		BoundingSphere TempBoundingSphere = this->mSceneBounds;
+		DirectX::BoundingSphere TempBoundingSphere = this->mSceneBounds;
 		XMVECTOR lightDir = XMLoadFloat3(&this->mRotatedLightDirections[0]);
 		XMVECTOR lightPos = -2.0f * this->mSceneBounds.Radius * lightDir;
 		XMVECTOR targetPos = XMLoadFloat3(&this->mSceneBounds.Center);

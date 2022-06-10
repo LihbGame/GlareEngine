@@ -191,6 +191,16 @@
     <ClInclude Include="GraphicEffects\InstanceModel\InstanceModel.h" />
     <ClInclude Include="GraphicEffects\InstanceModel\SimpleModelGenerator.h" />
     <ClInclude Include="EngineCore\Graphics\Display.h" />
+    <ClInclude Include="EngineCore\Engine\FileUtility.h" />
+    <ClInclude Include="EngineCore\Model\glTF.h" />
+    <ClInclude Include="EngineCore\Model\json.hpp" />
+    <ClInclude Include="EngineCore\Math\Matrix3.h" />
+    <ClInclude Include="EngineCore\Math\Matrix4.h" />
+    <ClInclude Include="EngineCore\Math\Quaternion.h" />
+    <ClInclude Include="EngineCore\Math\Transform.h" />
+    <ClInclude Include="EngineCore\Math\BoundingBox.h" />
+    <ClInclude Include="EngineCore\Math\BoundingPlane.h" />
+    <ClInclude Include="EngineCore\Math\BoundingSphere.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
@@ -502,6 +512,15 @@
     <ClCompile Include="EngineCore\Graphics\Display.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
+    <ClCompile Include="EngineCore\Engine\FileUtility.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Model\glTF.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Math\BoundingSphere.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -518,7 +537,6 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="EngineCore\Graphics\GraphicsCore.h" />
     <None Include="EngineCore\Graphics\SamplerManager.h" />
     <None Include="EngineCore\Graphics\GPUBuffer.h" />
@@ -714,6 +732,7 @@
     <None Include="Shaders\Terrain\TerrainHeader.hlsli" />
     <None Include="Shaders\Terrain\TerrainDS.hlsl" />
     <None Include="Shaders\Terrain\TerrainHS.hlsl" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Dependences\lib\ozz\debug\ozz_animation_d.lib" />

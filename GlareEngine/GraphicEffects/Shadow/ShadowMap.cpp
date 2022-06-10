@@ -47,7 +47,7 @@ void ShadowMap::Update(float DeltaTime)
 		XMStoreFloat3(&mRotatedLightDirection, lightDir);
 
 		// Only the first "main" light casts a shadow.
-		BoundingSphere TempBoundingSphere = this->mSceneBounds;
+		DirectX::BoundingSphere TempBoundingSphere = this->mSceneBounds;
 		XMVECTOR LightPos = -2.0f * this->mSceneBounds.Radius * lightDir;
 		XMVECTOR targetPos = XMLoadFloat3(&this->mSceneBounds.Center);
 		XMVECTOR lightUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);

@@ -1,9 +1,12 @@
 #pragma once
-namespace  GlareEngine
+
+namespace GlareEngine
 {
 	namespace Math
 	{
 		//为了允许浮点数隐式构造Scalars，我们需要弄清楚这些运算符并抑制向上转换。
+	// To allow floats to implicitly construct Scalars, we need to clarify these operators and suppress
+	// upconversion.
 		INLINE bool operator<  (Scalar lhs, float rhs) { return (float)lhs < rhs; }
 		INLINE bool operator<= (Scalar lhs, float rhs) { return (float)lhs <= rhs; }
 		INLINE bool operator>  (Scalar lhs, float rhs) { return (float)lhs > rhs; }
@@ -16,42 +19,43 @@ namespace  GlareEngine
 		INLINE bool operator== (float lhs, Scalar rhs) { return lhs == (float)rhs; }
 
 #define CREATE_SIMD_FUNCTIONS( TYPE ) \
-    INLINE TYPE Sqrt( TYPE s ) { return TYPE(XMVectorSqrt(s)); } \
-    INLINE TYPE Recip( TYPE s ) { return TYPE(XMVectorReciprocal(s)); } \
-    INLINE TYPE RecipSqrt( TYPE s ) { return TYPE(XMVectorReciprocalSqrt(s)); } \
-    INLINE TYPE Floor( TYPE s ) { return TYPE(XMVectorFloor(s)); } \
-    INLINE TYPE Ceiling( TYPE s ) { return TYPE(XMVectorCeiling(s)); } \
-    INLINE TYPE Round( TYPE s ) { return TYPE(XMVectorRound(s)); } \
-    INLINE TYPE Abs( TYPE s ) { return TYPE(XMVectorAbs(s)); } \
-    INLINE TYPE Exp( TYPE s ) { return TYPE(XMVectorExp(s)); } \
-    INLINE TYPE Pow( TYPE b, TYPE e ) { return TYPE(XMVectorPow(b, e)); } \
-    INLINE TYPE Log( TYPE s ) { return TYPE(XMVectorLog(s)); } \
-    INLINE TYPE Sin( TYPE s ) { return TYPE(XMVectorSin(s)); } \
-    INLINE TYPE Cos( TYPE s ) { return TYPE(XMVectorCos(s)); } \
-    INLINE TYPE Tan( TYPE s ) { return TYPE(XMVectorTan(s)); } \
-    INLINE TYPE ASin( TYPE s ) { return TYPE(XMVectorASin(s)); } \
-    INLINE TYPE ACos( TYPE s ) { return TYPE(XMVectorACos(s)); } \
-    INLINE TYPE ATan( TYPE s ) { return TYPE(XMVectorATan(s)); } \
-    INLINE TYPE ATan2( TYPE y, TYPE x ) { return TYPE(XMVectorATan2(y, x)); } \
-    INLINE TYPE Lerp( TYPE a, TYPE b, TYPE t ) { return TYPE(XMVectorLerpV(a, b, t)); } \
-    INLINE TYPE Max( TYPE a, TYPE b ) { return TYPE(XMVectorMax(a, b)); } \
-    INLINE TYPE Min( TYPE a, TYPE b ) { return TYPE(XMVectorMin(a, b)); } \
-    INLINE TYPE Clamp( TYPE v, TYPE a, TYPE b ) { return Min(Max(v, a), b); } \
-    INLINE BoolVector operator<  ( TYPE lhs, TYPE rhs ) { return XMVectorLess(lhs, rhs); } \
-    INLINE BoolVector operator<= ( TYPE lhs, TYPE rhs ) { return XMVectorLessOrEqual(lhs, rhs); } \
-    INLINE BoolVector operator>  ( TYPE lhs, TYPE rhs ) { return XMVectorGreater(lhs, rhs); } \
-    INLINE BoolVector operator>= ( TYPE lhs, TYPE rhs ) { return XMVectorGreaterOrEqual(lhs, rhs); } \
-    INLINE BoolVector operator== ( TYPE lhs, TYPE rhs ) { return XMVectorEqual(lhs, rhs); } \
-    INLINE TYPE Select( TYPE lhs, TYPE rhs, BoolVector mask ) { return TYPE(XMVectorSelect(lhs, rhs, mask)); }
+	INLINE TYPE Sqrt( TYPE s ) { return TYPE(XMVectorSqrt(s)); } \
+	INLINE TYPE Recip( TYPE s ) { return TYPE(XMVectorReciprocal(s)); } \
+	INLINE TYPE RecipSqrt( TYPE s ) { return TYPE(XMVectorReciprocalSqrt(s)); } \
+	INLINE TYPE Floor( TYPE s ) { return TYPE(XMVectorFloor(s)); } \
+	INLINE TYPE Ceiling( TYPE s ) { return TYPE(XMVectorCeiling(s)); } \
+	INLINE TYPE Round( TYPE s ) { return TYPE(XMVectorRound(s)); } \
+	INLINE TYPE Abs( TYPE s ) { return TYPE(XMVectorAbs(s)); } \
+	INLINE TYPE Exp( TYPE s ) { return TYPE(XMVectorExp(s)); } \
+	INLINE TYPE Pow( TYPE b, TYPE e ) { return TYPE(XMVectorPow(b, e)); } \
+	INLINE TYPE Log( TYPE s ) { return TYPE(XMVectorLog(s)); } \
+	INLINE TYPE Sin( TYPE s ) { return TYPE(XMVectorSin(s)); } \
+	INLINE TYPE Cos( TYPE s ) { return TYPE(XMVectorCos(s)); } \
+	INLINE TYPE Tan( TYPE s ) { return TYPE(XMVectorTan(s)); } \
+	INLINE TYPE ASin( TYPE s ) { return TYPE(XMVectorASin(s)); } \
+	INLINE TYPE ACos( TYPE s ) { return TYPE(XMVectorACos(s)); } \
+	INLINE TYPE ATan( TYPE s ) { return TYPE(XMVectorATan(s)); } \
+	INLINE TYPE ATan2( TYPE y, TYPE x ) { return TYPE(XMVectorATan2(y, x)); } \
+	INLINE TYPE Lerp( TYPE a, TYPE b, TYPE t ) { return TYPE(XMVectorLerpV(a, b, t)); } \
+    INLINE TYPE Lerp( TYPE a, TYPE b, float t ) { return TYPE(XMVectorLerp(a, b, t)); } \
+	INLINE TYPE Max( TYPE a, TYPE b ) { return TYPE(XMVectorMax(a, b)); } \
+	INLINE TYPE Min( TYPE a, TYPE b ) { return TYPE(XMVectorMin(a, b)); } \
+	INLINE TYPE Clamp( TYPE v, TYPE a, TYPE b ) { return Min(Max(v, a), b); } \
+	INLINE BoolVector operator<  ( TYPE lhs, TYPE rhs ) { return XMVectorLess(lhs, rhs); } \
+	INLINE BoolVector operator<= ( TYPE lhs, TYPE rhs ) { return XMVectorLessOrEqual(lhs, rhs); } \
+	INLINE BoolVector operator>  ( TYPE lhs, TYPE rhs ) { return XMVectorGreater(lhs, rhs); } \
+	INLINE BoolVector operator>= ( TYPE lhs, TYPE rhs ) { return XMVectorGreaterOrEqual(lhs, rhs); } \
+	INLINE BoolVector operator== ( TYPE lhs, TYPE rhs ) { return XMVectorEqual(lhs, rhs); } \
+	INLINE TYPE Select( TYPE lhs, TYPE rhs, BoolVector mask ) { return TYPE(XMVectorSelect(lhs, rhs, mask)); }
 
 
 		CREATE_SIMD_FUNCTIONS(Scalar)
-			CREATE_SIMD_FUNCTIONS(Vector3)
-			CREATE_SIMD_FUNCTIONS(Vector4)
+		CREATE_SIMD_FUNCTIONS(Vector3)
+		CREATE_SIMD_FUNCTIONS(Vector4)
 
 #undef CREATE_SIMD_FUNCTIONS
 
-		INLINE float Sqrt(float s) { return Sqrt(Scalar(s)); }
+			INLINE float Sqrt(float s) { return Sqrt(Scalar(s)); }
 		INLINE float Recip(float s) { return Recip(Scalar(s)); }
 		INLINE float RecipSqrt(float s) { return RecipSqrt(Scalar(s)); }
 		INLINE float Floor(float s) { return Floor(Scalar(s)); }
@@ -81,9 +85,22 @@ namespace  GlareEngine
 		INLINE Vector3 Cross(Vector3 v1, Vector3 v2) { return Vector3(XMVector3Cross(v1, v2)); }
 		INLINE Vector3 Normalize(Vector3 v) { return Vector3(XMVector3Normalize(v)); }
 		INLINE Vector4 Normalize(Vector4 v) { return Vector4(XMVector4Normalize(v)); }
-		INLINE Quaternion Normalize(Quaternion q) { return Quaternion(XMQuaternionNormalize(q)); }
 
 		INLINE Matrix3 Transpose(const Matrix3& mat) { return Matrix3(XMMatrixTranspose(mat)); }
+		INLINE Matrix3 InverseTranspose(const Matrix3& mat)
+		{
+			const Vector3 x = mat.GetX();
+			const Vector3 y = mat.GetY();
+			const Vector3 z = mat.GetZ();
+
+			const Vector3 inv0 = Cross(y, z);
+			const Vector3 inv1 = Cross(z, x);
+			const Vector3 inv2 = Cross(x, y);
+			const Scalar  rDet = Recip(Dot(z, inv2));
+
+			// Return the adjoint / determinant
+			return Matrix3(inv0, inv1, inv2) * rDet;
+		}
 
 		// inline Matrix3 Inverse( const Matrix3& mat ) { TBD }
 		// inline Transform Inverse( const Transform& mat ) { TBD }

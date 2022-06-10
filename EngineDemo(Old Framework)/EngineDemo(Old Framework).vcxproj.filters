@@ -248,10 +248,10 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="..\Resource\Textures\ICONS\Arrow.cur">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="..\Resource\UImisc\fonts\binary_to_compressed_c.cpp">

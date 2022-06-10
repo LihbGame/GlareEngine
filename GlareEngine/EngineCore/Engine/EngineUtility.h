@@ -32,7 +32,7 @@
 #include <DirectXPackedVector.h>
 #include <DirectXColors.h>
 #include <DirectXCollision.h>
-
+#include <ppltasks.h>
 
 #include "d3dx12.h"
 #include "DDSTextureLoader.h"
@@ -260,3 +260,14 @@ std::wstring StringToWString(const std::string& str);
 std::string WStringToString(const std::wstring& str);
 
 bool CheckFileExist(const std::wstring& FileName);
+
+std::string GetBasePath(const std::string& str);
+std::wstring GetBasePath(const std::wstring& str);
+std::string RemoveBasePath(const std::string& str);
+std::wstring RemoveBasePath(const std::wstring& str);
+std::string GetFileExtension(const std::string& str);
+std::wstring GetFileExtension(const std::wstring& str);
+std::string RemoveExtension(const std::string& str);
+std::wstring RemoveExtension(const std::wstring& str);
+std::string ToLower(const std::string& str);
+std::wstring ToLower(const std::wstring& str);
