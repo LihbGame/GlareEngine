@@ -11,7 +11,7 @@ namespace
 
 D3D12_CPU_DESCRIPTOR_HANDLE SamplerDesc::CreateDescriptor()
 {
-	size_t hashValue = Utility::HashState(this);
+	size_t hashValue = HashState(this);
 	auto iter = s_SamplerCache.find(hashValue);
 	if (iter != s_SamplerCache.end())
 	{

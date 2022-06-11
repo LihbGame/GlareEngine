@@ -16,7 +16,7 @@ using namespace GlareEngine;
 #pragma intrinsic(_mm_crc32_u64)
 #endif
 
-namespace Utility
+namespace GlareEngine
 {
 	inline size_t HashRange(const uint32_t* const Begin, const uint32_t* const End, size_t Hash)
 	{

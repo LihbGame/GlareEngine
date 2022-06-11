@@ -360,6 +360,8 @@
     <ClInclude Include="EngineCore\Engine\FileUtility.h" />
     <ClInclude Include="EngineCore\Graphics\Display.h" />
     <ClInclude Include="EngineCore\Engine\EngineGlobal.h" />
+    <ClInclude Include="EngineCore\Graphics\TextureConvert.h" />
+    <ClInclude Include="EngineCore\Graphics\UploadBuffer.h" />
     <ClInclude Include="EngineCore\Math\BoundingBox.h" />
     <ClInclude Include="EngineCore\Math\BoundingPlane.h" />
     <ClInclude Include="EngineCore\Math\BoundingSphere.h" />
@@ -504,12 +506,14 @@
     <ClCompile Include="EngineCore\Graphics\Display.cpp" />
     <ClCompile Include="EngineCore\Engine\EngineGlobal.cpp" />
     <ClCompile Include="EngineCore\Engine\FileUtility.cpp" />
+    <ClCompile Include="EngineCore\Graphics\UploadBuffer.cpp" />
     <ClCompile Include="EngineCore\Math\BoundingSphere.cpp" />
     <ClCompile Include="EngineCore\Model\glTF.cpp" />
     <ClCompile Include="GraphicEffects\Animation\ModelLoader.cpp" />
     <ClCompile Include="GraphicEffects\InstanceModel\InstanceModel.cpp" />
     <ClCompile Include="GraphicEffects\InstanceModel\SimpleModelGenerator.cpp" />
     <ClCompile Include="GraphicEffects\Terrain\Terrain.cpp" />
+    <ClCompile Include="EngineCore\Graphics\TextureConvert.cpp" />
     <None Include="EngineCore\Graphics\Color.cpp" />
     <ClCompile Include="GraphicEffects\Animation\ModelMesh.cpp" />
     <ClCompile Include="GraphicEffects\Misc\ConstantBuffer.cpp" />
@@ -800,6 +804,8 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets" Condition="Exists('..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets')" />
     <Import Project="..\packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets" Condition="Exists('..\packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets')" />
+    <Import Project="..\packages\directxtex_desktop_win10.2022.5.10.1\build\native\directxtex_desktop_win10.targets" Condition="Exists('..\packages\directxtex_desktop_win10.2022.5.10.1\build\native\directxtex_desktop_win10.targets')" />
+    <Import Project="..\packages\directxmesh_desktop_win10.2022.5.10.2\build\native\directxmesh_desktop_win10.targets" Condition="Exists('..\packages\directxmesh_desktop_win10.2022.5.10.2\build\native\directxmesh_desktop_win10.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -807,5 +813,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets'))" />
     <Error Condition="!Exists('..\packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets'))" />
+    <Error Condition="!Exists('..\packages\directxtex_desktop_win10.2022.5.10.1\build\native\directxtex_desktop_win10.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtex_desktop_win10.2022.5.10.1\build\native\directxtex_desktop_win10.targets'))" />
+    <Error Condition="!Exists('..\packages\directxmesh_desktop_win10.2022.5.10.2\build\native\directxmesh_desktop_win10.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxmesh_desktop_win10.2022.5.10.2\build\native\directxmesh_desktop_win10.targets'))" />
   </Target>
 </Project>

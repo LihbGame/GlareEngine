@@ -106,8 +106,8 @@ void GlareEngine::DirectX12Graphics::GraphicsPSO::Finalize()
 	assert(m_PSODesc.pRootSignature != nullptr);
 
 	m_PSODesc.InputLayout.pInputElementDescs = nullptr;
-	size_t HashCode = Utility::HashState(&m_PSODesc);
-	HashCode = Utility::HashState(m_InputLayouts.get(), m_PSODesc.InputLayout.NumElements, HashCode);
+	size_t HashCode = HashState(&m_PSODesc);
+	HashCode = HashState(m_InputLayouts.get(), m_PSODesc.InputLayout.NumElements, HashCode);
 	m_PSODesc.InputLayout.pInputElementDescs = m_InputLayouts.get();
 
 	ID3D12PipelineState** PSORef = nullptr;
@@ -152,7 +152,7 @@ void ComputePSO::Finalize()
 	m_PSODesc.pRootSignature = m_RootSignature->GetSignature();
 	assert(m_PSODesc.pRootSignature != nullptr);
 
-	size_t HashCode = Utility::HashState(&m_PSODesc);
+	size_t HashCode = HashState(&m_PSODesc);
 
 	ID3D12PipelineState** PSORef = nullptr;
 	bool firstCompile = false;

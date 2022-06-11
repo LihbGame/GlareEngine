@@ -8,6 +8,7 @@
 #include "BufferManager.h"
 #include "SamplerManager.h"
 #include "EngineGUI.h"
+#include "EngineLog.h"
 #include "resource.h"
 
 #include "Camera.h"
@@ -16,6 +17,7 @@
 #include "SceneManager.h"
 #include "Shadow/ShadowMap.h"
 #include "Terrain/Terrain.h"
+
 
 
 //lib
@@ -216,6 +218,7 @@ void App::Startup(void)
 
 void App::Cleanup(void)
 {
+	EngineLog::SaveLog();
 	mEngineUI->ShutDown();
 	MaterialManager::Release();
 	ModelLoader::Release();

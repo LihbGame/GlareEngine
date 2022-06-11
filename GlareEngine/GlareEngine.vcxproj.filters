@@ -201,6 +201,8 @@
     <ClInclude Include="EngineCore\Math\BoundingBox.h" />
     <ClInclude Include="EngineCore\Math\BoundingPlane.h" />
     <ClInclude Include="EngineCore\Math\BoundingSphere.h" />
+    <ClInclude Include="EngineCore\Graphics\UploadBuffer.h" />
+    <ClInclude Include="EngineCore\Graphics\TextureConvert.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
@@ -519,6 +521,12 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Math\BoundingSphere.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\UploadBuffer.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\TextureConvert.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>

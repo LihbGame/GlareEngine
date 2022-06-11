@@ -14,6 +14,7 @@ public:
 	static void ClearLogs();
 	static void AddLog(const wchar_t* format, ...);
 	static void Filter(wstring Filter);
+	static void SaveLog();
 private:
 	static vector<wstring> DisplayLogs;
 	static vector<wstring> FilterLogs;

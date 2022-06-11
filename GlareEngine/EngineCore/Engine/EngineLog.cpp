@@ -1,4 +1,5 @@
 #include "EngineLog.h"
+#include "EngineUtility.h"
 
 vector<wstring> EngineLog::DisplayLogs = {};
 vector<wstring>  EngineLog::FilterDisplayLogs = {};
@@ -55,6 +56,20 @@ void EngineLog::Filter(wstring Filter)
 			FilterDisplayLogs.push_back(DisplayLogs[i]);
 		}
 	}
+}
+
+void EngineLog::SaveLog()
+{
+	wchar_t filePath[MAX_PATH + 1] = { 0 };
+	GetModuleFileName(NULL, filePath, MAX_PATH);
+	wstring OutputPath = GetBasePath(filePath);
+	wofstream outfile;
+	outfile.open(OutputPath + L"EngineLog.txt");
+	for (auto &log: DisplayLogs)
+	{
+		outfile << log << endl;
+	}
+	outfile.close();
 }
 
 vector<wstring>& EngineLog::GetFilterLogs()

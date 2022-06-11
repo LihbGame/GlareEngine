@@ -222,7 +222,7 @@ namespace GlareEngine
 
 				g_Device = pDevice.Detach();
 
-				EngineLog::AddLog(L"Selected GPU:  %s (%u MB)\n", desc.Description, desc.DedicatedVideoMemory >> 20);
+				EngineLog::AddLog(L"Selected GPU:  %s (%u MB)", desc.Description, desc.DedicatedVideoMemory >> 20);
 			}
 		}
 

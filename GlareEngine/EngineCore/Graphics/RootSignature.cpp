@@ -68,8 +68,8 @@ void RootSignature::Finalize(const std::wstring& name, D3D12_ROOT_SIGNATURE_FLAG
 	m_DescriptorTableBitMap = 0;
 	m_SamplerTableBitMap = 0;
 
-	size_t HashCode = Utility::HashState(&RootDesc.Flags);
-	HashCode = Utility::HashState(RootDesc.pStaticSamplers, m_NumSamplers, HashCode);
+	size_t HashCode = HashState(&RootDesc.Flags);
+	HashCode = HashState(RootDesc.pStaticSamplers, m_NumSamplers, HashCode);
 
 	for (UINT Param = 0; Param < m_NumParameters; ++Param)
 	{
@@ -80,7 +80,7 @@ void RootSignature::Finalize(const std::wstring& name, D3D12_ROOT_SIGNATURE_FLAG
 		{
 			assert(RootParam.DescriptorTable.pDescriptorRanges != nullptr);
 
-			HashCode = Utility::HashState(RootParam.DescriptorTable.pDescriptorRanges,
+			HashCode = HashState(RootParam.DescriptorTable.pDescriptorRanges,
 				RootParam.DescriptorTable.NumDescriptorRanges, HashCode);
 
 			// We keep track of sampler descriptor tables separately from CBV_SRV_UAV descriptor tables
@@ -93,7 +93,7 @@ void RootSignature::Finalize(const std::wstring& name, D3D12_ROOT_SIGNATURE_FLAG
 				m_DescriptorTableSize[Param] += RootParam.DescriptorTable.pDescriptorRanges[TableRange].NumDescriptors;
 		}
 		else
-			HashCode = Utility::HashState(&RootParam, 1, HashCode);
+			HashCode = HashState(&RootParam, 1, HashCode);
 	}
 
 	ID3D12RootSignature** RSRef = nullptr;
