@@ -21,14 +21,13 @@ namespace GlareEngine
     }
 
     // If the DDS version of the texture specified does not exist or is older than the source texture, reconvert it.
-    void CompileTextureOnDemand(const std::wstring& originalFile, uint32_t flags);
+    void CompileDDSTexture(const std::wstring& originalFile, uint32_t flags);
 
-    // Loads a non-DDS texture such as TGA, PNG, or JPG, then converts it to a more optimal
-    // DDS format with a full mipmap chain.  Result file has the same path with the file extension
-    // changed to "DDS".
+    // Loads a NON-DDS texture such as TGA, PNG, or JPG, then converts it to a more optimal
+    // DDS format with a full mipmap chain. Result file has the same path with the file extension changed to "DDS".
     bool ConvertToDDS(
-        const std::wstring& filePath,	// UTF8-encoded path to source file
-        uint32_t Flags                  // flags ORed together
+        const std::wstring& filePath,	// Source file path
+        uint32_t Flags                  // Texture Conversion Flags
     );
 
 

@@ -17,7 +17,7 @@ BoundingSphere BoundingSphere::Union(const BoundingSphere& rhs)
     float dist = Length(diff);
 
     // Safe normalize vector between sphere centers
-    diff = dist < 1e-6f ? Vector3(kXUnitVector) : diff * Recip(dist);
+    diff = dist < 1e-6f ? Vector3(eXUnitVector) : diff * Recip(dist);
 
     Vector3 extremeA = GetCenter() + diff * Max(radA, radB - dist);
     Vector3 extremeB = rhs.GetCenter() - diff * Max(radB, radA - dist);

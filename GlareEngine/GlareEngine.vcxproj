@@ -365,12 +365,15 @@
     <ClInclude Include="EngineCore\Math\BoundingBox.h" />
     <ClInclude Include="EngineCore\Math\BoundingPlane.h" />
     <ClInclude Include="EngineCore\Math\BoundingSphere.h" />
+    <ClInclude Include="EngineCore\Math\Frustum.h" />
     <ClInclude Include="EngineCore\Math\Matrix3.h" />
     <ClInclude Include="EngineCore\Math\Matrix4.h" />
     <ClInclude Include="EngineCore\Math\Quaternion.h" />
     <ClInclude Include="EngineCore\Math\Transform.h" />
+    <ClInclude Include="EngineCore\Model\Animation.h" />
     <ClInclude Include="EngineCore\Model\glTF.h" />
     <ClInclude Include="EngineCore\Model\json.hpp" />
+    <ClInclude Include="EngineCore\Model\glTFModelLoader.h" />
     <ClInclude Include="GraphicEffects\Animation\MeshStruct.h" />
     <ClInclude Include="GraphicEffects\Animation\ModelMesh.h" />
     <ClInclude Include="Dependences\include\DirectXTK12\Inc\Audio.h" />
@@ -508,7 +511,10 @@
     <ClCompile Include="EngineCore\Engine\FileUtility.cpp" />
     <ClCompile Include="EngineCore\Graphics\UploadBuffer.cpp" />
     <ClCompile Include="EngineCore\Math\BoundingSphere.cpp" />
+    <ClCompile Include="EngineCore\Math\Frustum.cpp" />
+    <ClCompile Include="EngineCore\Model\Animation.cpp" />
     <ClCompile Include="EngineCore\Model\glTF.cpp" />
+    <ClCompile Include="EngineCore\Model\glTFModelLoader.cpp" />
     <ClCompile Include="GraphicEffects\Animation\ModelLoader.cpp" />
     <ClCompile Include="GraphicEffects\InstanceModel\InstanceModel.cpp" />
     <ClCompile Include="GraphicEffects\InstanceModel\SimpleModelGenerator.cpp" />

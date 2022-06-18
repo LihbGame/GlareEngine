@@ -1,6 +1,8 @@
 #pragma once
 #include "EngineUtility.h"
+#include "TextureManager.h"
 
+using namespace GlareEngine;
 enum PBRTextureType
 {
 	//diffuse texture.

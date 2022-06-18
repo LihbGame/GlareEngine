@@ -99,7 +99,7 @@ namespace GlareEngine
 			const Scalar  rDet = Recip(Dot(z, inv2));
 
 			// Return the adjoint / determinant
-			return Matrix3(inv0, inv1, inv2) * rDet;
+			return rDet * Matrix3(inv0, inv1, inv2);
 		}
 
 		// inline Matrix3 Inverse( const Matrix3& mat ) { TBD }
@@ -109,7 +109,7 @@ namespace GlareEngine
 		INLINE AffineTransform OrthoInvert(const AffineTransform& xform)
 		{
 			Matrix3 basis = Transpose(xform.GetBasis());
-			return AffineTransform(basis, basis * -xform.GetTranslation());
+			return AffineTransform(basis, -xform.GetTranslation() * basis);
 		}
 
 		INLINE OrthogonalTransform Invert(const OrthogonalTransform& xform) { return ~xform; }
@@ -120,7 +120,7 @@ namespace GlareEngine
 		INLINE Matrix4 OrthoInvert(const Matrix4& xform)
 		{
 			Matrix3 basis = Transpose(xform.Get3x3());
-			Vector3 translate = basis * -Vector3(xform.GetW());
+			Vector3 translate = -Vector3(xform.GetW()) * basis;
 			return Matrix4(basis, translate);
 		}
 	}

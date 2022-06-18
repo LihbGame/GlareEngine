@@ -38,17 +38,17 @@ namespace GlareEngine
             }
 
             // Most efficient way to transform a plane.  (Involves one quaternion-vector rotation and one dot product.)
-            friend BoundingPlane operator* (const OrthogonalTransform& xform, BoundingPlane plane)
+            friend BoundingPlane operator* (BoundingPlane plane, const OrthogonalTransform& xform)
             {
-                Vector3 normalToPlane = xform.GetRotation() * plane.GetNormal();
+                Vector3 normalToPlane = plane.GetNormal() * xform.GetRotation();
                 float distanceFromOrigin = plane.m_repr.GetW() - Dot(normalToPlane, xform.GetTranslation());
                 return BoundingPlane(normalToPlane, distanceFromOrigin);
             }
 
             // Less efficient way to transform a plane (but handles affine transformations.)
-            friend BoundingPlane operator* (const Matrix4& mat, BoundingPlane plane)
+            friend BoundingPlane operator* (BoundingPlane plane, const Matrix4& mat)
             {
-                return BoundingPlane(Transpose(Invert(mat)) * plane.m_repr);
+                return BoundingPlane(plane.m_repr * Transpose(Invert(mat)));
             }
 
         private:

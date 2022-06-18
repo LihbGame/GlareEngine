@@ -33,7 +33,7 @@ namespace GlareEngine
             Vector3 GetMin() const { return m_min; }
             Vector3 GetMax() const { return m_max; }
             Vector3 GetCenter() const { return (m_min + m_max) * 0.5f; }
-            Vector3 GetDimensions() const { return Max(m_max - m_min, Vector3(kZero)); }
+            Vector3 GetDimensions() const { return Max(m_max - m_min, Vector3(eZero)); }
 
         private:
 

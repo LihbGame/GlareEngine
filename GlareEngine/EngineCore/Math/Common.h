@@ -150,12 +150,12 @@ namespace GlareEngine
 
 #endif
 
-		enum EZeroTag { kZero, kOrigin };
-		enum EIdentityTag { kOne, kIdentity };
-		enum EXUnitVector { kXUnitVector };
-		enum EYUnitVector { kYUnitVector };
-		enum EZUnitVector { kZUnitVector };
-		enum EWUnitVector { kWUnitVector };
+		enum EZeroTag { eZero, eOrigin };
+		enum EIdentityTag { eOne, eIdentity };
+		enum EXUnitVector { eXUnitVector };
+		enum EYUnitVector { eYUnitVector };
+		enum EZUnitVector { eZUnitVector };
+		enum EWUnitVector { eWUnitVector };
 
 	}
 }

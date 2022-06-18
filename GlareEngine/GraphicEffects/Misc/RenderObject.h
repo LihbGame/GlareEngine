@@ -9,18 +9,9 @@
 #include "Vertex.h"
 #include "InputLayout.h"
 #include "BufferManager.h"
+#include "ConstantBuffer.h"
 
 using namespace GlareEngine;
-
-struct InstanceRenderConstants
-{
-	DirectX::XMFLOAT4X4			mWorldTransform = MathHelper::Identity4x4();
-	DirectX::XMFLOAT4X4			mTexTransform = MathHelper::Identity4x4();
-	int							mMaterialIndex;
-	int							mPAD1;
-	int							mPAD2;
-	int							mPAD3;
-};
 
 enum class ObjectType :int
 {

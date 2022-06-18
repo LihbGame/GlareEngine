@@ -203,6 +203,9 @@
     <ClInclude Include="EngineCore\Math\BoundingSphere.h" />
     <ClInclude Include="EngineCore\Graphics\UploadBuffer.h" />
     <ClInclude Include="EngineCore\Graphics\TextureConvert.h" />
+    <ClInclude Include="EngineCore\Model\glTFModelLoader.h" />
+    <ClInclude Include="EngineCore\Model\Animation.h" />
+    <ClInclude Include="EngineCore\Math\Frustum.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
@@ -527,6 +530,15 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Graphics\TextureConvert.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Model\glTFModelLoader.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Model\Animation.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Math\Frustum.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>

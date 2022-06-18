@@ -1,4 +1,4 @@
-﻿#include "ModelLoader.h"
+﻿#include "./ModelLoader.h"
 #include "Material.h"
 
 ModelLoader::ModelLoader(HWND hwnd, ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList,TextureManage* TextureManage)
@@ -91,7 +91,7 @@ void ModelLoader::DrawModel(string ModelName)
 {
 }
 
-vector<ModelMesh>& ModelLoader::GetModelMesh(string ModelName)
+vector<::ModelMesh>& ModelLoader::GetModelMesh(string ModelName)
 {
     return meshes[ModelName];
 }
@@ -169,7 +169,7 @@ void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene,bool isAnimatio
 
 string textype;
 
-ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
+::ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 {
     // Data to fill
     vector<Vertices::PosNormalTangentTexc> vertices;
@@ -257,7 +257,7 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
     }
 
 
-    return ModelMesh(dev, pCommandList, vertices, indices, textures);
+    return ::ModelMesh(dev, pCommandList, vertices, indices, textures);
 }
 
 AnimationMesh ModelLoader::ProcessAnimation(aiMesh* mesh, const aiScene* scene)

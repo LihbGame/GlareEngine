@@ -203,33 +203,6 @@ struct Light
 
 #define MaxLights 16
 
-struct MaterialConstants
-{
-    DirectX::XMFLOAT4 DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
-    DirectX::XMFLOAT3 FresnelR0 = { 0.01f, 0.01f, 0.01f };
-    float Roughness = 0.25f;
-    // Used in texture mapping.
-    DirectX::XMFLOAT4X4 MatTransform = MathHelper::Identity4x4();
-    float Metallic;
-    float AO;
-};
-
-
-struct Texture
-{
-    // Unique material name for lookup.
-    std::string Name;
-    //only for model material 
-    std::string type;
-
-    std::string Filename;
-
-    Microsoft::WRL::ComPtr<ID3D12Resource> Resource = nullptr;
-    Microsoft::WRL::ComPtr<ID3D12Resource> UploadHeap = nullptr;
-
-};
-
-
 
 // Order: left, right, bottom, top, near, far.
 void ExtractFrustumPlanes(XMFLOAT4 planes[6], CXMMATRIX M);

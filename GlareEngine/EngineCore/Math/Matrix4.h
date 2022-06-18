@@ -62,9 +62,9 @@ namespace GlareEngine
 
             INLINE operator XMMATRIX() const { return m_mat; }
 
-            INLINE Vector4 operator* (Vector3 vec) const { return Vector4(XMVector3Transform(vec, m_mat)); }
-            INLINE Vector4 operator* (Vector4 vec) const { return Vector4(XMVector4Transform(vec, m_mat)); }
-            INLINE Matrix4 operator* (const Matrix4& mat) const { return Matrix4(XMMatrixMultiply(mat, m_mat)); }
+            friend INLINE Vector4 operator* (Vector3 vec, const Matrix4& mat) { return Vector4(XMVector3Transform(vec, mat)); }
+            friend INLINE Vector4 operator* (Vector4 vec, const Matrix4& mat) { return Vector4(XMVector4Transform(vec, mat)); }
+            friend INLINE Matrix4 operator* (const Matrix4& lmat,const Matrix4& rmat)  { return Matrix4(XMMatrixMultiply(lmat, rmat)); }
 
             static INLINE Matrix4 MakeScale(float scale) { return Matrix4(XMMatrixScaling(scale, scale, scale)); }
             static INLINE Matrix4 MakeScale(Vector3 scale) { return Matrix4(XMMatrixScalingFromVector(scale)); }

@@ -1,5 +1,6 @@
 #pragma once
 #include "Vertex.h"
+#include "TextureManage.h"
 
 // Defines a subrange of geometry in a MeshGeometry.  This is for when multiple
 // geometries are stored in one vertex and index buffer.  It provides the offsets

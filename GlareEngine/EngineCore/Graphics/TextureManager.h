@@ -4,6 +4,20 @@
 
 namespace GlareEngine
 {
+	struct Texture
+	{
+		// Unique material name for lookup.
+		std::string Name;
+		//only for model material 
+		std::string type;
+
+		std::string Filename;
+
+		Microsoft::WRL::ComPtr<ID3D12Resource> Resource = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Resource> UploadHeap = nullptr;
+	};
+
+
 	namespace DirectX12Graphics
 	{
 		class TextureManager

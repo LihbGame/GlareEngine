@@ -15,8 +15,8 @@ namespace GlareEngine
             INLINE Matrix3(const Matrix3& m) { m_mat[0] = m.m_mat[0]; m_mat[1] = m.m_mat[1]; m_mat[2] = m.m_mat[2]; }
             INLINE Matrix3(Quaternion q) { *this = Matrix3(XMMatrixRotationQuaternion(q)); }
             INLINE explicit Matrix3(const XMMATRIX& m) { m_mat[0] = Vector3(m.r[0]); m_mat[1] = Vector3(m.r[1]); m_mat[2] = Vector3(m.r[2]); }
-            INLINE explicit Matrix3(EIdentityTag) { m_mat[0] = Vector3(kXUnitVector); m_mat[1] = Vector3(kYUnitVector); m_mat[2] = Vector3(kZUnitVector); }
-            INLINE explicit Matrix3(EZeroTag) { m_mat[0] = m_mat[1] = m_mat[2] = Vector3(kZero); }
+            INLINE explicit Matrix3(EIdentityTag) { m_mat[0] = Vector3(eXUnitVector); m_mat[1] = Vector3(eYUnitVector); m_mat[2] = Vector3(eZUnitVector); }
+            INLINE explicit Matrix3(EZeroTag) { m_mat[0] = m_mat[1] = m_mat[2] = Vector3(eZero); }
 
             INLINE void SetX(Vector3 x) { m_mat[0] = x; }
             INLINE void SetY(Vector3 y) { m_mat[1] = y; }
@@ -37,9 +37,9 @@ namespace GlareEngine
             // Useful for DirectXMath interaction.  WARNING:  Only the 3x3 elements are defined.
             INLINE operator XMMATRIX() const { return XMMATRIX(m_mat[0], m_mat[1], m_mat[2], XMVectorZero()); }
 
-            INLINE Matrix3 operator* (Scalar scl) const { return Matrix3(scl * GetX(), scl * GetY(), scl * GetZ()); }
-            INLINE Vector3 operator* (Vector3 vec) const { return Vector3(XMVector3TransformNormal(vec, *this)); }
-            INLINE Matrix3 operator* (const Matrix3& mat) const { return Matrix3(*this * mat.GetX(), *this * mat.GetY(), *this * mat.GetZ()); }
+            friend INLINE Matrix3 operator* (Scalar scl, const Matrix3& mat) { return Matrix3(scl * mat.GetX(), scl * mat.GetY(), scl * mat.GetZ()); }
+            friend INLINE Vector3 operator* (Vector3 vec, const Matrix3& mat) { return Vector3(XMVector3TransformNormal(vec, mat)); }
+            friend INLINE Matrix3 operator* (const Matrix3& lmat, const Matrix3& rmat) { return Matrix3(lmat.GetX() * rmat, lmat.GetY() * rmat, lmat.GetZ() * rmat); }
 
         private:
             Vector3 m_mat[3];
