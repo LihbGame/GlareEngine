@@ -154,7 +154,7 @@ void Camera::SetLens(float fovY, float aspect, float zn, float zf)
 	{
 		if (mIsInfiniteZ)
 		{
-			Q1 = -1.0f;
+			Q1 = 1.0f;
 			Q2 = -mNearZ;
 		}
 		else
