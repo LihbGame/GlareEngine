@@ -56,6 +56,7 @@ namespace GlareEngine
 
 		D3D12_DEPTH_STENCIL_DESC DepthStateDisabled;
 		D3D12_DEPTH_STENCIL_DESC DepthStateReadWrite;
+		D3D12_DEPTH_STENCIL_DESC DepthStateReadWriteReversed;
 		D3D12_DEPTH_STENCIL_DESC DepthStateReadOnly;
 		D3D12_DEPTH_STENCIL_DESC DepthStateReadOnlyReversed;
 		D3D12_DEPTH_STENCIL_DESC DepthStateTestEqual;
@@ -203,6 +204,9 @@ void GlareEngine::DirectX12Graphics::InitializeDepthState(void)
 	DepthStateReadWrite.DepthEnable = TRUE;
 	DepthStateReadWrite.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 	DepthStateReadWrite.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+
+	DepthStateReadWriteReversed = DepthStateReadWrite;
+	DepthStateReadWriteReversed.DepthFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
 
 	DepthStateReadOnly = DepthStateReadWrite;
 	DepthStateReadOnly.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;

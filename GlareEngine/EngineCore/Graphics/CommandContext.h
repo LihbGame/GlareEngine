@@ -213,6 +213,7 @@ namespace GlareEngine
 			void ClearUAV(ColorBuffer& Target);
 			void ClearRenderTarget(ColorBuffer& Target);
 			void ClearDepth(DepthBuffer& Target);
+			void ClearDepth(DepthBuffer& Target, float ClearDepth);
 			void ClearStencil(DepthBuffer& Target);
 			void ClearDepthAndStencil(DepthBuffer& Target);
 			void ClearColor(ColorBuffer& Target, D3D12_RECT* Rect = nullptr);

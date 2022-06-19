@@ -3,12 +3,14 @@
 #define CAMERA_H
 
 #include "EngineUtility.h"
+#include "Frustum.h"
+
 
 class Camera
 {
 public:
 
-	Camera();
+	Camera(bool isReverseZ = false, bool isInfiniteZ = false);
 	~Camera();
 
 	// Get/Set world camera position.
@@ -45,6 +47,10 @@ public:
 	void LookAt(DirectX::FXMVECTOR pos, DirectX::FXMVECTOR target, DirectX::FXMVECTOR worldUp);
 	void LookAt(const DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT3& target, const DirectX::XMFLOAT3& up);
 
+	const Frustum& GetViewSpaceFrustum() const { return m_FrustumVS; }
+	const Frustum& GetWorldSpaceFrustum() const { return m_FrustumWS; }
+
+
 	// Get View/Proj matrices.
 	DirectX::XMMATRIX GetView()const;
 	DirectX::XMMATRIX GetProj()const;
@@ -66,6 +72,8 @@ public:
 	void UpdateViewMatrix();
 
 private:
+	bool mIsReverseZ;
+	bool mIsInfiniteZ;
 
 	// Camera coordinate system with coordinates relative to world space.
 	DirectX::XMFLOAT3 mPosition = { 0.0f, 0.0f, 0.0f };
@@ -86,6 +94,12 @@ private:
 	// Cache View/Proj matrices.
 	DirectX::XMFLOAT4X4 mView = MathHelper::Identity4x4();
 	DirectX::XMFLOAT4X4 mProj = MathHelper::Identity4x4();
+
+
+	Matrix4 mCameraToWorld;
+	//Frustum
+	Frustum m_FrustumVS;
+	Frustum m_FrustumWS;
 };
 
 #endif // CAMERA_H

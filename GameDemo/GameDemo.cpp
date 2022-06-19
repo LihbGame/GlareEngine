@@ -32,11 +32,17 @@ using namespace GlareEngine::GameCore;
 using namespace GlareEngine::DirectX12Graphics;
 using namespace GlareEngine::EngineInput;
 
+
+//Game Config 
 #define MAX2DSRVSIZE 256
 #define MAXCUBESRVSIZE 32
 #define SHADOWMAPSIZE 2048
-#define  FAR_Z 5000.0f
+#define FAR_Z 5000.0f
 #define CAMERA_SPEED 100.0f
+
+
+
+
 const int gNumFrameResources = 3;
 
 
@@ -125,7 +131,7 @@ CREATE_APPLICATION(App);
 void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext& InitializeContext)
 {
 	//Main Camera
-	mCamera = make_unique<Camera>();
+	mCamera = make_unique<Camera>(REVERSE_Z);
 	mCamera->LookAt(XMFLOAT3(-200, 200, 200), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 1, 0));
 	//Sky Initialize
 	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);

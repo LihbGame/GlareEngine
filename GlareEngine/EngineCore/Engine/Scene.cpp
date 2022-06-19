@@ -236,7 +236,9 @@ void Scene::ForwardRendering()
 
 	Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 	Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
-	Context.ClearDepth(g_SceneDepthBuffer);
+
+	Context.ClearDepth(g_SceneDepthBuffer, !REVERSE_Z);
+
 	Context.ClearRenderTarget(g_SceneColorBuffer);
 
 	Context.SetRootSignature(*m_pRootSignature);
@@ -267,7 +269,7 @@ void Scene::ForwardRendering()
 	{
 		Context.TransitionResource(g_SceneMSAAColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 		Context.TransitionResource(g_SceneMSAADepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
-		Context.ClearDepth(g_SceneMSAADepthBuffer);
+		Context.ClearDepth(g_SceneMSAADepthBuffer, !REVERSE_Z);
 		Context.ClearRenderTarget(g_SceneMSAAColorBuffer);
 		//set scene render target & Depth Stencil target
 		Context.SetRenderTarget(g_SceneMSAAColorBuffer.GetRTV(), g_SceneMSAADepthBuffer.GetDSV());

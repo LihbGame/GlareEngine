@@ -1,8 +1,12 @@
 #include "Camera.h"
+#include "VectorMath.h"
 
 using namespace DirectX;
+using namespace GlareEngine::Math;
 
-Camera::Camera():
+Camera::Camera(bool isReverseZ, bool isInfiniteZ):
+mIsReverseZ(isReverseZ),
+mIsInfiniteZ(isInfiniteZ),
 mPosition { 0.0f, 0.0f, 0.0f },
 mRight{ 1.0f, 0.0f, 0.0f },
 mUp{ 0.0f, 1.0f, 0.0f },
@@ -124,8 +128,54 @@ void Camera::SetLens(float fovY, float aspect, float zn, float zf)
 	mNearWindowHeight = 2.0f * mNearZ * tanf( 0.5f*mFovY );
 	mFarWindowHeight  = 2.0f * mFarZ * tanf( 0.5f*mFovY );
 
-	XMMATRIX P = XMMatrixPerspectiveFovLH(mFovY, mAspect, mNearZ, mFarZ);
-	XMStoreFloat4x4(&mProj, P);
+	float Y = 1.0f / std::tanf(mFovY * 0.5f);
+	float X = Y / mAspect;
+
+	float Q1, Q2;
+
+	// ReverseZ puts far plane at Z=0 and near plane at Z=1.  This is never a bad idea, and it's
+	// actually a great idea with F32 depth buffers to redistribute precision more evenly across
+	// the entire range. It requires clearing Z to 0.0f and using a GREATER variant depth test.
+	// Some care must also be done to properly reconstruct linear W in a pixel shader from hyperbolic Z.
+	if (mIsReverseZ)
+	{
+		if (mIsInfiniteZ)
+		{
+			Q1 = 0.0f;
+			Q2 = mNearZ;
+		}
+		else
+		{
+			Q1 = mNearZ / (mNearZ - mFarZ);
+			Q2 = -Q1 * mFarZ;
+		}
+	}
+	else
+	{
+		if (mIsInfiniteZ)
+		{
+			Q1 = -1.0f;
+			Q2 = -mNearZ;
+		}
+		else
+		{
+			Q1 = mFarZ / (mFarZ - mNearZ);
+			Q2 = -Q1 * mNearZ;
+		}
+	}
+
+	XMMATRIX proj = Matrix4(
+		Vector4(X, 0.0f, 0.0f, 0.0f),
+		Vector4(0.0f, Y, 0.0f, 0.0f),
+		Vector4(0.0f, 0.0f, Q1, 1.0f),
+		Vector4(0.0f, 0.0f, Q2, 0.0f)
+	);
+	
+	XMStoreFloat4x4(&mProj, proj);
+
+	//create view space frustum
+	m_FrustumVS = Frustum(Matrix4(proj));
+
 }
 
 void Camera::LookAt(FXMVECTOR pos, FXMVECTOR target, FXMVECTOR worldUp)
@@ -280,6 +330,11 @@ void Camera::UpdateViewMatrix()
 		mView(3, 3) = 1.0f;
 
 		mViewDirty = false;
+
+		
+		mCameraToWorld = Matrix4(XMMatrixInverse(&XMMatrixDeterminant(GetView()), GetView()));
+		//create world space frustum
+		m_FrustumWS = m_FrustumVS * mCameraToWorld;
 	}
 }
 

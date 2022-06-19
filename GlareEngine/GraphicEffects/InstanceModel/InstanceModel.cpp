@@ -57,7 +57,15 @@ void InstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 	mPSO.SetRootSignature(*CommonProperty.pRootSignature);
 	mPSO.SetRasterizerState(Rasterizer);
 	mPSO.SetBlendState(Blend);
-	mPSO.SetDepthStencilState(CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT));
+	if (REVERSE_Z)
+	{
+		mPSO.SetDepthStencilState(DepthStateReadWriteReversed);
+	}
+	else
+	{
+		mPSO.SetDepthStencilState(DepthStateReadWrite);
+	}
+
 	mPSO.SetSampleMask(0xFFFFFFFF);
 	mPSO.SetInputLayout((UINT)InputLayout::InstancePosNormalTangentTexc.size(), InputLayout::InstancePosNormalTangentTexc.data());
 	mPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);

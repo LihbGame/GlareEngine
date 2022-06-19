@@ -53,6 +53,9 @@ using namespace Microsoft::WRL;
 using namespace DirectX;
 using namespace std;
 
+//config
+#define REVERSE_Z 1
+
 
 extern const int gNumFrameResources;
 
