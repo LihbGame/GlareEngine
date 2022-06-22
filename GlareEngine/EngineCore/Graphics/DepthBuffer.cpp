@@ -4,18 +4,18 @@
 
 using namespace GlareEngine::DirectX12Graphics;
 
-void DepthBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, DXGI_FORMAT Format, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr)
+void DepthBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, DXGI_FORMAT Format, bool isReverseZ, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr)
 {
-	Create(Name, Width, Height, 1, Format, VidMemPtr);
+	Create(Name, Width, Height, 1, Format, isReverseZ, VidMemPtr);
 }
 
-void DepthBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t NumSamples, DXGI_FORMAT Format, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr)
+void DepthBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t NumSamples, DXGI_FORMAT Format, bool isReverseZ, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr)
 {
 	D3D12_RESOURCE_DESC ResourceDesc = DescribeTex2D(Width, Height, 1, 1, Format, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 	ResourceDesc.SampleDesc.Count = NumSamples;
 
 	D3D12_CLEAR_VALUE ClearValue = {};
-	ClearValue.DepthStencil.Depth = 1.0f;
+	ClearValue.DepthStencil.Depth = isReverseZ ? 0.0f : 1.0f;
 	ClearValue.Format = Format;
 	CreateTextureResource(DirectX12Graphics::g_Device, Name, ResourceDesc, ClearValue, VidMemPtr);
 	CreateDerivedViews(DirectX12Graphics::g_Device, Format);

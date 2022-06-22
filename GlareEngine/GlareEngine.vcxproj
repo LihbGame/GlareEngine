@@ -23,7 +23,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{819b941b-3428-4faa-a97e-5a0611c634e6}</ProjectGuid>
     <RootNamespace>GlareEngine</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.22000.0</WindowsTargetPlatformVersion>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <ProjectName>GlareEngine</ProjectName>
   </PropertyGroup>
@@ -45,7 +45,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -372,6 +372,7 @@
     <ClInclude Include="EngineCore\Math\Transform.h" />
     <ClInclude Include="EngineCore\Model\Animation.h" />
     <ClInclude Include="EngineCore\Model\glTF.h" />
+    <ClInclude Include="EngineCore\Model\glTFModel.h" />
     <ClInclude Include="EngineCore\Model\json.hpp" />
     <ClInclude Include="EngineCore\Model\glTFModelLoader.h" />
     <ClInclude Include="GraphicEffects\Animation\MeshStruct.h" />
@@ -420,6 +421,7 @@
     <ClInclude Include="EngineCore\Engine\SceneManager.h" />
     <ClInclude Include="EngineCore\Graphics\TextureManager.h" />
     <ClInclude Include="EngineCore\Math\Random.h" />
+    <ClInclude Include="GraphicEffects\InstanceModel\glTFInstanceModel.h" />
     <ClInclude Include="GraphicEffects\InstanceModel\InstanceModel.h" />
     <ClInclude Include="GraphicEffects\InstanceModel\SimpleModelGenerator.h" />
     <ClInclude Include="GraphicEffects\Misc\ConstantBuffer.h" />
@@ -514,13 +516,15 @@
     <ClCompile Include="EngineCore\Math\Frustum.cpp" />
     <ClCompile Include="EngineCore\Model\Animation.cpp" />
     <ClCompile Include="EngineCore\Model\glTF.cpp" />
+    <ClCompile Include="EngineCore\Model\glTFModel.cpp" />
     <ClCompile Include="EngineCore\Model\glTFModelLoader.cpp" />
     <ClCompile Include="GraphicEffects\Animation\ModelLoader.cpp" />
+    <ClCompile Include="GraphicEffects\InstanceModel\glTFInstanceModel.cpp" />
     <ClCompile Include="GraphicEffects\InstanceModel\InstanceModel.cpp" />
     <ClCompile Include="GraphicEffects\InstanceModel\SimpleModelGenerator.cpp" />
     <ClCompile Include="GraphicEffects\Terrain\Terrain.cpp" />
     <ClCompile Include="EngineCore\Graphics\TextureConvert.cpp" />
-    <None Include="EngineCore\Graphics\Color.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Color.cpp" />
     <ClCompile Include="GraphicEffects\Animation\ModelMesh.cpp" />
     <ClCompile Include="GraphicEffects\Misc\ConstantBuffer.cpp" />
     <ClCompile Include="GraphicEffects\Misc\CubeRenderTarget.cpp" />
@@ -601,7 +605,7 @@
     </ClCompile>
     <ClCompile Include="EngineCore\Graphics\PipelineState.cpp" />
     <ClCompile Include="EngineCore\Graphics\DynamicDescriptorHeap.cpp" />
-    <None Include="EngineCore\Graphics\DynamicUploadBuffer.cpp" />
+    <ClCompile Include="EngineCore\Graphics\DynamicUploadBuffer.cpp" />
     <ClCompile Include="EngineCore\Graphics\LinearAllocator.cpp" />
     <ClCompile Include="EngineCore\Graphics\GraphicsCommon.cpp" />
     <ClCompile Include="EngineCore\Graphics\ShadowBuffer.cpp" />
@@ -620,7 +624,7 @@
     <ClCompile Include="EngineEditor\ImgUIEditor\imgui_impl_dx12.cpp" />
     <ClCompile Include="EngineEditor\ImgUIEditor\imgui_impl_win32.cpp" />
     <ClCompile Include="EngineEditor\ImgUIEditor\imgui_widgets.cpp" />
-    <None Include="EngineCore\Graphics\GPUBuffer.cpp" />
+    <ClCompile Include="EngineCore\Graphics\GPUBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\gamecontroller_128px_1180532_easyicon.net.ico" />

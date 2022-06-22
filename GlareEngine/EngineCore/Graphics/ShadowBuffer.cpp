@@ -7,7 +7,7 @@ namespace GlareEngine
 	{
 		void ShadowBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, DXGI_FORMAT Format, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr)
 		{
-			DepthBuffer::Create(Name, Width, Height, Format, VidMemPtr);
+			DepthBuffer::Create(Name, Width, Height, Format, false, VidMemPtr);
 
 			m_Viewport.TopLeftX = 0.0f;
 			m_Viewport.TopLeftY = 0.0f;

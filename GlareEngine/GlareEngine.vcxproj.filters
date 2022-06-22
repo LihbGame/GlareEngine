@@ -206,6 +206,8 @@
     <ClInclude Include="EngineCore\Model\glTFModelLoader.h" />
     <ClInclude Include="EngineCore\Model\Animation.h" />
     <ClInclude Include="EngineCore\Math\Frustum.h" />
+    <ClInclude Include="EngineCore\Model\glTFModel.h" />
+    <ClInclude Include="GraphicEffects\InstanceModel\glTFInstanceModel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
@@ -541,6 +543,21 @@
     <ClCompile Include="EngineCore\Math\Frustum.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
+    <ClCompile Include="EngineCore\Model\glTFModel.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\DynamicUploadBuffer.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Color.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\GPUBuffer.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicEffects\InstanceModel\glTFInstanceModel.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -560,18 +577,9 @@
     <None Include="EngineCore\Graphics\GraphicsCore.h" />
     <None Include="EngineCore\Graphics\SamplerManager.h" />
     <None Include="EngineCore\Graphics\GPUBuffer.h" />
-    <None Include="EngineCore\Graphics\GPUBuffer.cpp">
-      <Filter>MainSource</Filter>
-    </None>
     <None Include="EngineCore\Math\Functions.inl" />
     <None Include="EngineCore\Graphics\Color.h" />
     <None Include="EngineCore\Graphics\PixelBuffer.h" />
-    <None Include="EngineCore\Graphics\Color.cpp">
-      <Filter>MainSource</Filter>
-    </None>
-    <None Include="EngineCore\Graphics\DynamicUploadBuffer.cpp">
-      <Filter>MainSource</Filter>
-    </None>
     <None Include="EngineCore\Graphics\GPUTimeManager.h" />
     <None Include="EngineCore\Graphics\ColorBuffer.h" />
     <None Include="EngineCore\Graphics\CommandAllocatorPool.h" />

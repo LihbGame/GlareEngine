@@ -70,21 +70,21 @@ struct Mesh
 
 struct GraphNode // 96 bytes
 {
-	Matrix4 xform;
-	Quaternion rotation;
-	XMFLOAT3 scale;
+	Matrix4			transform;
+	Quaternion		rotation;
+	XMFLOAT3		scale;
 
-	uint32_t matrixIdx : 28;
-	uint32_t hasSibling : 1;
-	uint32_t hasChildren : 1;
-	uint32_t staleMatrix : 1;
-	uint32_t skeletonRoot : 1;
+	uint32_t		matrixIdx		: 28;
+	uint32_t		hasSibling		: 1;
+	uint32_t		hasChildren		: 1;
+	uint32_t		staleMatrix		: 1;
+	uint32_t		skeletonRoot	: 1;
 };
 
 struct Joint
 {
-	Matrix4 posXform;
-	Matrix3 nrmXform;
+	Matrix4 positionTransform;
+	Matrix3 normalTransform;
 };
 
 class Model
@@ -93,27 +93,27 @@ public:
 
 	~Model() { Destroy(); }
 
-	void Render(MeshSorter& sorter,
+	/*void Render(MeshSorter& sorter,
 		const GPUBuffer& meshConstants,
 		const ScaleAndTranslation sphereTransforms[],
-		const Joint* skeleton) const;
+		const Joint* skeleton) const;*/
 
-	Math::BoundingSphere m_BoundingSphere; // Object-space bounding sphere
-	AxisAlignedBox m_BoundingBox;
-	ByteAddressBuffer m_DataBuffer;
-	ByteAddressBuffer m_MaterialConstants;
-	uint32_t m_NumNodes;
-	uint32_t m_NumMeshes;
-	uint32_t m_NumAnimations;
-	uint32_t m_NumJoints;
-	std::unique_ptr<uint8_t[]> m_MeshData;
-	std::unique_ptr<GraphNode[]> m_SceneGraph;
-	std::vector<Texture> textures;
-	std::unique_ptr<uint8_t[]> m_KeyFrameData;
-	std::unique_ptr<AnimationCurve[]> m_CurveData;
-	std::unique_ptr<AnimationSet[]> m_Animations;
-	std::unique_ptr<uint16_t[]> m_JointIndices;
-	std::unique_ptr<Matrix4[]> m_JointIBMs;
+	Math::BoundingSphere	m_BoundingSphere; // Object-space bounding sphere
+	AxisAlignedBox			m_BoundingBox;
+	ByteAddressBuffer		m_DataBuffer;
+	ByteAddressBuffer		m_MaterialConstants;
+	uint32_t	m_NumNodes;
+	uint32_t	m_NumMeshes;
+	uint32_t	m_NumAnimations;
+	uint32_t	m_NumJoints;
+	std::unique_ptr<uint8_t[]>			m_MeshData;
+	std::unique_ptr<GraphNode[]>		m_SceneGraph;
+	std::vector<Texture>				m_Textures;
+	std::unique_ptr<uint8_t[]>			m_KeyFrameData;
+	std::unique_ptr<AnimationCurve[]>	m_CurveData;
+	std::unique_ptr<AnimationSet[]>		m_Animations;
+	std::unique_ptr<uint16_t[]>			m_JointIndices;
+	std::unique_ptr<Matrix4[]>			m_JointIBMs;
 
 protected:
 	void Destroy();

@@ -1,8 +1,7 @@
 #include "GPUBuffer.h"
 #include "GraphicsCore.h"
-//#include "EsramAllocator.h"
-//#include "CommandContext.h"
-//#include "BufferManager.h"
+#include "CommandContext.h"
+#include "BufferManager.h"
 
 using namespace GlareEngine;
 using namespace GlareEngine::DirectX12Graphics;
@@ -79,7 +78,7 @@ void GPUBuffer::CreatePlaced(const std::wstring& name,
 
 }
 
-inline D3D12_CPU_DESCRIPTOR_HANDLE GlareEngine::GPUBuffer::CreateConstantBufferView(uint32_t Offset, uint32_t Size) const
+inline D3D12_CPU_DESCRIPTOR_HANDLE GPUBuffer::CreateConstantBufferView(uint32_t Offset, uint32_t Size) const
 {
 	assert(Offset + Size <= m_BufferSize);
 
@@ -95,7 +94,7 @@ inline D3D12_CPU_DESCRIPTOR_HANDLE GlareEngine::GPUBuffer::CreateConstantBufferV
 }
 
 
-inline D3D12_RESOURCE_DESC GlareEngine::GPUBuffer::DescribeBuffer(void)
+inline D3D12_RESOURCE_DESC GPUBuffer::DescribeBuffer(void)
 {
 	assert(m_BufferSize != 0);
 
@@ -167,13 +166,13 @@ void StructuredBuffer::CreateDerivedViews(void)
 	g_Device->CreateUnorderedAccessView(m_pResource.Get(), m_CounterBuffer.GetResource(), &UAVDesc, m_UAV);
 }
 
-const D3D12_CPU_DESCRIPTOR_HANDLE& GlareEngine::StructuredBuffer::GetCounterSRV(CommandContext& Context)
+const D3D12_CPU_DESCRIPTOR_HANDLE& StructuredBuffer::GetCounterSRV(CommandContext& Context)
 {
 	Context.TransitionResource(m_CounterBuffer, D3D12_RESOURCE_STATE_GENERIC_READ);
 	return m_CounterBuffer.GetSRV();
 }
 
-const D3D12_CPU_DESCRIPTOR_HANDLE& GlareEngine::StructuredBuffer::GetCounterUAV(CommandContext& Context)
+const D3D12_CPU_DESCRIPTOR_HANDLE& StructuredBuffer::GetCounterUAV(CommandContext& Context)
 {
 	Context.TransitionResource(m_CounterBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	return m_CounterBuffer.GetUAV();

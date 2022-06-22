@@ -6,7 +6,8 @@ using namespace GlareEngine::DirectX12Graphics;
 
 void* DynamicUploadBuffer::Map(void)
 {
-	assert(m_CPUVirtualAddress == nullptr, "Buffer is already locked");
+	
+	assert(m_CPUVirtualAddress == nullptr);//Buffer is already locked
 	ThrowIfFailed(m_pResource->Map(0, nullptr, &m_CPUVirtualAddress));
 	return m_CPUVirtualAddress;
 }
@@ -14,7 +15,7 @@ void* DynamicUploadBuffer::Map(void)
 
 void DynamicUploadBuffer::Unmap(void)
 {
-	assert(m_CPUVirtualAddress != nullptr, "Buffer is not locked");
+	assert(m_CPUVirtualAddress != nullptr);//Buffer is not locked
 	m_pResource->Unmap(0, nullptr);
 	m_CPUVirtualAddress = nullptr;
 }
