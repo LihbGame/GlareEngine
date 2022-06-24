@@ -4,7 +4,6 @@
 #include "BufferManager.h"
 
 using namespace GlareEngine;
-using namespace GlareEngine::DirectX12Graphics;
 
 void GPUBuffer::Create(const std::wstring& name, 
 	uint32_t NumElements, 

@@ -4,73 +4,70 @@
 //#include "TemporalEffects.h"
 namespace GlareEngine
 {
-	namespace DirectX12Graphics
-	{
-		DepthBuffer g_SceneDepthBuffer;
-		ColorBuffer g_SceneColorBuffer;
+	DepthBuffer g_SceneDepthBuffer;
+	ColorBuffer g_SceneColorBuffer;
 
-		//MSAA Buffer
-		DepthBuffer g_SceneMSAADepthBuffer;
-		ColorBuffer g_SceneMSAAColorBuffer;
+	//MSAA Buffer
+	DepthBuffer g_SceneMSAADepthBuffer;
+	ColorBuffer g_SceneMSAAColorBuffer;
 
-		//ColorBuffer g_PostEffectsBuffer;
-		//ColorBuffer g_VelocityBuffer;
-		//ColorBuffer g_OverlayBuffer;
-		//ColorBuffer g_HorizontalBuffer;
+	//ColorBuffer g_PostEffectsBuffer;
+	//ColorBuffer g_VelocityBuffer;
+	//ColorBuffer g_OverlayBuffer;
+	//ColorBuffer g_HorizontalBuffer;
 
-		//ColorBuffer g_SSAOFullScreen(Color(1.0f, 1.0f, 1.0f));
-		//ColorBuffer g_LinearDepth[2];
-		//ColorBuffer g_MinMaxDepth8;
-		//ColorBuffer g_MinMaxDepth16;
-		//ColorBuffer g_MinMaxDepth32;
-		//ColorBuffer g_DepthDownsize1;
-		//ColorBuffer g_DepthDownsize2;
-		//ColorBuffer g_DepthDownsize3;
-		//ColorBuffer g_DepthDownsize4;
-		//ColorBuffer g_DepthTiled1;
-		//ColorBuffer g_DepthTiled2;
-		//ColorBuffer g_DepthTiled3;
-		//ColorBuffer g_DepthTiled4;
-		//ColorBuffer g_AOMerged1;
-		//ColorBuffer g_AOMerged2;
-		//ColorBuffer g_AOMerged3;
-		//ColorBuffer g_AOMerged4;
-		//ColorBuffer g_AOSmooth1;
-		//ColorBuffer g_AOSmooth2;
-		//ColorBuffer g_AOSmooth3;
-		//ColorBuffer g_AOHighQuality1;
-		//ColorBuffer g_AOHighQuality2;
-		//ColorBuffer g_AOHighQuality3;
-		//ColorBuffer g_AOHighQuality4;
+	//ColorBuffer g_SSAOFullScreen(Color(1.0f, 1.0f, 1.0f));
+	//ColorBuffer g_LinearDepth[2];
+	//ColorBuffer g_MinMaxDepth8;
+	//ColorBuffer g_MinMaxDepth16;
+	//ColorBuffer g_MinMaxDepth32;
+	//ColorBuffer g_DepthDownsize1;
+	//ColorBuffer g_DepthDownsize2;
+	//ColorBuffer g_DepthDownsize3;
+	//ColorBuffer g_DepthDownsize4;
+	//ColorBuffer g_DepthTiled1;
+	//ColorBuffer g_DepthTiled2;
+	//ColorBuffer g_DepthTiled3;
+	//ColorBuffer g_DepthTiled4;
+	//ColorBuffer g_AOMerged1;
+	//ColorBuffer g_AOMerged2;
+	//ColorBuffer g_AOMerged3;
+	//ColorBuffer g_AOMerged4;
+	//ColorBuffer g_AOSmooth1;
+	//ColorBuffer g_AOSmooth2;
+	//ColorBuffer g_AOSmooth3;
+	//ColorBuffer g_AOHighQuality1;
+	//ColorBuffer g_AOHighQuality2;
+	//ColorBuffer g_AOHighQuality3;
+	//ColorBuffer g_AOHighQuality4;
 
-		//ColorBuffer g_DoFTileClass[2];
-		//ColorBuffer g_DoFPresortBuffer;
-		//ColorBuffer g_DoFPrefilter;
-		//ColorBuffer g_DoFBlurColor[2];
-		//ColorBuffer g_DoFBlurAlpha[2];
-		//StructuredBuffer g_DoFWorkQueue;
-		//StructuredBuffer g_DoFFastQueue;
-		//StructuredBuffer g_DoFFixupQueue;
+	//ColorBuffer g_DoFTileClass[2];
+	//ColorBuffer g_DoFPresortBuffer;
+	//ColorBuffer g_DoFPrefilter;
+	//ColorBuffer g_DoFBlurColor[2];
+	//ColorBuffer g_DoFBlurAlpha[2];
+	//StructuredBuffer g_DoFWorkQueue;
+	//StructuredBuffer g_DoFFastQueue;
+	//StructuredBuffer g_DoFFixupQueue;
 
-		//ColorBuffer g_MotionPrepBuffer;
-		//ColorBuffer g_LumaBuffer;
-		//ColorBuffer g_TemporalColor[2];
-		//ColorBuffer g_aBloomUAV1[2];    // 640x384 (1/3)
-		//ColorBuffer g_aBloomUAV2[2];    // 320x192 (1/6)  
-		//ColorBuffer g_aBloomUAV3[2];    // 160x96  (1/12)
-		//ColorBuffer g_aBloomUAV4[2];    // 80x48   (1/24)
-		//ColorBuffer g_aBloomUAV5[2];    // 40x24   (1/48)
-		//ColorBuffer g_LumaLR;
-		//ByteAddressBuffer g_Histogram;
-		//ByteAddressBuffer g_FXAAWorkCounters;
-		//ByteAddressBuffer g_FXAAWorkQueue;
-		//TypedBuffer g_FXAAColorQueue(DXGI_FORMAT_R11G11B10_FLOAT);
+	//ColorBuffer g_MotionPrepBuffer;
+	//ColorBuffer g_LumaBuffer;
+	//ColorBuffer g_TemporalColor[2];
+	//ColorBuffer g_aBloomUAV1[2];    // 640x384 (1/3)
+	//ColorBuffer g_aBloomUAV2[2];    // 320x192 (1/6)  
+	//ColorBuffer g_aBloomUAV3[2];    // 160x96  (1/12)
+	//ColorBuffer g_aBloomUAV4[2];    // 80x48   (1/24)
+	//ColorBuffer g_aBloomUAV5[2];    // 40x24   (1/48)
+	//ColorBuffer g_LumaLR;
+	//ByteAddressBuffer g_Histogram;
+	//ByteAddressBuffer g_FXAAWorkCounters;
+	//ByteAddressBuffer g_FXAAWorkQueue;
+	//TypedBuffer g_FXAAColorQueue(DXGI_FORMAT_R11G11B10_FLOAT);
 
-		//// For testing GenerateMipMaps()
-		//ColorBuffer g_GenMipsBuffer;
+	//// For testing GenerateMipMaps()
+	//ColorBuffer g_GenMipsBuffer;
 
-		DXGI_FORMAT DefaultHDRColorFormat = DXGI_FORMAT_R11G11B10_FLOAT;
-	}
+	DXGI_FORMAT DefaultHDRColorFormat = DXGI_FORMAT_R11G11B10_FLOAT;
 }
 
 #define T2X_COLOR_FORMAT DXGI_FORMAT_R10G10B10A2_UNORM
@@ -79,7 +76,7 @@ namespace GlareEngine
 
 
 
-void GlareEngine::DirectX12Graphics::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t NativeHeight)
+void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t NativeHeight)
 {
 	GraphicsContext& InitContext = GraphicsContext::Begin();
 
@@ -202,7 +199,7 @@ void GlareEngine::DirectX12Graphics::InitializeRenderingBuffers(uint32_t NativeW
 	InitContext.Finish();
 }
 
-void GlareEngine::DirectX12Graphics::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t NativeHeight)
+void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t NativeHeight)
 {
 	//resize display buffer
 	g_SceneColorBuffer.Create(L"Main Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
@@ -212,7 +209,7 @@ void GlareEngine::DirectX12Graphics::ResizeDisplayDependentBuffers(uint32_t Nati
 	g_SceneMSAADepthBuffer.Create(L"Scene MSAA Depth Buffer", NativeWidth, NativeHeight, MSAACOUNT, DSV_FORMAT, REVERSE_Z);
 }
 
-void GlareEngine::DirectX12Graphics::DestroyRenderingBuffers()
+void GlareEngine::DestroyRenderingBuffers()
 {
 	g_SceneDepthBuffer.Destroy();
 	g_SceneColorBuffer.Destroy();

@@ -5,7 +5,6 @@
 #include <thread>
 #include <mutex>
 
-using namespace GlareEngine::DirectX12Graphics;
 using namespace std;
 using Microsoft::WRL::ComPtr;
 

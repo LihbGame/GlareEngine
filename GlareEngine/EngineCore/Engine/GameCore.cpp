@@ -91,7 +91,7 @@ namespace GlareEngine
 		void InitializeApplication(GameApp& Game)
 		{
 			//Core Initialize
-			DirectX12Graphics::Initialize();
+			InitializeGraphics();
 			EngineInput::Initialize();
 			EngineAdjust::Initialize();
 			GameTimer::Reset();
@@ -187,7 +187,7 @@ namespace GlareEngine
 			} while (UpdateApplication(app) && !gExit);    // Returns false to quit loop
 
 			TerminateApplication(app);
-			DirectX12Graphics::Shutdown();
+			ShutdownGraphics();
 		}
 
 

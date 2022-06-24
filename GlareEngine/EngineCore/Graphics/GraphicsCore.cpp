@@ -42,92 +42,88 @@ namespace GlareEngine
 	using namespace GlareEngine::Math;
 	using namespace GlareEngine::Display;
 
-	namespace DirectX12Graphics
+	//HDR FORMAT
+	bool g_bTypedUAVLoadSupport_R11G11B10_FLOAT = false;
+	bool g_bTypedUAVLoadSupport_R16G16B16A16_FLOAT = false;
+
+	bool g_bUseGPUBasedValidation = false;
+	bool g_bUseWarpDriver = false;
+	//Device
+	ID3D12Device* g_Device = nullptr;
+	CommandListManager g_CommandManager;
+	ContextManager g_ContextManager;
+
+	//FEATURE LEVEL 11
+	D3D_FEATURE_LEVEL g_D3DFeatureLevel = D3D_FEATURE_LEVEL_11_0;
+
+	//Descriptor Allocator
+	DescriptorAllocator g_DescriptorAllocator[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES] =
 	{
-		//HDR FORMAT
-		bool g_bTypedUAVLoadSupport_R11G11B10_FLOAT = false;
-		bool g_bTypedUAVLoadSupport_R16G16B16A16_FLOAT = false;
+		D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
+		D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER,
+		D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
+		D3D12_DESCRIPTOR_HEAP_TYPE_DSV,
+	};
 
-		bool g_bUseGPUBasedValidation = false;
-		bool g_bUseWarpDriver = false;
-		//Device
-		ID3D12Device* g_Device = nullptr;
-		CommandListManager g_CommandManager;
-		ContextManager g_ContextManager;
+	static const uint32_t vendorID_NVIDIA = 0x10DE;
+	static const uint32_t vendorID_AMD = 0x1002;
+	static const uint32_t vendorID_Intel = 0x8086;
 
-		//FEATURE LEVEL 11
-		D3D_FEATURE_LEVEL g_D3DFeatureLevel = D3D_FEATURE_LEVEL_11_0;
+	//SRV Descriptors Manager ,return Descriptor index
+	vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_TextureSRV;
+	vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_CubeSRV;
 
-		//Descriptor Allocator
-		DescriptorAllocator g_DescriptorAllocator[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES] =
+
+
+	// Check adapter support for DirectX Raytracing.
+	bool IsDirectXRaytracingSupported(ID3D12Device* testDevice)
+	{
+		D3D12_FEATURE_DATA_D3D12_OPTIONS5 featureSupport = {};
+
+		if (FAILED(testDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &featureSupport, sizeof(featureSupport))))
+			return false;
+
+		return featureSupport.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
+	}
+
+	uint32_t GetVendorIdFromDevice(ID3D12Device* pDevice)
+	{
+		LUID luid = pDevice->GetAdapterLuid();
+
+		// Obtain the DXGI factory
+		Microsoft::WRL::ComPtr<IDXGIFactory4> dxgiFactory;
+		SUCCEEDED(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgiFactory)));
+
+		Microsoft::WRL::ComPtr<IDXGIAdapter1> pAdapter;
+
+		if (SUCCEEDED(dxgiFactory->EnumAdapterByLuid(luid, IID_PPV_ARGS(&pAdapter))))
 		{
-			D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
-			D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER,
-			D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
-			D3D12_DESCRIPTOR_HEAP_TYPE_DSV,
-		};
-
-		static const uint32_t vendorID_NVIDIA = 0x10DE;
-		static const uint32_t vendorID_AMD = 0x1002;
-		static const uint32_t vendorID_Intel = 0x8086;
-
-		//SRV Descriptors Manager ,return Descriptor index
-		vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_TextureSRV;
-		vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_CubeSRV;
-
-		
-
-		// Check adapter support for DirectX Raytracing.
-		bool IsDirectXRaytracingSupported(ID3D12Device* testDevice)
-		{
-			D3D12_FEATURE_DATA_D3D12_OPTIONS5 featureSupport = {};
-
-			if (FAILED(testDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &featureSupport, sizeof(featureSupport))))
-				return false;
-
-			return featureSupport.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
-		}
-
-		uint32_t GetVendorIdFromDevice(ID3D12Device* pDevice)
-		{
-			LUID luid = pDevice->GetAdapterLuid();
-
-			// Obtain the DXGI factory
-			Microsoft::WRL::ComPtr<IDXGIFactory4> dxgiFactory;
-			SUCCEEDED(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgiFactory)));
-
-			Microsoft::WRL::ComPtr<IDXGIAdapter1> pAdapter;
-
-			if (SUCCEEDED(dxgiFactory->EnumAdapterByLuid(luid, IID_PPV_ARGS(&pAdapter))))
+			DXGI_ADAPTER_DESC1 desc;
+			if (SUCCEEDED(pAdapter->GetDesc1(&desc)))
 			{
-				DXGI_ADAPTER_DESC1 desc;
-				if (SUCCEEDED(pAdapter->GetDesc1(&desc)))
-				{
-					return desc.VendorId;
-				}
+				return desc.VendorId;
 			}
-			return 0;
 		}
+		return 0;
+	}
 
-		bool IsDeviceNVIDIA(ID3D12Device* pDevice)
-		{
-			return GetVendorIdFromDevice(pDevice) == vendorID_NVIDIA;
-		}
+	bool IsDeviceNVIDIA(ID3D12Device* pDevice)
+	{
+		return GetVendorIdFromDevice(pDevice) == vendorID_NVIDIA;
+	}
 
-		bool IsDeviceAMD(ID3D12Device* pDevice)
-		{
-			return GetVendorIdFromDevice(pDevice) == vendorID_AMD;
-		}
+	bool IsDeviceAMD(ID3D12Device* pDevice)
+	{
+		return GetVendorIdFromDevice(pDevice) == vendorID_AMD;
+	}
 
-		bool IsDeviceIntel(ID3D12Device* pDevice)
-		{
-			return GetVendorIdFromDevice(pDevice) == vendorID_Intel;
-		}
-
+	bool IsDeviceIntel(ID3D12Device* pDevice)
+	{
+		return GetVendorIdFromDevice(pDevice) == vendorID_Intel;
 	}
 
 
-	void DirectX12Graphics::Initialize(bool RequireDXRSupport)
+	void InitializeGraphics(bool RequireDXRSupport)
 	{
 		Microsoft::WRL::ComPtr<ID3D12Device> pDevice;
 
@@ -352,7 +348,7 @@ namespace GlareEngine
 		ParticleEffectManager::Initialize(3840, 2160);*/
 	}
 
-	void DirectX12Graphics::Shutdown(void)
+	void ShutdownGraphics(void)
 	{
 		g_CommandManager.IdleGPU();
 		CommandContext::DestroyAllContexts();
@@ -382,17 +378,17 @@ namespace GlareEngine
 #endif
 		SAFE_RELEASE(g_Device);
 	}
-	D3D12_CPU_DESCRIPTOR_HANDLE DirectX12Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE Type, UINT Count)
+	D3D12_CPU_DESCRIPTOR_HANDLE AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE Type, UINT Count)
 	{
 		return g_DescriptorAllocator[Type].Allocate(Count);
 	}
 
-	int DirectX12Graphics::AddToGlobalTextureSRVDescriptor(const D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes)
+	int AddToGlobalTextureSRVDescriptor(const D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes)
 	{
 		g_TextureSRV.push_back(SRVdes);
 		return int(g_TextureSRV.size() - 1);
 	}
-	int DirectX12Graphics::AddToGlobalCubeSRVDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes)
+	int AddToGlobalCubeSRVDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes)
 	{
 		g_CubeSRV.push_back(SRVdes);
 		return int(g_CubeSRV.size() - 1);

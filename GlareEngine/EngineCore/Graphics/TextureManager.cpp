@@ -15,91 +15,88 @@ string  PBRTextureFileType[] = {
 
 namespace GlareEngine
 {
-	namespace DirectX12Graphics
+	TextureManager* TextureManager::m_pTextureManagerInstance = nullptr;
+	ID3D12GraphicsCommandList* TextureManager::mCommandList = nullptr;
+
+	TextureManager* TextureManager::GetInstance(ID3D12GraphicsCommandList* pCommandList)
 	{
-		TextureManager* TextureManager::m_pTextureManagerInstance = nullptr;
-		ID3D12GraphicsCommandList* TextureManager::mCommandList = nullptr;
-
-		TextureManager* TextureManager::GetInstance(ID3D12GraphicsCommandList* pCommandList)
+		if (m_pTextureManagerInstance == nullptr)
 		{
-			if (m_pTextureManagerInstance == nullptr)
-			{
-				m_pTextureManagerInstance = new TextureManager();
-			}
-			//reset command list 
-			mCommandList = pCommandList;
-
-			return m_pTextureManagerInstance;
+			m_pTextureManagerInstance = new TextureManager();
 		}
+		//reset command list 
+		mCommandList = pCommandList;
 
-		void TextureManager::Shutdown()
+		return m_pTextureManagerInstance;
+	}
+
+	void TextureManager::Shutdown()
+	{
+		if (m_pTextureManagerInstance)
 		{
-			if (m_pTextureManagerInstance)
-			{
-				delete m_pTextureManagerInstance;
-				m_pTextureManagerInstance = nullptr;
-			}
+			delete m_pTextureManagerInstance;
+			m_pTextureManagerInstance = nullptr;
 		}
+	}
 
-		void TextureManager::CreatePBRTextures(string PathName, vector<Texture*>& Textures)
+	void TextureManager::CreatePBRTextures(string PathName, vector<Texture*>& Textures)
+	{
+		string Fullfilename = "";
+		bool bSRGB = true;
+		for (auto Type : PBRTextureFileType)
 		{
-			string Fullfilename = "";
-			bool bSRGB = true;
-			for (auto Type : PBRTextureFileType)
+			Fullfilename = PathName + Type;
+			if (Type == "_normal")
 			{
-				Fullfilename = PathName + Type;
-				if (Type == "_normal")
-				{
-					bSRGB = false;
-				}
-				else
-				{
-					bSRGB = true;
-				}
-				Textures.push_back(GetModelTexture(StringToWString(Fullfilename), bSRGB));
+				bSRGB = false;
 			}
+			else
+			{
+				bSRGB = true;
+			}
+			Textures.push_back(GetModelTexture(StringToWString(Fullfilename), bSRGB));
 		}
+	}
 
-		bool TextureManager::CreateTexture(std::wstring name, std::wstring filename, bool ForceSRGB)
+	bool TextureManager::CreateTexture(std::wstring name, std::wstring filename, bool ForceSRGB)
+	{
+		if (CheckFileExist(filename))
 		{
-			if (CheckFileExist(filename))
-			{
-				std::unique_ptr<Texture> tex = std::make_unique<Texture>();
-				ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(GlareEngine::DirectX12Graphics::g_Device,
-					mCommandList, filename.c_str(),
-					tex.get()->Resource, tex.get()->UploadHeap, ForceSRGB));
-				mTextures[name] = std::move(tex);
-				return true;
-			}
-			return false;
+			std::unique_ptr<Texture> tex = std::make_unique<Texture>();
+			ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(GlareEngine::g_Device,
+				mCommandList, filename.c_str(),
+				tex.get()->Resource, tex.get()->UploadHeap, ForceSRGB));
+			mTextures[name] = std::move(tex);
+			return true;
 		}
+		return false;
+	}
 
-		std::unique_ptr<Texture>& TextureManager::GetTexture(std::wstring name, bool ForceSRGB)
+	std::unique_ptr<Texture>& TextureManager::GetTexture(std::wstring name, bool ForceSRGB)
+	{
+		if (mTextures.find(name) == mTextures.end())
 		{
-			if (mTextures.find(name) == mTextures.end())
-			{
-				CreateTexture(name, RootFilePath + name + L".dds", ForceSRGB);
-			}
-			return mTextures[name];
+			CreateTexture(name, RootFilePath + name + L".dds", ForceSRGB);
 		}
+		return mTextures[name];
+	}
 
-		Texture* TextureManager::GetModelTexture(std::wstring name, bool ForceSRGB)
+	Texture* TextureManager::GetModelTexture(std::wstring name, bool ForceSRGB)
+	{
+		bool isTextureCreated = true;
+		if (mTextures.find(name) == mTextures.end())
 		{
-			bool isTextureCreated = true;
-			if (mTextures.find(name) == mTextures.end())
-			{
-				isTextureCreated = CreateTexture(name, name + L".dds", ForceSRGB);
-			}
-			return isTextureCreated ? mTextures[name].get() : nullptr;
+			isTextureCreated = CreateTexture(name, name + L".dds", ForceSRGB);
 		}
+		return isTextureCreated ? mTextures[name].get() : nullptr;
+	}
 
-		void TextureManager::ReleaseUploadTextures()
+	void TextureManager::ReleaseUploadTextures()
+	{
+		for (auto& texture : mTextures)
 		{
-			for (auto &texture: mTextures)
-			{
-				texture.second.get()->UploadHeap.Get()->Release();
-				texture.second.get()->UploadHeap.Detach();
-			}
+			texture.second.get()->UploadHeap.Get()->Release();
+			texture.second.get()->UploadHeap.Detach();
 		}
 	}
 }

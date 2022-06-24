@@ -2,8 +2,6 @@
 #include "GraphicsCore.h"
 #include "DynamicUploadBuffer.h"
 
-using namespace GlareEngine::DirectX12Graphics;
-
 void* DynamicUploadBuffer::Map(void)
 {
 	

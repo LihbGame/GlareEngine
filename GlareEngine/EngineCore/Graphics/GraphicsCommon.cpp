@@ -5,69 +5,64 @@
 #include "ColorBuffer.h"
 //#include "BitonicSort.h"
 
-using namespace GlareEngine::DirectX12Graphics;
-
 namespace GlareEngine
 {
-	namespace DirectX12Graphics
+	SamplerDesc SamplerLinearWrapDesc;
+	SamplerDesc SamplerAnisoWrapDesc;
+	SamplerDesc SamplerShadowDesc;
+	SamplerDesc SamplerLinearClampDesc;
+	SamplerDesc SamplerVolumeWrapDesc;
+	SamplerDesc SamplerPointClampDesc;
+	SamplerDesc SamplerPointBorderDesc;
+	SamplerDesc SamplerLinearBorderDesc;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE SamplerLinearWrap;
+	D3D12_CPU_DESCRIPTOR_HANDLE SamplerAnisoWrap;
+	D3D12_CPU_DESCRIPTOR_HANDLE SamplerShadow;
+	D3D12_CPU_DESCRIPTOR_HANDLE SamplerLinearClamp;
+	D3D12_CPU_DESCRIPTOR_HANDLE SamplerVolumeWrap;
+	D3D12_CPU_DESCRIPTOR_HANDLE SamplerPointClamp;
+	D3D12_CPU_DESCRIPTOR_HANDLE SamplerPointBorder;
+	D3D12_CPU_DESCRIPTOR_HANDLE SamplerLinearBorder;
+
+	ColorBuffer DefaultTextures[kNumDefaultTextures];
+	D3D12_CPU_DESCRIPTOR_HANDLE GetDefaultTexture(eDefaultTexture texID)
 	{
-		SamplerDesc SamplerLinearWrapDesc;
-		SamplerDesc SamplerAnisoWrapDesc;
-		SamplerDesc SamplerShadowDesc;
-		SamplerDesc SamplerLinearClampDesc;
-		SamplerDesc SamplerVolumeWrapDesc;
-		SamplerDesc SamplerPointClampDesc;
-		SamplerDesc SamplerPointBorderDesc;
-		SamplerDesc SamplerLinearBorderDesc;
-
-		D3D12_CPU_DESCRIPTOR_HANDLE SamplerLinearWrap;
-		D3D12_CPU_DESCRIPTOR_HANDLE SamplerAnisoWrap;
-		D3D12_CPU_DESCRIPTOR_HANDLE SamplerShadow;
-		D3D12_CPU_DESCRIPTOR_HANDLE SamplerLinearClamp;
-		D3D12_CPU_DESCRIPTOR_HANDLE SamplerVolumeWrap;
-		D3D12_CPU_DESCRIPTOR_HANDLE SamplerPointClamp;
-		D3D12_CPU_DESCRIPTOR_HANDLE SamplerPointBorder;
-		D3D12_CPU_DESCRIPTOR_HANDLE SamplerLinearBorder;
-
-		ColorBuffer DefaultTextures[kNumDefaultTextures];
-		D3D12_CPU_DESCRIPTOR_HANDLE GetDefaultTexture(eDefaultTexture texID)
-		{
-			assert(texID < kNumDefaultTextures);
-			return DefaultTextures[texID].GetSRV();
-		}
-
-		D3D12_RASTERIZER_DESC RasterizerDefault;    // Counter-clockwise
-		D3D12_RASTERIZER_DESC RasterizerWireframe;
-		D3D12_RASTERIZER_DESC RasterizerDefaultMsaa;
-		D3D12_RASTERIZER_DESC RasterizerDefaultCw;    // Clockwise winding
-		D3D12_RASTERIZER_DESC RasterizerDefaultCwMsaa;
-		D3D12_RASTERIZER_DESC RasterizerTwoSided;
-		D3D12_RASTERIZER_DESC RasterizerTwoSidedMsaa;
-		D3D12_RASTERIZER_DESC RasterizerShadow;
-		D3D12_RASTERIZER_DESC RasterizerShadowCW;
-		D3D12_RASTERIZER_DESC RasterizerShadowTwoSided;
-
-		D3D12_BLEND_DESC BlendNoColorWrite;
-		D3D12_BLEND_DESC BlendDisable;
-		D3D12_BLEND_DESC BlendPreMultiplied;
-		D3D12_BLEND_DESC BlendTraditional;
-		D3D12_BLEND_DESC BlendAdditive;
-		D3D12_BLEND_DESC BlendTraditionalAdditive;
-
-		D3D12_DEPTH_STENCIL_DESC DepthStateDisabled;
-		D3D12_DEPTH_STENCIL_DESC DepthStateReadWrite;
-		D3D12_DEPTH_STENCIL_DESC DepthStateReadWriteReversed;
-		D3D12_DEPTH_STENCIL_DESC DepthStateReadOnly;
-		D3D12_DEPTH_STENCIL_DESC DepthStateReadOnlyReversed;
-		D3D12_DEPTH_STENCIL_DESC DepthStateTestEqual;
-
-		CommandSignature DispatchIndirectCommandSignature(1);
-		CommandSignature DrawIndirectCommandSignature(1);
+		assert(texID < kNumDefaultTextures);
+		return DefaultTextures[texID].GetSRV();
 	}
+
+	D3D12_RASTERIZER_DESC RasterizerDefault;    // Counter-clockwise
+	D3D12_RASTERIZER_DESC RasterizerWireframe;
+	D3D12_RASTERIZER_DESC RasterizerDefaultMsaa;
+	D3D12_RASTERIZER_DESC RasterizerDefaultCw;    // Clockwise winding
+	D3D12_RASTERIZER_DESC RasterizerDefaultCwMsaa;
+	D3D12_RASTERIZER_DESC RasterizerTwoSided;
+	D3D12_RASTERIZER_DESC RasterizerTwoSidedMsaa;
+	D3D12_RASTERIZER_DESC RasterizerShadow;
+	D3D12_RASTERIZER_DESC RasterizerShadowCW;
+	D3D12_RASTERIZER_DESC RasterizerShadowTwoSided;
+
+	D3D12_BLEND_DESC BlendNoColorWrite;
+	D3D12_BLEND_DESC BlendDisable;
+	D3D12_BLEND_DESC BlendPreMultiplied;
+	D3D12_BLEND_DESC BlendTraditional;
+	D3D12_BLEND_DESC BlendAdditive;
+	D3D12_BLEND_DESC BlendTraditionalAdditive;
+
+	D3D12_DEPTH_STENCIL_DESC DepthStateDisabled;
+	D3D12_DEPTH_STENCIL_DESC DepthStateReadWrite;
+	D3D12_DEPTH_STENCIL_DESC DepthStateReadWriteReversed;
+	D3D12_DEPTH_STENCIL_DESC DepthStateReadOnly;
+	D3D12_DEPTH_STENCIL_DESC DepthStateReadOnlyReversed;
+	D3D12_DEPTH_STENCIL_DESC DepthStateTestEqual;
+
+	CommandSignature DispatchIndirectCommandSignature(1);
+	CommandSignature DrawIndirectCommandSignature(1);
 }
 
 
-void GlareEngine::DirectX12Graphics::InitializeAllCommonState(void)
+void GlareEngine::InitializeAllCommonState(void)
 {
 	InitializeSampler();
 	InitializeRasterizer();
@@ -97,7 +92,7 @@ void GlareEngine::DirectX12Graphics::InitializeAllCommonState(void)
 	DrawIndirectCommandSignature.Finalize();
 }
 
-void GlareEngine::DirectX12Graphics::InitializeSampler(void)
+void GlareEngine::InitializeSampler(void)
 {
 	SamplerLinearWrapDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 	SamplerLinearWrap = SamplerLinearWrapDesc.CreateDescriptor();
@@ -138,7 +133,7 @@ void GlareEngine::DirectX12Graphics::InitializeSampler(void)
 	SamplerPointBorder = SamplerPointBorderDesc.CreateDescriptor();
 }
 
-void GlareEngine::DirectX12Graphics::InitializeRasterizer(void)
+void GlareEngine::InitializeRasterizer(void)
 {
 	// Default Rasterizer states
 	RasterizerDefault.FillMode = D3D12_FILL_MODE_SOLID;
@@ -186,7 +181,7 @@ void GlareEngine::DirectX12Graphics::InitializeRasterizer(void)
 	RasterizerShadowCW.FrontCounterClockwise = FALSE;
 }
 
-void GlareEngine::DirectX12Graphics::InitializeDepthState(void)
+void GlareEngine::InitializeDepthState(void)
 {
 	DepthStateDisabled.DepthEnable = FALSE;
 	DepthStateDisabled.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
@@ -219,7 +214,7 @@ void GlareEngine::DirectX12Graphics::InitializeDepthState(void)
 
 }
 
-void GlareEngine::DirectX12Graphics::InitializeBlendState(void)
+void GlareEngine::InitializeBlendState(void)
 {
 	D3D12_BLEND_DESC alphaBlend = {};
 	alphaBlend.IndependentBlendEnable = FALSE;
@@ -249,7 +244,7 @@ void GlareEngine::DirectX12Graphics::InitializeBlendState(void)
 	BlendTraditionalAdditive = alphaBlend;
 }
 
-void GlareEngine::DirectX12Graphics::DestroyCommonState(void)
+void GlareEngine::DestroyCommonState(void)
 {
 	for (uint32_t i = 0; i < kNumDefaultTextures; ++i)
 		DefaultTextures[i].Destroy();

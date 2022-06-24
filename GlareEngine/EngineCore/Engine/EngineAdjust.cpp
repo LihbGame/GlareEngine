@@ -8,7 +8,6 @@
 using namespace std;
 using namespace GlareEngine;
 using namespace GlareEngine::Math;
-using namespace GlareEngine::DirectX12Graphics;
 
 namespace GlareEngine
 {

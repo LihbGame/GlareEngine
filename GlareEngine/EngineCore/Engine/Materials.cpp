@@ -91,7 +91,7 @@ namespace GlareEngine
 			{
 				Descriptor = GetDefaultTexture(kBlackOpaque2D);
 			}
-			int TextureSrvIndex = DirectX12Graphics::AddToGlobalTextureSRVDescriptor(Descriptor);
+			int TextureSrvIndex = AddToGlobalTextureSRVDescriptor(Descriptor);
 			Mat->mDescriptorsIndex.push_back(TextureSrvIndex);
 		}
 	}

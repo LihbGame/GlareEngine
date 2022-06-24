@@ -10,10 +10,8 @@
 #include "EngineAdjust.h"
 #include "EngineLog.h"
 
-
 using namespace GlareEngine;
 using namespace GlareEngine::Math;
-using namespace GlareEngine::DirectX12Graphics;
 
 namespace GlareEngine
 {
@@ -95,12 +93,12 @@ namespace GlareEngine
 			m_TimerIndex = GPUTimeManager::NewTimer();
 		}
 
-		void Start(DirectX12Graphics::CommandContext& Context)
+		void Start(CommandContext& Context)
 		{
 			GPUTimeManager::StartTimer(Context, m_TimerIndex);
 		}
 
-		void Stop(DirectX12Graphics::CommandContext& Context)
+		void Stop(CommandContext& Context)
 		{
 			GPUTimeManager::StopTimer(Context, m_TimerIndex);
 		}
@@ -210,7 +208,7 @@ namespace GlareEngine
 			return nullptr;
 		}
 
-		void StartTiming(DirectX12Graphics::CommandContext* Context)
+		void StartTiming(CommandContext* Context)
 		{
 			m_StartTick = (int64_t)GameTimer::TotalTime();
 			if (Context == nullptr)
@@ -221,7 +219,7 @@ namespace GlareEngine
 			Context->PIXBeginEvent(m_Name.c_str());
 		}
 
-		void StopTiming(DirectX12Graphics::CommandContext* Context)
+		void StopTiming(CommandContext* Context)
 		{
 			m_EndTick = (int64_t)GameTimer::TotalTime();
 			if (Context == nullptr)
@@ -261,8 +259,8 @@ namespace GlareEngine
 			}
 		}
 
-		static void PushProfilingMarker(const wstring& name, DirectX12Graphics::CommandContext* Context);
-		static void PopProfilingMarker(DirectX12Graphics::CommandContext* Context);
+		static void PushProfilingMarker(const wstring& name, CommandContext* Context);
+		static void PopProfilingMarker(CommandContext* Context);
 		static void Update(void);
 		static void UpdateTimes(void)
 		{
@@ -341,12 +339,12 @@ namespace GlareEngine
 			NestedTimingTree::UpdateTimes();
 		}
 
-		void BeginBlock(const wstring& name, DirectX12Graphics::CommandContext* Context)
+		void BeginBlock(const wstring& name, CommandContext* Context)
 		{
 			NestedTimingTree::PushProfilingMarker(name, Context);
 		}
 
-		void EndBlock(DirectX12Graphics::CommandContext* Context)
+		void EndBlock(CommandContext* Context)
 		{
 			NestedTimingTree::PopProfilingMarker(Context);
 		}
@@ -357,13 +355,13 @@ namespace GlareEngine
 		}
 	} // EngineProfiling
 
-	void NestedTimingTree::PushProfilingMarker(const wstring& name, DirectX12Graphics::CommandContext* Context)
+	void NestedTimingTree::PushProfilingMarker(const wstring& name, CommandContext* Context)
 	{
 		sm_CurrentNode = sm_CurrentNode->GetChild(name);
 		sm_CurrentNode->StartTiming(Context);
 	}
 
-	void NestedTimingTree::PopProfilingMarker(DirectX12Graphics::CommandContext* Context)
+	void NestedTimingTree::PopProfilingMarker(CommandContext* Context)
 	{
 		sm_CurrentNode->StopTiming(Context);
 		sm_CurrentNode = sm_CurrentNode->m_Parent;

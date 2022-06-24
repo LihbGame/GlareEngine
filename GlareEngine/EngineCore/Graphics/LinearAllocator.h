@@ -24,122 +24,121 @@ enum
 	CPUAllocatorPageSize = 0x200000    // 2MB
 };
 
-namespace GlareEngine {
-	namespace DirectX12Graphics {
-		//各种类型的分配可能包含NULL指针。 如果你不确定，请在取消引用前进行检查。
-		struct DynamicAlloc
+namespace GlareEngine
+{
+	//各种类型的分配可能包含NULL指针。 如果你不确定，请在取消引用前进行检查。
+	struct DynamicAlloc
+	{
+		DynamicAlloc(GPUResource& BaseResource, size_t ThisOffset, size_t ThisSize)
+			: Buffer(BaseResource), Offset(ThisOffset), Size(ThisSize) {}
+
+		GPUResource& Buffer;      // 与该内存相关联的D3D缓冲区。
+		size_t Offset;            // 缓冲区资源开始的偏移量.
+		size_t Size;              // 本次分配的保留大小
+		void* DataPtr;            // CPU可写地址
+		D3D12_GPU_VIRTUAL_ADDRESS GPUAddress;    // GPU可见地址
+	};
+
+
+	class LinearAllocationPage : public GPUResource
+	{
+	public:
+		LinearAllocationPage(ID3D12Resource* pResource, D3D12_RESOURCE_STATES Usage) : GPUResource()
 		{
-			DynamicAlloc(GPUResource& BaseResource, size_t ThisOffset, size_t ThisSize)
-				: Buffer(BaseResource), Offset(ThisOffset), Size(ThisSize) {}
+			m_pResource.Attach(pResource);
+			m_UsageState = Usage;
+			m_GPUVirtualAddress = m_pResource->GetGPUVirtualAddress();
+			m_pResource->Map(0, nullptr, &m_CPUVirtualAddress);
+		}
 
-			GPUResource& Buffer;      // 与该内存相关联的D3D缓冲区。
-			size_t Offset;            // 缓冲区资源开始的偏移量.
-			size_t Size;              // 本次分配的保留大小
-			void* DataPtr;            // CPU可写地址
-			D3D12_GPU_VIRTUAL_ADDRESS GPUAddress;    // GPU可见地址
-		};
-
-
-		class LinearAllocationPage : public GPUResource
+		~LinearAllocationPage()
 		{
-		public:
-			LinearAllocationPage(ID3D12Resource* pResource, D3D12_RESOURCE_STATES Usage) : GPUResource()
+			Unmap();
+		}
+
+		void Map(void)
+		{
+			if (m_CPUVirtualAddress == nullptr)
 			{
-				m_pResource.Attach(pResource);
-				m_UsageState = Usage;
-				m_GPUVirtualAddress = m_pResource->GetGPUVirtualAddress();
 				m_pResource->Map(0, nullptr, &m_CPUVirtualAddress);
 			}
+		}
 
-			~LinearAllocationPage()
-			{
-				Unmap();
-			}
-
-			void Map(void)
-			{
-				if (m_CPUVirtualAddress == nullptr)
-				{
-					m_pResource->Map(0, nullptr, &m_CPUVirtualAddress);
-				}
-			}
-
-			void Unmap(void)
-			{
-				if (m_CPUVirtualAddress != nullptr)
-				{
-					m_pResource->Unmap(0, nullptr);
-					m_CPUVirtualAddress = nullptr;
-				}
-			}
-
-			void* m_CPUVirtualAddress;
-			D3D12_GPU_VIRTUAL_ADDRESS m_GPUVirtualAddress;
-		};
-
-		//Linear Allocator Page Manager
-		class LinearAllocatorPageManager
+		void Unmap(void)
 		{
-		public:
+			if (m_CPUVirtualAddress != nullptr)
+			{
+				m_pResource->Unmap(0, nullptr);
+				m_CPUVirtualAddress = nullptr;
+			}
+		}
 
-			LinearAllocatorPageManager();
-			LinearAllocationPage* RequestPage(void);
-			LinearAllocationPage* CreateNewPage(size_t PageSize = 0);
+		void* m_CPUVirtualAddress;
+		D3D12_GPU_VIRTUAL_ADDRESS m_GPUVirtualAddress;
+	};
 
-			// Discarded pages will get recycled.  This is for fixed size pages.
-			void DiscardPages(uint64_t FenceID, const std::vector<LinearAllocationPage*>& Pages);
+	//Linear Allocator Page Manager
+	class LinearAllocatorPageManager
+	{
+	public:
 
-			// Freed pages will be destroyed once their fence has passed.  This is for single-use,"large" pages.
-			void FreeLargePages(uint64_t FenceID, const std::vector<LinearAllocationPage*>& Pages);
+		LinearAllocatorPageManager();
+		LinearAllocationPage* RequestPage(void);
+		LinearAllocationPage* CreateNewPage(size_t PageSize = 0);
 
-			void Destroy(void) { m_PagePool.clear(); }
+		// Discarded pages will get recycled.  This is for fixed size pages.
+		void DiscardPages(uint64_t FenceID, const std::vector<LinearAllocationPage*>& Pages);
 
-		private:
+		// Freed pages will be destroyed once their fence has passed.  This is for single-use,"large" pages.
+		void FreeLargePages(uint64_t FenceID, const std::vector<LinearAllocationPage*>& Pages);
 
-			static LinearAllocatorType sm_AutoType;
+		void Destroy(void) { m_PagePool.clear(); }
 
-			LinearAllocatorType m_AllocationType;
-			std::vector<std::unique_ptr<LinearAllocationPage> > m_PagePool;
-			std::queue<std::pair<uint64_t, LinearAllocationPage*> > m_RetiredPages;
-			std::queue<std::pair<uint64_t, LinearAllocationPage*> > m_DeletionQueue;
-			std::queue<LinearAllocationPage*> m_AvailablePages;
-			std::mutex m_Mutex;
-		};
+	private:
+
+		static LinearAllocatorType sm_AutoType;
+
+		LinearAllocatorType m_AllocationType;
+		std::vector<std::unique_ptr<LinearAllocationPage> > m_PagePool;
+		std::queue<std::pair<uint64_t, LinearAllocationPage*> > m_RetiredPages;
+		std::queue<std::pair<uint64_t, LinearAllocationPage*> > m_DeletionQueue;
+		std::queue<LinearAllocationPage*> m_AvailablePages;
+		std::mutex m_Mutex;
+	};
 
 
 
-		class LinearAllocator
+	class LinearAllocator
+	{
+	public:
+
+		LinearAllocator(LinearAllocatorType Type) : m_AllocationType(Type), m_PageSize(0), m_CurOffset(~(size_t)0), m_CurPage(nullptr)
 		{
-		public:
+			assert(Type > InvalidAllocator && Type < NumAllocatorTypes);
+			m_PageSize = (Type == GPUExclusive ? GPUAllocatorPageSize : CPUAllocatorPageSize);
+		}
 
-			LinearAllocator(LinearAllocatorType Type) : m_AllocationType(Type), m_PageSize(0), m_CurOffset(~(size_t)0), m_CurPage(nullptr)
-			{
-				assert(Type > InvalidAllocator && Type < NumAllocatorTypes);
-				m_PageSize = (Type == GPUExclusive ? GPUAllocatorPageSize : CPUAllocatorPageSize);
-			}
+		DynamicAlloc Allocate(size_t SizeInBytes, size_t Alignment = DEFAULT_ALIGN);
 
-			DynamicAlloc Allocate(size_t SizeInBytes, size_t Alignment = DEFAULT_ALIGN);
+		void CleanupUsedPages(uint64_t FenceID);
 
-			void CleanupUsedPages(uint64_t FenceID);
+		static void DestroyAll(void)
+		{
+			sm_PageManager[0].Destroy();
+			sm_PageManager[1].Destroy();
+		}
 
-			static void DestroyAll(void)
-			{
-				sm_PageManager[0].Destroy();
-				sm_PageManager[1].Destroy();
-			}
+	private:
 
-		private:
+		DynamicAlloc AllocateLargePage(size_t SizeInBytes);
 
-			DynamicAlloc AllocateLargePage(size_t SizeInBytes);
+		static LinearAllocatorPageManager sm_PageManager[2];
 
-			static LinearAllocatorPageManager sm_PageManager[2];
-
-			LinearAllocatorType m_AllocationType;
-			size_t m_PageSize;
-			size_t m_CurOffset;
-			LinearAllocationPage* m_CurPage;
-			std::vector<LinearAllocationPage*> m_RetiredPages;
-			std::vector<LinearAllocationPage*> m_LargePageList;
-		};
-	}
+		LinearAllocatorType m_AllocationType;
+		size_t m_PageSize;
+		size_t m_CurOffset;
+		LinearAllocationPage* m_CurPage;
+		std::vector<LinearAllocationPage*> m_RetiredPages;
+		std::vector<LinearAllocationPage*> m_LargePageList;
+	};
 }

@@ -9,8 +9,6 @@
 
 GraphicsPSO CSky::mPSO;
 
-using namespace GlareEngine::DirectX12Graphics;
-
 #define  HDR_SKY L"HDRSky\\SKY_HDR"
 #define  LDR_SKY L"HDRSky\\SKY_LDR"
 

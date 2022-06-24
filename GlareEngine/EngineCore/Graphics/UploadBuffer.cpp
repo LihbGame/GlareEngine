@@ -1,8 +1,6 @@
 #include "UploadBuffer.h"
 #include "GraphicsCore.h"
 
-using namespace GlareEngine::DirectX12Graphics;
-
 void UploadBuffer::Create( const std::wstring& name, size_t BufferSize )
 {
     Destroy();

@@ -21,7 +21,7 @@ namespace
 void GPUTimeManager::Initialize(uint32_t MaxNumTimers)
 {
 	uint64_t GPUFrequency;
-	DirectX12Graphics::g_CommandManager.GetCommandQueue()->GetTimestampFrequency(&GPUFrequency);
+	g_CommandManager.GetCommandQueue()->GetTimestampFrequency(&GPUFrequency);
 	sm_GpuTickDelta = 1.0 / static_cast<double>(GPUFrequency);
 
 	D3D12_HEAP_PROPERTIES HeapProps;
@@ -44,7 +44,7 @@ void GPUTimeManager::Initialize(uint32_t MaxNumTimers)
 	BufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 	BufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-	ThrowIfFailed(DirectX12Graphics::g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &BufferDesc,
+	ThrowIfFailed(g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &BufferDesc,
 		D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&sm_ReadBackBuffer)));
 	sm_ReadBackBuffer->SetName(L"GpuTimeStamp Buffer");
 
@@ -52,7 +52,7 @@ void GPUTimeManager::Initialize(uint32_t MaxNumTimers)
 	QueryHeapDesc.Count = MaxNumTimers * 2;
 	QueryHeapDesc.NodeMask = 1;
 	QueryHeapDesc.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
-	ThrowIfFailed(DirectX12Graphics::g_Device->CreateQueryHeap(&QueryHeapDesc, IID_PPV_ARGS(&sm_QueryHeap)));
+	ThrowIfFailed(g_Device->CreateQueryHeap(&QueryHeapDesc, IID_PPV_ARGS(&sm_QueryHeap)));
 	sm_QueryHeap->SetName(L"GpuTimeStamp QueryHeap");
 
 	sm_MaxNumTimers = (uint32_t)MaxNumTimers;
@@ -72,19 +72,19 @@ uint32_t GPUTimeManager::NewTimer(void)
 	return sm_NumTimers++;
 }
 
-void GPUTimeManager::StartTimer(DirectX12Graphics::CommandContext& Context, uint32_t TimerIdx)
+void GPUTimeManager::StartTimer(CommandContext& Context, uint32_t TimerIdx)
 {
 	Context.InsertTimeStamp(sm_QueryHeap, TimerIdx * 2);
 }
 
-void GPUTimeManager::StopTimer(DirectX12Graphics::CommandContext& Context, uint32_t TimerIdx)
+void GPUTimeManager::StopTimer(CommandContext& Context, uint32_t TimerIdx)
 {
 	Context.InsertTimeStamp(sm_QueryHeap, TimerIdx * 2 + 1);
 }
 
 void GPUTimeManager::BeginReadBack(void)
 {
-	DirectX12Graphics::g_CommandManager.WaitForFence(sm_Fence);
+	g_CommandManager.WaitForFence(sm_Fence);
 
 	D3D12_RANGE Range;
 	Range.Begin = 0;
@@ -109,7 +109,7 @@ void GPUTimeManager::EndReadBack(void)
 	sm_ReadBackBuffer->Unmap(0, &EmptyRange);
 	sm_TimeStampBuffer = nullptr;
 
-	DirectX12Graphics::CommandContext& Context = DirectX12Graphics::CommandContext::Begin();
+	CommandContext& Context = CommandContext::Begin();
 	for (UINT i = 0; i < sm_NumTimers * 2; i++)
 	{
 		Context.InsertTimeStamp(sm_QueryHeap, i);

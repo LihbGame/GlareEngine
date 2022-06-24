@@ -27,7 +27,6 @@
 
 using namespace glTF;
 using namespace GlareEngine;
-using namespace GlareEngine::DirectX12Graphics;
 
 void ReadFloats( json& list, float flt_array[] )
 {

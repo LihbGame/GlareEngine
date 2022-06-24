@@ -30,11 +30,11 @@ void ModelMesh::SetupMesh(ID3D12GraphicsCommandList* pCommandList, const char* n
 	CopyMemory(mMeshGeo.IndexBufferCPU->GetBufferPointer(), mMeshData.Indices32.data(), ibByteSize);
 
 
-	mMeshGeo.VertexBufferGPU = EngineUtility::CreateDefaultBuffer(DirectX12Graphics::g_Device,
+	mMeshGeo.VertexBufferGPU = EngineUtility::CreateDefaultBuffer(g_Device,
 		pCommandList, mMeshData.Vertices.data(), vbByteSize, mMeshGeo.VertexBufferUploader);
 
 
-	mMeshGeo.IndexBufferGPU = EngineUtility::CreateDefaultBuffer(DirectX12Graphics::g_Device,
+	mMeshGeo.IndexBufferGPU = EngineUtility::CreateDefaultBuffer(g_Device,
 		pCommandList, mMeshData.Indices32.data(), ibByteSize, mMeshGeo.IndexBufferUploader);
 
 

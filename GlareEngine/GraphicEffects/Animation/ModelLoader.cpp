@@ -3,14 +3,8 @@
 #include "GraphicsCore.h"
 
 using namespace GlareEngine; 
-using namespace GlareEngine::DirectX12Graphics;
 
 ModelLoader* ModelLoader::g_ModelLoader = new ModelLoader();
-
-
-
-
-
 
 ModelLoader::ModelLoader()
 {

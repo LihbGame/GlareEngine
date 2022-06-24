@@ -8,8 +8,8 @@ namespace GlareEngine
 	{
 		void Update();
 
-		void BeginBlock(const std::wstring& name, DirectX12Graphics::CommandContext* Context = nullptr);
-		void EndBlock(DirectX12Graphics::CommandContext* Context = nullptr);
+		void BeginBlock(const std::wstring& name, CommandContext* Context = nullptr);
+		void EndBlock(CommandContext* Context = nullptr);
 
 		bool IsPaused();
 	};
@@ -20,7 +20,7 @@ namespace GlareEngine
 	{
 	public:
 		ScopedTimer(const std::wstring&) {}
-		ScopedTimer(const std::wstring&, DirectX12Graphics::CommandContext&) {}
+		ScopedTimer(const std::wstring&, CommandContext&) {}
 	};
 #else
 	class ScopedTimer
@@ -30,7 +30,7 @@ namespace GlareEngine
 		{
 			EngineProfiling::BeginBlock(name);
 		}
-		ScopedTimer(const std::wstring& name, DirectX12Graphics::CommandContext& Context) : m_Context(&Context)
+		ScopedTimer(const std::wstring& name, CommandContext& Context) : m_Context(&Context)
 		{
 			EngineProfiling::BeginBlock(name, m_Context);
 		}
@@ -40,7 +40,7 @@ namespace GlareEngine
 		}
 
 	private:
-		DirectX12Graphics::CommandContext* m_Context;
+		CommandContext* m_Context;
 	};
 #endif
 

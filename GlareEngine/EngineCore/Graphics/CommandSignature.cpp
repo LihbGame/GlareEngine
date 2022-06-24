@@ -2,7 +2,7 @@
 #include "RootSignature.h"
 #include "GraphicsCore.h"
 
-using namespace GlareEngine::DirectX12Graphics;
+using namespace GlareEngine;
 
 void CommandSignature::Finalize(const RootSignature* RootSignature)
 {

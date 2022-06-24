@@ -1,6 +1,7 @@
 #include "ReadbackBuffer.h"
 #include "GraphicsCore.h"
-using namespace GlareEngine::DirectX12Graphics;
+
+using namespace GlareEngine;
 
 void ReadbackBuffer::Create(const std::wstring& name, uint32_t NumElements, uint32_t ElementSize)
 {
@@ -32,7 +33,7 @@ void ReadbackBuffer::Create(const std::wstring& name, uint32_t NumElements, uint
 	ResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 	ResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-	ThrowIfFailed(DirectX12Graphics::g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &ResourceDesc,
+	ThrowIfFailed(g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &ResourceDesc,
 		D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&m_pResource)));
 
 	m_GPUVirtualAddress = m_pResource->GetGPUVirtualAddress();

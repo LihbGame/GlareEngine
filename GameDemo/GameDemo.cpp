@@ -29,7 +29,6 @@
 
 using namespace GlareEngine;
 using namespace GlareEngine::GameCore;
-using namespace GlareEngine::DirectX12Graphics;
 using namespace GlareEngine::EngineInput;
 
 
@@ -41,10 +40,7 @@ using namespace GlareEngine::EngineInput;
 #define CAMERA_SPEED 100.0f
 
 
-
-
 const int gNumFrameResources = 3;
-
 
 
 class App :public GameApp
