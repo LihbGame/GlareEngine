@@ -1,5 +1,5 @@
 #pragma once
-
+#include "EngineThread.h"
 #define RESIZE_RANGE 3
 enum class CursorType
 {
@@ -68,6 +68,8 @@ namespace GlareEngine
 			MONITORINFO mMonitorInfo;
 			POINT mLastMousePos;
 			CursorType mCursorType = CursorType::Count;
+
+			EngineThread mEngineThread;
 		};
 
 		void RunApplication(GameApp& app, const wchar_t* className, HINSTANCE HAND);

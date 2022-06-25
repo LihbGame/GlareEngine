@@ -144,7 +144,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	//////Build Scene//////////
 	assert(mSceneManager);
 	gScene = mSceneManager->CreateScene("Test Scene");
-	auto InitScene = [&]
+	auto InitScene = [&]()
 	{
 		Light SceneLights[3];
 		SceneLights[0].Direction = mShadowMap->GetShadowedLightDir();
@@ -180,25 +180,41 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 		gScene->AddObjectToScene(mShadowMap.get());
 		//add hdr Sky
 		gScene->AddObjectToScene(mSky.get());
-		//Instance models
-		CreateSimpleModelInstance(CommandList, "Grid_01", SimpleModelType::Grid, "PBRGrass01", 1, 1);
-		CreateModelInstance(CommandList, "BlueTree/Blue_Tree_02a.FBX", 5, 5);
-		//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRrocky_shoreline1", 1, 1);
-		//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRRock046S", 1, 1);
-		//CreateModelInstance(CommandList,"TraumaGuard/TraumaGuard.FBX", 5, 5);
 
-		//add models
-		for (auto& model : mModels)
-		{
-			gScene->AddObjectToScene(model.get());
-		}
+		//Load and Initialize Models in work threads
+		mEngineThread.AddTask([&]() {
+			GraphicsContext& InitializeContext = GraphicsContext::Begin(L"Load and Initialize Models");
+			ID3D12GraphicsCommandList* CommandList = InitializeContext.GetCommandList();
+			//Instance models
+			CreateSimpleModelInstance(CommandList, "Grid_01", SimpleModelType::Grid, "PBRGrass01", 1, 1);
+			CreateModelInstance(CommandList, "BlueTree/Blue_Tree_02a.FBX", 5, 5);
+			//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRrocky_shoreline1", 1, 1);
+			//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRRock046S", 1, 1);
+			//CreateModelInstance(CommandList,"TraumaGuard/TraumaGuard.FBX", 5, 5);
+
+			//add models
+			for (auto& model : mModels)
+			{
+				gScene->AddObjectToScene(model.get());
+			}
+
+			InitializeContext.Finish(true);
+
+			//Create Model Materials Constant Buffer
+			MaterialManager::GetMaterialInstance()->CreateMaterialsConstantBuffer();
+			});
 
 		//Baking GI Data
 		gScene->BakingGIData(InitializeContext);
 
-	};InitScene();
-	//Create all Materials Constant Buffer
-	MaterialManager::GetMaterialInstance()->CreateMaterialsConstantBuffer();
+		//Create all Materials Constant Buffer
+		MaterialManager::GetMaterialInstance()->CreateMaterialsConstantBuffer();
+
+	};
+	
+	InitScene();
+
+	//mEngineThread.Flush();
 }
 
 void App::Startup(void)

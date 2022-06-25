@@ -357,6 +357,7 @@
     <ClInclude Include="Dependences\include\stb_image\stb_tilemap_editor.h" />
     <ClInclude Include="Dependences\include\stb_image\stb_truetype.h" />
     <ClInclude Include="Dependences\include\stb_image\stb_voxel_render.h" />
+    <ClInclude Include="EngineCore\Engine\EngineThread.h" />
     <ClInclude Include="EngineCore\Engine\FileUtility.h" />
     <ClInclude Include="EngineCore\Graphics\Display.h" />
     <ClInclude Include="EngineCore\Engine\EngineGlobal.h" />
@@ -508,6 +509,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Dependences\include\stb_image\stb_vorbis.c" />
+    <ClCompile Include="EngineCore\Engine\EngineThread.cpp" />
     <ClCompile Include="EngineCore\Graphics\Display.cpp" />
     <ClCompile Include="EngineCore\Engine\EngineGlobal.cpp" />
     <ClCompile Include="EngineCore\Engine\FileUtility.cpp" />

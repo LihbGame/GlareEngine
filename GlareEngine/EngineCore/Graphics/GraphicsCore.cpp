@@ -200,7 +200,7 @@ namespace GlareEngine
 					continue;
 
 				// Can create a D3D12 device?
-				if (FAILED(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&pDevice))))
+				if (FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_1, IID_PPV_ARGS(&pDevice))))
 					continue;
 
 				// Does support DXR if required?
