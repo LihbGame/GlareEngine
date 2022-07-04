@@ -7,6 +7,8 @@
 #define InstanceCounts 25
 #define MAXSubMesh 10
 
+extern const int gNumFrame;
+
 struct ObjectConstants
 {
     DirectX::XMFLOAT4X4 World = MathHelper::Identity4x4();

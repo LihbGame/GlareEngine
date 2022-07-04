@@ -7,6 +7,8 @@ public:
 	glTFInstanceModel() {};
 	~glTFInstanceModel() {};
 
+	static void Initialize();
+
 	virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr) {};
 
 	virtual void DrawUI() {}
@@ -14,6 +16,10 @@ public:
 	static void BuildPSO(const PSOCommonProperty CommonProperty) {};
 
 	void Update(float dt) {}
+public:
+
+
+
 
 };
 

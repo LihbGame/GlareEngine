@@ -59,7 +59,7 @@ struct RenderItem
 	// 指示对象数据已更改的脏标志，我们需要更新常量缓冲区。 
 	//因为我们为每个FrameResource提供了一个对象缓冲区，所以我们必须将更新应用于每个FrameResource。 
 	//因此，当我们修改对象数据时，我们应该设置NumFramesDirty = gNumFrameResources，以便每个帧资源都得到更新。
-	int NumFramesDirty = gNumFrameResources;
+	int NumFramesDirty = gNumFrame;
 
 	//索引到此渲染项目对应于ObjectCB的GPU常量缓冲区。
 	int ObjCBIndex = -1;

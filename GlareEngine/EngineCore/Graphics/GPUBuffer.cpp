@@ -2,6 +2,7 @@
 #include "GraphicsCore.h"
 #include "CommandContext.h"
 #include "BufferManager.h"
+#include "UploadBuffer.h"
 
 using namespace GlareEngine;
 
@@ -43,6 +44,43 @@ void GPUBuffer::Create(const std::wstring& name,
 
 	CreateDerivedViews();
 }
+
+void GPUBuffer::Create(const std::wstring& name, uint32_t NumElements, uint32_t ElementSize, const UploadBuffer& srcData, uint32_t srcOffset)
+{
+	Destroy();
+
+	m_ElementCount = NumElements;
+	m_ElementSize = ElementSize;
+	m_BufferSize = NumElements * ElementSize;
+
+	D3D12_RESOURCE_DESC ResourceDesc = DescribeBuffer();
+
+	m_UsageState = D3D12_RESOURCE_STATE_COMMON;
+
+	D3D12_HEAP_PROPERTIES HeapProps;
+	HeapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+	HeapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+	HeapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+	HeapProps.CreationNodeMask = 1;
+	HeapProps.VisibleNodeMask = 1;
+
+	ThrowIfFailed(
+		g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE,
+			&ResourceDesc, m_UsageState, nullptr, IID_PPV_ARGS(&m_pResource)));
+
+	m_GPUVirtualAddress = m_pResource->GetGPUVirtualAddress();
+
+	CommandContext::InitializeBuffer(*this, srcData, srcOffset);
+
+#ifdef RELEASE
+	(name);
+#else
+	m_pResource->SetName(name.c_str());
+#endif
+
+	CreateDerivedViews();
+}
+
 
 //从预先分配的堆中再分配一个缓冲区。 如果提供了初始数据，则将使用默认命令上下文将其复制到缓冲区中。
 void GPUBuffer::CreatePlaced(const std::wstring& name,

@@ -156,7 +156,7 @@ void glTF::Asset::ProcessCameras( json& cameras )
         if (thisCamera["type"] == "perspective")
         {
             json& perspective = thisCamera["perspective"];
-            camera.type = Camera::kPerspective;
+            camera.type = Camera::ePerspective;
             camera.aspectRatio = 0.0f;
             if (perspective.find("aspectRatio") != perspective.end())
                 camera.aspectRatio = perspective.at("aspectRatio");
@@ -168,7 +168,7 @@ void glTF::Asset::ProcessCameras( json& cameras )
         }
         else
         {
-            camera.type = Camera::kOrthographic;
+            camera.type = Camera::eOrthographic;
             json& orthographic = thisCamera["orthographic"];
             camera.xmag = orthographic["xmag"];
             camera.ymag = orthographic["ymag"];
@@ -184,11 +184,11 @@ void glTF::Asset::ProcessCameras( json& cameras )
 uint16_t TypeToEnum( const char type[] )
 {
     if (strncmp(type, "VEC", 3) == 0)
-        return Accessor::kVec2 + type[3] - '2';
+        return Accessor::eVec2 + type[3] - '2';
     else if (strncmp(type, "MAT", 3) == 0)
-        return Accessor::kMat2 + type[3] - '2';
+        return Accessor::eMat2 + type[3] - '2';
     else
-        return Accessor::kScalar;
+        return Accessor::eScalar;
 }
 
 void glTF::Asset::ProcessAccessors( json& accessors )
@@ -253,14 +253,14 @@ void glTF::Asset::ProcessMeshes( json& meshes, json& accessors )
             prim.attribMask = 0;
             json& attributes = thisPrim.at("attributes");
 
-            FindAttribute(prim, attributes, Primitive::kPosition, "POSITION");
-            FindAttribute(prim, attributes, Primitive::kNormal, "NORMAL");
-            FindAttribute(prim, attributes, Primitive::kTangent, "TANGENT");
-            FindAttribute(prim, attributes, Primitive::kTexcoord0, "TEXCOORD_0");
-            FindAttribute(prim, attributes, Primitive::kTexcoord1, "TEXCOORD_1");
-            FindAttribute(prim, attributes, Primitive::kColor0, "COLOR_0");
-            FindAttribute(prim, attributes, Primitive::kJoints0, "JOINTS_0");
-            FindAttribute(prim, attributes, Primitive::kWeights0, "WEIGHTS_0");
+			FindAttribute(prim, attributes, Primitive::ePosition, "POSITION");
+			FindAttribute(prim, attributes, Primitive::eNormal, "NORMAL");
+			FindAttribute(prim, attributes, Primitive::eTangent, "TANGENT");
+			FindAttribute(prim, attributes, Primitive::eTexcoord0, "TEXCOORD_0");
+			FindAttribute(prim, attributes, Primitive::eTexcoord1, "TEXCOORD_1");
+			FindAttribute(prim, attributes, Primitive::eColor0, "COLOR_0");
+			FindAttribute(prim, attributes, Primitive::eJoints0, "JOINTS_0");
+			FindAttribute(prim, attributes, Primitive::eWeights0, "WEIGHTS_0");
 
             // Read position AABB
             json& positionAccessor = accessors[attributes.at("POSITION").get<uint32_t>()];
@@ -388,7 +388,7 @@ void glTF::Asset::ProcessMaterials( json& materials )
             material.baseColorFactor[3] = 1.0f;
             material.metallicFactor = 1.0f;
             material.roughnessFactor = 1.0f;
-            for (uint32_t i = 0; i < Material::kNumTextures; ++i)
+            for (uint32_t i = 0; i < Material::eNumTextures; ++i)
                 material.textures[i] = nullptr;
 
             if (metallicRoughness.find("baseColorFactor") != metallicRoughness.end())
@@ -402,11 +402,11 @@ void glTF::Asset::ProcessMaterials( json& materials )
 
             if (metallicRoughness.find("baseColorTexture") != metallicRoughness.end())
                 material.baseColorUV = ReadTextureInfo(metallicRoughness.at("baseColorTexture"),
-                    material.textures[Material::kBaseColor]);
+                    material.textures[Material::eBaseColor]);
 
             if (metallicRoughness.find("metallicRoughnessTexture") != metallicRoughness.end())
                 material.metallicRoughnessUV = ReadTextureInfo(metallicRoughness.at("metallicRoughnessTexture"),
-                    material.textures[Material::kMetallicRoughness]);
+                    material.textures[Material::eMetallicRoughness]);
         }
 
         if (thisMaterial.find("doubleSided") != thisMaterial.end())
@@ -420,15 +420,15 @@ void glTF::Asset::ProcessMaterials( json& materials )
 
         if (thisMaterial.find("occlusionTexture") != thisMaterial.end())
             material.occlusionUV = ReadTextureInfo(thisMaterial.at("occlusionTexture"),
-                material.textures[Material::kOcclusion]);
+                material.textures[Material::eOcclusion]);
 
         if (thisMaterial.find("emissiveTexture") != thisMaterial.end())
             material.emissiveUV = ReadTextureInfo(thisMaterial.at("emissiveTexture"),
-                material.textures[Material::kEmissive]);
+                material.textures[Material::eEmissive]);
 
         if (thisMaterial.find("normalTexture") != thisMaterial.end())
             material.normalUV = ReadTextureInfo(thisMaterial.at("normalTexture"),
-                material.textures[Material::kNormal]);
+                material.textures[Material::eNormal]);
 
         m_materials.push_back(material);
     }
@@ -640,18 +640,18 @@ void glTF::Asset::ProcessAnimations(json& animations)
             glTF::AnimSampler& sampler = animation.m_samplers[samplerIdx++];
             sampler.m_input = &m_accessors[thisSampler.at("input")];
             sampler.m_output = &m_accessors[thisSampler.at("output")];
-            sampler.m_interpolation = AnimSampler::kLinear;
+            sampler.m_interpolation = AnimSampler::eLinear;
             if (thisSampler.find("interpolation") != thisSampler.end())
             {
                 const std::string& interpolation = thisSampler.at("interpolation");
                 if (interpolation == "LINEAR")
-                    sampler.m_interpolation = AnimSampler::kLinear;
+                    sampler.m_interpolation = AnimSampler::eLinear;
                 else if (interpolation == "STEP")
-                    sampler.m_interpolation = AnimSampler::kStep;
+                    sampler.m_interpolation = AnimSampler::eStep;
                 else if (interpolation == "CATMULLROMSPLINE")
-                    sampler.m_interpolation = AnimSampler::kCatmullRomSpline;
+                    sampler.m_interpolation = AnimSampler::eCatmullRomSpline;
                 else if (interpolation == "CUBICSPLINE")
-                    sampler.m_interpolation = AnimSampler::kCubicSpline;
+                    sampler.m_interpolation = AnimSampler::eCubicSpline;
             }
         }
 
@@ -669,13 +669,13 @@ void glTF::Asset::ProcessAnimations(json& animations)
             channel.m_target = &m_nodes[thisTarget.at("node")];
             const std::string& path = thisTarget.at("path");
             if (path == "translation")
-                channel.m_path = AnimChannel::kTranslation;
+                channel.m_path = AnimChannel::eTranslation;
             else if (path == "rotation")
-                channel.m_path = AnimChannel::kRotation;
+                channel.m_path = AnimChannel::eRotation;
             else if (path == "scale")
-                channel.m_path = AnimChannel::kScale;
+                channel.m_path = AnimChannel::eScale;
             else if (path == "weights")
-                channel.m_path = AnimChannel::kWeights;
+                channel.m_path = AnimChannel::eWeights;
         }
     }
 }

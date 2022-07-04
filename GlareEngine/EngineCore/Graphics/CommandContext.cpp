@@ -6,6 +6,7 @@
 #include "DescriptorHeap.h"
 #include "EngineProfiling.h"
 #include "ReadbackBuffer.h"
+#include "UploadBuffer.h"
 
 namespace GlareEngine
 {
@@ -342,7 +343,7 @@ namespace GlareEngine
 		InitContext.Finish(true);
 	}
 
-	void CommandContext::InitializeBuffer(GPUResource& Dest, const void* Data, size_t NumBytes, size_t Offset)
+	void CommandContext::InitializeBuffer(GPUBuffer& Dest, const void* Data, size_t NumBytes, size_t Offset)
 	{
 		CommandContext& InitContext = CommandContext::Begin();
 
@@ -352,6 +353,22 @@ namespace GlareEngine
 		// copy data to the intermediate upload heap and then schedule a copy from the upload heap to the default texture
 		InitContext.TransitionResource(Dest, D3D12_RESOURCE_STATE_COPY_DEST, true);
 		InitContext.m_CommandList->CopyBufferRegion(Dest.GetResource(), Offset, mem.Buffer.GetResource(), 0, NumBytes);
+		InitContext.TransitionResource(Dest, D3D12_RESOURCE_STATE_GENERIC_READ, true);
+
+		// Execute the command list and wait for it to finish so we can release the upload buffer
+		InitContext.Finish(true);
+	}
+
+	void CommandContext::InitializeBuffer(GPUBuffer& Dest, const UploadBuffer& Src, size_t SrcOffset, size_t NumBytes, size_t DestOffset)
+	{
+		CommandContext& InitContext = CommandContext::Begin();
+
+		size_t MaxBytes = std::min<size_t>(Dest.GetBufferSize() - DestOffset, Src.GetBufferSize() - SrcOffset);
+		NumBytes = std::min<size_t>(MaxBytes, NumBytes);
+
+		// copy data to the intermediate upload heap and then schedule a copy from the upload heap to the default texture
+		InitContext.TransitionResource(Dest, D3D12_RESOURCE_STATE_COPY_DEST, true);
+		InitContext.m_CommandList->CopyBufferRegion(Dest.GetResource(), DestOffset, (ID3D12Resource*)Src.GetResource(), SrcOffset, NumBytes);
 		InitContext.TransitionResource(Dest, D3D12_RESOURCE_STATE_GENERIC_READ, true);
 
 		// Execute the command list and wait for it to finish so we can release the upload buffer

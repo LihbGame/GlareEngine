@@ -1,4 +1,5 @@
 #include "InstanceModel.h"
+#include "Render.h"
 
 //Shader
 #include "CompiledShaders/InstanceModelVS.h"

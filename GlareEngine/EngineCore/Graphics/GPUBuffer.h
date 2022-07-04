@@ -5,6 +5,7 @@ class CommandContext;
 
 namespace GlareEngine
 {
+	class UploadBuffer;
 	class GPUBuffer :public GPUResource
 	{
 	public:
@@ -15,6 +16,12 @@ namespace GlareEngine
 			uint32_t NumElements,
 			uint32_t ElementSize,
 			const void* initialData = nullptr);
+
+		void Create(const std::wstring& name, 
+			uint32_t NumElements, 
+			uint32_t ElementSize,
+			const UploadBuffer& srcData, 
+			uint32_t srcOffset = 0);
 
 		//从预先分配的堆中再分配一个缓冲区,如果提供了初始数据,则将使用默认命令上下文将其复制到缓冲区中。
 		void CreatePlaced(const std::wstring& name,

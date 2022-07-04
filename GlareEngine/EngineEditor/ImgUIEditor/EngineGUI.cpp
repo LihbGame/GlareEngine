@@ -6,6 +6,8 @@
 #include "GraphicsCore.h"
 #include "GameCore.h"
 #include "TextureManager.h"
+#include "Render.h"
+
 using Microsoft::WRL::ComPtr;
 using namespace GlareEngine::GameCore;
 bool gFullSreenMode = false;
@@ -43,7 +45,7 @@ void EngineGUI::InitGUI()
 	//ImGui::StyleColorsClassic();
 	 // Setup Platform/Renderer bindings
 	ImGui_ImplWin32_Init(g_hWnd);
-	ImGui_ImplDX12_Init(g_Device, gNumFrameResources,
+	ImGui_ImplDX12_Init(g_Device, Render::gNumFrameResources,
 		DXGI_FORMAT_R10G10B10A2_UNORM, mGUISrvDescriptorHeap,
 		mGUISrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		mGUISrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());

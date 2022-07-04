@@ -2,6 +2,7 @@
 #include "ModelLoader.h"
 #include "Shadow/ShadowMap.h"
 #include "EngineGUI.h"
+#include "Render.h"
 
 /// Scene/////////////////////////////////////////////
 

@@ -25,12 +25,12 @@ namespace GlareEngine
 
 		void CreatePBRTextures(string PathName, vector<Texture*>& Textures);
 
-		std::unique_ptr<Texture>& GetTexture(std::wstring name, bool ForceSRGB = true);
-		Texture* GetModelTexture(std::wstring name, bool ForceSRGB = true);
+		std::unique_ptr<Texture>& GetTexture(std::wstring name, bool ForceSRGB = false);
+		Texture* GetModelTexture(std::wstring name, bool ForceSRGB = false);
 
 		void ReleaseUploadTextures();
 	private:
-		bool CreateTexture(std::wstring name, std::wstring filename, bool ForceSRGB = true);
+		bool CreateTexture(std::wstring name, std::wstring filename, bool ForceSRGB = false);
 	private:
 		std::unordered_map<std::wstring, std::unique_ptr<Texture>> mTextures;
 		std::wstring RootFilePath = L"../Resource/Textures/";

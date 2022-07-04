@@ -12,13 +12,12 @@
 #include "resource.h"
 
 #include "Camera.h"
-#include "Sky/Sky.h"
 #include "ModelLoader.h"
 #include "SceneManager.h"
+#include "Sky/Sky.h"
 #include "Shadow/ShadowMap.h"
 #include "Terrain/Terrain.h"
-
-
+#include "Render.h"
 
 //lib
 #pragma comment(lib, "dxgi.lib")
@@ -30,17 +29,7 @@
 using namespace GlareEngine;
 using namespace GlareEngine::GameCore;
 using namespace GlareEngine::EngineInput;
-
-
-//Game Config 
-#define MAX2DSRVSIZE 256
-#define MAXCUBESRVSIZE 32
-#define SHADOWMAPSIZE 2048
-#define FAR_Z 5000.0f
-#define CAMERA_SPEED 100.0f
-
-
-const int gNumFrameResources = 3;
+using namespace GlareEngine::Render;
 
 
 class App :public GameApp
@@ -71,10 +60,6 @@ public:
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 public:
-	void BuildRootSignature();
-
-	void BuildPSO();
-
 	void UpdateSceneState(float DeltaTime);
 
 	void UpdateWindow(float DeltaTime);
@@ -112,10 +97,10 @@ private:
 	unique_ptr<SceneManager> mSceneManager;
 
 	//PSO Common Property
-	PSOCommonProperty mCommonProperty;
+	//PSOCommonProperty mCommonProperty;
 
 	//Root Signature
-	RootSignature mRootSignature;
+	//RootSignature mRootSignature;
 };
 //////////////////////////////////////////////////////////////
 
@@ -135,10 +120,9 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	mShadowMap = make_unique<ShadowMap>(XMFLOAT3(0.57735f, -0.47735f, 0.57735f), SHADOWMAPSIZE, SHADOWMAPSIZE);
 	//Create PBR Materials
 	SimpleModelGenerator::GetInstance(CommandList)->CreatePBRMaterials();
-	//Create Root Signature
-	BuildRootSignature();
-	//Create PSO
-	BuildPSO();
+
+	//Initialize Render
+	Render::Initialize();
 
 
 	//////Build Scene//////////
@@ -169,7 +153,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 		//set global scene
 		EngineGlobal::gCurrentScene = gScene;
 		//set Root Signature
-		gScene->SetRootSignature(&mRootSignature);
+		gScene->SetRootSignature(&gRootSignature);
 		//Set UI
 		gScene->SetSceneUI(mEngineUI.get());
 		//set camera
@@ -252,49 +236,6 @@ void App::Update(float DeltaTime)
 	gScene->Update(DeltaTime);
 }
 
-void App::BuildRootSignature()
-{
-	mRootSignature.Reset(6, 8);
-	//Main Constant Buffer
-	mRootSignature[(int)RootSignatureType::MainConstantBuffer].InitAsConstantBuffer(0);
-	//Common Constant Buffer
-		//1.Objects Constant Buffer
-		//2.Shadow  Constant Buffer
-		//3.Terrain Constant buffer
-	mRootSignature[(int)RootSignatureType::CommonConstantBuffer].InitAsConstantBuffer(1);
-	//Sky Cube Texture
-	mRootSignature[(int)RootSignatureType::CubeTextures].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAXCUBESRVSIZE);
-	//Cook BRDF PBR Textures 
-	mRootSignature[(int)RootSignatureType::PBRTextures].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MAXCUBESRVSIZE, MAX2DSRVSIZE);
-	//Material Constant Data
-	mRootSignature[(int)RootSignatureType::MaterialConstantData].InitAsBufferSRV(1, 1);
-	//Instance Constant Data 
-	mRootSignature[(int)RootSignatureType::InstancConstantData].InitAsBufferSRV(0, 1);
-
-	//Static Samplers
-	mRootSignature.InitStaticSampler(0, SamplerLinearWrapDesc);
-	mRootSignature.InitStaticSampler(1, SamplerAnisoWrapDesc);
-	mRootSignature.InitStaticSampler(2, SamplerShadowDesc);
-	mRootSignature.InitStaticSampler(3, SamplerLinearClampDesc);
-	mRootSignature.InitStaticSampler(4, SamplerVolumeWrapDesc);
-	mRootSignature.InitStaticSampler(5, SamplerPointClampDesc);
-	mRootSignature.InitStaticSampler(6, SamplerPointBorderDesc);
-	mRootSignature.InitStaticSampler(7, SamplerLinearBorderDesc);
-
-	mRootSignature.Finalize(L"Forward Rendering", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
-	mCommonProperty.pRootSignature = &mRootSignature;
-}
-
-void App::BuildPSO()
-{
-	CSky::BuildPSO(mCommonProperty);
-	InstanceModel::BuildPSO(mCommonProperty);
-	ShadowMap::BuildPSO(mCommonProperty);
-	IBL::BuildPSOs(mCommonProperty);
-	Terrain::BuildPSO(mCommonProperty);
-}
-
 void App::UpdateSceneState(float DeltaTime)
 {
 	assert(gScene);
@@ -304,26 +245,26 @@ void App::UpdateSceneState(float DeltaTime)
 	if (mEngineUI->IsWireframe() != gScene->IsWireFrame)
 	{
 		gScene->IsWireFrame = mEngineUI->IsWireframe();
-		mCommonProperty.IsWireframe = gScene->IsWireFrame;
+		gCommonProperty.IsWireframe = gScene->IsWireFrame;
 		IsStateChange = true;
 	}
 	if (mEngineUI->IsMSAA() != gScene->IsMSAA)
 	{
 		gScene->IsMSAA = mEngineUI->IsMSAA();
-		mCommonProperty.IsMSAA = gScene->IsMSAA;
+		gCommonProperty.IsMSAA = gScene->IsMSAA;
 		if (gScene->IsMSAA)
 		{
-			mCommonProperty.MSAACount = MSAACOUNT;
+			gCommonProperty.MSAACount = MSAACOUNT;
 		}
 		else
 		{
-			mCommonProperty.MSAACount = 1;
+			gCommonProperty.MSAACount = 1;
 		}
 		IsStateChange = true;
 	}
 	if (IsStateChange)
 	{
-		BuildPSO();
+		Render::BuildPSOs();
 	}
 }
 

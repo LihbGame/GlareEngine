@@ -133,7 +133,6 @@
     <ClInclude Include="Dependences\include\DirectXTK12\Inc\GeometricPrimitive.h" />
     <ClInclude Include="Dependences\include\DirectXTK12\Inc\GraphicsMemory.h" />
     <ClInclude Include="Dependences\include\DirectXTK12\Inc\Keyboard.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\Model.h" />
     <ClInclude Include="Dependences\include\DirectXTK12\Inc\Mouse.h" />
     <ClInclude Include="Dependences\include\DirectXTK12\Inc\PostProcess.h" />
     <ClInclude Include="Dependences\include\DirectXTK12\Inc\PrimitiveBatch.h" />
@@ -206,9 +205,12 @@
     <ClInclude Include="EngineCore\Model\glTFModelLoader.h" />
     <ClInclude Include="EngineCore\Model\Animation.h" />
     <ClInclude Include="EngineCore\Math\Frustum.h" />
-    <ClInclude Include="EngineCore\Model\glTFModel.h" />
+    <ClInclude Include="EngineCore\Model\Model.h" />
     <ClInclude Include="GraphicEffects\InstanceModel\glTFInstanceModel.h" />
     <ClInclude Include="EngineCore\Engine\EngineThread.h" />
+    <ClInclude Include="EngineCore\Model\IndexOptimize.h" />
+    <ClInclude Include="EngineCore\Model\MeshBuilder.h" />
+    <ClInclude Include="EngineCore\Graphics\Render.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
@@ -427,9 +429,6 @@
     <ClCompile Include="Dependences\include\DirectXTK12\Src\Keyboard.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\Model.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
     <ClCompile Include="Dependences\include\DirectXTK12\Src\ModelLoadCMO.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
@@ -535,16 +534,13 @@
     <ClCompile Include="EngineCore\Graphics\TextureConvert.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\Model\glTFModelLoader.cpp">
-      <Filter>MainSource</Filter>
-    </ClCompile>
     <ClCompile Include="EngineCore\Model\Animation.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Math\Frustum.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\Model\glTFModel.cpp">
+    <ClCompile Include="EngineCore\Model\Model.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Graphics\DynamicUploadBuffer.cpp">
@@ -560,6 +556,15 @@
       <Filter>MainSource</Filter>
     </ClCompile>
     <ClCompile Include="EngineCore\Engine\EngineThread.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Model\IndexOptimize.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Model\MeshBuilder.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Render.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
@@ -765,6 +770,9 @@
     <None Include="Shaders\Terrain\TerrainDS.hlsl" />
     <None Include="Shaders\Terrain\TerrainHS.hlsl" />
     <None Include="packages.config" />
+    <None Include="EngineCore\Model\glTFModelLoader.cpp">
+      <Filter>MainSource</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Library Include="Dependences\lib\ozz\debug\ozz_animation_d.lib" />

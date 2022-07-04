@@ -25,10 +25,10 @@ namespace GlareEngine
 	D3D12_CPU_DESCRIPTOR_HANDLE SamplerPointBorder;
 	D3D12_CPU_DESCRIPTOR_HANDLE SamplerLinearBorder;
 
-	ColorBuffer DefaultTextures[kNumDefaultTextures];
+	ColorBuffer DefaultTextures[eNumDefaultTextures];
 	D3D12_CPU_DESCRIPTOR_HANDLE GetDefaultTexture(eDefaultTexture texID)
 	{
-		assert(texID < kNumDefaultTextures);
+		assert(texID < eNumDefaultTextures);
 		return DefaultTextures[texID].GetSRV();
 	}
 
@@ -69,20 +69,20 @@ void GlareEngine::InitializeAllCommonState(void)
 	InitializeDepthState();
 	InitializeBlendState();
 
-	DefaultTextures[kMagenta2D].SetClearColor(Color(1.0f, 0.0f, 1.0f, 1.0f));
-	DefaultTextures[kMagenta2D].Create(L"Magenta Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-	DefaultTextures[kBlackOpaque2D].SetClearColor(Color(0.0f, 0.0f, 0.0f, 1.0f));
-	DefaultTextures[kBlackOpaque2D].Create(L"BlackOpaque Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-	DefaultTextures[kBlackTransparent2D].SetClearColor(Color(0.0f, 0.0f, 0.0f, 0.0f));
-	DefaultTextures[kBlackTransparent2D].Create(L"BlackTransparent Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-	DefaultTextures[kWhiteOpaque2D].SetClearColor(Color(1.0f, 1.0f, 1.0f, 1.0f));
-	DefaultTextures[kWhiteOpaque2D].Create(L"WhiteOpaque Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-	DefaultTextures[kWhiteTransparent2D].SetClearColor(Color(1.0f, 1.0f, 1.0f, 0.0f));
-	DefaultTextures[kWhiteTransparent2D].Create(L"WhiteTransparent Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-	DefaultTextures[kDefaultNormalMap].SetClearColor(Color(0.0f, 0.0f, 1.0f, 0.0f));
-	DefaultTextures[kDefaultNormalMap].Create(L"DefaultNormalMap Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-	DefaultTextures[kBlackCubeMap].SetClearColor(Color(0.0f, 0.0f, 0.0f, 0.0f));
-	DefaultTextures[kBlackCubeMap].CreateArray(L"BlackCubeMap Default Texture", 1, 1, 1, 6, DXGI_FORMAT_R8G8B8A8_UNORM);
+	DefaultTextures[eMagenta2D].SetClearColor(Color(1.0f, 0.0f, 1.0f, 1.0f));
+	DefaultTextures[eMagenta2D].Create(L"Magenta Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	DefaultTextures[eBlackOpaque2D].SetClearColor(Color(0.0f, 0.0f, 0.0f, 1.0f));
+	DefaultTextures[eBlackOpaque2D].Create(L"BlackOpaque Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	DefaultTextures[eBlackTransparent2D].SetClearColor(Color(0.0f, 0.0f, 0.0f, 0.0f));
+	DefaultTextures[eBlackTransparent2D].Create(L"BlackTransparent Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	DefaultTextures[eWhiteOpaque2D].SetClearColor(Color(1.0f, 1.0f, 1.0f, 1.0f));
+	DefaultTextures[eWhiteOpaque2D].Create(L"WhiteOpaque Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	DefaultTextures[eWhiteTransparent2D].SetClearColor(Color(1.0f, 1.0f, 1.0f, 0.0f));
+	DefaultTextures[eWhiteTransparent2D].Create(L"WhiteTransparent Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	DefaultTextures[eDefaultNormalMap].SetClearColor(Color(0.0f, 0.0f, 1.0f, 0.0f));
+	DefaultTextures[eDefaultNormalMap].Create(L"DefaultNormalMap Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	DefaultTextures[eBlackCubeMap].SetClearColor(Color(0.0f, 0.0f, 0.0f, 0.0f));
+	DefaultTextures[eBlackCubeMap].CreateArray(L"BlackCubeMap Default Texture", 1, 1, 1, 6, DXGI_FORMAT_R8G8B8A8_UNORM);
 
 
 	DispatchIndirectCommandSignature[0].Dispatch();
@@ -246,7 +246,7 @@ void GlareEngine::InitializeBlendState(void)
 
 void GlareEngine::DestroyCommonState(void)
 {
-	for (uint32_t i = 0; i < kNumDefaultTextures; ++i)
+	for (uint32_t i = 0; i < eNumDefaultTextures; ++i)
 		DefaultTextures[i].Destroy();
 
 	DispatchIndirectCommandSignature.Destroy();

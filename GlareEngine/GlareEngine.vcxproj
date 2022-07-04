@@ -361,6 +361,7 @@
     <ClInclude Include="EngineCore\Engine\FileUtility.h" />
     <ClInclude Include="EngineCore\Graphics\Display.h" />
     <ClInclude Include="EngineCore\Engine\EngineGlobal.h" />
+    <ClInclude Include="EngineCore\Graphics\Render.h" />
     <ClInclude Include="EngineCore\Graphics\TextureConvert.h" />
     <ClInclude Include="EngineCore\Graphics\UploadBuffer.h" />
     <ClInclude Include="EngineCore\Math\BoundingBox.h" />
@@ -373,7 +374,9 @@
     <ClInclude Include="EngineCore\Math\Transform.h" />
     <ClInclude Include="EngineCore\Model\Animation.h" />
     <ClInclude Include="EngineCore\Model\glTF.h" />
-    <ClInclude Include="EngineCore\Model\glTFModel.h" />
+    <ClInclude Include="EngineCore\Model\IndexOptimize.h" />
+    <ClInclude Include="EngineCore\Model\MeshBuilder.h" />
+    <ClInclude Include="EngineCore\Model\Model.h" />
     <ClInclude Include="EngineCore\Model\json.hpp" />
     <ClInclude Include="EngineCore\Model\glTFModelLoader.h" />
     <ClInclude Include="GraphicEffects\Animation\MeshStruct.h" />
@@ -390,7 +393,6 @@
     <ClInclude Include="Dependences\include\DirectXTK12\Inc\GeometricPrimitive.h" />
     <ClInclude Include="Dependences\include\DirectXTK12\Inc\GraphicsMemory.h" />
     <ClInclude Include="Dependences\include\DirectXTK12\Inc\Keyboard.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\Model.h" />
     <ClInclude Include="Dependences\include\DirectXTK12\Inc\Mouse.h" />
     <ClInclude Include="Dependences\include\DirectXTK12\Inc\PostProcess.h" />
     <ClInclude Include="Dependences\include\DirectXTK12\Inc\PrimitiveBatch.h" />
@@ -513,13 +515,16 @@
     <ClCompile Include="EngineCore\Graphics\Display.cpp" />
     <ClCompile Include="EngineCore\Engine\EngineGlobal.cpp" />
     <ClCompile Include="EngineCore\Engine\FileUtility.cpp" />
+    <ClCompile Include="EngineCore\Graphics\Render.cpp" />
     <ClCompile Include="EngineCore\Graphics\UploadBuffer.cpp" />
     <ClCompile Include="EngineCore\Math\BoundingSphere.cpp" />
     <ClCompile Include="EngineCore\Math\Frustum.cpp" />
     <ClCompile Include="EngineCore\Model\Animation.cpp" />
     <ClCompile Include="EngineCore\Model\glTF.cpp" />
-    <ClCompile Include="EngineCore\Model\glTFModel.cpp" />
-    <ClCompile Include="EngineCore\Model\glTFModelLoader.cpp" />
+    <ClCompile Include="EngineCore\Model\IndexOptimize.cpp" />
+    <ClCompile Include="EngineCore\Model\MeshBuilder.cpp" />
+    <ClCompile Include="EngineCore\Model\Model.cpp" />
+    <None Include="EngineCore\Model\glTFModelLoader.cpp" />
     <ClCompile Include="GraphicEffects\Animation\ModelLoader.cpp" />
     <ClCompile Include="GraphicEffects\InstanceModel\glTFInstanceModel.cpp" />
     <ClCompile Include="GraphicEffects\InstanceModel\InstanceModel.cpp" />
@@ -553,7 +558,6 @@
     <ClCompile Include="Dependences\include\DirectXTK12\Src\GraphicsMemory.cpp" />
     <ClCompile Include="Dependences\include\DirectXTK12\Src\Keyboard.cpp" />
     <ClCompile Include="Dependences\include\DirectXTK12\Src\DXLinearAllocator.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\Model.cpp" />
     <ClCompile Include="Dependences\include\DirectXTK12\Src\ModelLoadCMO.cpp" />
     <ClCompile Include="Dependences\include\DirectXTK12\Src\ModelLoadSDKMESH.cpp" />
     <ClCompile Include="Dependences\include\DirectXTK12\Src\ModelLoadVBO.cpp" />

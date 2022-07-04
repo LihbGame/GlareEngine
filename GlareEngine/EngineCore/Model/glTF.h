@@ -43,24 +43,24 @@ namespace glTF
     {
         enum // componentType
         {
-            kByte,
-            kUnsignedByte,
-            kShort,
-            kUnsignedShort,
-            kSignedInt, // won't happen
-            kUnsignedInt,
-            kFloat
+            eByte,
+            eUnsignedByte,
+            eShort,
+            eUnsignedShort,
+            eSignedInt, // won't happen
+            eUnsignedInt,
+            eFloat
         };
 
         enum // type
         {
-            kScalar,
-            kVec2,
-            kVec3,
-            kVec4,
-            kMat2,
-            kMat3,
-            kMat4
+            eScalar,
+            eVec2,
+            eVec3,
+            eVec4,
+            eMat2,
+            eMat3,
+            eMat4
         };
 
         //BufferView* bufferView;
@@ -125,16 +125,16 @@ namespace glTF
         };
         float emissiveFactor[3]; // default=[0,0,0]
         float normalTextureScale; // default=1
-        enum { kBaseColor, kMetallicRoughness, kOcclusion, kEmissive, kNormal, kNumTextures };
-        Texture* textures[kNumTextures];
+        enum { eBaseColor, eMetallicRoughness, eOcclusion, eEmissive, eNormal, eNumTextures };
+        Texture* textures[eNumTextures];
         uint32_t index;
 
     };
 
     struct Primitive
     {
-        enum eAttribType { kPosition, kNormal, kTangent, kTexcoord0, kTexcoord1, kColor0, kJoints0, kWeights0, kNumAttribs };
-        Accessor* attributes[kNumAttribs];
+        enum eAttribType { ePosition, eNormal, eTangent, eTexcoord0, eTexcoord1, eColor0, eJoints0, eWeights0, eNumAttribs };
+        Accessor* attributes[eNumAttribs];
         Accessor* indices;
         Material* material;
         uint16_t attribMask;
@@ -154,7 +154,7 @@ namespace glTF
 
     struct Camera
     {
-        enum eType { kPerspective, kOrthographic } type;
+        enum eType { ePerspective, eOrthographic } type;
         union
         {
             struct
@@ -219,7 +219,7 @@ namespace glTF
     {
         Accessor* m_input;  // key frame time stamps
         Accessor* m_output; // key frame values
-        enum eInterpolation { kLinear, kStep, kCatmullRomSpline, kCubicSpline };
+        enum eInterpolation { eLinear, eStep, eCatmullRomSpline, eCubicSpline };
         eInterpolation m_interpolation;
     };
 
@@ -227,7 +227,7 @@ namespace glTF
     {
         AnimSampler* m_sampler;
         Node* m_target;
-        enum ePath { kTranslation, kRotation, kScale, kWeights };
+        enum ePath { eTranslation, eRotation, eScale, eWeights };
         ePath m_path;
     };
 

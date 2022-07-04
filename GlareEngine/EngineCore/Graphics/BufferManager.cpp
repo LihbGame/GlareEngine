@@ -1,6 +1,7 @@
 #include "BufferManager.h"
 #include "GraphicsCore.h"
 #include "CommandContext.h"
+#include "Render.h"
 //#include "TemporalEffects.h"
 namespace GlareEngine
 {

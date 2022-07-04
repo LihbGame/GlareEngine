@@ -9,7 +9,6 @@ namespace GlareEngine
 	using namespace std;
 	using namespace concurrency;
 
-	typedef shared_ptr<vector<byte> > ByteArray;
 	extern ByteArray NullFile;
 
 

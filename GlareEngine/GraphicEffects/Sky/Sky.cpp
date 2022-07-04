@@ -106,7 +106,7 @@ void CSky::BuildSkySRV(ID3D12GraphicsCommandList* CommandList)
 	}
 	else
 	{
-		m_Descriptor = GetDefaultTexture(kBlackCubeMap);
+		m_Descriptor = GetDefaultTexture(eBlackCubeMap);
 	}
 	//set cube sky SRV index
 	GlobleSRVIndex::gSkyCubeSRVIndex = AddToGlobalCubeSRVDescriptor(m_Descriptor);

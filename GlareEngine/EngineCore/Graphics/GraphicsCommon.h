@@ -55,15 +55,15 @@ namespace GlareEngine
 
 	enum eDefaultTexture
 	{
-		kMagenta2D,  // Useful for indicating missing textures
-		kBlackOpaque2D,
-		kBlackTransparent2D,
-		kWhiteOpaque2D,
-		kWhiteTransparent2D,
-		kDefaultNormalMap,
-		kBlackCubeMap,
+		eMagenta2D,  // Useful for indicating missing textures
+		eBlackOpaque2D,
+		eBlackTransparent2D,
+		eWhiteOpaque2D,
+		eWhiteTransparent2D,
+		eDefaultNormalMap,
+		eBlackCubeMap,
 
-		kNumDefaultTextures
+		eNumDefaultTextures
 	};
 	D3D12_CPU_DESCRIPTOR_HANDLE GetDefaultTexture(eDefaultTexture texID);
 

@@ -11,7 +11,7 @@ using namespace GlareEngine;
 
 #define ShadowMapSize 4096
 
-const int gNumFrameResources = 3;
+const int gNumFrame = 3;
 
 bool GameApp::RedrawShadowMap = true;
 
@@ -168,7 +168,7 @@ void GameApp::Update(const GameTimer& gt)
 	//UpdateCamera(gt);
 
 	// 循环遍历循环框架资源数组。
-	mCurrFrameResourceIndex = (mCurrFrameResourceIndex + 1) % gNumFrameResources;
+	mCurrFrameResourceIndex = (mCurrFrameResourceIndex + 1) % gNumFrame;
 	mCurrFrameResource = mFrameResources[mCurrFrameResourceIndex].get();
 
 	// GPU是否已完成对当前帧资源的命令的处理？
@@ -1425,7 +1425,7 @@ void GameApp::BuildPSOs()
 
 void GameApp::BuildFrameResources()
 {
-	for (int i = 0; i < gNumFrameResources; ++i)
+	for (int i = 0; i < gNumFrame; ++i)
 	{
 		mFrameResources.push_back(std::make_unique<FrameResource>(md3dDevice.Get(),
 			2, (UINT)mModelLoder->GetModelMesh("Blue_Tree_02a").size(), 1, (UINT)mAllRitems.size(), (UINT)Materials::GetMaterialSize(), mWaves->VertexCount()));

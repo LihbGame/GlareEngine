@@ -5,6 +5,7 @@
 #include "EngineAdjust.h"
 #include "GraphicsCore.h"
 #include "TextureManage.h"
+#include "FrameResource.h"
 using Microsoft::WRL::ComPtr;
 bool gFullSreenMode = false;
 bool EngineGUI::mWindowMaxSize = false;
@@ -37,7 +38,7 @@ void EngineGUI::InitGUI(HWND GameWnd)
 	//ImGui::StyleColorsClassic();
 	 // Setup Platform/Renderer bindings
 	ImGui_ImplWin32_Init(GameWnd);
-	ImGui_ImplDX12_Init(md3dDevice, gNumFrameResources,
+	ImGui_ImplDX12_Init(md3dDevice, gNumFrame,
 		DXGI_FORMAT_R8G8B8A8_UNORM, mGUISrvDescriptorHeap,
 		mGUISrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		mGUISrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());

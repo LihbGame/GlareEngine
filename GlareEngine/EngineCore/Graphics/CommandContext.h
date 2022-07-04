@@ -16,6 +16,7 @@ namespace GlareEngine
 {
 	class ColorBuffer;
 	class DepthBuffer;
+	class UploadBuffer;
 	class TextureManage;
 	class GraphicsContext;
 	class ComputeContext;
@@ -117,7 +118,8 @@ namespace GlareEngine
 
 
 		static void InitializeTexture(GPUResource& Dest, UINT NumSubresources, D3D12_SUBRESOURCE_DATA SubData[]);
-		static void InitializeBuffer(GPUResource& Dest, const void* Data, size_t NumBytes, size_t Offset = 0);
+		static void InitializeBuffer(GPUBuffer& Dest, const void* Data, size_t NumBytes, size_t Offset = 0);
+		static void InitializeBuffer(GPUBuffer& Dest, const UploadBuffer& Src, size_t SrcOffset, size_t NumBytes = -1, size_t DestOffset = 0);
 		static void InitializeTextureArraySlice(GPUResource& Dest, UINT SliceIndex, GPUResource& Src);
 		uint32_t ReadbackTexture(ReadbackBuffer& ReadbackBuffer, PixelBuffer& SrcBuffer);
 
