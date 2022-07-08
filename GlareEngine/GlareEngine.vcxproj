@@ -524,7 +524,7 @@
     <ClCompile Include="EngineCore\Model\IndexOptimize.cpp" />
     <ClCompile Include="EngineCore\Model\MeshBuilder.cpp" />
     <ClCompile Include="EngineCore\Model\Model.cpp" />
-    <None Include="EngineCore\Model\glTFModelLoader.cpp" />
+    <ClCompile Include="EngineCore\Model\glTFModelLoader.cpp" />
     <ClCompile Include="GraphicEffects\Animation\ModelLoader.cpp" />
     <ClCompile Include="GraphicEffects\InstanceModel\glTFInstanceModel.cpp" />
     <ClCompile Include="GraphicEffects\InstanceModel\InstanceModel.cpp" />

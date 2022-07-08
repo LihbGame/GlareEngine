@@ -120,7 +120,7 @@ void ShadowMap::Draw(GraphicsContext& Context,vector<RenderObject*> RenderObject
 	Context.ClearDepth(mShadowBuffer);
 	Context.SetDepthStencilTarget(GetDSV());
 	//set shadow constant buffer
-	Context.SetDynamicConstantBufferView((int)RootSignatureType::CommonConstantBuffer, sizeof(ShadowConstantBuffer), &mConstantBuffer);
+	Context.SetDynamicConstantBufferView((int)RootSignatureType::eCommonConstantBuffer, sizeof(ShadowConstantBuffer), &mConstantBuffer);
 
 	for (auto& object:RenderObjects)
 	{

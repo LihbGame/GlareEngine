@@ -71,11 +71,6 @@ namespace GlareEngine
 	DXGI_FORMAT DefaultHDRColorFormat = DXGI_FORMAT_R11G11B10_FLOAT;
 }
 
-#define T2X_COLOR_FORMAT DXGI_FORMAT_R10G10B10A2_UNORM
-#define HDR_MOTION_FORMAT DXGI_FORMAT_R16G16B16A16_FLOAT
-#define DSV_FORMAT DXGI_FORMAT_D32_FLOAT
-
-
 
 void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t NativeHeight)
 {

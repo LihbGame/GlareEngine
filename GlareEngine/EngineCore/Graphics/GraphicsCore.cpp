@@ -200,7 +200,7 @@ namespace GlareEngine
 					continue;
 
 				// Can create a D3D12 device?
-				if (FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_1, IID_PPV_ARGS(&pDevice))))
+				if (FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(&pDevice))))
 					continue;
 
 				// Does support DXR if required?
@@ -235,7 +235,7 @@ namespace GlareEngine
 			else
 				EngineLog::AddLog(L"Failed to find a hardware adapter.Falling back to WARP.\n");
 			SUCCEEDED(dxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&pAdapter)));
-			SUCCEEDED(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&pDevice)));
+			SUCCEEDED(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(&pDevice)));
 			g_Device = pDevice.Detach();
 		}
 #ifndef RELEASE

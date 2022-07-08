@@ -531,10 +531,10 @@ namespace GlareEngine
 		m_CommandList->ClearDepthStencilView(Target.GetDSV(), D3D12_CLEAR_FLAG_STENCIL, Target.GetClearDepth(), Target.GetClearStencil(), 0, nullptr);
 	}
 
-	void GraphicsContext::ClearDepthAndStencil(DepthBuffer& Target)
+	void GraphicsContext::ClearDepthAndStencil(DepthBuffer& Target, float ClearDepth)
 	{
 		FlushResourceBarriers();
-		m_CommandList->ClearDepthStencilView(Target.GetDSV(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, Target.GetClearDepth(), Target.GetClearStencil(), 0, nullptr);
+		m_CommandList->ClearDepthStencilView(Target.GetDSV(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, ClearDepth, Target.GetClearStencil(), 0, nullptr);
 	}
 
 	void GraphicsContext::ClearColor(ColorBuffer& Target, D3D12_RECT* Rect)

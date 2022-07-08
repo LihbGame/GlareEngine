@@ -12,7 +12,7 @@ namespace GlareEngine
 		uint32_t GetWidth(void) const { return m_Width; }
 		uint32_t GetHeight(void) const { return m_Height; }
 		uint32_t GetDepth(void) const { return m_ArraySize; }
-		const DXGI_FORMAT& GetFormat(void) const { return m_Format; }
+		const DXGI_FORMAT& GetFormat(void) const { return  m_Format; }
 
 		// Has no effect on Windows
 		void SetBankRotation(uint32_t RotationAmount) { m_BankRotation = RotationAmount; }

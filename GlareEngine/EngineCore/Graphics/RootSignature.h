@@ -3,12 +3,13 @@
 
 enum class RootSignatureType :int
 {
-	MainConstantBuffer,
-	CommonConstantBuffer,
-	CubeTextures,
-	PBRTextures,
-	MaterialConstantData,
-	InstancConstantData
+	eMainConstantBuffer,
+	eCommonConstantBuffer,
+	eCubeTextures,
+	ePBRTextures,
+	eMaterialConstantData,
+	eInstancConstantData,
+	eRootSignatureSize
 };
 
 namespace GlareEngine

@@ -7,13 +7,13 @@ public:
 	glTFInstanceModel() {};
 	~glTFInstanceModel() {};
 
-	static void Initialize();
-
 	virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr) {};
 
 	virtual void DrawUI() {}
 
-	static void BuildPSO(const PSOCommonProperty CommonProperty) {};
+	static void BuildPSO(const PSOCommonProperty CommonProperty);
+
+	static uint8_t GetPSO(uint16_t psoFlags);
 
 	void Update(float dt) {}
 public:

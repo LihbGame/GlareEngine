@@ -49,11 +49,11 @@ void IBL::BakingEnvironmentDiffuse(GraphicsContext& Context)
 	Context.SetViewport(mIndirectDiffuseCube->Viewport(0));
 	Context.SetScissor(mIndirectDiffuseCube->ScissorRect());
 	Context.TransitionResource(mIndirectDiffuseCube->Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-	Context.SetDynamicDescriptors((int)RootSignatureType::CubeTextures, 0, (UINT)g_CubeSRV.size(), g_CubeSRV.data());
+	Context.SetDynamicDescriptors((int)RootSignatureType::eCubeTextures, 0, (UINT)g_CubeSRV.size(), g_CubeSRV.data());
 	for (int i = 0; i < 6; i++)
 	{
 		Context.SetRenderTarget(mIndirectDiffuseCube->RTV(i));
-		Context.SetDynamicConstantBufferView((int)RootSignatureType::CommonConstantBuffer, sizeof(mIndirectDiffuseCube->GetCubeCameraCBV(i)), &mIndirectDiffuseCube->GetCubeCameraCBV(i));
+		Context.SetDynamicConstantBufferView((int)RootSignatureType::eCommonConstantBuffer, sizeof(mIndirectDiffuseCube->GetCubeCameraCBV(i)), &mIndirectDiffuseCube->GetCubeCameraCBV(i));
 		m_pSky->Draw(Context, &mIndirectDiffusePSO);
 	}
 	Context.TransitionResource(mIndirectDiffuseCube->Resource(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
@@ -79,7 +79,7 @@ void IBL::BakingPreFilteredEnvironment(GraphicsContext& Context)
 			Context.SetRenderTarget(mPreFilteredEnvCube->RTV(RTVIndex));
 			auto ConstantBuffer = mPreFilteredEnvCube->GetCubeCameraCBV(i);
 			ConstantBuffer.mRoughness = Roughness;
-			Context.SetDynamicConstantBufferView((int)RootSignatureType::CommonConstantBuffer, sizeof(ConstantBuffer), &ConstantBuffer);
+			Context.SetDynamicConstantBufferView((int)RootSignatureType::eCommonConstantBuffer, sizeof(ConstantBuffer), &ConstantBuffer);
 			m_pSky->Draw(Context, &mPreFilteredEnvMapPSO);
 		}
 	}

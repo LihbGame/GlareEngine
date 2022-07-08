@@ -35,7 +35,7 @@ namespace GlareEngine
 		m_Width = Width;
 		m_Height = Height;
 		m_ArraySize = DepthOrArraySize;
-		m_Format = Format;
+		m_Format = GetBaseFormat(Format);
 
 		D3D12_RESOURCE_DESC Desc = {};
 		Desc.Alignment = 0;
@@ -114,13 +114,13 @@ namespace GlareEngine
 		case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
 		case DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS:
 		case DXGI_FORMAT_X32_TYPELESS_G8X24_UINT:
-			return DXGI_FORMAT_R32G8X24_TYPELESS;
+			return DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
 
 			// No Stencil
 		case DXGI_FORMAT_R32_TYPELESS:
 		case DXGI_FORMAT_D32_FLOAT:
 		case DXGI_FORMAT_R32_FLOAT:
-			return DXGI_FORMAT_R32_TYPELESS;
+			return DXGI_FORMAT_D32_FLOAT;
 
 			// 24-bit Z
 		case DXGI_FORMAT_R24G8_TYPELESS:
@@ -262,14 +262,14 @@ namespace GlareEngine
 		case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
 		case DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS:
 		case DXGI_FORMAT_X32_TYPELESS_G8X24_UINT:
-			return DXGI_FORMAT_X32_TYPELESS_G8X24_UINT;
+			return DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS;
 
 			// 24-bit Z
 		case DXGI_FORMAT_R24G8_TYPELESS:
 		case DXGI_FORMAT_D24_UNORM_S8_UINT:
 		case DXGI_FORMAT_R24_UNORM_X8_TYPELESS:
 		case DXGI_FORMAT_X24_TYPELESS_G8_UINT:
-			return DXGI_FORMAT_X24_TYPELESS_G8_UINT;
+			return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 
 		default:
 			return DXGI_FORMAT_UNKNOWN;

@@ -7,6 +7,20 @@
 #include "GraphicsCommon.h"
 #include "UploadBuffer.h"
 #include "MeshBuilder.h"
+#include "SamplerManager.h"
+#include "Render.h"
+#include "InstanceModel/glTFInstanceModel.h"
+
+//Sampler Permutations
+std::unordered_map<uint32_t, uint32_t> gSamplerPermutations;
+
+D3D12_CPU_DESCRIPTOR_HANDLE GetSampler(uint32_t addressModes)
+{
+	SamplerDesc samplerDesc;
+	samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE(addressModes & 0x3);
+	samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE(addressModes >> 2);
+	return samplerDesc.CreateDescriptor();
+}
 
 void GlareEngine::CompileMesh(
 	std::vector<Mesh*>& meshList,
@@ -213,7 +227,7 @@ inline void SetTextureOptions(std::map<std::string, uint8_t>& optionsMap, glTF::
 		optionsMap[texture->source->path] = options;
 }
 
-void BuildMaterials(ModelData& model, const glTF::Asset& asset)
+void BuildMaterials(glTFModelData& model, const glTF::Asset& asset)
 {
 	//CBVs need 256 byte alignment
 	assert((_alignof(MaterialConstants) & 255) == 0);
@@ -337,11 +351,11 @@ void LoadMaterials(Model& model,
 	{
 		const MaterialTextureData& srcMat = materialTextures[matIdx];
 
-		DescriptorHandle TextureHandles = Renderer::s_TextureHeap.Alloc(eNumTextures);
-		uint32_t SRVDescriptorTable = Renderer::s_TextureHeap.GetOffsetOfHandle(TextureHandles);
+		DescriptorHandle TextureHandles = Render::gModelTextureHeap.Alloc(eNumTextures);
+		uint32_t SRVDescriptorTable = Render::gModelTextureHeap.GetOffsetOfHandle(TextureHandles);
 
 		uint32_t DestCount = eNumTextures;
-		uint32_t SourceCounts[eNumTextures] = { 1, 1, 1, 1, 1 };
+		uint32_t SourceCounts[eNumTextures] = { 1, 1, 1, 1, 1, 1 };
 
 		D3D12_CPU_DESCRIPTOR_HANDLE DefaultTextures[eNumTextures] =
 		{
@@ -349,31 +363,34 @@ void LoadMaterials(Model& model,
 			GetDefaultTexture(eWhiteOpaque2D),
 			GetDefaultTexture(eWhiteOpaque2D),
 			GetDefaultTexture(eBlackTransparent2D),
-			GetDefaultTexture(eDefaultNormalMap)
+			GetDefaultTexture(eDefaultNormalMap),
+			GetDefaultTexture(eBlackOpaque2D)
 		};
 
 		D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[eNumTextures];
 		for (uint32_t j = 0; j < eNumTextures; ++j)
 		{
-			if (srcMat.stringIdx[j] == 0xffff)
+			if (srcMat.stringIdx[j] == 0xffff || model.m_Textures[srcMat.stringIdx[j]] == nullptr)
 				SourceTextures[j] = DefaultTextures[j];
 			else
-				SourceTextures[j] = model.textures[srcMat.stringIdx[j]].GetSRV();
+				SourceTextures[j] = model.m_Textures[srcMat.stringIdx[j]]->GetSRV();
 		}
 
+		//Copy Descriptor to Model Texture Heap
 		g_Device->CopyDescriptors(1, &TextureHandles, &DestCount,
 			DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-		// See if this combination of samplers has been used before.  If not, allocate more from the heap
-		// and copy in the descriptors.
+		// See if this combination of samplers has been used before. 
+		// If not, allocate more from the heap and copy in the descriptors.
 		uint32_t addressModes = srcMat.addressModes;
-		auto samplerMapLookup = g_SamplerPermutations.find(addressModes);
+		auto samplerMapLookup = gSamplerPermutations.find(addressModes);
 
-		if (samplerMapLookup == g_SamplerPermutations.end())
+		if (samplerMapLookup == gSamplerPermutations.end())
 		{
-			DescriptorHandle SamplerHandles = Renderer::s_SamplerHeap.Alloc(eNumTextures);
-			uint32_t SamplerDescriptorTable = Renderer::s_SamplerHeap.GetOffsetOfHandle(SamplerHandles);
-			g_SamplerPermutations[addressModes] = SamplerDescriptorTable;
+			DescriptorHandle SamplerHandles = Render::gSamplerHeap.Alloc(eNumTextures);
+			uint32_t SamplerDescriptorTable = Render::gSamplerHeap.GetOffsetOfHandle(SamplerHandles);
+			gSamplerPermutations[addressModes] = SamplerDescriptorTable;
+			//Recode Descriptor Table offsets
 			tableOffsets[matIdx] = SRVDescriptorTable | SamplerDescriptorTable << 16;
 
 			D3D12_CPU_DESCRIPTOR_HANDLE SourceSamplers[eNumTextures];
@@ -397,15 +414,19 @@ void LoadMaterials(Model& model,
 	{
 		Mesh& mesh = *(Mesh*)meshPtr;
 		uint32_t offsetPair = tableOffsets[mesh.materialCBV];
+		//SRV Table Offset
 		mesh.srvTable = offsetPair & 0xFFFF;
+		//Sampler table Offset
 		mesh.samplerTable = offsetPair >> 16;
-		mesh.pso = Renderer::GetPSO(mesh.psoFlags);
+		//Get PSO
+		mesh.pso = glTFInstanceModel::GetPSO(mesh.psoFlags);
+		//offset to next mesh
 		meshPtr += sizeof(Mesh) + (mesh.numDraws - 1) * sizeof(Mesh::Draw);
 	}
 }
 
 
-void BuildAnimations(ModelData& model, const glTF::Asset& asset)
+void BuildAnimations(glTFModelData& model, const glTF::Asset& asset)
 {
 	size_t numAnimations = asset.m_animations.size();
 	if (numAnimations == 0)
@@ -470,7 +491,7 @@ void BuildAnimations(ModelData& model, const glTF::Asset& asset)
 }
 
 
-void BuildSkins(ModelData& model, const glTF::Asset& asset)
+void BuildSkins(glTFModelData& model, const glTF::Asset& asset)
 {
 	size_t numSkins = asset.m_skins.size();
 	if (numSkins == 0)
@@ -514,7 +535,7 @@ void BuildSkins(ModelData& model, const glTF::Asset& asset)
 
 
 
-bool GlareEngine::BuildModel(ModelData& model, const glTF::Asset& asset, int sceneIdx)
+bool GlareEngine::BuildModel(glTFModelData& model, const glTF::Asset& asset, int sceneIdx)
 {
 	BuildMaterials(model, asset);
 
@@ -542,7 +563,7 @@ bool GlareEngine::BuildModel(ModelData& model, const glTF::Asset& asset, int sce
 	return true;
 } 
 
-bool GlareEngine::SaveModel(const std::wstring& filePath, const ModelData& model)
+bool GlareEngine::SaveModel(const std::wstring& filePath, const glTFModelData& model)
 {
 	std::ofstream outFile(filePath, std::ios::out | std::ios::binary);
 	if (!outFile)
@@ -660,7 +681,7 @@ std::shared_ptr<Model> GlareEngine::LoadModel(const std::wstring& filePath, bool
 			return nullptr;
 		}
 
-		ModelData modelData;
+		glTFModelData modelData;
 
 		const std::wstring fileExt = ToLower(GetFileExtension(filePath));
 

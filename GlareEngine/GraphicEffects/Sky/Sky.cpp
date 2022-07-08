@@ -121,7 +121,7 @@ void CSky::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 	else
 	{
 		Context.SetPipelineState(mPSO);
-		Context.SetDynamicConstantBufferView((int)RootSignatureType::CommonConstantBuffer, sizeof(mWorld), &mWorld);
+		Context.SetDynamicConstantBufferView((int)RootSignatureType::eCommonConstantBuffer, sizeof(mWorld), &mWorld);
 	}
 	Context.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	Context.SetIndexBuffer(mSkyMesh->IndexBufferView());

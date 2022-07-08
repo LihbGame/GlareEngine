@@ -21,8 +21,9 @@ namespace GlareEngine
 }
 
 
-GlareEngine::GraphicsPSO::GraphicsPSO()
+GlareEngine::GraphicsPSO::GraphicsPSO(wstring psoName)
 {
+	m_Name = psoName;
 	ZeroMemory(&m_PSODesc, sizeof(m_PSODesc));
 	m_PSODesc.NodeMask = 1;
 	m_PSODesc.SampleMask = 0xFFFFFFFFu;
@@ -136,8 +137,9 @@ void GlareEngine::GraphicsPSO::Finalize()
 	}
 }
 
-ComputePSO::ComputePSO()
+ComputePSO::ComputePSO(wstring psoName)
 {
+	m_Name = psoName;
 	ZeroMemory(&m_PSODesc, sizeof(m_PSODesc));
 	m_PSODesc.NodeMask = 1;
 }

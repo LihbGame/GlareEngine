@@ -567,6 +567,9 @@
     <ClCompile Include="EngineCore\Graphics\Render.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
+    <ClCompile Include="EngineCore\Model\glTFModelLoader.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -770,9 +773,6 @@
     <None Include="Shaders\Terrain\TerrainDS.hlsl" />
     <None Include="Shaders\Terrain\TerrainHS.hlsl" />
     <None Include="packages.config" />
-    <None Include="EngineCore\Model\glTFModelLoader.cpp">
-      <Filter>MainSource</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Library Include="Dependences\lib\ozz\debug\ozz_animation_d.lib" />

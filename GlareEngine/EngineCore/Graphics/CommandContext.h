@@ -215,7 +215,7 @@ namespace GlareEngine
 		void ClearDepth(DepthBuffer& Target);
 		void ClearDepth(DepthBuffer& Target, float ClearDepth);
 		void ClearStencil(DepthBuffer& Target);
-		void ClearDepthAndStencil(DepthBuffer& Target);
+		void ClearDepthAndStencil(DepthBuffer& Target, float ClearDepth);
 		void ClearColor(ColorBuffer& Target, D3D12_RECT* Rect = nullptr);
 		void ClearColor(ColorBuffer& Target, float Colour[4], D3D12_RECT* Rect = nullptr);
 

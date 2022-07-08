@@ -11,5 +11,9 @@ public:
 	static std::vector<D3D12_INPUT_ELEMENT_DESC> HeightMapTerrain;
 	static std::vector<D3D12_INPUT_ELEMENT_DESC> Grass;
 	static std::vector<D3D12_INPUT_ELEMENT_DESC> Particle;
+
+	static std::vector<D3D12_INPUT_ELEMENT_DESC> SkinPosUV;
+	static std::vector<D3D12_INPUT_ELEMENT_DESC> PosUV;
+	static std::vector<D3D12_INPUT_ELEMENT_DESC> SkinPos;
 };
 

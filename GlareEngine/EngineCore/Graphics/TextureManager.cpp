@@ -99,4 +99,17 @@ namespace GlareEngine
 			texture.second.get()->UploadHeap.Detach();
 		}
 	}
+
+
+	D3D12_CPU_DESCRIPTOR_HANDLE& Texture::GetSRV()
+	{
+		assert(Resource.Get() != nullptr);
+
+		if (m_CPUDescriptorHandle.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
+		{
+			m_CPUDescriptorHandle = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			g_Device->CreateShaderResourceView(Resource.Get(), nullptr, m_CPUDescriptorHandle);
+		}
+		return m_CPUDescriptorHandle;
+	}
 }

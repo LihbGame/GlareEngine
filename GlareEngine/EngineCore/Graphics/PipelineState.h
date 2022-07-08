@@ -40,6 +40,7 @@ namespace GlareEngine
 		ID3D12PipelineState* GetPipelineStateObject(void) const { return m_PSO; }
 
 	protected:
+		wstring m_Name;
 
 		const RootSignature* m_RootSignature;
 
@@ -54,7 +55,7 @@ namespace GlareEngine
 	public:
 
 		//ÒÔ¿Õ×´Ì¬¿ªÊ¼. 
-		GraphicsPSO();
+		GraphicsPSO(wstring psoName = L"Unnamed Graphics PSO");
 
 		void SetBlendState(const D3D12_BLEND_DESC& BlendDesc);
 		void SetRasterizerState(const D3D12_RASTERIZER_DESC& RasterizerDesc);
@@ -93,7 +94,7 @@ namespace GlareEngine
 		friend class CommandContext;
 
 	public:
-		ComputePSO();
+		ComputePSO(wstring psoName = L"Unnamed Compute PSO");
 
 		void SetComputeShader(const void* Binary, size_t Size) { m_PSODesc.CS = CD3DX12_SHADER_BYTECODE(const_cast<void*>(Binary), Size); }
 		void SetComputeShader(const D3D12_SHADER_BYTECODE& Binary) { m_PSODesc.CS = Binary; }

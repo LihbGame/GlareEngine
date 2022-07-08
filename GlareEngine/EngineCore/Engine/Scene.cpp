@@ -238,23 +238,23 @@ void Scene::ForwardRendering()
 	Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 	Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
 
-	Context.ClearDepth(g_SceneDepthBuffer, REVERSE_Z ? 0.0f : 1.0f);
+	Context.ClearDepthAndStencil(g_SceneDepthBuffer, REVERSE_Z ? 0.0f : 1.0f);
 
 	Context.ClearRenderTarget(g_SceneColorBuffer);
 
 	Context.SetRootSignature(*m_pRootSignature);
 
 	//set main constant buffer
-	Context.SetDynamicConstantBufferView((int)RootSignatureType::MainConstantBuffer, sizeof(mMainConstants), &mMainConstants);
+	Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(mMainConstants), &mMainConstants);
 
 
 	//Set Cube SRV
-	Context.SetDynamicDescriptors((int)RootSignatureType::CubeTextures, 0, (UINT)g_CubeSRV.size(), g_CubeSRV.data());
+	Context.SetDynamicDescriptors((int)RootSignatureType::eCubeTextures, 0, (UINT)g_CubeSRV.size(), g_CubeSRV.data());
 	//Set Textures SRV
-	Context.SetDynamicDescriptors((int)RootSignatureType::PBRTextures, 0, (UINT)g_TextureSRV.size(), g_TextureSRV.data());
+	Context.SetDynamicDescriptors((int)RootSignatureType::ePBRTextures, 0, (UINT)g_TextureSRV.size(), g_TextureSRV.data());
 	//Set Material Data
 	const vector<MaterialConstant>& MaterialData = MaterialManager::GetMaterialInstance()->GetMaterialsConstantBuffer();
-	Context.SetDynamicSRV((int)RootSignatureType::MaterialConstantData, sizeof(MaterialConstant) * MaterialData.size(), MaterialData.data());
+	Context.SetDynamicSRV((int)RootSignatureType::eMaterialConstantData, sizeof(MaterialConstant) * MaterialData.size(), MaterialData.data());
 
 	Context.PIXBeginEvent(L"Shadow Pass");
 	CreateShadowMap(Context,m_pRenderObjects);

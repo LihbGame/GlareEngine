@@ -14,7 +14,8 @@ void DepthBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Heig
 
 	D3D12_CLEAR_VALUE ClearValue = {};
 	ClearValue.DepthStencil.Depth = isReverseZ ? 0.0f : 1.0f;
-	ClearValue.Format = Format;
+	ClearValue.DepthStencil.Stencil = 0;
+	ClearValue.Format = GetDSVFormat(Format);
 	CreateTextureResource(g_Device, Name, ResourceDesc, ClearValue, VidMemPtr);
 	CreateDerivedViews(g_Device, Format);
 }

@@ -4,8 +4,9 @@
 
 namespace GlareEngine
 {
-	struct Texture
+	class Texture
 	{
+	public:
 		// Unique material name for lookup.
 		std::string Name;
 		//only for model material 
@@ -15,6 +16,14 @@ namespace GlareEngine
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> Resource = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12Resource> UploadHeap = nullptr;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE m_CPUDescriptorHandle;
+	public:
+		Texture() { m_CPUDescriptorHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN; }
+		Texture(D3D12_CPU_DESCRIPTOR_HANDLE textureHandle) :m_CPUDescriptorHandle(textureHandle) {}
+
+		D3D12_CPU_DESCRIPTOR_HANDLE& GetSRV();
+
 	};
 
 	class TextureManager

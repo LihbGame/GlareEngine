@@ -1,5 +1,5 @@
 #pragma once
-
+#include <vector>
 //Render Config 
 #define MAX2DSRVSIZE 256
 #define MAXCUBESRVSIZE 32
@@ -11,6 +11,8 @@
 namespace GlareEngine
 {
 	class RootSignature;
+	class DescriptorHeap;
+	class GraphicsPSO;
 	struct PSOCommonProperty;
 
 	namespace Render
@@ -19,8 +21,14 @@ namespace GlareEngine
 		extern RootSignature gRootSignature;
 		//PSO Common Property
 		extern PSOCommonProperty gCommonProperty;
-
+		//Num Frame Resources
 		extern const int gNumFrameResources;
+
+		extern std::vector<GraphicsPSO> gPSOs;
+
+		extern DescriptorHeap gModelTextureHeap;
+
+		extern DescriptorHeap gSamplerHeap;
 	}
 
 

@@ -37,7 +37,7 @@ namespace GlareEngine
     };
 
     // All of the information that needs to be written to a [*.Model] data file
-    struct ModelData
+    struct glTFModelData
     {
         BoundingSphere m_BoundingSphere;
         AxisAlignedBox m_BoundingBox;
@@ -84,8 +84,8 @@ namespace GlareEngine
         Math::BoundingSphere& boundingSphere,
         Math::AxisAlignedBox& boundingBox);
 
-    bool BuildModel(ModelData& model, const glTF::Asset& asset, int sceneIdx = -1);
-    bool SaveModel(const std::wstring& filePath, const ModelData& model);
+    bool BuildModel(glTFModelData& model, const glTF::Asset& asset, int sceneIdx = -1);
+    bool SaveModel(const std::wstring& filePath, const glTFModelData& model);
 
     std::shared_ptr<Model> LoadModel(const std::wstring& filePath, bool forceRebuild = false);
 
