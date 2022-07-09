@@ -38,6 +38,7 @@ namespace GlareEngine
 
 	extern D3D12_BLEND_DESC BlendNoColorWrite;         // XXX
 	extern D3D12_BLEND_DESC BlendDisable;              // 1, 0
+	extern D3D12_BLEND_DESC BlendDisableAlphaToCoverage;//AlphaToCoverage enable
 	extern D3D12_BLEND_DESC BlendPreMultiplied;        // 1, 1-SrcA
 	extern D3D12_BLEND_DESC BlendTraditional;          // SrcA, 1-SrcA
 	extern D3D12_BLEND_DESC BlendAdditive;             // 1, 1

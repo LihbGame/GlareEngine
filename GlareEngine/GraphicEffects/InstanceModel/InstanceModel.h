@@ -14,6 +14,8 @@ public:
 
 	virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr);
 
+	virtual void DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificShadowPSO = nullptr);
+
 	virtual void DrawUI() {}
 
 	static void BuildPSO(const PSOCommonProperty CommonProperty);

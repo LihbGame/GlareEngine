@@ -161,7 +161,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 		//set scene lights
 		gScene->SetSceneLights(SceneLights);
 		//set Shadow map 
-		gScene->AddObjectToScene(mShadowMap.get());
+		gScene->SetShadowMap(mShadowMap.get());
 		//add hdr Sky
 		gScene->AddObjectToScene(mSky.get());
 

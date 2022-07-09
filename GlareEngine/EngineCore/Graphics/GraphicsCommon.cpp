@@ -45,6 +45,7 @@ namespace GlareEngine
 
 	D3D12_BLEND_DESC BlendNoColorWrite;
 	D3D12_BLEND_DESC BlendDisable;
+	D3D12_BLEND_DESC BlendDisableAlphaToCoverage;
 	D3D12_BLEND_DESC BlendPreMultiplied;
 	D3D12_BLEND_DESC BlendTraditional;
 	D3D12_BLEND_DESC BlendAdditive;
@@ -230,6 +231,9 @@ void GlareEngine::InitializeBlendState(void)
 
 	alphaBlend.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 	BlendDisable = alphaBlend;
+
+	alphaBlend.AlphaToCoverageEnable = true;
+	BlendDisableAlphaToCoverage = alphaBlend;
 
 	alphaBlend.RenderTarget[0].BlendEnable = TRUE;
 	BlendTraditional = alphaBlend;

@@ -5,18 +5,22 @@
 #include "RootSignature.h"
 #include "PipelineState.h"
 #include "Hash.h"
+#include "EngineLog.h"
 
 using namespace std;
 using Microsoft::WRL::ComPtr;
 
-static map< size_t, ComPtr<ID3D12PipelineState> > s_GraphicsPSOHashMap;
-static map< size_t, ComPtr<ID3D12PipelineState> > s_ComputePSOHashMap;
+
 namespace GlareEngine
 {
+	static map< size_t, ComPtr<ID3D12PipelineState> > gGraphicsPSOHashMap;
+	static map< size_t, ComPtr<ID3D12PipelineState> > gComputePSOHashMap;
+
+
 	void PSO::DestroyAll(void)
 	{
-		s_GraphicsPSOHashMap.clear();
-		s_ComputePSOHashMap.clear();
+		gGraphicsPSOHashMap.clear();
+		gComputePSOHashMap.clear();
 	}
 }
 
@@ -112,13 +116,13 @@ void GlareEngine::GraphicsPSO::Finalize()
 	{
 		static mutex s_HashMapMutex;
 		lock_guard<mutex> CS(s_HashMapMutex);
-		auto iter = s_GraphicsPSOHashMap.find(HashCode);
+		auto iter = gGraphicsPSOHashMap.find(HashCode);
 
 		// Reserve space so the next inquiry will find that someone got here first.
-		if (iter == s_GraphicsPSOHashMap.end())
+		if (iter == gGraphicsPSOHashMap.end())
 		{
 			firstCompile = true;
-			PSORef = s_GraphicsPSOHashMap[HashCode].GetAddressOf();
+			PSORef = gGraphicsPSOHashMap[HashCode].GetAddressOf();
 		}
 		else
 			PSORef = iter->second.GetAddressOf();
@@ -127,12 +131,12 @@ void GlareEngine::GraphicsPSO::Finalize()
 	if (firstCompile)
 	{
 		ThrowIfFailed(g_Device->CreateGraphicsPipelineState(&m_PSODesc, IID_PPV_ARGS(&m_PSO)));
-		s_GraphicsPSOHashMap[HashCode].Attach(m_PSO);
+		gGraphicsPSOHashMap[HashCode].Attach(m_PSO);
 	}
 	else
 	{
 		while (*PSORef == nullptr)
-			this_thread::yield();
+			EngineLog::AddLog(L"Can not find or create GraphicsPSO: %s !",this->m_Name);
 		m_PSO = *PSORef;
 	}
 }
@@ -157,13 +161,13 @@ void ComputePSO::Finalize()
 	{
 		static mutex s_HashMapMutex;
 		lock_guard<mutex> CS(s_HashMapMutex);
-		auto iter = s_ComputePSOHashMap.find(HashCode);
+		auto iter = gComputePSOHashMap.find(HashCode);
 
 		// Reserve space so the next inquiry will find that someone got here first.
-		if (iter == s_ComputePSOHashMap.end())
+		if (iter == gComputePSOHashMap.end())
 		{
 			firstCompile = true;
-			PSORef = s_ComputePSOHashMap[HashCode].GetAddressOf();
+			PSORef = gComputePSOHashMap[HashCode].GetAddressOf();
 		}
 		else
 			PSORef = iter->second.GetAddressOf();
@@ -172,7 +176,7 @@ void ComputePSO::Finalize()
 	if (firstCompile)
 	{
 		ThrowIfFailed(g_Device->CreateComputePipelineState(&m_PSODesc, IID_PPV_ARGS(&m_PSO)));
-		s_ComputePSOHashMap[HashCode].Attach(m_PSO);
+		gComputePSOHashMap[HashCode].Attach(m_PSO);
 	}
 	else
 	{

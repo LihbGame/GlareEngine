@@ -25,6 +25,8 @@ public:
 	void ReleaseScene();
 	//Resize Viewport and Scissor
 	void ResizeViewport(uint32_t width, uint32_t height);
+	//Set Shadow
+	void SetShadowMap(ShadowMap* shadowMap) { m_pShadowMap = shadowMap; }
 	//Set Camera 
 	void SetCamera(Camera* camera) { m_pCamera = camera; }
 	//Set UI

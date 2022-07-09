@@ -31,6 +31,8 @@ public:
 	virtual void DrawUI();
 	virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO /* = nullptr */);
 
+	virtual void DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificShadowPSO = nullptr) {}
+
 	float GetWidth()const;
 	float GetDepth()const;
 	float GetHeight(float x, float z)const;

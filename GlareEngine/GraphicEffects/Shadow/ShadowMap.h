@@ -9,7 +9,7 @@ struct ShadowConstantBuffer
 };
 
 
-class ShadowMap:public RenderObject
+class ShadowMap
 {
 public:
 	ShadowMap(XMFLOAT3 LightDirection, UINT width, UINT height);
@@ -23,11 +23,9 @@ public:
 	D3D12_VIEWPORT Viewport()const;
 	D3D12_RECT ScissorRect()const;
 
-
-	virtual void Draw(GraphicsContext& Context, GraphicsPSO* PSO = nullptr) {};
 	void Draw(GraphicsContext& Context, vector<RenderObject*> RenderObjects);
 
-	virtual void DrawUI() {}
+	void DrawUI() {}
 
 	static void BuildPSO(const PSOCommonProperty CommonProperty);
 

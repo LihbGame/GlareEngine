@@ -22,7 +22,9 @@ namespace GlareEngine
 		//Num Frame Resources
 		const int gNumFrameResources = 3;
 
-		vector<GraphicsPSO> gPSOs;
+		vector<GraphicsPSO> gModelPSOs;
+
+		vector<GraphicsPSO> gCommonPSOs;
 
 		DescriptorHeap gModelTextureHeap;
 
@@ -76,8 +78,36 @@ namespace GlareEngine
 
 	}
 
+	uint8_t Render::GetPSO(uint16_t psoFlags)
+	{
+		return uint8_t();
+	}
+
+	void Render::BuildCommonPSOs(const PSOCommonProperty CommonProperty)
+	{
+		//assert(gCommonPSOs.size() == 0);
+
+		//// Depth Only PSOs
+
+		//GraphicsPSO DepthOnlyPSO(L"Render: Depth Only PSO");
+		//DepthOnlyPSO.SetRootSignature(gRootSignature);
+		//DepthOnlyPSO.SetRasterizerState(RasterizerDefault);
+		//DepthOnlyPSO.SetBlendState(BlendDisable);
+		//DepthOnlyPSO.SetDepthStencilState(DepthStateReadWrite);
+		//DepthOnlyPSO.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
+		//DepthOnlyPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+		//DepthOnlyPSO.SetRenderTargetFormats(0, nullptr, DSV_FORMAT);
+		//DepthOnlyPSO.SetVertexShader(g_pDepthOnlyVS, sizeof(g_pDepthOnlyVS));
+		//DepthOnlyPSO.Finalize();
+		//gPSOs.push_back(DepthOnlyPSO);
+
+
+	}
+
+
 	void Render::BuildPSOs()
 	{
+		BuildCommonPSOs(gCommonProperty);
 		CSky::BuildPSO(gCommonProperty);
 		InstanceModel::BuildPSO(gCommonProperty);
 		glTFInstanceModel::BuildPSO(gCommonProperty);

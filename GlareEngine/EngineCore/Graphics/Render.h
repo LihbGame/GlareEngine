@@ -24,7 +24,9 @@ namespace GlareEngine
 		//Num Frame Resources
 		extern const int gNumFrameResources;
 
-		extern std::vector<GraphicsPSO> gPSOs;
+		extern std::vector<GraphicsPSO> gModelPSOs;
+
+		extern std::vector<GraphicsPSO> gCommonPSOs;
 
 		extern DescriptorHeap gModelTextureHeap;
 
@@ -38,7 +40,9 @@ namespace GlareEngine
 		void Initialize();
 		void ShutDown();
 
+		uint8_t GetPSO(uint16_t psoFlags);
 		void BuildRootSignature();
 		void BuildPSOs();
+		void BuildCommonPSOs(const PSOCommonProperty CommonProperty);
 	}
 }

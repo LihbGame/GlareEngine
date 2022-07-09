@@ -46,6 +46,7 @@ public:
 	bool GetVisible()const { return mIsVisible; }
 
 	virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr) = 0;
+	virtual void DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificShadowPSO = nullptr) = 0;
 	virtual void Update(float DeltaTime) = 0;
 	virtual void DrawUI() = 0;
 

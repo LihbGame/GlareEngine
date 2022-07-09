@@ -41,6 +41,28 @@ void InstanceModel::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 	}
 }
 
+void InstanceModel::DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificShadowPSO)
+{
+	for (int SubModelIndex = 0; SubModelIndex < mInstanceData.mInstanceConstants.size(); ++SubModelIndex)
+	{
+		//Set Instance data
+		const vector<InstanceRenderConstants>& InstanceData = mInstanceData.mInstanceConstants[SubModelIndex];
+		Context.SetDynamicSRV(5, sizeof(InstanceRenderConstants) * InstanceData.size(), (void*)InstanceData.data());
+
+		Context.SetPipelineState(*SpecificShadowPSO);
+
+		Context.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		std::string SubMeshName = mInstanceData.mModelData->mSubModels[SubModelIndex].mMeshData.pModelMeshName;
+		const MeshGeometry& SubModelMeshGeo = mInstanceData.mModelData->mSubModels[SubModelIndex].mMeshData.mMeshGeo;
+		Context.SetIndexBuffer(SubModelMeshGeo.IndexBufferView());
+		Context.SetVertexBuffer(0, SubModelMeshGeo.VertexBufferView());
+		UINT IndexCount = ((MeshGeometry)SubModelMeshGeo).DrawArgs[SubMeshName].IndexCount;
+		Context.DrawIndexedInstanced(IndexCount, (UINT)InstanceData.size(), 0, 0, 0);
+	}
+
+}
+
 void InstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 {
 	D3D12_RASTERIZER_DESC Rasterizer = RasterizerTwoSided;

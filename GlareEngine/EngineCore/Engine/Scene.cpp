@@ -76,10 +76,6 @@ void Scene::AddObjectToScene(RenderObject* Object)
 		m_pRenderObjects.push_back(Object);
 		break;
 	}
-	case ObjectType::Shadow:{
-		m_pShadowMap = dynamic_cast<ShadowMap*>(Object);
-		break;
-	}
 	case ObjectType::Model:{
 		m_pRenderObjects.push_back(Object);
 		break;
