@@ -101,7 +101,8 @@ namespace GlareEngine
 
 		// Flush existing commands and release the current context
 		uint64_t Finish(bool WaitForCompletion = false);
-
+		// Flush current commands and release the PreFrame context
+		uint64_t Finish(uint64_t PreFenceValue, bool WaitForCompletion = false);
 
 		void TransitionResource(GPUResource& Resource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate = false);
 		void BeginResourceTransition(GPUResource& Resource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate = false);

@@ -57,8 +57,8 @@ float4 main(PosNorTanTexOut pin) : SV_Target
 // Common convention to take alpha from diffuse material.
     litColor.a = diffuseAlbedo.a;
 
-#ifdef ALPHA_TEST
-clip(litColor.a - 0.1f);
-#endif
+//#ifdef ALPHA_TEST
+//clip(litColor.a - 0.1f);
+//#endif
     return litColor;
 }

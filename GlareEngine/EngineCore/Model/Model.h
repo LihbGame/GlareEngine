@@ -11,7 +11,7 @@
 
 namespace GlareEngine
 {
-	namespace PSOFlags
+	namespace ModelPSOFlags
 	{
 		enum : uint16_t
 		{

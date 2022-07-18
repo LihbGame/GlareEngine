@@ -19,9 +19,8 @@ public:
 
 	void Update(float dt) {}
 public:
-
-
-
-
+	static 	vector<GraphicsPSO> gModelPSOs;
+	static GraphicsPSO sm_PBRglTFPSO;
+	static PSOCommonProperty sm_PSOCommonProperty;
 };
 

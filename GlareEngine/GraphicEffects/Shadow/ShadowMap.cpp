@@ -8,6 +8,7 @@
 using namespace GlareEngine;
 
 GraphicsPSO ShadowMap::mShadowPSO;
+DXGI_FORMAT ShadowMap::mFormat = DXGI_FORMAT_D32_FLOAT;
 
 ShadowMap::ShadowMap(XMFLOAT3 LightDirection, UINT width, UINT height)
 	:mBaseLightDirection(LightDirection),

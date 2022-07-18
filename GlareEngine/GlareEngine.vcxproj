@@ -84,7 +84,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>.\Dependences\include\DirectXTK12\Src;.\Dependences\include\DirectXTK12\Src\Shaders\Compiled;.\Dependences\include\DirectXTK12\Inc;.\GraphicEffects;.\;..\x64\Debug;.\GraphicEffects\Misc;.\EngineCore\Engine;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\EngineCore\Graphics;.\Dependences\include;.\GraphicEffects\Animation;.\EngineCore\Public;$(IncludePath)</IncludePath>
+    <IncludePath>.\Dependences\include\DirectXTK12\Src;.\Dependences\include\DirectXTK12\Src\Shaders\Compiled;.\Dependences\include\DirectXTK12\Inc;.\GraphicEffects;.\;.\GraphicEffects\Misc;.\EngineCore\Engine;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\EngineCore\Graphics;.\Dependences\include;.\GraphicEffects\Animation;.\EngineCore\Model;.\EngineCore;$(OutDir);$(IncludePath)</IncludePath>
     <LibraryPath>.\Dependences\lib\ozz\debug;.\Dependences\lib;$(LibraryPath)</LibraryPath>
     <AllProjectIncludesArePublic>false</AllProjectIncludesArePublic>
   </PropertyGroup>
@@ -143,10 +143,15 @@
       <ShaderModel>6.0</ShaderModel>
       <VariableName>g_p%(Filename)</VariableName>
       <HeaderFileOutput>$(SolutionDir)\$(Platform)\$(Configuration)\CompiledShaders\%(Filename).h</HeaderFileOutput>
-      <ObjectFileOutput />
+      <ObjectFileOutput>
+      </ObjectFileOutput>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EntryPointName>main</EntryPointName>
       <ShaderType>Vertex</ShaderType>
+      <AssemblerOutput>
+      </AssemblerOutput>
+      <AssemblerOutputFile>
+      </AssemblerOutputFile>
       <AdditionalOptions>-Qembed_debug %(AdditionalOptions)</AdditionalOptions>
     </FxCompile>
   </ItemDefinitionGroup>

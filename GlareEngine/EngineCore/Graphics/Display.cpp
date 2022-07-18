@@ -86,6 +86,7 @@ namespace GlareEngine
 		uint32_t g_DisplayHeight = 900;
 		ColorBuffer g_PreDisplayBuffer;
 
+		uint64_t g_PreFenceValue = 0;
 
 		void ResolutionToUINT(eResolution res, uint32_t& NativeWidth, uint32_t& NativeHeight)
 		{
@@ -384,6 +385,13 @@ namespace GlareEngine
 
 	void Display::Present(void)
 	{
+		GraphicsContext& RenderContext = GraphicsContext::Begin(L"Present");
+		RenderContext.PIXBeginEvent(L"Present");
+		RenderContext.TransitionResource(Display::GetCurrentBuffer(), D3D12_RESOURCE_STATE_PRESENT, true);
+		RenderContext.PIXEndEvent();
+		g_PreFenceValue = RenderContext.Finish(g_PreFenceValue, true);
+
+
 		g_CurrentBuffer = (g_CurrentBuffer + 1) % SWAP_CHAIN_BUFFER_COUNT;
 
 		UINT PresentInterval = s_EnableVSync ? min(4, (int)round(s_FrameTime * 60.0f)) : 0;

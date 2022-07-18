@@ -187,6 +187,33 @@ namespace GlareEngine
 		return FenceValue;
 	}
 
+	uint64_t CommandContext::Finish(uint64_t PreFenceValue, bool WaitForCompletion)
+	{
+		assert(m_Type == D3D12_COMMAND_LIST_TYPE_DIRECT || m_Type == D3D12_COMMAND_LIST_TYPE_COMPUTE);
+
+		FlushResourceBarriers();
+
+		assert(m_CurrentAllocator != nullptr);
+
+		CommandQueue& Queue = g_CommandManager.GetQueue(m_Type);
+
+		uint64_t FenceValue = Queue.ExecuteCommandList(m_CommandList);
+		Queue.DiscardAllocator(FenceValue, m_CurrentAllocator);
+		m_CurrentAllocator = nullptr;
+
+		m_CPULinearAllocator.CleanupUsedPages(FenceValue);
+		m_GPULinearAllocator.CleanupUsedPages(FenceValue);
+		m_DynamicViewDescriptorHeap.CleanupUsedHeaps(FenceValue);
+		m_DynamicSamplerDescriptorHeap.CleanupUsedHeaps(FenceValue);
+
+		if (WaitForCompletion)
+			g_CommandManager.WaitForFence(PreFenceValue);
+
+		g_ContextManager.FreeContext(this);
+
+		return FenceValue;
+	}
+
 	void CommandContext::TransitionResource(GPUResource& Resource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate)
 	{
 		D3D12_RESOURCE_STATES OldState = Resource.m_UsageState;

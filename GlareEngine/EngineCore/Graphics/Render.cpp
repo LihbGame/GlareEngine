@@ -20,7 +20,7 @@ namespace GlareEngine
 		//PSO Common Property
 		PSOCommonProperty gCommonProperty;
 		//Num Frame Resources
-		const int gNumFrameResources = 3;
+		const int gNumFrameResources = NUMFRAME;
 
 		vector<GraphicsPSO> gModelPSOs;
 
@@ -37,10 +37,18 @@ namespace GlareEngine
 	{
 		BuildRootSignature();
 		BuildPSOs();
+
+		gModelTextureHeap.Create(L"Scene Texture Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4096);
+
+		// Maybe only need 2 for wrap vs. clamp?  Currently we allocate 1 for 1 with textures
+		gSamplerHeap.Create(L"Scene Sampler Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 2048);
+
 	}
 
 	void Render::ShutDown()
 	{
+		gModelTextureHeap.Destroy();
+		gSamplerHeap.Destroy();
 	}
 
 	void Render::BuildRootSignature()

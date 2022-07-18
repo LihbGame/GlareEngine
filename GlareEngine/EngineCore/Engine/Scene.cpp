@@ -133,7 +133,7 @@ void Scene::DrawUI()
 	m_pGUI->EndDraw(RenderContext.GetCommandList());
 	RenderContext.PIXEndEvent();
 	RenderContext.TransitionResource(Display::GetCurrentBuffer(), D3D12_RESOURCE_STATE_PRESENT, true);
-	RenderContext.Finish(true);
+	RenderContext.Finish();
 }
 
 void Scene::ReleaseScene()
@@ -292,14 +292,14 @@ void Scene::ForwardRendering()
 	//MSAA
 	if (IsMSAA)
 	{
-		Context.TransitionResource(g_SceneMSAAColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_SOURCE, true);
+		Context.TransitionResource(g_SceneMSAAColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
 		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, true);
 		Context.GetCommandList()->ResolveSubresource(g_SceneColorBuffer.GetResource(), 0, g_SceneMSAAColorBuffer.GetResource(), 0, DefaultHDRColorFormat);
 	}
 
 	Context.PIXEndEvent();
 #pragma endregion
-	Context.Finish(true);
+	Context.Finish();
 }
 
 void Scene::ForwardPlusRendering()

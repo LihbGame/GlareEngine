@@ -327,36 +327,36 @@ void GlareEngine::BuildMesh(Primitive& outPrimitive, const glTF::Primitive& inPr
 	// Use VBWriter to generate a new, interleaved and compressed vertex buffer
 	std::vector<D3D12_INPUT_ELEMENT_DESC> OutputElements;
 
-	outPrimitive.psoFlags = PSOFlags::eHasPosition | PSOFlags::eHasNormal;
+	outPrimitive.psoFlags = ModelPSOFlags::eHasPosition | ModelPSOFlags::eHasNormal;
 	OutputElements.push_back({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT });
 	OutputElements.push_back({ "NORMAL", 0, DXGI_FORMAT_R10G10B10A2_UNORM, 0, D3D12_APPEND_ALIGNED_ELEMENT });
 	if (tangent.get())
 	{
 		OutputElements.push_back({ "TANGENT", 0, DXGI_FORMAT_R10G10B10A2_UNORM, 0, D3D12_APPEND_ALIGNED_ELEMENT });
-		outPrimitive.psoFlags |= PSOFlags::eHasTangent;
+		outPrimitive.psoFlags |= ModelPSOFlags::eHasTangent;
 	}
 	if (texcoord0.get())
 	{
 		OutputElements.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R16G16_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT });
-		outPrimitive.psoFlags |= PSOFlags::eHasUV0;
+		outPrimitive.psoFlags |= ModelPSOFlags::eHasUV0;
 	}
 	if (texcoord1.get())
 	{
 		OutputElements.push_back({ "TEXCOORD", 1, DXGI_FORMAT_R16G16_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT });
-		outPrimitive.psoFlags |= PSOFlags::eHasUV1;
+		outPrimitive.psoFlags |= ModelPSOFlags::eHasUV1;
 	}
 	if (HasSkin)
 	{
 		OutputElements.push_back({ "BLENDINDICES", 0, DXGI_FORMAT_R16G16B16A16_UINT, 0, D3D12_APPEND_ALIGNED_ELEMENT });
 		OutputElements.push_back({ "BLENDWEIGHT", 0, DXGI_FORMAT_R16G16B16A16_UNORM, 0, D3D12_APPEND_ALIGNED_ELEMENT });
-		outPrimitive.psoFlags |= PSOFlags::eHasSkin;
+		outPrimitive.psoFlags |= ModelPSOFlags::eHasSkin;
 	}
 	if (material.alphaBlend)
-		outPrimitive.psoFlags |= PSOFlags::eAlphaBlend;
+		outPrimitive.psoFlags |= ModelPSOFlags::eAlphaBlend;
 	if (material.alphaTest)
-		outPrimitive.psoFlags |= PSOFlags::eAlphaTest;
+		outPrimitive.psoFlags |= ModelPSOFlags::eAlphaTest;
 	if (material.twoSided)
-		outPrimitive.psoFlags |= PSOFlags::eTwoSided;
+		outPrimitive.psoFlags |= ModelPSOFlags::eTwoSided;
 
 	D3D12_INPUT_LAYOUT_DESC layout = { OutputElements.data(), (uint32_t)OutputElements.size() };
 

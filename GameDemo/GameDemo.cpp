@@ -165,6 +165,10 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 		//add hdr Sky
 		gScene->AddObjectToScene(mSky.get());
 
+		InitializeContext.Flush(true);
+		//Release Upload Temporary Textures (must flush GPU command wait for texture already load in GPU)
+		TextureManager::GetInstance(CommandList)->ReleaseUploadTextures();
+
 		//Load and Initialize Models in work threads
 		mEngineThread.AddTask([&]() {
 			GraphicsContext& InitializeContext = GraphicsContext::Begin(L"Load and Initialize Models");
@@ -183,6 +187,9 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			}
 
 			InitializeContext.Finish(true);
+
+			//Release Upload Temporary Textures (must flush GPU command wait for texture already load in GPU)
+			TextureManager::GetInstance(CommandList)->ReleaseUploadTextures();
 
 			//Create Model Materials Constant Buffer
 			MaterialManager::GetMaterialInstance()->CreateMaterialsConstantBuffer();
@@ -212,14 +219,12 @@ void App::Startup(void)
 	//Create scene
 	InitializeScene(CommandList, InitializeContext);
 
-	InitializeContext.Flush(true);
-	//Release Upload Temporary Textures (must flush GPU command wait for texture already load in GPU)
-	TextureManager::GetInstance(CommandList)->ReleaseUploadTextures();
 	InitializeContext.Finish(true);
 }
 
 void App::Cleanup(void)
 {
+	Render::ShutDown();
 	EngineLog::SaveLog();
 	mEngineUI->ShutDown();
 	MaterialManager::Release();

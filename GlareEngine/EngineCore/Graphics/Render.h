@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 //Render Config 
+#define NUMFRAME 3
 #define MAX2DSRVSIZE 256
 #define MAXCUBESRVSIZE 32
 #define SHADOWMAPSIZE 2048
@@ -23,8 +24,6 @@ namespace GlareEngine
 		extern PSOCommonProperty gCommonProperty;
 		//Num Frame Resources
 		extern const int gNumFrameResources;
-
-		extern std::vector<GraphicsPSO> gModelPSOs;
 
 		extern std::vector<GraphicsPSO> gCommonPSOs;
 

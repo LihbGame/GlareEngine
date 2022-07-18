@@ -44,6 +44,8 @@ public:
 private:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetDSV()const { return mShadowBuffer.GetDSV(); }
 	D3D12_CPU_DESCRIPTOR_HANDLE GetSRV()const { return mShadowBuffer.GetSRV(); }
+public:
+	static DXGI_FORMAT mFormat;
 
 private:
 	//PSO
@@ -54,7 +56,6 @@ private:
 
 	UINT mWidth = 0;
 	UINT mHeight = 0;
-	DXGI_FORMAT mFormat = DXGI_FORMAT_D32_FLOAT;
 
 	ShadowBuffer mShadowBuffer;
 

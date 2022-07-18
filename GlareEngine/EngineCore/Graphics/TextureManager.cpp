@@ -95,8 +95,12 @@ namespace GlareEngine
 	{
 		for (auto& texture : mTextures)
 		{
-			texture.second.get()->UploadHeap.Get()->Release();
-			texture.second.get()->UploadHeap.Detach();
+			if (texture.second.get()->UploadHeap != nullptr)
+			{
+				texture.second.get()->UploadHeap.Get()->Release();
+				texture.second.get()->UploadHeap.Detach();
+				texture.second.get()->UploadHeap = nullptr;
+			}
 		}
 	}
 
