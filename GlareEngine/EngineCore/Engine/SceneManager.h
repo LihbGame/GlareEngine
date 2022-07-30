@@ -12,13 +12,13 @@ public:
 	SceneManager(ID3D12GraphicsCommandList* pCommandList):m_pCommandList(pCommandList) {};
 	~SceneManager() {};
 
-	Scene* CreateScene(string Name);
+	Scene* CreateScene(std::string Name);
 
-	Scene* GetScene(string Name);
+	Scene* GetScene(std::string Name);
 
-	void ReleaseScene(string name);
+	void ReleaseScene(std::string name);
 private:
 	ID3D12GraphicsCommandList* m_pCommandList = nullptr;
-	unordered_map<string,unique_ptr<Scene>> mScenes;
+	std::unordered_map<std::string, std::unique_ptr<Scene>> mScenes;
 };
 

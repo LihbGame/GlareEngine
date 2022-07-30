@@ -70,8 +70,8 @@ namespace GlareEngine
 	static const uint32_t vendorID_Intel = 0x8086;
 
 	//SRV Descriptors Manager ,return Descriptor index
-	vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_TextureSRV;
-	vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_CubeSRV;
+	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_TextureSRV;
+	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_CubeSRV;
 
 
 

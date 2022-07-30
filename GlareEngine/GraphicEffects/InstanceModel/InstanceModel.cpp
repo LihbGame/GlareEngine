@@ -7,7 +7,7 @@
 
 GraphicsPSO InstanceModel::mPSO;
 
-InstanceModel::InstanceModel(wstring Name,InstanceRenderData InstanceData)
+InstanceModel::InstanceModel(std::wstring Name,InstanceRenderData InstanceData)
 	:mInstanceData(InstanceData)
 {
 	mObjectType = ObjectType::Model;
@@ -19,7 +19,7 @@ void InstanceModel::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 	for (int SubModelIndex = 0; SubModelIndex < mInstanceData.mInstanceConstants.size(); ++SubModelIndex)
 	{
 		//Set Instance data
-		const vector<InstanceRenderConstants>& InstanceData = mInstanceData.mInstanceConstants[SubModelIndex];
+		const std::vector<InstanceRenderConstants>& InstanceData = mInstanceData.mInstanceConstants[SubModelIndex];
 		Context.SetDynamicSRV(5, sizeof(InstanceRenderConstants)* InstanceData.size(), (void*)InstanceData.data());
 		
 		if (SpecificPSO)
@@ -46,8 +46,8 @@ void InstanceModel::DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificSh
 	for (int SubModelIndex = 0; SubModelIndex < mInstanceData.mInstanceConstants.size(); ++SubModelIndex)
 	{
 		//Set Instance data
-		const vector<InstanceRenderConstants>& InstanceData = mInstanceData.mInstanceConstants[SubModelIndex];
-		Context.SetDynamicSRV((int)RootSignatureType::eInstancConstantData, sizeof(InstanceRenderConstants) * InstanceData.size(), (void*)InstanceData.data());
+		const std::vector<InstanceRenderConstants>& InstanceData = mInstanceData.mInstanceConstants[SubModelIndex];
+		Context.SetDynamicSRV(5, sizeof(InstanceRenderConstants) * InstanceData.size(), (void*)InstanceData.data());
 
 		Context.SetPipelineState(*SpecificShadowPSO);
 

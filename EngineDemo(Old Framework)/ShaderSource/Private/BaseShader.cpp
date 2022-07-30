@@ -1,5 +1,5 @@
 #include "BaseShader.h"
-BaseShader::BaseShader(wstring VSShaderPath, wstring PSShaderPath, wstring HSShaderPath , wstring DSShaderPath , wstring GSShaderPath, _In_reads_opt_(_Inexpressible_(defines->Name != NULL)) const D3D_SHADER_MACRO* defines):
+BaseShader::BaseShader(std::wstring VSShaderPath, std::wstring PSShaderPath, std::wstring HSShaderPath , std::wstring DSShaderPath , std::wstring GSShaderPath, _In_reads_opt_(_Inexpressible_(defines->Name != NULL)) const D3D_SHADER_MACRO* defines):
 mVSShaderPath(VSShaderPath),
 mPSShaderPath(PSShaderPath),
 mGSShaderPath(GSShaderPath),

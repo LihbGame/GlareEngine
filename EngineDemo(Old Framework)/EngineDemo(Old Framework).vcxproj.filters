@@ -5,15 +5,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Animation">
-      <UniqueIdentifier>{0594649a-76ee-4be4-a7d8-bbdc709270f5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shaders">
-      <UniqueIdentifier>{4b0f09ad-8c71-47c0-8191-2a5d4cb84ee8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UImisc">
-      <UniqueIdentifier>{3f431656-8148-495a-be29-f0e0fc1d3162}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Head Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
@@ -21,6 +12,18 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="资源文件\Shaders">
+      <UniqueIdentifier>{4b0f09ad-8c71-47c0-8191-2a5d4cb84ee8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UImisc">
+      <UniqueIdentifier>{3f431656-8148-495a-be29-f0e0fc1d3162}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Head Files\Animation">
+      <UniqueIdentifier>{0594649a-76ee-4be4-a7d8-bbdc709270f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Animation">
+      <UniqueIdentifier>{560d0d8e-e3d5-492d-b83e-ae8a1be61c00}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -99,10 +102,7 @@
     <ClInclude Include="RanderEffects\Water\Public\Waves.h">
       <Filter>Head Files</Filter>
     </ClInclude>
-    <ClInclude Include="EngineDemo.h">
-      <Filter>Head Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BaseApp.h">
+    <ClInclude Include="Direct3D12Window.h">
       <Filter>Head Files</Filter>
     </ClInclude>
     <ClInclude Include="UploadBuffer.h">
@@ -112,19 +112,19 @@
       <Filter>Head Files</Filter>
     </ClInclude>
     <ClInclude Include="Animation\Animations.h">
-      <Filter>Animation</Filter>
+      <Filter>Head Files\Animation</Filter>
     </ClInclude>
     <ClInclude Include="Animation\AnimEvaluator.h">
-      <Filter>Animation</Filter>
+      <Filter>Head Files\Animation</Filter>
     </ClInclude>
     <ClInclude Include="Animation\ModelLoader.h">
-      <Filter>Animation</Filter>
+      <Filter>Head Files\Animation</Filter>
     </ClInclude>
     <ClInclude Include="Animation\ModelMesh.h">
-      <Filter>Animation</Filter>
+      <Filter>Head Files\Animation</Filter>
     </ClInclude>
     <ClInclude Include="Animation\OzzAnimePlayBack.h">
-      <Filter>Animation</Filter>
+      <Filter>Head Files\Animation</Filter>
     </ClInclude>
     <ClInclude Include="Material.h">
       <Filter>Head Files</Filter>
@@ -206,26 +206,11 @@
     <ClCompile Include="PSOManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EngineDemo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BaseApp.cpp">
+    <ClCompile Include="Direct3D12Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TextureManage.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation\Animations.cpp">
-      <Filter>Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation\AnimEvaluator.cpp">
-      <Filter>Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation\ModelLoader.cpp">
-      <Filter>Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation\ModelMesh.cpp">
-      <Filter>Animation</Filter>
     </ClCompile>
     <ClCompile Include="Material.cpp">
       <Filter>Source Files</Filter>
@@ -234,6 +219,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GeometryGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation\Animations.cpp">
+      <Filter>Source Files\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation\AnimEvaluator.cpp">
+      <Filter>Source Files\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation\ModelLoader.cpp">
+      <Filter>Source Files\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation\ModelMesh.cpp">
+      <Filter>Source Files\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="WinMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -255,121 +255,121 @@
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="..\Resource\UImisc\fonts\binary_to_compressed_c.cpp">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\fonts\Cousine-Regular.ttf">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\fonts\DroidSans.ttf">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\fonts\Karla-Regular.ttf">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\fonts\ProggyClean.ttf">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\fonts\ProggyTiny.ttf">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\fonts\Roboto-Medium.ttf">
-      <Filter>UImisc</Filter>
+      <Filter>Source Files\UImisc</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="..\Resource\UImisc\cpp\imgui_stdlib.cpp">
-      <Filter>UImisc</Filter>
+      <Filter>Source Files\UImisc</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="..\Resource\UImisc\cpp\imgui_stdlib.h">
-      <Filter>UImisc</Filter>
+      <Filter>Source Files\UImisc</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="..\Resource\UImisc\freetype\imgui_freetype.cpp">
-      <Filter>UImisc</Filter>
+      <Filter>Source Files\UImisc</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="..\Resource\UImisc\freetype\imgui_freetype.h">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\natvis\imgui.natvis">
-      <Filter>UImisc</Filter>
+      <Filter>Source Files\UImisc</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="..\Resource\UImisc\single_file\imgui_single_file.h">
-      <Filter>UImisc</Filter>
+      <Filter>Source Files\UImisc</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\Common.hlsli">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\ComplexModelInstancePS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\DefaultPS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\DefaultVS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\Fog.hlsli">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\GrassGS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\GrassPS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\GrassShadowGS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\GrassShadowVS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\GrassVS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\HeightMapTerrainDS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\HeightMapTerrainHS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\HeightMapTerrainPS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\HeightMapTerrainVS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\PBRLighting.hlsli">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\ShockWaveWaterPS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\ShockWaveWaterVS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\SimpleGeoInstancePS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\SimpleGeoInstanceShadowPS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\SimpleGeoInstanceShadowVS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\SimpleGeoInstanceVS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\SkyPS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\SkyVS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\TerrainConstBuffer.hlsli">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\WaterRefractionMaskPS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\WaterRefractionMaskVS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\Cousine-Regular.ttf">
+      <Filter>资源文件</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\DroidSans.ttf">
+      <Filter>资源文件</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\natvis\imgui.natvis">
+      <Filter>资源文件</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\Karla-Regular.ttf">
+      <Filter>资源文件</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\ProggyClean.ttf">
+      <Filter>资源文件</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\ProggyTiny.ttf">
+      <Filter>资源文件</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\Roboto-Medium.ttf">
+      <Filter>资源文件</Filter>
     </CopyFileToFolders>
   </ItemGroup>
 </Project>

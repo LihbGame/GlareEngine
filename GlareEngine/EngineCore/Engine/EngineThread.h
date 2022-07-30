@@ -1,5 +1,8 @@
 #pragma once
+
 #include <vector>
+#include <string>
+#include <xstring>
 #include <thread>
 #include <mutex>
 #include <deque>

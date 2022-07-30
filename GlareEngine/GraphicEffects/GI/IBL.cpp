@@ -29,8 +29,8 @@ IBL::~IBL()
 
 void IBL::Initialize()
 {
-	mIndirectDiffuseCube = make_unique<CubeRenderTarget>(BAKECUBESIZE, BAKECUBESIZE);
-	mPreFilteredEnvCube = make_unique<CubeRenderTarget>(BAKECUBESIZE / 2, BAKECUBESIZE / 2, MaxMipLevels);
+	mIndirectDiffuseCube = std::make_unique<CubeRenderTarget>(BAKECUBESIZE, BAKECUBESIZE);
+	mPreFilteredEnvCube = std::make_unique<CubeRenderTarget>(BAKECUBESIZE / 2, BAKECUBESIZE / 2, MaxMipLevels);
 	mBRDFLUT.Create(L"Integration BRDF LUT", BAKECUBESIZE / 2, BAKECUBESIZE / 2, 1, DXGI_FORMAT_R16G16_FLOAT);
 	
 	GlobleSRVIndex::gBakingIntegrationBRDFIndex= AddToGlobalTextureSRVDescriptor(mBRDFLUT.GetSRV());

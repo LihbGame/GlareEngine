@@ -29,6 +29,17 @@ XMFLOAT3 Camera::GetPosition3f()const
 	return mPosition;
 }
 
+void Camera::ResetPosition()
+{
+	//将球面坐标转换为笛卡尔坐标。
+	float posx = Radius * sinf(Pi) * cosf(Theta) / 2;
+	float posy = Radius * cosf(Pi) / 2;
+	float posz = Radius * sinf(Pi) * sinf(Theta) / 2;
+
+	mPosition = XMFLOAT3(posx, posy, posz);
+	mViewDirty = true;
+}
+
 void Camera::SetPosition(float x, float y, float z)
 {
 	mPosition = XMFLOAT3(x, y, z);
@@ -73,109 +84,56 @@ XMFLOAT3 Camera::GetLook3f()const
 
 float Camera::GetNearZ()const
 {
-	return mNearZ;
+	return NearZ;
 }
 
 float Camera::GetFarZ()const
 {
-	return mFarZ;
+	return FarZ;
 }
 
 float Camera::GetAspect()const
 {
-	return mAspect;
+	return Aspect;
 }
 
 float Camera::GetFovY()const
 {
-	return mFovY;
+	return FovY;
 }
 
 float Camera::GetFovX()const
 {
-	float halfWidth = 0.5f*GetNearWindowWidth();
-	return 2.0f*atan(halfWidth / mNearZ);
-}
-
-float Camera::GetNearWindowWidth()const
-{
-	return mAspect * mNearWindowHeight;
-}
-
-float Camera::GetNearWindowHeight()const
-{
-	return mNearWindowHeight;
-}
-
-float Camera::GetFarWindowWidth()const
-{
-	return mAspect * mFarWindowHeight;
-}
-
-float Camera::GetFarWindowHeight()const
-{
-	return mFarWindowHeight;
+	float halfWidth = 0.5f;
+	return 2.0f*atan(halfWidth / NearZ);
 }
 
 void Camera::SetLens(float fovY, float aspect, float zn, float zf)
 {
-	// cache properties
-	mFovY = fovY;
-	mAspect = aspect;
-	mNearZ = zn;
-	mFarZ = zf;
+	//缓存属性
+	FovY = fovY;
+	Aspect = aspect;
+	NearZ = zn;
+	FarZ = zf;
 
-	mNearWindowHeight = 2.0f * mNearZ * tanf( 0.5f*mFovY );
-	mFarWindowHeight  = 2.0f * mFarZ * tanf( 0.5f*mFovY );
+	XMMATRIX P = XMMatrixPerspectiveFovLH(FovY, Aspect, NearZ, FarZ);
+	XMStoreFloat4x4(&mProj, P);
+}
 
-	float Y = 1.0f / std::tanf(mFovY * 0.5f);
-	float X = Y / mAspect;
+void Camera::FocalLength(float nz)
+{
+	FovY += nz;
+	FovY = Clamp(FovY, 0.01f, 3.0f);
 
-	float Q1, Q2;
+	XMMATRIX P = XMMatrixPerspectiveFovLH(FovY, Aspect, NearZ, FarZ);
+	XMStoreFloat4x4(&mProj, P);
+}
 
-	// ReverseZ puts far plane at Z=0 and near plane at Z=1.  This is never a bad idea, and it's
-	// actually a great idea with F32 depth buffers to redistribute precision more evenly across
-	// the entire range. It requires clearing Z to 0.0f and using a GREATER variant depth test.
-	// Some care must also be done to properly reconstruct linear W in a pixel shader from hyperbolic Z.
-	if (mIsReverseZ)
-	{
-		if (mIsInfiniteZ)
-		{
-			Q1 = 0.0f;
-			Q2 = mNearZ;
-		}
-		else
-		{
-			Q1 = mNearZ / (mNearZ - mFarZ);
-			Q2 = -Q1 * mFarZ;
-		}
-	}
-	else
-	{
-		if (mIsInfiniteZ)
-		{
-			Q1 = 1.0f;
-			Q2 = -mNearZ;
-		}
-		else
-		{
-			Q1 = mFarZ / (mFarZ - mNearZ);
-			Q2 = -Q1 * mNearZ;
-		}
-	}
+void Camera::SetRadius(float r)
+{
+	Radius = r;
 
-	XMMATRIX proj = Matrix4(
-		Vector4(X, 0.0f, 0.0f, 0.0f),
-		Vector4(0.0f, Y, 0.0f, 0.0f),
-		Vector4(0.0f, 0.0f, Q1, 1.0f),
-		Vector4(0.0f, 0.0f, Q2, 0.0f)
-	);
-	
-	XMStoreFloat4x4(&mProj, proj);
-
-	//create view space frustum
-	m_FrustumVS = Frustum(Matrix4(proj));
-
+	mViewDirty = true;
 }
 
 void Camera::LookAt(FXMVECTOR pos, FXMVECTOR target, FXMVECTOR worldUp)
@@ -230,24 +188,26 @@ XMFLOAT4X4 Camera::GetProj4x4f()const
 	return mProj;
 }
 
-void Camera::Strafe(float d)
+void Camera::Move(float x, float y, float z)
 {
-	// mPosition += d*mRight
-	XMVECTOR s = XMVectorReplicate(d);
-	XMVECTOR r = XMLoadFloat3(&mRight);
-	XMVECTOR p = XMLoadFloat3(&mPosition);
-	XMStoreFloat3(&mPosition, XMVectorMultiplyAdd(s, r, p));
-
-	mViewDirty = true;
-}
-
-void Camera::Walk(float d)
-{
-	// mPosition += d*mLook
-	XMVECTOR s = XMVectorReplicate(d);
-	XMVECTOR l = XMLoadFloat3(&mLook);
-	XMVECTOR p = XMLoadFloat3(&mPosition);
-	XMStoreFloat3(&mPosition, XMVectorMultiplyAdd(s, l, p));
+	{
+		XMVECTOR s = XMVectorReplicate(x);
+		XMVECTOR r = XMLoadFloat3(&mRight);
+		XMVECTOR p = XMLoadFloat3(&mPosition);
+		XMStoreFloat3(&mPosition, XMVectorMultiplyAdd(s, r, p));
+	}
+	{
+		XMVECTOR s = XMVectorReplicate(-y);
+		XMVECTOR r = XMLoadFloat3(&mUp);
+		XMVECTOR p = XMLoadFloat3(&mPosition);
+		XMStoreFloat3(&mPosition, XMVectorMultiplyAdd(s, r, p));
+	}
+	{
+		XMVECTOR s = XMVectorReplicate(z);
+		XMVECTOR l = XMLoadFloat3(&mLook);
+		XMVECTOR p = XMLoadFloat3(&mPosition);
+		XMStoreFloat3(&mPosition, XMVectorMultiplyAdd(s, l, p));
+	}
 
 	mViewDirty = true;
 }
@@ -282,6 +242,16 @@ void Camera::RotateY(float angle)
 	XMStoreFloat3(&mLook, XMVector3TransformNormal(XMLoadFloat3(&mLook), R));
 
 	mViewDirty = true;
+}
+
+void Camera::UpdatePosition()
+{
+	//将球面坐标转换为笛卡尔坐标。
+	float posx = Radius * sinf(Pi) * cosf(Theta) / 2 + mPosition.x;
+	float posy = Radius * cosf(Pi) / 2 + mPosition.y;
+	float posz = Radius * sinf(Pi) * sinf(Theta) / 2 + mPosition.z;
+
+	mPosition = XMFLOAT3(posx, posy, posz);
 }
 
 void Camera::UpdateViewMatrix()
@@ -332,9 +302,8 @@ void Camera::UpdateViewMatrix()
 		mViewDirty = false;
 
 		
-		mCameraToWorld = Matrix4(XMMatrixInverse(&XMMatrixDeterminant(GetView()), GetView()));
-		//create world space frustum
-		m_FrustumWS = m_FrustumVS * mCameraToWorld;
+		XMVECTOR Determinant = XMMatrixDeterminant(GetView());
+		mCameraToWorld = Matrix4(XMMatrixInverse(&Determinant, GetView()));
 	}
 }
 

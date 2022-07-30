@@ -57,7 +57,7 @@ private:
 
 	bool IsShadowTransformed = true;
 public:
-	void UpdateShadowTransform(const GameTimer& gt);
+	void UpdateShadowTransform();
 
 	//π‚’’µƒ”∞œÏ∑∂Œß
 	DirectX::BoundingSphere mSceneBounds;

@@ -16,7 +16,7 @@ LinearAllocatorPageManager::LinearAllocatorPageManager()
 
 LinearAllocationPage* LinearAllocatorPageManager::RequestPage()
 {
-	lock_guard<mutex> LockGuard(m_Mutex);
+	std::lock_guard<std::mutex> LockGuard(m_Mutex);
 
 	while (!m_RetiredPages.empty() && g_CommandManager.IsFenceComplete(m_RetiredPages.front().first))
 	{
@@ -40,16 +40,16 @@ LinearAllocationPage* LinearAllocatorPageManager::RequestPage()
 	return PagePtr;
 }
 
-void LinearAllocatorPageManager::DiscardPages(uint64_t FenceValue, const vector<LinearAllocationPage*>& UsedPages)
+void LinearAllocatorPageManager::DiscardPages(uint64_t FenceValue, const std::vector<LinearAllocationPage*>& UsedPages)
 {
-	lock_guard<mutex> LockGuard(m_Mutex);
+	std::lock_guard<std::mutex> LockGuard(m_Mutex);
 	for (auto iter = UsedPages.begin(); iter != UsedPages.end(); ++iter)
-		m_RetiredPages.push(make_pair(FenceValue, *iter));
+		m_RetiredPages.push(std::make_pair(FenceValue, *iter));
 }
 
-void LinearAllocatorPageManager::FreeLargePages(uint64_t FenceValue, const vector<LinearAllocationPage*>& LargePages)
+void LinearAllocatorPageManager::FreeLargePages(uint64_t FenceValue, const std::vector<LinearAllocationPage*>& LargePages)
 {
-	lock_guard<mutex> LockGuard(m_Mutex);
+	std::lock_guard<std::mutex> LockGuard(m_Mutex);
 
 	while (!m_DeletionQueue.empty() && g_CommandManager.IsFenceComplete(m_DeletionQueue.front().first))
 	{
@@ -60,7 +60,7 @@ void LinearAllocatorPageManager::FreeLargePages(uint64_t FenceValue, const vecto
 	for (auto iter = LargePages.begin(); iter != LargePages.end(); ++iter)
 	{
 		(*iter)->Unmap();
-		m_DeletionQueue.push(make_pair(FenceValue, *iter));
+		m_DeletionQueue.push(std::make_pair(FenceValue, *iter));
 	}
 }
 

@@ -26,7 +26,7 @@ enum class ObjectType :int
 //For Instance Draw
 struct InstanceRenderData
 {
-	vector<vector<InstanceRenderConstants>>		mInstanceConstants;
+	std::vector<std::vector<InstanceRenderConstants>>		mInstanceConstants;
 	const ModelRenderData*							mModelData = nullptr;
 };
 
@@ -36,8 +36,8 @@ public:
 	RenderObject() {}
 	~RenderObject() {}
 public:
-	void SetName(wstring name) { mName = name; }
-	wstring GetName() const { return mName; }
+	void SetName(std::wstring name) { mName = name; }
+	std::wstring GetName() const { return mName; }
 
 	void SetShadowFlag(bool IsCastShadow) { mShouldCastShadow = IsCastShadow; }
 	bool GetShadowFlag()const { return mShouldCastShadow; }
@@ -55,7 +55,7 @@ public:
 	ObjectType mObjectType = ObjectType::None;
 protected:
 	//Name
-	wstring mName;
+	std::wstring mName;
 	bool mShouldCastShadow = false;
 	bool mIsVisible = true;
 };

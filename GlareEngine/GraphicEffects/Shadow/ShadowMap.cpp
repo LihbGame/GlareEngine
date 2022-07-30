@@ -111,7 +111,7 @@ D3D12_RECT ShadowMap::ScissorRect()const
 	return mScissorRect;
 }
 
-void ShadowMap::Draw(GraphicsContext& Context,vector<RenderObject*> RenderObjects)
+void ShadowMap::Draw(GraphicsContext& Context, std::vector<RenderObject*> RenderObjects)
 {
 	//set Viewport And Scissor
 	Context.SetViewportAndScissor(mViewport, mScissorRect);

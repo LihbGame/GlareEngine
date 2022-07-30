@@ -9,7 +9,7 @@ class InstanceModel
 	:public RenderObject
 {
 public:
-	InstanceModel(wstring Name, InstanceRenderData InstanceData);
+	InstanceModel(std::wstring Name, InstanceRenderData InstanceData);
 	~InstanceModel() {};
 
 	virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr);

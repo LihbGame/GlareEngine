@@ -9,11 +9,11 @@ namespace GlareEngine
 	{
 	public:
 		ModelMesh() {}
-		ModelMesh(ID3D12GraphicsCommandList* CommandList, const char* name, vector<Vertices::PosNormalTangentTexc> vertices, vector<UINT> indices);
+		ModelMesh(ID3D12GraphicsCommandList* CommandList, const char* name, std::vector<Vertices::PosNormalTangentTexc> vertices, std::vector<UINT> indices);
 		~ModelMesh();
 	public:
 		MeshGeometry mMeshGeo;
-		string pModelMeshName;
+		std::string pModelMeshName;
 	private:
 		void SetupMesh(ID3D12GraphicsCommandList* CommandList, const char* name);
 	
@@ -30,7 +30,7 @@ namespace GlareEngine
 
 	struct ModelRenderData
 	{
-		vector<ModelData> mSubModels;
+		std::vector<ModelData> mSubModels;
 	};
 }
 

@@ -4,8 +4,6 @@
 
 namespace GlareEngine
 {
-	using namespace std;
-
 	struct Material
 	{
 		// Unique material name for lookup.
@@ -21,7 +19,7 @@ namespace GlareEngine
 		//Material Transform
 		DirectX::XMFLOAT4X4                     MatTransform = MathHelper::Identity4x4();
 		//Texture SRV Index
-		vector<int>								mDescriptorsIndex;
+		std::vector<int>								mDescriptorsIndex;
 	};
 
 
@@ -55,11 +53,11 @@ namespace GlareEngine
 
 		void CreateMaterialsConstantBuffer();
 
-		vector<MaterialConstant>& GetMaterialsConstantBuffer();
+		std::vector<MaterialConstant>& GetMaterialsConstantBuffer();
 
 		void BuildMaterials(
-			wstring name,
-			vector<Texture*>   Textures,
+			std::wstring name,
+			std::vector<Texture*>   Textures,
 			float Height_Scale = 0.0f,
 			XMFLOAT4 DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 			XMFLOAT3 FresnelR0 = XMFLOAT3(0.01f, 0.01f, 0.01f),
@@ -79,7 +77,7 @@ namespace GlareEngine
 	private:
 		MaterialManager() {}
 
-		void CreateSRVDescriptor(Material* Mat, vector<Texture*> texture);
+		void CreateSRVDescriptor(Material* Mat, std::vector<Texture*> texture);
 
 		static  MaterialManager* gMaterialInstance;
 
@@ -87,6 +85,6 @@ namespace GlareEngine
 
 		std::unordered_map<std::wstring, std::unique_ptr<Material>> mMaterials;
 	
-		vector<MaterialConstant> mMaterialConstanrBuffer;
+		std::vector<MaterialConstant> mMaterialConstanrBuffer;
 	};
 }

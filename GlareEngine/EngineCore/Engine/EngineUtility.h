@@ -51,13 +51,11 @@
 
 using namespace Microsoft::WRL;
 using namespace DirectX;
-using namespace std;
-
 
 
 namespace GlareEngine
 {
-    typedef shared_ptr<vector<byte> > ByteArray;
+    typedef std::shared_ptr<std::vector<byte> > ByteArray;
 
     inline void d3dSetDebugName(IDXGIObject* obj, const char* name)
     {
@@ -174,7 +172,7 @@ namespace GlareEngine
             const std::string& target);
 
 
-        static void CreateWICTextureFromFile(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, ID3D12Resource** tex, ID3D12Resource** Uploadtex, wstring filename);
+        static void CreateWICTextureFromFile(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, ID3D12Resource** tex, ID3D12Resource** Uploadtex, std::wstring filename);
         static void CreateWICTextureFromMemory(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, ID3D12Resource** tex, ID3D12Resource** Uploadtex, unsigned char* data, int size);
     };
 
@@ -210,14 +208,37 @@ namespace GlareEngine
     // Order: left, right, bottom, top, near, far.
     void ExtractFrustumPlanes(XMFLOAT4 planes[6], CXMMATRIX M);
 
+    // ------------------------------
+    // DXTraceW函数
+    // ------------------------------
+    // 在调试输出窗口中输出格式化错误信息，可选的错误窗口弹出(已汉化)
+    // [In]strFile			当前文件名，通常传递宏__FILEW__
+    // [In]hlslFileName     当前行号，通常传递宏__LINE__
+    // [In]hr				函数执行出现问题时返回的HRESULT值
+    // [In]strMsg			用于帮助调试定位的字符串，通常传递L#x(可能为NULL)
+    // [In]bPopMsgBox       如果为TRUE，则弹出一个消息弹窗告知错误信息
+    // 返回值: 形参hr
+    HRESULT WINAPI DXTraceW(_In_z_ const WCHAR* strFile, _In_ DWORD dwLine, _In_ HRESULT hr, _In_opt_ const WCHAR* strMsg, _In_ bool bPopMsgBox);
 
+    // ------------------------------
+    // ThrowIfFailed宏
+    // ------------------------------
+    // Debug模式下的错误提醒与追踪
+#if defined(DEBUG) | defined(_DEBUG)
 #ifndef ThrowIfFailed
-#define ThrowIfFailed(x)                                              \
-{                                                                     \
-    HRESULT hr__ = (x);                                               \
-    std::wstring wfn = AnsiToWString(__FILE__);                       \
-    if(FAILED(hr__)) { throw DxException(hr__, L#x, wfn, __LINE__); } \
-}
+#define ThrowIfFailed(x)												\
+	{																	\
+		HRESULT hr__ = (x);												\
+		if(FAILED(hr__))												\
+		{																\
+			DXTraceW(__FILEW__, (DWORD)__LINE__, hr__, L#x, true);		\
+		}																\
+	}
+#endif
+#else
+#ifndef ThrowIfFailed
+#define ThrowIfFailed(x) (x)
+#endif 
 #endif
 
 #ifndef ReleaseCom
@@ -234,6 +255,8 @@ namespace GlareEngine
 
     std::wstring StringToWString(const std::string& str);
     std::string WStringToString(const std::wstring& str);
+    std::string WstringToUTF8(const std::wstring& str);
+    std::wstring UTF8ToWstring(const std::string& str);
 
     bool CheckFileExist(const std::wstring& FileName);
 

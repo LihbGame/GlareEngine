@@ -37,10 +37,10 @@ void ModelLoader::SetCommandList(ID3D12GraphicsCommandList* CommandList)
 	m_pCommandList = CommandList;
 }
 
-bool ModelLoader::LoadModel(string filename)
+bool ModelLoader::LoadModel(std::string filename)
 {
 	mDirectory = EngineGlobal::ModelAssetPath;
-	string FullName = mDirectory + filename;
+	std::string FullName = mDirectory + filename;
 	const aiScene* pScene = mImporter.ReadFile(FullName,
 		aiProcessPreset_TargetRealtime_Quality |
 		aiProcess_ConvertToLeftHanded);
@@ -54,13 +54,13 @@ bool ModelLoader::LoadModel(string filename)
 	int it = (int)filename.find_last_of('/');
 	this->mDirectory += filename.substr(0, (LONG64)(it) + 1);
 	this->mModelName = filename;
-	mMeshes[mModelName] = make_unique<ModelRenderData>();
+	mMeshes[mModelName] = std::make_unique<ModelRenderData>();
 
 	ProcessNode(pScene->mRootNode, pScene);
 	return true;
 }
 
-const ModelRenderData* ModelLoader::GetModelRenderData(string ModelName)
+const ModelRenderData* ModelLoader::GetModelRenderData(std::string ModelName)
 {
 	if (mMeshes.find(ModelName) == mMeshes.end())
 	{
@@ -70,7 +70,7 @@ const ModelRenderData* ModelLoader::GetModelRenderData(string ModelName)
 }
 
 
-void ModelLoader::BuildMaterial(string MaterialName)
+void ModelLoader::BuildMaterial(std::string MaterialName)
 {
 	MaterialManager::GetMaterialInstance()->BuildMaterials(
 		StringToWString(MaterialName),
@@ -105,8 +105,8 @@ void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene)
 ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 {
 	// Data to fill
-	vector<Vertices::PosNormalTangentTexc> vertices;
-	vector<UINT> indices;
+	std::vector<Vertices::PosNormalTangentTexc> vertices;
+	std::vector<UINT> indices;
 
 	// Walk through each of the mesh's vertices
 	for (UINT i = 0; i < mesh->mNumVertices; i++)
@@ -154,7 +154,7 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 		aiString texturename;
 		material->GetTexture(aiTextureType_DIFFUSE, 0, &texturename);
-		string texture(texturename.C_Str());
+		std::string texture(texturename.C_Str());
 
 		int it = (int)texture.find_last_of('\\');
 		texture = texture.substr((LONG64)(it) + 1, texture.find_last_of('.') - it - 1);
@@ -167,10 +167,10 @@ ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
 
 
-vector<Texture*> ModelLoader::LoadPBRTexture(string texturename)
+std::vector<Texture*> ModelLoader::LoadPBRTexture(std::string texturename)
 {
-	vector<Texture*> ModelTextures;
-	string RootFilename = mDirectory + "PBRTextures/" + texturename;
+	std::vector<Texture*> ModelTextures;
+	std::string RootFilename = mDirectory + "PBRTextures/" + texturename;
 	TextureManager::GetInstance(m_pCommandList)->CreatePBRTextures(RootFilename, ModelTextures);
 	return ModelTextures;
 }

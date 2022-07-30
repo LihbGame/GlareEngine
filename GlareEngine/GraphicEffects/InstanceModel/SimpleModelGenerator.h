@@ -24,12 +24,12 @@ public:
 	}
 	static void Release() { delete  S_SimpleModelGenerator; }
 	void CreatePBRMaterials();
-	ModelRenderData* CreateSimpleModelRanderData(string ModelName,SimpleModelType Type,string MaterialName);
+	ModelRenderData* CreateSimpleModelRanderData(std::string ModelName,SimpleModelType Type, std::string MaterialName);
 private:
 	static ID3D12GraphicsCommandList* pCommandList;
 	GeometryGenerator mGeometryGenerator;
 	SimpleModelGenerator() {}
 	static SimpleModelGenerator* S_SimpleModelGenerator;
 
-	unordered_map<string, ModelRenderData> mMeshes;
+	std::unordered_map<std::string, ModelRenderData> mMeshes;
 };

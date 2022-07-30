@@ -1,5 +1,5 @@
 #include "ComplexStaticModelInstanceShader.h"
-ComplexStaticModelInstanceShader::ComplexStaticModelInstanceShader(wstring VSShaderPath, wstring PSShaderPath, wstring HSShaderPath, wstring DSShaderPath, wstring GSShaderPath, const D3D_SHADER_MACRO* defines)
+ComplexStaticModelInstanceShader::ComplexStaticModelInstanceShader(std::wstring VSShaderPath, std::wstring PSShaderPath, std::wstring HSShaderPath, std::wstring DSShaderPath, std::wstring GSShaderPath, const D3D_SHADER_MACRO* defines)
 	:BaseShader(VSShaderPath, PSShaderPath, HSShaderPath, DSShaderPath, GSShaderPath, defines)
 {
 }

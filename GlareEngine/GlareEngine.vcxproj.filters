@@ -567,7 +567,7 @@
     <ClCompile Include="EngineCore\Graphics\Render.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
-    <ClCompile Include="EngineCore\Model\glTFModelLoader.cpp">
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_tables.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
   </ItemGroup>
@@ -773,6 +773,9 @@
     <None Include="Shaders\Terrain\TerrainDS.hlsl" />
     <None Include="Shaders\Terrain\TerrainHS.hlsl" />
     <None Include="packages.config" />
+    <None Include="EngineCore\Model\glTFModelLoader.cpp">
+      <Filter>MainSource</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Library Include="Dependences\lib\ozz\debug\ozz_animation_d.lib" />

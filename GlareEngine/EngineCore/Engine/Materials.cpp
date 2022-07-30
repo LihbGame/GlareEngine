@@ -43,13 +43,13 @@ namespace GlareEngine
 		}
 	}
 
-	vector<MaterialConstant>& MaterialManager::GetMaterialsConstantBuffer()
+	std::vector<MaterialConstant>& MaterialManager::GetMaterialsConstantBuffer()
 	{
 		return mMaterialConstanrBuffer;
 	}
 
-	void MaterialManager::BuildMaterials(wstring name,
-		vector<Texture*>  Textures,
+	void MaterialManager::BuildMaterials(std::wstring name,
+		std::vector<Texture*>  Textures,
 		float Height_Scale, XMFLOAT4 DiffuseAlbedo, 
 		XMFLOAT3 FresnelR0, XMFLOAT4X4 MatTransform)
 	{
@@ -69,7 +69,7 @@ namespace GlareEngine
 	}
 
 
-	void MaterialManager::CreateSRVDescriptor(Material* Mat, vector<Texture*> Textures)
+	void MaterialManager::CreateSRVDescriptor(Material* Mat, std::vector<Texture*> Textures)
 	{
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;

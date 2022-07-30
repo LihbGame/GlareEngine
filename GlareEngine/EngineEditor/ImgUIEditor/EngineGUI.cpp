@@ -11,7 +11,6 @@
 using Microsoft::WRL::ComPtr;
 using namespace GlareEngine::GameCore;
 bool gFullSreenMode = false;
-bool EngineGUI::mWindowMaxSize = false;
 
 EngineGUI::EngineGUI(ID3D12GraphicsCommandList* d3dCommandList)
 {
@@ -141,12 +140,12 @@ void EngineGUI::BeginDraw(ID3D12GraphicsCommandList* d3dCommandList)
 	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 	if (mShowControlPanel)
 	{
-		DrawMainMenuBar(&mWindowMaxSize, gFullSreenMode);
-		ImGui::ShowDemoWindow(&mShowControlPanel, &mWindowMaxSize);
+		DrawMainMenuBar(nullptr, gFullSreenMode);
+		//ImGui::ShowDemoWindow(&mShowControlPanel, &mWindowMaxSize);
 	}
 
 	//2.Engine Logo
-    DrawEngineIcon(LogoSize.x, LogoSize.y);
+	DrawEngineIcon(LogoSize.x, LogoSize.y);
 
 	// 3. Show Output log window.
 	if (mShowDebugwindow)
@@ -238,17 +237,18 @@ void EngineGUI::SetWindowStyles()
 
 void EngineGUI::DrawEngineIcon(float IconSize, float IconWindowHigh)
 {
-	ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+	ImGui::SetNextWindowPos(ImVec2(0.0f, 24.0f));
 	ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * CLIENT_FROMLEFT, IconWindowHigh));
 	ImGui::SetNextWindowBgAlpha(1);
 	ImGui::Begin("Engine Icon", &isUIShow, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
-	ImGui::Image((void*)(mEngineIconTexDescriptor.ptr), ImVec2(g->IO.DisplaySize.x * 0.0417f, 0), ImVec2(IconSize, IconSize), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
-	ImGui::End();
+    ImGui::Image((ImTextureID)mEngineIconTexDescriptor.ptr, ImVec2(IconSize, IconSize));
+
+    ImGui::End();
 }
 
 void EngineGUI::DrawControlPanel(float IconWindowHigh)
 {
-	ImGui::SetNextWindowPos(ImVec2(0.0f, IconWindowHigh));
+	ImGui::SetNextWindowPos(ImVec2(0.0f, IconWindowHigh+24.0f));
 	ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * CLIENT_FROMLEFT, int(g->IO.DisplaySize.y * CLIENT_HEIGHT + 1.0f) - IconWindowHigh));
 	ImGui::SetNextWindowBgAlpha(1);
 
@@ -311,8 +311,8 @@ void EngineGUI::DrawDebugWindow()
 	ImGui::Text("Camera Position X:%.1f Y:%.1f Z:%.1f", mCameraPosition.x, mCameraPosition.y, mCameraPosition.z);
 
 	//Filter logs
-	string Filter(FilterString);
-	if (strcmp(FilterString, "") != 0)
+    std::string Filter(FilterString);
+	if (std::strcmp(FilterString, "") != 0)
 	{
 		EngineLog::Filter(StringToWString(Filter));
 		mLogs = EngineLog::GetFilterLogs();
@@ -386,15 +386,15 @@ void EngineGUI::DrawMainMenuBar(bool* IsMax, bool IsFullScreenMode)
 		if (!IsFullScreenMode)
 		{
 			ImGui::GetStyle().Colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.2f, 0.0f);
-			if (ImGui::ImageButton((void*)(mEngineMinTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 210.0f, 0), ImVec2(25, 25), ImVec2(0, 0), ImVec2(1, 1),5))
+			if (ImGui::ImageButton((void*)(mEngineMinTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 210.0f, 0), ImVec2(25, 25), ImVec2(0, 0)))
 			{
 				SendMessage((HWND)io.ImeWindowHandle, WM_SYSCOMMAND, SC_MINIMIZE, NULL);
 			}
-			if (ImGui::ImageButton((void*)(mEngineMaxTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 200.0f, 0), ImVec2(25, 25), ImVec2(0, 0), ImVec2(1, 1),5))
+			if (ImGui::ImageButton((void*)(mEngineMaxTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 200.0f, 0), ImVec2(25, 25), ImVec2(0, 0)))
 			{
 				*IsMax = !(*IsMax);
 			}
-			if (ImGui::ImageButton((void*)(mEngineCloseTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 190.0f, 0), ImVec2(25, 25), ImVec2(0, 0), ImVec2(1, 1),5))
+			if (ImGui::ImageButton((void*)(mEngineCloseTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 190.0f, 0), ImVec2(25, 25), ImVec2(0, 0)))
 			{
 				SendMessage((HWND)io.ImeWindowHandle, WM_CLOSE, NULL, NULL);
 			}
@@ -402,10 +402,10 @@ void EngineGUI::DrawMainMenuBar(bool* IsMax, bool IsFullScreenMode)
 		}
 		else
 		{
-			if (ImGui::RadioButton("Close", true, ImVec2(ImGui::GetWindowSize().x - 160.0f, 0.0f)))
-			{
-				SendMessage((HWND)io.ImeWindowHandle, WM_CLOSE, NULL, NULL);
-			}
+			//if (ImGui::RadioButton("Close", true, ImVec2(ImGui::GetWindowSize().x - 160.0f, 0.0f)))
+			//{
+			//	SendMessage((HWND)io.ImeWindowHandle, WM_CLOSE, NULL, NULL);
+			//}
 		}
 		ImGui::EndMainMenuBar();
 		ImGui::GetStyle().FramePadding.y = 3;

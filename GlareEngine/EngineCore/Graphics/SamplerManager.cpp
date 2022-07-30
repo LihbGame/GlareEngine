@@ -4,7 +4,7 @@
 
 namespace
 {
-	map< size_t, D3D12_CPU_DESCRIPTOR_HANDLE > s_SamplerCache;
+	std::map<size_t, D3D12_CPU_DESCRIPTOR_HANDLE> s_SamplerCache;
 }
 
 

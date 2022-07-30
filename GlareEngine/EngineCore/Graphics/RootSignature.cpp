@@ -5,8 +5,7 @@
 #include <thread>
 #include <mutex>
 
-using namespace std;
-using Microsoft::WRL::ComPtr;
+using namespace Microsoft::WRL;
 
 static std::map< size_t, ComPtr<ID3D12RootSignature> > s_RootSignatureHashMap;
 
@@ -98,8 +97,8 @@ void RootSignature::Finalize(const std::wstring& name, D3D12_ROOT_SIGNATURE_FLAG
 	ID3D12RootSignature** RSRef = nullptr;
 	bool firstCompile = false;
 	{
-		static mutex s_HashMapMutex;
-		lock_guard<mutex> CS(s_HashMapMutex);
+		static std::mutex s_HashMapMutex;
+		std::lock_guard<std::mutex> CS(s_HashMapMutex);
 		auto iter = s_RootSignatureHashMap.find(HashCode);
 
 		//Reserve space so the next inquiry will find that someone got here first.
@@ -131,7 +130,7 @@ void RootSignature::Finalize(const std::wstring& name, D3D12_ROOT_SIGNATURE_FLAG
 	else
 	{
 		while (*RSRef == nullptr)
-			this_thread::yield();
+			std::this_thread::yield();
 		m_Signature = *RSRef;
 	}
 

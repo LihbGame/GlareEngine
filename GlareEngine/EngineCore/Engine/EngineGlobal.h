@@ -2,15 +2,15 @@
 #include <string>
 
 class Scene;
-using namespace std;
+
 class EngineGlobal
 {
 public:
-	static string TextureAssetPath;
-	static string TerrainAssetPath;
-	static string WaterAssetPath;
-	static string SkyAssetPath;
-	static string ModelAssetPath;
+	static std::string TextureAssetPath;
+	static std::string TerrainAssetPath;
+	static std::string WaterAssetPath;
+	static std::string SkyAssetPath;
+	static std::string ModelAssetPath;
 
 	static Scene* gCurrentScene;
 };

@@ -1,12 +1,12 @@
 #include "EngineLog.h"
 #include "EngineUtility.h"
 
-vector<wstring> EngineLog::DisplayLogs = {};
-vector<wstring>  EngineLog::FilterDisplayLogs = {};
-wstring EngineLog::OldFilter;
-vector<wstring>  EngineLog::FilterLogs = {};
+std::vector<std::wstring> EngineLog::DisplayLogs = {};
+std::vector<std::wstring> EngineLog::FilterDisplayLogs = {};
+std::wstring EngineLog::OldFilter;
+std::vector<std::wstring> EngineLog::FilterLogs = {};
 
-vector<wstring>& EngineLog::GetLogs()
+std::vector<std::wstring>& EngineLog::GetLogs()
 {
 	return DisplayLogs;
 }
@@ -24,24 +24,24 @@ void EngineLog::AddLog(const wchar_t* format, ...)
 	va_list ap;
 	va_start(ap, format);
 	vswprintf(buffer, 256, format, ap);
-	wstring log(buffer);
+	std::wstring log(buffer);
 
 	DisplayLogs.push_back(log);
 	//统一改为小写字符
-	for (wstring::iterator it = log.begin(); it != log.end(); ++it)
+	for (std::wstring::iterator it = log.begin(); it != log.end(); ++it)
 	{
 		*it =tolower(*it);
 	}
 	FilterLogs.push_back(log);
 }
 
-void EngineLog::Filter(wstring Filter)
+void EngineLog::Filter(std::wstring Filter)
 {
 	if (Filter == OldFilter || Filter == L"")
 		return;
 
 	//统一改为小写字符
-	for (wstring::iterator it = Filter.begin(); it != Filter.end(); ++it)
+	for (std::wstring::iterator it = Filter.begin(); it != Filter.end(); ++it)
 	{
 		*it = tolower(*it);
 	}
@@ -62,17 +62,17 @@ void EngineLog::SaveLog()
 {
 	wchar_t filePath[MAX_PATH + 1] = { 0 };
 	GetModuleFileName(NULL, filePath, MAX_PATH);
-	wstring OutputPath = GetBasePath(filePath);
-	wofstream outfile;
+	std::wstring OutputPath = GetBasePath(filePath);
+	std::wofstream outfile;
 	outfile.open(OutputPath + L"EngineLog.txt");
 	for (auto &log: DisplayLogs)
 	{
-		outfile << log << endl;
+		outfile << log << std::endl;
 	}
 	outfile.close();
 }
 
-vector<wstring>& EngineLog::GetFilterLogs()
+std::vector<std::wstring>& EngineLog::GetFilterLogs()
 {
 	return FilterDisplayLogs;
 }

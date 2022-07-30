@@ -35,10 +35,10 @@ namespace GlareEngine
 
 
 	//SRV Descriptors Manager ,return Descriptor index
-	extern vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_TextureSRV;
+	extern std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_TextureSRV;
 	int AddToGlobalTextureSRVDescriptor(const D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes);
 
 
-	extern vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_CubeSRV;
+	extern std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_CubeSRV;
 	int AddToGlobalCubeSRVDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes);
 }

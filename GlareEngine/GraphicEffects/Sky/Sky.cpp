@@ -77,7 +77,7 @@ void CSky::BuildSkyMesh(ID3D12GraphicsCommandList* CommandList, float radius, in
 
 void CSky::BuildSkySRV(ID3D12GraphicsCommandList* CommandList)
 {
-	wstring SkyPath;
+	std::wstring SkyPath;
 	Microsoft::WRL::ComPtr<ID3D12Resource> skyTex = nullptr;
 	m_Descriptor = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 

@@ -260,7 +260,6 @@ namespace GlareEngine
 						mAppPaused = true;
 						mMinimized = true;
 						mMaximized = false;
-						EngineGUI::mWindowMaxSize = false;
 					}
 					else if (wParam == SIZE_MAXIMIZED)
 					{
@@ -278,7 +277,6 @@ namespace GlareEngine
 						mAppPaused = false;
 						mMinimized = false;
 						mMaximized = true;
-						EngineGUI::mWindowMaxSize = true;
 						OnResize(mClientWidth, mClientHeight);
 					}
 					else if (wParam == SIZE_RESTORED)
@@ -297,7 +295,6 @@ namespace GlareEngine
 						{
 							mAppPaused = false;
 							mMaximized = false;
-							EngineGUI::mWindowMaxSize = false;
 						}
 						else if (mResizing)//正在调整大小
 						{

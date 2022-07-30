@@ -6,7 +6,6 @@
 
 namespace GlareEngine
 {
-	using namespace std;
 	using namespace concurrency;
 
 	extern ByteArray NullFile;
@@ -17,10 +16,10 @@ namespace GlareEngine
 	public:
 		// Reads the entire contents of a binary file.
 		// This operation blocks until the entire file is read.
-		static ByteArray ReadFileSync(const wstring& fileName);
+		static ByteArray ReadFileSync(const std::wstring& fileName);
 
 		// Same as previous except that it does not block but instead returns a task.
-		static task<ByteArray> ReadFileAsync(const wstring& fileName);
+		static task<ByteArray> ReadFileAsync(const std::wstring& fileName);
 
 	};
 

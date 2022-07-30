@@ -1,5 +1,26 @@
 #pragma once
-#include "BaseApp.h"
+
+#include "ModelMesh.h"
+
+enum class PSOName : int
+{
+    Color = 0,
+    Sky,
+    Opaque,
+    Instance,
+    InstanceSimpleShadow_Opaque,
+    StaticComplexModelInstance,
+    SkinAnime,
+    WaterRefractionMask,
+    ShockWaveWater,
+    HeightMapTerrain,
+    HeightMapTerrainRefraction,
+    Grass,
+    GrassShadow,
+    GrassReflection,
+    Count
+};
+
 class PSO
 {
 public:

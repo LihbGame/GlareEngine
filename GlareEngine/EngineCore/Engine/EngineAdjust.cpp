@@ -5,7 +5,6 @@
 #include "GraphicsCore.h"
 #include "CommandContext.h"
 
-using namespace std;
 using namespace GlareEngine;
 using namespace GlareEngine::Math;
 
@@ -22,14 +21,14 @@ namespace GlareEngine
 		int32_t s_UnregisteredCount = 0;
 
 		// Internal functions
-		void AddToVariableGraph(const string& path, EngineVar& var);
-		void RegisterVariable(const string& path, EngineVar& var);
+		void AddToVariableGraph(const std::string& path, EngineVar& var);
+		void RegisterVariable(const std::string& path, EngineVar& var);
 		VariableGroup* DynamicVariable();
 
 		EngineVar* sm_SelectedVariable = nullptr;
 		bool sm_IsVisible = false;
 		//var group
-		vector<VariableGroup> g_Var;
+		std::vector<VariableGroup> g_Var;
 	}
 
 
@@ -40,13 +39,13 @@ namespace GlareEngine
 		VariableGroup() : m_IsExpanded(false) {}
 
 
-		EngineVar* FindChild(const string& name)
+		EngineVar* FindChild(const std::string& name)
 		{
 			auto iter = m_Children.find(name);
 			return iter == m_Children.end() ? nullptr : iter->second;
 		}
 
-		void AddChild(const string& name, EngineVar& child)
+		void AddChild(const std::string& name, EngineVar& child)
 		{
 			m_Children[name] = &child;
 			child.m_GroupPtr = this;
@@ -72,7 +71,7 @@ namespace GlareEngine
 
 	private:
 		bool m_IsExpanded;
-		std::map<string, EngineVar*> m_Children;
+		std::map<std::string, EngineVar*> m_Children;
 	};
 
 	VariableGroup VariableGroup::sm_RootGroup;
@@ -103,7 +102,7 @@ namespace GlareEngine
 	{
 	}
 
-	void EngineAdjust::RegisterVariable(const string& path, EngineVar& var)
+	void EngineAdjust::RegisterVariable(const std::string& path, EngineVar& var)
 	{
 		if (s_UnregisteredCount >= 0)
 		{
@@ -120,16 +119,16 @@ namespace GlareEngine
 
 
 
-	void EngineAdjust::AddToVariableGraph(const string& path, EngineVar& var)
+	void EngineAdjust::AddToVariableGraph(const std::string& path, EngineVar& var)
 	{
-		vector<string> SeparatedPath;
-		string leafName;
+		std::vector<std::string> SeparatedPath;
+		std::string leafName;
 		size_t start = 0, end = 0;
 
 		while (true)
 		{
 			end = path.find('/', start);
-			if (end == string::npos)
+			if (end == std::string::npos)
 			{
 				leafName = path.substr(start);
 				break;

@@ -126,12 +126,13 @@ void HeightmapTerrain::BuildMaterials()
 	for (auto e : TerrainTextures)
 	{
 		Materials::GetMaterialInstance()->BuildMaterials(
-			wstring(e.first.begin(), e.first.end()),
+			std::wstring(e.first.begin(), e.first.end()),
 			0.08f,
 			XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 			XMFLOAT3(0.1f, 0.1f, 0.1f),
 			MatTransform,
-			MaterialType::HeightMapTerrainPBRMat);
+			MaterialType::HeightMapTerrainPBRMat,
+			pTextureManage->GetNumFrameResources());
 	}
 
 	mGrass->BuildMaterials();
@@ -139,7 +140,7 @@ void HeightmapTerrain::BuildMaterials()
 
 void HeightmapTerrain::FillSRVDescriptorHeap(int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor)
 {
-	vector<ID3D12Resource*> PBRTexResource;
+	std::vector<ID3D12Resource*> PBRTexResource;
 	PBRTexResource.resize(PBRTextureType::Count);
 	for (auto& e : TerrainTextures)
 	{
@@ -150,7 +151,7 @@ void HeightmapTerrain::FillSRVDescriptorHeap(int* SRVIndex, CD3DX12_CPU_DESCRIPT
 		PBRTexResource[PBRTextureType::RoughnessSrvHeapIndex] = e.second[4]->Resource.Get();
 		PBRTexResource[PBRTextureType::HeightSrvHeapIndex] = e.second[5]->Resource.Get();
 
-		pTextureManage->CreatePBRSRVinDescriptorHeap(PBRTexResource, SRVIndex, hDescriptor, wstring(e.first.begin(), e.first.end()));
+		pTextureManage->CreatePBRSRVinDescriptorHeap(PBRTexResource, SRVIndex, hDescriptor, std::wstring(e.first.begin(), e.first.end()));
 	}
 
 
@@ -165,10 +166,10 @@ void HeightmapTerrain::FillSRVDescriptorHeap(int* SRVIndex, CD3DX12_CPU_DESCRIPT
 	BuildHeightmapSRV(BlendMapDescriptor, HeightMapDescriptor);
 }
 
-void HeightmapTerrain::LoadHeightMapFromFile(string filename)
+void HeightmapTerrain::LoadHeightMapFromFile(std::string filename)
 {
 	//check file type
-	string FileType = filename.substr(filename.find_last_of('.') + 1);
+	std::string FileType = filename.substr(filename.find_last_of('.') + 1);
 	transform(FileType.begin(), FileType.end(), FileType.begin(), ::toupper);
 
 	if (FileType == "RAW")
@@ -211,7 +212,7 @@ void HeightmapTerrain::LoadHeightMapFromFile(string filename)
 
 void HeightmapTerrain::LoadHeightmapAsset()
 {
-	vector<string> AllTerrainTextureNames;
+	std::vector<std::string> AllTerrainTextureNames;
 	for (int i = 0; i < 5; ++i)
 	{
 		AllTerrainTextureNames.push_back(mInfo.LayerMapFilename[i] + "_albedo");
@@ -224,7 +225,7 @@ void HeightmapTerrain::LoadHeightmapAsset()
 
 	for (int i=0;i<AllTerrainTextureNames.size();++i)
 	{
-		TerrainTextures[mInfo.LayerMapFilename[i/6]].push_back(pTextureManage->GetTexture(wstring(AllTerrainTextureNames[i].begin(), AllTerrainTextureNames[i].end())).get());
+		TerrainTextures[mInfo.LayerMapFilename[i/6]].push_back(pTextureManage->GetTexture(std::wstring(AllTerrainTextureNames[i].begin(), AllTerrainTextureNames[i].end())).get());
 	}
 
 	LoadHeightMapFromFile(mInfo.HeightMapFilename.c_str());
@@ -405,7 +406,7 @@ void HeightmapTerrain::BuildQuadPatchGeometry()
 
 
 	auto geo = std::make_unique<::MeshGeometry>();
-	geo->Name = "TerrainGeo";
+	geo->Name = L"TerrainGeo";
 
 	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
 	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
@@ -429,7 +430,7 @@ void HeightmapTerrain::BuildQuadPatchGeometry()
 	submesh.StartIndexLocation = 0;
 	submesh.BaseVertexLocation = 0;
 
-	geo->DrawArgs["HeightMapTerrain"] = submesh;
+	geo->DrawArgs[L"HeightMapTerrain"] = submesh;
 
 	mGeometries= std::move(geo);
 }
@@ -437,7 +438,7 @@ void HeightmapTerrain::BuildQuadPatchGeometry()
 void HeightmapTerrain::BuildHeightmapSRV(CD3DX12_CPU_DESCRIPTOR_HANDLE BlendMapDescriptor, CD3DX12_CPU_DESCRIPTOR_HANDLE HeightMapDescriptor)
 {
 	//blend map
-	auto BlendMapTex = pTextureManage->GetTexture(wstring(mInfo.BlendMapFilename.begin(), mInfo.BlendMapFilename.end()))->Resource;
+	auto BlendMapTex = pTextureManage->GetTexture(std::wstring(mInfo.BlendMapFilename.begin(), mInfo.BlendMapFilename.end()))->Resource;
 	D3D12_SHADER_RESOURCE_VIEW_DESC BlendMapDesc = {};
 	BlendMapDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	BlendMapDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -448,7 +449,7 @@ void HeightmapTerrain::BuildHeightmapSRV(CD3DX12_CPU_DESCRIPTOR_HANDLE BlendMapD
 	mDevice->CreateShaderResourceView(BlendMapTex.Get(), &BlendMapDesc, BlendMapDescriptor);
 
 	//height map
-	vector<HALF> HalfHeightMapData;
+	std::vector<HALF> HalfHeightMapData;
 	HalfHeightMapData.resize(mHeightmap.size());
 	std::transform(mHeightmap.begin(), mHeightmap.end(), HalfHeightMapData.begin(), XMConvertFloatToHalf);
 	mHeightMapSRV = EngineUtility::CreateDefault2DTexture(mDevice,

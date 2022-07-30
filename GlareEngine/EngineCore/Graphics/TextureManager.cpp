@@ -1,7 +1,7 @@
 #include "TextureManager.h"
 #include "GraphicsCore.h"
 
-string  PBRTextureFileType[] = {
+std::string  PBRTextureFileType[] = {
 	"_albedo",
 	"_normal",
 	"_ao",
@@ -39,9 +39,9 @@ namespace GlareEngine
 		}
 	}
 
-	void TextureManager::CreatePBRTextures(string PathName, vector<Texture*>& Textures)
+	void TextureManager::CreatePBRTextures(std::string PathName, std::vector<Texture*>& Textures)
 	{
-		string Fullfilename = "";
+		std::string Fullfilename = "";
 		bool bSRGB = true;
 		for (auto Type : PBRTextureFileType)
 		{

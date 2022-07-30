@@ -105,11 +105,11 @@ void Terrain::BuildPSO(const PSOCommonProperty CommonProperty)
 
 void Terrain::CreateMaterials()
 {
-	int MaterialNum = sizeof(mTerrainInfo.LayerMapFilename) / sizeof(string);
+	int MaterialNum = sizeof(mTerrainInfo.LayerMapFilename) / sizeof(std::string);
 	for (int i = 0; i < MaterialNum; ++i)
 	{
-		vector<Texture*> ModelTextures;
-		string Filename = EngineGlobal::TerrainAssetPath;
+		std::vector<Texture*> ModelTextures;
+		std::string Filename = EngineGlobal::TerrainAssetPath;
 		Filename += mTerrainInfo.LayerMapFilename[i];
 		TextureManager::GetInstance(m_pCommandList)->CreatePBRTextures(Filename, ModelTextures);
 		MaterialManager::GetMaterialInstance()->BuildMaterials(
@@ -130,7 +130,7 @@ void Terrain::LoadHeightMapAsset()
 	/// </summary>
 
 	//check file type
-	string FileType = mTerrainInfo.HeightMapFilename.substr(mTerrainInfo.HeightMapFilename.find_last_of('.') + 1);
+	std::string FileType = mTerrainInfo.HeightMapFilename.substr(mTerrainInfo.HeightMapFilename.find_last_of('.') + 1);
 	transform(FileType.begin(), FileType.end(), FileType.begin(), ::toupper);
 
 	if (FileType == "RAW")
@@ -385,9 +385,9 @@ void Terrain::BuildQuadPatchGeometry(ID3D12GraphicsCommandList* CommandList)
 		submesh.StartIndexLocation = 0;
 		submesh.BaseVertexLocation = offset;
 
-		string TileName = "Terrain ";
-		TileName += "Row:" + to_string(TileID / mTerrainInfo.TerrainTileSize);
-		TileName += " Col:" + to_string(TileID % mTerrainInfo.TerrainTileSize);
+		std::string TileName = "Terrain ";
+		TileName += "Row:" + std::to_string(TileID / mTerrainInfo.TerrainTileSize);
+		TileName += " Col:" + std::to_string(TileID % mTerrainInfo.TerrainTileSize);
 		geo->DrawArgs[TileName] = submesh;
 	}
 
@@ -446,7 +446,7 @@ void Terrain::UpdateTerrainConstantBuffer()
 void Terrain::BuildTerrainSRV()
 {
 	//blend map
-	auto BlendMapTex = TextureManager::GetInstance(m_pCommandList)->GetTexture(wstring(mTerrainInfo.BlendMapFilename.begin(), mTerrainInfo.BlendMapFilename.end()))->Resource;
+	auto BlendMapTex = TextureManager::GetInstance(m_pCommandList)->GetTexture(std::wstring(mTerrainInfo.BlendMapFilename.begin(), mTerrainInfo.BlendMapFilename.end()))->Resource;
 	D3D12_SHADER_RESOURCE_VIEW_DESC BlendMapDesc = {};
 	BlendMapDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	BlendMapDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -459,7 +459,7 @@ void Terrain::BuildTerrainSRV()
 	mBlendMapIndex= AddToGlobalTextureSRVDescriptor(m_BlendMapDescriptor);
 
 	//height map
-	vector<HALF> HalfHeightMapData;
+	std::vector<HALF> HalfHeightMapData;
 	HalfHeightMapData.resize(mHeightmap.size());
 	std::transform(mHeightmap.begin(), mHeightmap.end(), HalfHeightMapData.begin(), XMConvertFloatToHalf);
 	mHeightMapSRV = EngineUtility::CreateDefault2DTexture(g_Device,

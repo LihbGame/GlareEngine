@@ -3,7 +3,7 @@
 
 using namespace GlareEngine;
 
-ModelMesh::ModelMesh(ID3D12GraphicsCommandList* CommandList, const char* name, vector<Vertices::PosNormalTangentTexc> vertices, vector<UINT> indices)
+ModelMesh::ModelMesh(ID3D12GraphicsCommandList* CommandList, const char* name, std::vector<Vertices::PosNormalTangentTexc> vertices, std::vector<UINT> indices)
 	:pModelMeshName(name)
 {
 	mMeshData.Vertices = vertices;

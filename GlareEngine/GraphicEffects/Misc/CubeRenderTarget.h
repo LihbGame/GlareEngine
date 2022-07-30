@@ -45,10 +45,10 @@ private:
 	DXGI_FORMAT mFormat;
 	XMFLOAT3 mCameraPostion;
 
-	vector<D3D12_VIEWPORT> mViewport;
+	std::vector<D3D12_VIEWPORT> mViewport;
 	D3D12_RECT mScissorRect;
 
-	vector<D3D12_CPU_DESCRIPTOR_HANDLE> mRenderTargetDes;
+	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> mRenderTargetDes;
 	D3D12_CPU_DESCRIPTOR_HANDLE mCubeSrv;
 
 	ColorBuffer  mCubeMap;

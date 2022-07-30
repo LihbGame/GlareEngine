@@ -4,7 +4,7 @@
 Materials* Materials::MaterialInstance=new Materials;
 int Materials::MatCBIndex = 0;
 
-void Materials::BuildMaterials(wstring name, float Height_Scale, XMFLOAT4 DiffuseAlbedo, XMFLOAT3 FresnelR0, XMFLOAT4X4 MatTransform, MaterialType MatType)
+void Materials::BuildMaterials(std::wstring name, float Height_Scale, XMFLOAT4 DiffuseAlbedo, XMFLOAT3 FresnelR0, XMFLOAT4X4 MatTransform, MaterialType MatType, int NumFrameResources)
 {
 	if (mMaterials.find(name) == mMaterials.end())
 	{
@@ -15,6 +15,7 @@ void Materials::BuildMaterials(wstring name, float Height_Scale, XMFLOAT4 Diffus
 		Mat->FresnelR0 = FresnelR0;
 		Mat->MatTransform = MatTransform;
 		Mat->height_scale = Height_Scale;
+		Mat->NumFramesDirty = NumFrameResources;
 		mMaterials[name] = std::move(Mat);
 
 

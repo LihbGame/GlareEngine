@@ -1,24 +1,25 @@
 #pragma once
+
 #include <vector>
-#include <string>
+#include <xstring>
 #include <stdarg.h>
-using namespace std;
+
 class EngineLog
 {
 public:
 	EngineLog() {};
 	~EngineLog() {};
 
-	static vector<wstring>& GetLogs();
-	static vector<wstring>& GetFilterLogs();
+	static std::vector<std::wstring>& GetLogs();
+	static std::vector<std::wstring>& GetFilterLogs();
 	static void ClearLogs();
 	static void AddLog(const wchar_t* format, ...);
-	static void Filter(wstring Filter);
+	static void Filter(std::wstring Filter);
 	static void SaveLog();
 private:
-	static vector<wstring> DisplayLogs;
-	static vector<wstring> FilterLogs;
-	static vector<wstring> FilterDisplayLogs;
-	static wstring OldFilter;
+	static std::vector<std::wstring> DisplayLogs;
+	static std::vector<std::wstring> FilterLogs;
+	static std::vector<std::wstring> FilterDisplayLogs;
+	static std::wstring OldFilter;
 };
 

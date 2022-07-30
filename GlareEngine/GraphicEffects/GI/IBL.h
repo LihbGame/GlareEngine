@@ -24,8 +24,8 @@ private:
 	void BakingPreFilteredEnvironment(GraphicsContext& Context);
 	void BakingBRDF(GraphicsContext& Context);
 private:
-	unique_ptr<CubeRenderTarget> mIndirectDiffuseCube;
-	unique_ptr<CubeRenderTarget> mPreFilteredEnvCube;
+	std::unique_ptr<CubeRenderTarget> mIndirectDiffuseCube;
+	std::unique_ptr<CubeRenderTarget> mPreFilteredEnvCube;
 	ColorBuffer mBRDFLUT;
 
 

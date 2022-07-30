@@ -23,7 +23,7 @@ public:
 	D3D12_VIEWPORT Viewport()const;
 	D3D12_RECT ScissorRect()const;
 
-	void Draw(GraphicsContext& Context, vector<RenderObject*> RenderObjects);
+	void Draw(GraphicsContext& Context, std::vector<RenderObject*> RenderObjects);
 
 	void DrawUI() {}
 

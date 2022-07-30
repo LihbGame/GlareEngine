@@ -23,9 +23,9 @@ void SimpleModelGenerator::CreatePBRMaterials()
 	int MaterialNum = sizeof(ModelPBRMaterials) / sizeof(char*);
 	for (int i = 0; i < MaterialNum; ++i)
 	{
-		vector<Texture*> ModelTextures;
-		string Filename = EngineGlobal::TextureAssetPath;
-		Filename += ModelPBRMaterials[i]+ string("/") + ModelPBRMaterials[i];
+		std::vector<Texture*> ModelTextures;
+		std::string Filename = EngineGlobal::TextureAssetPath;
+		Filename += ModelPBRMaterials[i]+ std::string("/") + ModelPBRMaterials[i];
 		TextureManager::GetInstance(pCommandList)->CreatePBRTextures(Filename, ModelTextures);
 		MaterialManager::GetMaterialInstance()->BuildMaterials(
 			StringToWString(ModelPBRMaterials[i]),
@@ -37,7 +37,7 @@ void SimpleModelGenerator::CreatePBRMaterials()
 	}
 }
 
-ModelRenderData* SimpleModelGenerator::CreateSimpleModelRanderData(string ModelName, SimpleModelType Type, string MaterialName)
+ModelRenderData* SimpleModelGenerator::CreateSimpleModelRanderData(std::string ModelName, SimpleModelType Type, std::string MaterialName)
 {
 	if (mMeshes.find(ModelName) == mMeshes.end())
 	{

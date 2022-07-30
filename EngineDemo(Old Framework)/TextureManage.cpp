@@ -1,8 +1,9 @@
 #include "TextureManage.h"
 #include "Material.h"
-TextureManage::TextureManage(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, UINT CbvSrvDescriptorSize)
+TextureManage::TextureManage(ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* CommandList, UINT CbvSrvDescriptorSize, int NumFrameResources)
 :md3dDevice(d3dDevice),
 mCommandList(CommandList),
+gNumFrameResources(NumFrameResources),
 mCbvSrvDescriptorSize(CbvSrvDescriptorSize)
 {
 }
@@ -45,7 +46,7 @@ std::unique_ptr<Texture>& TextureManage::GetModelTexture(std::wstring name, bool
 	return mTextures[name];
 }
 
-void TextureManage::CreatePBRSRVinDescriptorHeap(vector<ID3D12Resource*> TexResource, int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor, wstring MaterialName)
+void TextureManage::CreatePBRSRVinDescriptorHeap(std::vector<ID3D12Resource*> TexResource, int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor, std::wstring MaterialName)
 {
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;

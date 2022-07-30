@@ -217,7 +217,7 @@ void glTF::Asset::ProcessAccessors( json& accessors )
     }
 }
 
-void glTF::Asset::FindAttribute( Primitive& prim, json& attributes, Primitive::eAttribType type, const string& name )
+void glTF::Asset::FindAttribute( Primitive& prim, json& attributes, Primitive::eAttribType type, const std::string& name )
 {
     json::iterator attrib = attributes.find(name);
     if (attrib != attributes.end())
@@ -365,7 +365,7 @@ void glTF::Asset::ProcessMaterials( json& materials )
 
         if (thisMaterial.find("alphaMode") != thisMaterial.end())
         {
-            string alphaMode = thisMaterial.at("alphaMode");
+            std::string alphaMode = thisMaterial.at("alphaMode");
             if (alphaMode == "BLEND")
                 material.alphaBlend = true;
             else if (alphaMode == "MASK")
@@ -434,14 +434,14 @@ void glTF::Asset::ProcessMaterials( json& materials )
     }
 }
 
-bool ReadFile(const wstring& fileName, void* Dest, size_t Size)
+bool ReadFile(const std::wstring& fileName, void* Dest, size_t Size)
 {
     struct _stat64 fileStat;
     int fileExists = _wstat64(fileName.c_str(), &fileStat);
     if (fileExists == -1)
         return false;
 
-    ifstream file(fileName, ios::in | ios::binary);
+    std::ifstream file(fileName, std::ios::in | std::ios::binary);
     if (!file)
         return false;
 
@@ -462,8 +462,8 @@ void glTF::Asset::ProcessBuffers( json& buffers, ByteArray chunk1bin )
 
         if (thisBuffer.find("uri") != thisBuffer.end())
         {
-            const string& uri = thisBuffer.at("uri");
-            wstring filepath = m_basePath + wstring(uri.begin(), uri.end());
+            const std::string& uri = thisBuffer.at("uri");
+            std::wstring filepath = m_basePath + std::wstring(uri.begin(), uri.end());
 
             ByteArray ba = FileUtility::ReadFileSync(filepath);
             assert(ba->size() > 0);
@@ -520,11 +520,11 @@ void glTF::Asset::ProcessImages( json& images )
         json& thisImage = it.value();
         if (thisImage.find("uri") != thisImage.end())
         {
-            m_images[imageIdx++].path = thisImage.at("uri").get<string>();
+            m_images[imageIdx++].path = thisImage.at("uri").get<std::string>();
         }
         else if (thisImage.find("bufferView") != thisImage.end())
         {
-            EngineLog::AddLog(L"GLB image at buffer view %d with mime type %s\n", thisImage.at("bufferView").get<uint32_t>(), thisImage.at("mimeType").get<string>().c_str());
+            EngineLog::AddLog(L"GLB image at buffer view %d with mime type %s\n", thisImage.at("bufferView").get<uint32_t>(), thisImage.at("mimeType").get<std::string>().c_str());
         }
         else
         {
@@ -692,7 +692,7 @@ void glTF::Asset::Parse(const std::wstring& filepath)
 
     if (fileExt == L"glb")
     {
-        ifstream glbFile(filepath, ios::in | ios::binary);
+        std::ifstream glbFile(filepath, std::ios::in | std::ios::binary);
         struct GLBHeader
         {
             char magic[4];
@@ -720,7 +720,7 @@ void glTF::Asset::Parse(const std::wstring& filepath)
             EngineLog::AddLog(L"Error: Expected chunk0 to contain JSON\n");
             return;
         }
-        gltfFile = make_shared<vector<byte>>( chunk0Length + 1 );
+        gltfFile = std::make_shared<std::vector<byte>>( chunk0Length + 1 );
         glbFile.read((char*)gltfFile->data(), chunk0Length);
         (*gltfFile)[chunk0Length] = '\0';
 
@@ -734,7 +734,7 @@ void glTF::Asset::Parse(const std::wstring& filepath)
             return;
        }
 
-        chunk1Bin = make_shared<vector<byte>>(chunk1Length);
+        chunk1Bin = std::make_shared<std::vector<byte>>(chunk1Length);
         glbFile.read((char*)chunk1Bin->data(), chunk1Length);
     }
     else 
@@ -747,7 +747,7 @@ void glTF::Asset::Parse(const std::wstring& filepath)
             return;
 
         gltfFile->push_back('\0');
-        chunk1Bin = make_shared<vector<byte>>(0);
+        chunk1Bin = std::make_shared<std::vector<byte>>(0);
     }
 
     json root = json::parse((const char*)gltfFile->data());

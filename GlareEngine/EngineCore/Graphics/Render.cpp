@@ -22,9 +22,9 @@ namespace GlareEngine
 		//Num Frame Resources
 		const int gNumFrameResources = NUMFRAME;
 
-		vector<GraphicsPSO> gModelPSOs;
+		std::vector<GraphicsPSO> gModelPSOs;
 
-		vector<GraphicsPSO> gCommonPSOs;
+		std::vector<GraphicsPSO> gCommonPSOs;
 
 		DescriptorHeap gModelTextureHeap;
 

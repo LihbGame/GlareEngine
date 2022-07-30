@@ -10,7 +10,7 @@ typedef void (*BuildPSO)(PSOCommonProperty);
 class Scene
 {
 public:
-	Scene(string name, ID3D12GraphicsCommandList* pCommandList);
+	Scene(std::string name, ID3D12GraphicsCommandList* pCommandList);
 	~Scene() {};
 public:
 	//Update Scene 
@@ -47,13 +47,13 @@ public:
 	bool IsMSAA = false;
 private:
 	void UpdateMainConstantBuffer(float DeltaTime);
-	void CreateShadowMap(GraphicsContext& Context, vector<RenderObject*> RenderObjects);
+	void CreateShadowMap(GraphicsContext& Context, std::vector<RenderObject*> RenderObjects);
 	void ForwardRendering();
 	void ForwardPlusRendering();
 	void DeferredRendering();
 private:
 	ID3D12GraphicsCommandList* m_pCommandList = nullptr;
-	string mName;
+	std::string mName;
 
 	//Main Constant Buffer
 	MainConstants mMainConstants;
@@ -62,8 +62,8 @@ private:
 	D3D12_VIEWPORT m_MainViewport = { 0 };
 	D3D12_RECT m_MainScissor = { 0 };
 
-	vector<RenderObject*> m_pRenderObjects;
-	vector<RenderObject*> m_pRenderObjectsType[(int)ObjectType::Count];
+	std::vector<RenderObject*> m_pRenderObjects;
+	std::vector<RenderObject*> m_pRenderObjectsType[(int)ObjectType::Count];
 
 	ShadowMap* m_pShadowMap = nullptr;
 

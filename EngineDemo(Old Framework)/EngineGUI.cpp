@@ -6,16 +6,11 @@
 #include "GraphicsCore.h"
 #include "TextureManage.h"
 #include "FrameResource.h"
-using Microsoft::WRL::ComPtr;
-bool gFullSreenMode = false;
-bool EngineGUI::mWindowMaxSize = false;
 
-EngineGUI::EngineGUI(HWND GameWnd, ID3D12Device* d3dDevice, TextureManage* pTextureManager, ID3D12GraphicsCommandList* d3dCommandList)
+using namespace Microsoft::WRL;
+
+EngineGUI::EngineGUI()
 {
-	md3dDevice = d3dDevice;
-	mTextureManager = pTextureManager;
-	CreateUIDescriptorHeap(d3dCommandList);
-	InitGUI(GameWnd);
 }
 
 EngineGUI::~EngineGUI()
@@ -23,23 +18,24 @@ EngineGUI::~EngineGUI()
 
 }
 
-void EngineGUI::InitGUI(HWND GameWnd)
+void EngineGUI::InitGUI(HWND EdithWnd, ID3D12Device* d3dDevice, ID3D12GraphicsCommandList* d3dCommandList, ID3D12DescriptorHeap* SrvDescriptorHeap, const int gNumFrameResources)
 {
-	// Setup Dear ImGui context
+	md3dDevice = d3dDevice;
+	// 获取此堆类型中描述符的增量大小。 这是特定于硬件的，因此我们必须查询此信息。
+	UINT mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	mTextureManager = std::make_unique<TextureManage>(md3dDevice, d3dCommandList, mCbvSrvDescriptorSize, gNumFrameResources);
+	mGUISrvDescriptorHeap = SrvDescriptorHeap;
+
+	// 加载imgui
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-	
+	ImGuiIO& io = ImGui::GetIO();
 
-	// Setup Dear ImGui style
-	//ImGui::StyleColorsDark();
-	//ImGui::StyleColorsClassic();
-	 // Setup Platform/Renderer bindings
-	ImGui_ImplWin32_Init(GameWnd);
-	ImGui_ImplDX12_Init(md3dDevice, gNumFrame,
-		DXGI_FORMAT_R8G8B8A8_UNORM, mGUISrvDescriptorHeap,
+	CreateUIDescriptorHeap(d3dCommandList);
+
+	ImGui_ImplWin32_Init(EdithWnd);
+	ImGui_ImplDX12_Init(md3dDevice, gNumFrameResources,
+		DXGI_FORMAT_R16G16B16A16_FLOAT, mGUISrvDescriptorHeap,
 		mGUISrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		mGUISrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
@@ -53,27 +49,36 @@ void EngineGUI::InitGUI(HWND GameWnd)
    // - Read 'docs/FONTS.txt' for more instructions and details.
    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
    //io.Fonts->AddFontDefault();
-   io.Fonts->AddFontFromFileTTF("../Resource/UImisc/fonts/Roboto-Medium.ttf", 16.0f);
-   //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-	//io.Fonts->AddFontFromFileTTF("UImisc/fonts/DroidSans.ttf", 16.0f);
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
-	//ImFont* font = io.Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Medium.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
-	//IM_ASSERT(font != NULL);
+	io.Fonts->AddFontFromFileTTF("../Resource/UImisc/fonts/Roboto-Medium.ttf", 16.0f);
+	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
+	 //io.Fonts->AddFontFromFileTTF("UImisc/fonts/DroidSans.ttf", 16.0f);
+	 //io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
+	 //ImFont* font = io.Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Medium.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
+	 //IM_ASSERT(font != NULL);
 
-	 g = ImGui::GetCurrentContext();
-	 g->Style.WindowRounding = 0;
-	 g->Style.DisplaySafeAreaPadding = ImVec2(3, 5);
-	 g->Style.WindowBorderSize = 1.0f;
-	 SetWindowStyles();
+	ImGui::GetCurrentContext()->Style.WindowRounding = 0;
+	ImGui::GetCurrentContext()->Style.DisplaySafeAreaPadding = ImVec2(3, 5);
+	ImGui::GetCurrentContext()->Style.WindowBorderSize = 1.0f;
+	SetWindowStyles();
+}
+
+bool EngineGUI::OnMouseMove()
+{
+	return ImGui::GetIO().WantCaptureMouse;
+}
+
+void EngineGUI::SetFPSText(std::wstring Text)
+{
+	FPSText = Text;
 }
 
 void EngineGUI::CreateUIDescriptorHeap(ID3D12GraphicsCommandList* d3dCommandList)
 {
-	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	desc.NumDescriptors = 5;
-	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&mGUISrvDescriptorHeap)));
+	//D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+	//desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	//desc.NumDescriptors = 5;
+	//desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	//ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&mGUISrvDescriptorHeap)));
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(mGUISrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 	UINT SRVDescriptorHandleIncrementSize= md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -109,58 +114,48 @@ void EngineGUI::CreateUIDescriptorHeap(ID3D12GraphicsCommandList* d3dCommandList
 
 	mEngineIconTexDescriptor = mGUISrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
 	mEngineIconTexDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
-	mEngineMaxTexDescriptor = mEngineIconTexDescriptor;
-	mEngineMaxTexDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
-	mEngineMinTexDescriptor = mEngineMaxTexDescriptor;
-	mEngineMinTexDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
-	mEngineCloseTexDescriptor = mEngineMinTexDescriptor;
-	mEngineCloseTexDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
 }
 
 void EngineGUI::Draw(ID3D12GraphicsCommandList* d3dCommandList)
 {
-	//DRAW UI
+	ImGuiIO& io = ImGui::GetIO();
+	
+	ID3D12DescriptorHeap* descriptorHeaps[] = { mGUISrvDescriptorHeap };
+	d3dCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+
+	// Start the Dear ImGui frame
+	ImGui_ImplDX12_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+	ImGui::SetNextWindowBgAlpha(1);
+
+	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 	{
-		ID3D12DescriptorHeap* descriptorHeaps[] = { mGUISrvDescriptorHeap };
-		d3dCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-		// Our state
-
-		// Start the Dear ImGui frame
-		ImGui_ImplDX12_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
-		ImGui::SetNextWindowBgAlpha(1);
-		
-		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-		if (mShowControlPanel)
-		{	
-			DrawMainMenuBar(&mWindowMaxSize, gFullSreenMode);
-			ImGui::ShowDemoWindow(&mShowControlPanel,&mWindowMaxSize);
-		}
-		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-		{
-			float IconSize = g->IO.DisplaySize.x * 0.075f;
-			float IconWindowHigh = IconSize * 1.15f;
-			//Engine Icon
-			DrawEngineIcon(IconSize, IconWindowHigh);
-			//ControlPanel
-			DrawControlPanel(IconWindowHigh);
-		}
-
-		// 3. Show Output log window.
-		if (mShowDebugwindow)
-		{
-			DrawDebugWindow();
-		}
-
-		//Stat Windows
-		{
-			DrawStatWindow();
-		}
-
-		ImGui::Render();
-		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), d3dCommandList);
+		DrawMainMenuBar();
+		DrawStatWindow();
+		//ImGui::ShowDemoWindow(&mShowControlPanel,&mWindowMaxSize);
 	}
+
+	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+	{
+		float IconSize = io.DisplaySize.x * 0.075f;
+		float IconWindowHigh = IconSize * 1.15f;
+		//Engine Icon
+		DrawEngineIcon(IconSize, IconWindowHigh);
+		//ControlPanel
+		DrawControlPanel(IconWindowHigh);
+	}
+
+	// 3. Show Output log window.
+	if (mShowDebugwindow)
+	{
+		DrawDebugWindow();
+	}
+
+	ImGui::End();
+
+	ImGui::Render();
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), d3dCommandList);	
 }
 
 void EngineGUI::ShutDown()
@@ -170,7 +165,7 @@ void EngineGUI::ShutDown()
 	ImGui::DestroyContext();
 
 	if(mGUISrvDescriptorHeap)
-	mGUISrvDescriptorHeap->Release();
+		mGUISrvDescriptorHeap->Release();
 }
 
 void EngineGUI::SetWindowStyles()
@@ -230,24 +225,27 @@ void EngineGUI::SetWindowStyles()
 
 void EngineGUI::DrawEngineIcon(float IconSize, float IconWindowHigh)
 {
-	ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
-	ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * CLIENT_FROMLEFT, IconWindowHigh));
+	ImGuiIO& io = ImGui::GetIO();
+	ImGui::SetNextWindowPos(ImVec2(0.0f, 24.0f));
+	ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x * CLIENT_FROMLEFT, IconWindowHigh));
 	ImGui::SetNextWindowBgAlpha(1);
 	ImGui::Begin("Engine Icon", &isUIShow, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
-	ImGui::Image((void*)(mEngineIconTexDescriptor.ptr), ImVec2(g->IO.DisplaySize.x * 0.0417f, 0), ImVec2(IconSize, IconSize), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+	ImGui::Image((ImTextureID)mEngineIconTexDescriptor.ptr, ImVec2(IconSize, IconSize));
+	
 	ImGui::End();
 }
 
 void EngineGUI::DrawControlPanel(float IconWindowHigh)
 {
-	ImGui::SetNextWindowPos(ImVec2(0.0f, IconWindowHigh));
-	ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * CLIENT_FROMLEFT, int(g->IO.DisplaySize.y * CLIENT_HEIGHT + 1.0f) - IconWindowHigh));
+	ImGuiIO& io = ImGui::GetIO();
+	ImGui::SetNextWindowPos(ImVec2(0.0f, IconWindowHigh+24.0f));
+	ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x * CLIENT_FROMLEFT, int(io.DisplaySize.y * CLIENT_HEIGHT + 1.0f) - IconWindowHigh));
 	ImGui::SetNextWindowBgAlpha(1);
 
 	ImGui::Begin("Control Panel", &isUIShow, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 
-	ImGui::Text("Camera Move Speed");
-	ImGui::SliderFloat("   ", &CameraMoveSpeed, 0.0f, 5000.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+	ImGui::Text(WstringToUTF8(FPSText).c_str());
+	ImGui::SliderFloat("Camera Move Speed", &CameraMoveSpeed, 0.0f, 5000.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 
 	ImGui::Text("Show Sence");
 	ImGui::Checkbox("Shadow", &show_shadow);
@@ -276,20 +274,16 @@ void EngineGUI::DrawControlPanel(float IconWindowHigh)
 	if (ImGui::CollapsingHeader("Fog", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::Checkbox("Fog Rendering", &FogEnabled);
-		ImGui::Text("Fog Start");
-		ImGui::SliderFloat(" ", &FogStart, 0.0f, 1000.0f);
-		ImGui::Text("Fog Range");
-		ImGui::SliderFloat("  ", &FogRange, 0.0f, 1000.0f);
+		ImGui::SliderFloat("Fog Start", &FogStart, 0.0f, 1000.0f);
+		ImGui::SliderFloat("Fog Range", &FogRange, 0.0f, 1000.0f);
 	}
-	//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-	ImGui::End();
 }
 
 void EngineGUI::DrawDebugWindow()
 {
-	//g.NextWindowData.MenuBarOffsetMinVal = ImVec2(g.Style.DisplaySafeAreaPadding.x, ImMax(g.Style.DisplaySafeAreaPadding.y - g.Style.FramePadding.y, 0.0f));
-	ImGui::SetNextWindowPos(ImVec2(0.0f, g->IO.DisplaySize.y * 0.75f));
-	ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x, ceil(g->IO.DisplaySize.y * 0.25f)));
+	ImGuiIO& io = ImGui::GetIO();
+	ImGui::SetNextWindowPos(ImVec2(0.0f, io.DisplaySize.y * 0.75f));
+	ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, ceil(io.DisplaySize.y * 0.25f)));
 	ImGui::SetNextWindowBgAlpha(1);
 
 	ImGui::Begin("Debug Window", &mShowDebugwindow, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
@@ -305,8 +299,8 @@ void EngineGUI::DrawDebugWindow()
 	ImGui::Text("Camera Position X:%.1f Y:%.1f Z:%.1f", mCameraPosition.x, mCameraPosition.y, mCameraPosition.z);
 
 	//Filter logs
-	string Filter(FilterString);
-	if (strcmp(FilterString, "") != 0)
+	std::string Filter(FilterString);
+	if (std::strcmp(FilterString, "") != 0)
 	{
 		EngineLog::Filter(StringToWString(Filter));
 		mLogs = EngineLog::GetFilterLogs();
@@ -336,38 +330,41 @@ void EngineGUI::DrawDebugWindow()
 
 void EngineGUI::DrawStatWindow()
 {
-	ImGui::SetNextWindowPos(ImVec2(ImVec2(g->IO.DisplaySize.x / 5.8f, MainMenuBarHeight + 5.0f)));
+	ImGuiIO& io = ImGui::GetIO();
+	ImGui::SetNextWindowPos(ImVec2(ImVec2(io.DisplaySize.x / 5.8f, 24.0f)));
 	ImGui::SetNextWindowSize(ImVec2(120.0f, 200.0f));
 	bool stat = true;
-	ImGui::Begin("Stat Window", &stat, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-	if (ImGui::CollapsingHeader("  States"))
+	ImGui::Begin(" ", &stat, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+	if (ImGui::RadioButton("Wireframe", mWireframe))
 	{
-		if (ImGui::RadioButton("Wireframe", mWireframe))
+		if (mWireframe)
 		{
-			if (mWireframe)
-			{
-				mWireframe = false;
-			}
-			else
-			{
-				mWireframe = true;
-			}
+			mWireframe = false;
 		}
-
+		else
+		{
+			mWireframe = true;
+		}
 	}
 	ImGui::End();
 }
 
-void EngineGUI::DrawMainMenuBar(bool* IsMax, bool IsFullScreenMode)
+void EngineGUI::DrawMainMenuBar()
 {
+	ImGuiIO& io = ImGui::GetIO();
 	if (ImGui::BeginMainMenuBar())
 	{
 		if (ImGui::BeginMenu("File"))
 		{
+			if (ImGui::MenuItem("Exit", "X"))
+			{
+				SendMessage((HWND)io.ImeWindowHandle, WM_CLOSE, NULL, NULL);
+			}
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Edit"))
 		{
+			ImGui::FocusWindow(ImGui::GetCurrentWindowRead());
 			if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
 			if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
 			ImGui::Separator();
@@ -376,31 +373,7 @@ void EngineGUI::DrawMainMenuBar(bool* IsMax, bool IsFullScreenMode)
 			if (ImGui::MenuItem("Paste", "CTRL+V")) {}
 			ImGui::EndMenu();
 		}
-		ImGuiIO& io = ImGui::GetIO();
-		if (!IsFullScreenMode)
-		{
-			ImGui::GetStyle().Colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.2f, 0.0f);
-			if (ImGui::ImageButton((void*)(mEngineMinTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 210.0f, 0), ImVec2(25, 25), ImVec2(0, 0), ImVec2(1, 1),5))
-			{
-				SendMessage((HWND)io.ImeWindowHandle, WM_SYSCOMMAND, SC_MINIMIZE, NULL);
-			}
-			if (ImGui::ImageButton((void*)(mEngineMaxTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 200.0f, 0), ImVec2(25, 25), ImVec2(0, 0), ImVec2(1, 1),5))
-			{
-				*IsMax = !(*IsMax);
-			}
-			if (ImGui::ImageButton((void*)(mEngineCloseTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 190.0f, 0), ImVec2(25, 25), ImVec2(0, 0), ImVec2(1, 1),5))
-			{
-				SendMessage((HWND)io.ImeWindowHandle, WM_CLOSE, NULL, NULL);
-			}
-			ImGui::GetStyle().Colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.2f, 0.4f);
-		}
-		else
-		{
-			if (ImGui::RadioButton("Close", true, ImVec2(ImGui::GetWindowSize().x - 160.0f, 0.0f)))
-			{
-				SendMessage((HWND)io.ImeWindowHandle, WM_CLOSE, NULL, NULL);
-			}
-		}
+
 		ImGui::EndMainMenuBar();
 		ImGui::GetStyle().FramePadding.y = 3;
 	}

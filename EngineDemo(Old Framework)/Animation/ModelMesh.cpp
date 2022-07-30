@@ -1,7 +1,7 @@
 #include "ModelMesh.h"
 
 
-ModelMesh::ModelMesh(ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList, vector<Vertices::PosNormalTangentTexc> vertices, vector<UINT> indices, vector<Texture> textures)
+ModelMesh::ModelMesh(ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList, std::vector<Vertices::PosNormalTangentTexc> vertices, std::vector<UINT> indices, std::vector<Texture> textures)
 {
     this->vertices = vertices;
     this->indices = indices;
@@ -26,7 +26,7 @@ void ModelMesh::SetupMesh()
     const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertices::PosNormalTangentTexc);
     const UINT ibByteSize = (UINT)indices.size() * sizeof(UINT);
 
-    mMeshGeo.Name = "Model Mesh";
+    mMeshGeo.Name = L"Model Mesh";
     ThrowIfFailed(D3DCreateBlob(vbByteSize, &mMeshGeo.VertexBufferCPU));
     CopyMemory(mMeshGeo.VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
 
@@ -54,5 +54,5 @@ void ModelMesh::SetupMesh()
     submesh.IndexCount = (UINT)indices.size();
     submesh.StartIndexLocation = 0;
     submesh.BaseVertexLocation = 0;
-    mMeshGeo.DrawArgs["Model Mesh"] = submesh;
+    mMeshGeo.DrawArgs[L"Model Mesh"] = submesh;
 }

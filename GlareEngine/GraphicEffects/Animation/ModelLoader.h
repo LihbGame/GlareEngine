@@ -20,30 +20,30 @@ namespace GlareEngine
 		void SetCommandList(ID3D12GraphicsCommandList* CommandList);
 
 		//Load model mesh data
-		bool LoadModel(string filename);
+		bool LoadModel(std::string filename);
 
-		const ModelRenderData* GetModelRenderData(string ModelName);
+		const ModelRenderData* GetModelRenderData(std::string ModelName);
 
 		
 	private:
 		static ModelLoader* g_ModelLoader;
 
 		ID3D12GraphicsCommandList* m_pCommandList;
-		unordered_map<string, unique_ptr<ModelRenderData>> mMeshes;
+		std::unordered_map<std::string, std::unique_ptr<ModelRenderData>> mMeshes;
 
-		string mDirectory;
-		string mModelName;
+		std::string mDirectory;
+		std::string mModelName;
 
 		Assimp::Importer mImporter;
 	private:
 
-		void BuildMaterial(string MaterialName);
+		void BuildMaterial(std::string MaterialName);
 
 		void ProcessNode(aiNode* node, const aiScene* scene);
 		
 		ModelMesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
 		
-		vector<Texture*> LoadPBRTexture(string texturename);
+		std::vector<Texture*> LoadPBRTexture(std::string texturename);
 	};
 
 }

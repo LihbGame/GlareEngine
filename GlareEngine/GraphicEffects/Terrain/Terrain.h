@@ -8,9 +8,9 @@
 
 struct TerrainInitInfo
 {
-	string HeightMapFilename;
-	string LayerMapFilename[5];
-	string BlendMapFilename;
+	std::string HeightMapFilename;
+	std::string LayerMapFilename[5];
+	std::string BlendMapFilename;
 	UINT TerrainTileSize;
 	UINT TerrainCellNumInTile;
 	float CellSize;
@@ -20,7 +20,7 @@ struct TerrainInitInfo
 };
 
 class Terrain :
-    public RenderObject
+	public RenderObject
 {
 public:
 	Terrain(ID3D12GraphicsCommandList* CommandList,TerrainInitInfo TerrainInfo);
@@ -72,21 +72,21 @@ private:
 	UINT mNumPatchVertRows = 0;
 	UINT mNumPatchVertCols = 0;
 
-	vector<XMFLOAT4X4> mWorldTransforms;
+	std::vector<XMFLOAT4X4> mWorldTransforms;
 
 	//all Patch Bounds
-	vector<vector<XMFLOAT2>> mAllPatchBoundsY;
+	std::vector<std::vector<XMFLOAT2>> mAllPatchBoundsY;
 	//all Tile Bounds
-	vector<XMFLOAT2> mTileBoundsY;
+	std::vector<XMFLOAT2> mTileBoundsY;
 	//Height map data (only have one map for now)
-	vector<float> mHeightmap;
+	std::vector<float> mHeightmap;
 
 	float mTessellationScale;
 	float mTerrainSize;
 	float mTerrainTileWidth;
 	UINT mTileNum;
 
-	unique_ptr<MeshGeometry> mGeometries;
+	std::unique_ptr<MeshGeometry> mGeometries;
 
 	//SRV index
 	int mBlendMapIndex = 0;

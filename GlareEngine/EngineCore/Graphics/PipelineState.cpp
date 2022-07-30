@@ -7,14 +7,13 @@
 #include "Hash.h"
 #include "EngineLog.h"
 
-using namespace std;
 using Microsoft::WRL::ComPtr;
 
 
 namespace GlareEngine
 {
-	static map< size_t, ComPtr<ID3D12PipelineState> > gGraphicsPSOHashMap;
-	static map< size_t, ComPtr<ID3D12PipelineState> > gComputePSOHashMap;
+	static std::map< size_t, ComPtr<ID3D12PipelineState> > gGraphicsPSOHashMap;
+	static std::map< size_t, ComPtr<ID3D12PipelineState> > gComputePSOHashMap;
 
 
 	void PSO::DestroyAll(void)
@@ -25,7 +24,7 @@ namespace GlareEngine
 }
 
 
-GlareEngine::GraphicsPSO::GraphicsPSO(wstring psoName)
+GlareEngine::GraphicsPSO::GraphicsPSO(std::wstring psoName)
 {
 	m_Name = psoName;
 	ZeroMemory(&m_PSODesc, sizeof(m_PSODesc));
@@ -114,8 +113,8 @@ void GlareEngine::GraphicsPSO::Finalize()
 	ID3D12PipelineState** PSORef = nullptr;
 	bool firstCompile = false;
 	{
-		static mutex s_HashMapMutex;
-		lock_guard<mutex> CS(s_HashMapMutex);
+		static std::mutex s_HashMapMutex;
+		std::lock_guard<std::mutex> CS(s_HashMapMutex);
 		auto iter = gGraphicsPSOHashMap.find(HashCode);
 
 		// Reserve space so the next inquiry will find that someone got here first.
@@ -141,7 +140,7 @@ void GlareEngine::GraphicsPSO::Finalize()
 	}
 }
 
-ComputePSO::ComputePSO(wstring psoName)
+ComputePSO::ComputePSO(std::wstring psoName)
 {
 	m_Name = psoName;
 	ZeroMemory(&m_PSODesc, sizeof(m_PSODesc));
@@ -159,8 +158,8 @@ void ComputePSO::Finalize()
 	ID3D12PipelineState** PSORef = nullptr;
 	bool firstCompile = false;
 	{
-		static mutex s_HashMapMutex;
-		lock_guard<mutex> CS(s_HashMapMutex);
+		static std::mutex s_HashMapMutex;
+		std::lock_guard<std::mutex> CS(s_HashMapMutex);
 		auto iter = gComputePSOHashMap.find(HashCode);
 
 		// Reserve space so the next inquiry will find that someone got here first.
@@ -181,7 +180,7 @@ void ComputePSO::Finalize()
 	else
 	{
 		while (*PSORef == nullptr)
-			this_thread::yield();
+			std::this_thread::yield();
 		m_PSO = *PSORef;
 	}
 }

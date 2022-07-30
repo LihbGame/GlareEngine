@@ -121,10 +121,10 @@ namespace GlareEngine
 	class NestedTimingTree
 	{
 	public:
-		NestedTimingTree(const wstring& name, NestedTimingTree* parent = nullptr)
+		NestedTimingTree(const std::wstring& name, NestedTimingTree* parent = nullptr)
 			: m_Name(name), m_Parent(parent), m_IsExpanded(false) {}
 
-		NestedTimingTree* GetChild(const wstring& name)
+		NestedTimingTree* GetChild(const std::wstring& name)
 		{
 			auto iter = m_LUT.find(name);
 			if (iter != m_LUT.end())
@@ -259,7 +259,7 @@ namespace GlareEngine
 			}
 		}
 
-		static void PushProfilingMarker(const wstring& name, CommandContext* Context);
+		static void PushProfilingMarker(const std::wstring& name, CommandContext* Context);
 		static void PopProfilingMarker(CommandContext* Context);
 		static void Update(void);
 		static void UpdateTimes(void)
@@ -296,10 +296,10 @@ namespace GlareEngine
 			m_Children.clear();
 		}
 
-		wstring m_Name;
+		std::wstring m_Name;
 		NestedTimingTree* m_Parent;
-		vector<NestedTimingTree*> m_Children;
-		unordered_map<wstring, NestedTimingTree*> m_LUT;
+		std::vector<NestedTimingTree*> m_Children;
+		std::unordered_map<std::wstring, NestedTimingTree*> m_LUT;
 		int64_t m_StartTick;
 		int64_t m_EndTick;
 		StatHistory m_CPUTime;
@@ -339,7 +339,7 @@ namespace GlareEngine
 			NestedTimingTree::UpdateTimes();
 		}
 
-		void BeginBlock(const wstring& name, CommandContext* Context)
+		void BeginBlock(const std::wstring& name, CommandContext* Context)
 		{
 			NestedTimingTree::PushProfilingMarker(name, Context);
 		}
@@ -355,7 +355,7 @@ namespace GlareEngine
 		}
 	} // EngineProfiling
 
-	void NestedTimingTree::PushProfilingMarker(const wstring& name, CommandContext* Context)
+	void NestedTimingTree::PushProfilingMarker(const std::wstring& name, CommandContext* Context)
 	{
 		sm_CurrentNode = sm_CurrentNode->GetChild(name);
 		sm_CurrentNode->StartTiming(Context);

@@ -8,14 +8,14 @@ using namespace  GlareEngine;
 /////Scene Manager///////////////////////////
 
 
-Scene* SceneManager::CreateScene(string name)
+Scene* SceneManager::CreateScene(std::string name)
 {
-    auto scene = make_unique<Scene>(name, m_pCommandList);
+    auto scene = std::make_unique<Scene>(name, m_pCommandList);
 	mScenes[name] = std::move(scene);
     return mScenes[name].get();
 }
 
-Scene* SceneManager::GetScene(string Name)
+Scene* SceneManager::GetScene(std::string Name)
 {
     if (mScenes.find(Name) == mScenes.end())
     {
@@ -24,7 +24,7 @@ Scene* SceneManager::GetScene(string Name)
     return mScenes[Name].get();
 }
 
-void SceneManager::ReleaseScene(string name)
+void SceneManager::ReleaseScene(std::string name)
 {
     if (mScenes.find(name) != mScenes.end())
     {

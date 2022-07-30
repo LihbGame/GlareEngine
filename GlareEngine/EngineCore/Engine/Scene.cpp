@@ -6,7 +6,7 @@
 
 /// Scene/////////////////////////////////////////////
 
-Scene::Scene(string name, ID3D12GraphicsCommandList* pCommandList)
+Scene::Scene(std::string name, ID3D12GraphicsCommandList* pCommandList)
 	:mName(name),
 	m_pCommandList(pCommandList)
 {
@@ -28,7 +28,7 @@ void Scene::Update(float DeltaTime)
 
 void Scene::VisibleUpdateForType()
 {
-	unordered_map<ObjectType, bool> TypeVisible;
+	std::unordered_map<ObjectType, bool> TypeVisible;
 	TypeVisible[ObjectType::Sky] = m_pGUI->IsShowSky();
 	TypeVisible[ObjectType::Model] = m_pGUI->IsShowModel();
 	TypeVisible[ObjectType::Shadow] = m_pGUI->IsShowShadow();
@@ -219,7 +219,7 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 }
 
 
-void Scene::CreateShadowMap(GraphicsContext& Context,vector<RenderObject*> RenderObjects)
+void Scene::CreateShadowMap(GraphicsContext& Context, std::vector<RenderObject*> RenderObjects)
 {
 	assert(m_pShadowMap);
 	m_pShadowMap->Draw(Context,RenderObjects);
@@ -249,7 +249,7 @@ void Scene::ForwardRendering()
 	//Set Textures SRV
 	Context.SetDynamicDescriptors((int)RootSignatureType::ePBRTextures, 0, (UINT)g_TextureSRV.size(), g_TextureSRV.data());
 	//Set Material Data
-	const vector<MaterialConstant>& MaterialData = MaterialManager::GetMaterialInstance()->GetMaterialsConstantBuffer();
+	const std::vector<MaterialConstant>& MaterialData = MaterialManager::GetMaterialInstance()->GetMaterialsConstantBuffer();
 	Context.SetDynamicSRV((int)RootSignatureType::eMaterialConstantData, sizeof(MaterialConstant) * MaterialData.size(), MaterialData.data());
 
 	Context.PIXBeginEvent(L"Shadow Pass");

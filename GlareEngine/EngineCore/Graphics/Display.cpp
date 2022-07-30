@@ -159,8 +159,8 @@ namespace GlareEngine
 		};
 
 		//SRV Descriptors Manager ,return Descriptor index
-		vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_TextureSRV;
-		vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_CubeSRV;
+		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_TextureSRV;
+		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_CubeSRV;
 
 		RootSignature s_PresentRS;
 		GraphicsPSO s_PresentPSO;

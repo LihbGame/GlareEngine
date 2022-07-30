@@ -23,7 +23,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{d45cf84c-7cdb-4f17-8995-a7f55d58bf79}</ProjectGuid>
     <RootNamespace>EngineDemoOldFramework</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.22000.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -119,13 +119,15 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>false</ConformanceMode>
+      <ConformanceMode>true</ConformanceMode>
       <TreatWarningAsError>false</TreatWarningAsError>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>GlareEngine.lib;sample_framework_d.lib;ozz_geometry_d.lib;ozz_animation_d.lib;ozz_base_d.lib;ozz_options_d.lib;ozz_animation_tools_d.lib;ozz_animation_offline_d.lib;assimp-vc142-mtd.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comsuppw.lib;D3D12.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;GlareEngine.lib;sample_framework_d.lib;ozz_geometry_d.lib;ozz_animation_d.lib;ozz_base_d.lib;ozz_options_d.lib;ozz_animation_tools_d.lib;ozz_animation_offline_d.lib;assimp-vc142-mtd.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -172,11 +174,10 @@
     <ClInclude Include="Animation\ModelLoader.h" />
     <ClInclude Include="Animation\ModelMesh.h" />
     <ClInclude Include="Animation\OzzAnimePlayBack.h" />
-    <ClInclude Include="EngineDemo.h" />
+    <ClInclude Include="Direct3D12Window.h" />
     <ClInclude Include="EngineGUI.h" />
     <ClInclude Include="FrameResource.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="BaseApp.h" />
     <ClInclude Include="GeometryGenerator.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="RanderEffects\HDRSky\Public\Sky.h" />
@@ -206,6 +207,7 @@
     <ClInclude Include="UploadBuffer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="WinMain.cpp" />
     <CopyFileToFolders Include="..\Resource\UImisc\fonts\binary_to_compressed_c.cpp">
       <DeploymentContent>true</DeploymentContent>
       <DestinationFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RelativeDir)%(Filename)%(Extension)</DestinationFileName>
@@ -231,10 +233,9 @@
     <ClCompile Include="Animation\AnimEvaluator.cpp" />
     <ClCompile Include="Animation\ModelLoader.cpp" />
     <ClCompile Include="Animation\ModelMesh.cpp" />
-    <ClCompile Include="EngineDemo.cpp" />
+    <ClCompile Include="Direct3D12Window.cpp" />
     <ClCompile Include="EngineGUI.cpp" />
     <ClCompile Include="FrameResource.cpp" />
-    <ClCompile Include="BaseApp.cpp" />
     <ClCompile Include="GeometryGenerator.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="PSOManager.cpp" />
