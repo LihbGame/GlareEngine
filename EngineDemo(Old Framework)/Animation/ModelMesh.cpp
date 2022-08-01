@@ -1,7 +1,7 @@
 #include "ModelMesh.h"
 
 
-ModelMesh::ModelMesh(ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList, std::vector<Vertices::PosNormalTangentTexc> vertices, std::vector<UINT> indices, std::vector<Texture> textures)
+ModelMesh::ModelMesh(ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList, std::vector<Vertices::PosNormalTangentTex> vertices, std::vector<UINT> indices, std::vector<Texture> textures)
 {
     this->vertices = vertices;
     this->indices = indices;
@@ -23,7 +23,7 @@ ModelMesh::~ModelMesh()
 // Initializes all the buffer objects/arrays
 void ModelMesh::SetupMesh()
 {
-    const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertices::PosNormalTangentTexc);
+    const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertices::PosNormalTangentTex);
     const UINT ibByteSize = (UINT)indices.size() * sizeof(UINT);
 
     mMeshGeo.Name = L"Model Mesh";
@@ -43,7 +43,7 @@ void ModelMesh::SetupMesh()
         pCommandList, indices.data(), ibByteSize, mMeshGeo.IndexBufferUploader);
 
 
-    mMeshGeo.VertexByteStride = sizeof(Vertices::PosNormalTangentTexc);
+    mMeshGeo.VertexByteStride = sizeof(Vertices::PosNormalTangentTex);
     mMeshGeo.VertexBufferByteSize = vbByteSize;
     mMeshGeo.IndexFormat = DXGI_FORMAT_R32_UINT;
     mMeshGeo.IndexBufferByteSize = ibByteSize;

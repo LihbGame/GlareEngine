@@ -402,25 +402,19 @@ void Direct3D12Window::Render()
 		if (EngineUI.IsShowLand())
 		{
 			CommandList->SetPipelineState(PSOs.get()->GetPSO(PSOName::Opaque).Get());
-			PIXBeginEvent(CommandList.Get(), 0, "Draw Main::RenderLayer::Opaque");
 			DrawRenderItems(CommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
-			PIXEndEvent(CommandList.Get());
 		}
 		//Draw Instanse 
 		if (EngineUI.IsShowModel())
 		{
 			CommandList->SetPipelineState(PSOs.get()->GetPSO(PSOName::SkinAnime).Get());
-			PIXBeginEvent(CommandList.Get(), 0, "Draw Main::RenderLayer::InstanceSimpleItems");
 			DrawRenderItems(CommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
-			PIXEndEvent(CommandList.Get());
 		}
 		//Draw Sky box
 		if (EngineUI.IsShowSky())
 		{
 			CommandList->SetPipelineState(PSOs.get()->GetPSO(PSOName::Sky).Get());
-			PIXBeginEvent(CommandList.Get(), 0, "Draw Main::RenderLayer::Sky");
 			DrawRenderItems(CommandList.Get(), mRitemLayer[(int)RenderLayer::Sky]);
-			PIXEndEvent(CommandList.Get());
 		}
 	}
 
@@ -441,9 +435,7 @@ void Direct3D12Window::Render()
 	if (EngineUI.IsShowWater())
 	{
 		//Draw Shock Wave Water
-		PIXBeginEvent(CommandList.Get(), 0, "Draw Shock Wave Water");
 		DrawShockWaveWater();
-		PIXEndEvent(CommandList.Get());
 	}
 
 	//设置UI SRV描述符堆
@@ -455,9 +447,7 @@ void Direct3D12Window::Render()
 	}
 
 	//Draw UI
-	PIXBeginEvent(CommandList.Get(), 0, "Draw UI");
 	EngineUI.Draw(CommandList.Get());
-	PIXEndEvent(CommandList.Get());
 
 	if (m4xMsaaState)
 	{
@@ -1080,7 +1070,7 @@ void Direct3D12Window::UpdateWaves()
 	auto currWavesVB = CurrFrameResource->WavesVB.get();
 	for (int i = 0; i < mWaves->VertexCount(); ++i)
 	{
-		Vertices::PosNormalTexc v;
+		Vertices::PosNormalTex v;
 
 		v.Position = mWaves->Position(i);
 		v.Normal = mWaves->Normal(i);
@@ -1200,7 +1190,7 @@ void Direct3D12Window::BuildLandGeometry()
 	// sandy looking beaches, grassy low hills, and snow mountain peaks.
 	//
 
-	std::vector<Vertices::PosNormalTangentTexc> vertices(grid.Vertices.size());
+	std::vector<Vertices::PosNormalTangentTex> vertices(grid.Vertices.size());
 	for (size_t i = 0; i < grid.Vertices.size(); ++i)
 	{
 		vertices[i].Position = grid.Vertices[i].Position;
@@ -1209,7 +1199,7 @@ void Direct3D12Window::BuildLandGeometry()
 		vertices[i].Texc = grid.Vertices[i].Texc;
 	}
 
-	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertices::PosNormalTangentTexc);
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertices::PosNormalTangentTex);
 
 	std::vector<std::uint16_t> indices = grid.GetIndices16();
 	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
@@ -1229,7 +1219,7 @@ void Direct3D12Window::BuildLandGeometry()
 	geo->IndexBufferGPU = EngineUtility::CreateDefaultBuffer(d3dDevice.Get(),
 		CommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
 
-	geo->VertexByteStride = sizeof(Vertices::PosNormalTangentTexc);
+	geo->VertexByteStride = sizeof(Vertices::PosNormalTangentTex);
 	geo->VertexBufferByteSize = vbByteSize;
 	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
 	geo->IndexBufferByteSize = ibByteSize;
@@ -1268,7 +1258,7 @@ void Direct3D12Window::BuildWavesGeometryBuffers()
 		}
 	}
 
-	UINT vbByteSize = mWaves->VertexCount() * sizeof(Vertices::PosNormalTexc);
+	UINT vbByteSize = mWaves->VertexCount() * sizeof(Vertices::PosNormalTex);
 	UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
 
 	auto geo = std::make_unique<::MeshGeometry>();
@@ -1284,7 +1274,7 @@ void Direct3D12Window::BuildWavesGeometryBuffers()
 	geo->IndexBufferGPU = EngineUtility::CreateDefaultBuffer(d3dDevice.Get(),
 		CommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
 
-	geo->VertexByteStride = sizeof(Vertices::PosNormalTexc);
+	geo->VertexByteStride = sizeof(Vertices::PosNormalTex);
 	geo->VertexBufferByteSize = vbByteSize;
 	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
 	geo->IndexBufferByteSize = ibByteSize;
@@ -2093,9 +2083,7 @@ void Direct3D12Window::DrawShockWaveWater()
 	CommandList->ResourceBarrier(1, barriers);
 
 	//Draw Shock Wave Water
-	PIXBeginEvent(CommandList.Get(), 0, "Draw Water::RenderLayer::ShockWaveWater");
 	DrawRenderItems(CommandList.Get(), mRitemLayer[(int)RenderLayer::ShockWaveWater]);
-	PIXEndEvent(CommandList.Get());
 }
 
 void Direct3D12Window::DrawWaterReflectionMap()
@@ -2133,17 +2121,13 @@ void Direct3D12Window::DrawWaterReflectionMap()
 	if (EngineUI.IsShowLand())
 	{
 		CommandList->SetPipelineState(PSOs.get()->GetPSO(PSOName::Opaque).Get());
-		PIXBeginEvent(CommandList.Get(), 0, "Draw Water::RenderLayer::Opaque");
 		DrawRenderItems(CommandList.Get(), mReflectionWaterLayer[(int)RenderLayer::Opaque]);
-		PIXEndEvent(CommandList.Get());
 	}
 	//Draw Instanse 
 	if (EngineUI.IsShowModel())
 	{
 		CommandList->SetPipelineState(PSOs.get()->GetPSO(PSOName::SkinAnime).Get());
-		PIXBeginEvent(CommandList.Get(), 0, "Draw Water::RenderLayer::InstanceSimpleItems");
 		DrawRenderItems(CommandList.Get(), mReflectionWaterLayer[(int)RenderLayer::InstanceSimpleItems]);
-		PIXEndEvent(CommandList.Get());
 	}
 	//Draw Height Map Terrain
 	if (EngineUI.IsShowTerrain())
@@ -2161,9 +2145,7 @@ void Direct3D12Window::DrawWaterReflectionMap()
 	if (EngineUI.IsShowSky())
 	{
 		CommandList->SetPipelineState(PSOs.get()->GetPSO(PSOName::Sky).Get());
-		PIXBeginEvent(CommandList.Get(), 0, "Draw Water::RenderLayer::Sky");
 		DrawRenderItems(CommandList.Get(), mReflectionWaterLayer[(int)RenderLayer::Sky]);
-		PIXEndEvent(CommandList.Get());
 	}
 
 	D3D12_RESOURCE_BARRIER barriers[1] =
@@ -2185,9 +2167,7 @@ void Direct3D12Window::DrawWaterRefractionMap()
 
 	//Draw Shock Wave Water
 	CommandList->SetPipelineState(PSOs.get()->GetPSO(PSOName::WaterRefractionMask).Get());
-	PIXBeginEvent(CommandList.Get(), 0, "Draw Main::RenderLayer::WaterRefractionMask");
 	DrawRenderItems(CommandList.Get(), mRitemLayer[(int)RenderLayer::ShockWaveWater]);
-	PIXEndEvent(CommandList.Get());
 
 	D3D12_RESOURCE_BARRIER barriers[1] =
 	{
@@ -2211,9 +2191,7 @@ void Direct3D12Window::DrawHeightMapTerrain(bool IsReflection)
 		D3D12_GPU_VIRTUAL_ADDRESS TerrainCBAddress = TerrainCB->GetGPUVirtualAddress() + mTerrainCBByteSize;
 		CommandList->SetGraphicsRootConstantBufferView(2, TerrainCBAddress);
 
-		PIXBeginEvent(CommandList.Get(), 0, "Draw Reflection Height Map Terrain");
 		DrawRenderItems(CommandList.Get(), mReflectionWaterLayer[(int)RenderLayer::HeightMapTerrain]);
-		PIXEndEvent(CommandList.Get());
 	}
 	else
 	{
@@ -2221,9 +2199,7 @@ void Direct3D12Window::DrawHeightMapTerrain(bool IsReflection)
 		D3D12_GPU_VIRTUAL_ADDRESS TerrainCBAddress = TerrainCB->GetGPUVirtualAddress();
 		CommandList->SetGraphicsRootConstantBufferView(2, TerrainCBAddress);
 
-		PIXBeginEvent(CommandList.Get(), 0, "Draw Height Map Terrain");
 		DrawRenderItems(CommandList.Get(), mRitemLayer[(int)RenderLayer::HeightMapTerrain]);
-		PIXEndEvent(CommandList.Get());
 	}
 }
 
@@ -2236,18 +2212,14 @@ void Direct3D12Window::DrawGrass(bool IsReflection)
 		CommandList->SetPipelineState(PSOs.get()->GetPSO(PSOName::Grass).Get());
 		D3D12_GPU_VIRTUAL_ADDRESS TerrainCBAddress = TerrainCB->GetGPUVirtualAddress();
 		CommandList->SetGraphicsRootConstantBufferView(2, TerrainCBAddress);
-		PIXBeginEvent(CommandList.Get(), 0, "Draw Grass");
 		DrawRenderItems(CommandList.Get(), mRitemLayer[(int)RenderLayer::Grass], false);
-		PIXEndEvent(CommandList.Get());
 	}
 	else
 	{
 		CommandList->SetPipelineState(PSOs.get()->GetPSO(PSOName::GrassReflection).Get());
 		D3D12_GPU_VIRTUAL_ADDRESS TerrainCBAddress = TerrainCB->GetGPUVirtualAddress() + mTerrainCBByteSize;
 		CommandList->SetGraphicsRootConstantBufferView(2, TerrainCBAddress);
-		PIXBeginEvent(CommandList.Get(), 0, "Draw Reflection Grass");
 		DrawRenderItems(CommandList.Get(), mReflectionWaterLayer[(int)RenderLayer::Grass], false);
-		PIXEndEvent(CommandList.Get());
 	}
 }
 
@@ -2656,24 +2628,16 @@ void Direct3D12Window::DrawSceneToShadowMap()
 
 	//Simple Instance  Shadow map
 	//mCommandList->SetPipelineState(mPSOs.get()->GetPSO(PSOName::InstanceSimpleShadow_Opaque).Get());
-	PIXBeginEvent(CommandList.Get(), 0, "Draw Shadow::RenderLayer::InstanceSimpleItems");
 	//DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::InstanceSimpleItems]);
-	PIXEndEvent(CommandList.Get());
 
-	PIXBeginEvent(CommandList.Get(), 0, "Draw Shadow::RenderLayer::Opaque");
 	//DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer::Opaque]);
-	PIXEndEvent(CommandList.Get());
 
-	PIXBeginEvent(CommandList.Get(), 0, "Draw Shadow::RenderLayer::Terrain");
 	//DrawHeightMapTerrain(gr);
-	PIXEndEvent(CommandList.Get());
 
 
-	PIXBeginEvent(CommandList.Get(), 0, "Draw Grass Shadow");
 	auto TerrainCB = CurrFrameResource->TerrainCB->Resource();
 	CommandList->SetPipelineState(PSOs.get()->GetPSO(PSOName::GrassShadow).Get());
 	D3D12_GPU_VIRTUAL_ADDRESS TerrainCBAddress = TerrainCB->GetGPUVirtualAddress();
 	CommandList->SetGraphicsRootConstantBufferView(2, TerrainCBAddress);
 	DrawRenderItems(CommandList.Get(), mRitemLayer[(int)RenderLayer::Grass], false);
-	PIXEndEvent(CommandList.Get());
 }

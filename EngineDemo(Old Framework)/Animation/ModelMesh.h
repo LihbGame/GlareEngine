@@ -80,7 +80,7 @@ struct MeshGeometry
 class ModelMesh
 {
 public:
-	std::vector<Vertices::PosNormalTangentTexc> vertices;
+	std::vector<Vertices::PosNormalTangentTex> vertices;
 	std::vector<UINT> indices;
 	std::vector<Texture> textures;
     ID3D12Device* dev;
@@ -88,7 +88,7 @@ public:
     ::MeshGeometry mMeshGeo;
 
 
-    ModelMesh(ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList, std::vector<Vertices::PosNormalTangentTexc> vertices, std::vector<UINT> indices, std::vector<Texture> textures);
+    ModelMesh(ID3D12Device* dev, ID3D12GraphicsCommandList* CommandList, std::vector<Vertices::PosNormalTangentTex> vertices, std::vector<UINT> indices, std::vector<Texture> textures);
     ~ModelMesh();
 private:
     void SetupMesh();

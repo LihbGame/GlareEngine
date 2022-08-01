@@ -3,7 +3,7 @@
 
 using namespace DirectX;
 
-MeshData GeometryGenerator::CreateBox(float width, float height, float depth, uint32 numSubdivisions)
+MeshData GeometryGenerator::CreateBox(float width, float height, float depth, uint32 numSubdivisions, Color cl)
 {
     MeshData meshData;
 
@@ -11,47 +11,47 @@ MeshData GeometryGenerator::CreateBox(float width, float height, float depth, ui
 	// Create the vertices.
 	//
 
-	Vertices::PosNormalTangentTexc v[24];
+	Vertices::PosColorNormalTangentTex v[24];
 
 	float w2 = 0.5f*width;
 	float h2 = 0.5f*height;
 	float d2 = 0.5f*depth;
     
 	// Fill in the front face vertex data.
-	v[0] = Vertices::PosNormalTangentTexc(-w2, -h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	v[1] = Vertices::PosNormalTangentTexc(-w2, +h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-	v[2] = Vertices::PosNormalTangentTexc(+w2, +h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-	v[3] = Vertices::PosNormalTangentTexc(+w2, -h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	v[0] = Vertices::PosColorNormalTangentTex(-w2, -h2, -d2, cl.R(), cl.G(), cl.B(), cl.A(), 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	v[1] = Vertices::PosColorNormalTangentTex(-w2, +h2, -d2, cl.R(), cl.G(), cl.B(), cl.A(), 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+	v[2] = Vertices::PosColorNormalTangentTex(+w2, +h2, -d2, cl.R(), cl.G(), cl.B(), cl.A(), 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+	v[3] = Vertices::PosColorNormalTangentTex(+w2, -h2, -d2, cl.R(), cl.G(), cl.B(), cl.A(), 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
 
 	// Fill in the back face vertex data.
-	v[4] = Vertices::PosNormalTangentTexc(-w2, -h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-	v[5] = Vertices::PosNormalTangentTexc(+w2, -h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	v[6] = Vertices::PosNormalTangentTexc(+w2, +h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-	v[7] = Vertices::PosNormalTangentTexc(-w2, +h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+	v[4] = Vertices::PosColorNormalTangentTex(-w2, -h2, +d2, cl.R(), cl.G(), cl.B(), cl.A(), 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	v[5] = Vertices::PosColorNormalTangentTex(+w2, -h2, +d2, cl.R(), cl.G(), cl.B(), cl.A(), 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	v[6] = Vertices::PosColorNormalTangentTex(+w2, +h2, +d2, cl.R(), cl.G(), cl.B(), cl.A(), 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+	v[7] = Vertices::PosColorNormalTangentTex(-w2, +h2, +d2, cl.R(), cl.G(), cl.B(), cl.A(), 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
 	// Fill in the top face vertex data.
-	v[8]  = Vertices::PosNormalTangentTexc(-w2, +h2, -d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	v[9]  = Vertices::PosNormalTangentTexc(-w2, +h2, +d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-	v[10] = Vertices::PosNormalTangentTexc(+w2, +h2, +d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-	v[11] = Vertices::PosNormalTangentTexc(+w2, +h2, -d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	v[8]  = Vertices::PosColorNormalTangentTex(-w2, +h2, -d2, cl.R(), cl.G(), cl.B(), cl.A(), 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	v[9]  = Vertices::PosColorNormalTangentTex(-w2, +h2, +d2, cl.R(), cl.G(), cl.B(), cl.A(), 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+	v[10] = Vertices::PosColorNormalTangentTex(+w2, +h2, +d2, cl.R(), cl.G(), cl.B(), cl.A(), 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+	v[11] = Vertices::PosColorNormalTangentTex(+w2, +h2, -d2, cl.R(), cl.G(), cl.B(), cl.A(), 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
 
 	// Fill in the bottom face vertex data.
-	v[12] = Vertices::PosNormalTangentTexc(-w2, -h2, -d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-	v[13] = Vertices::PosNormalTangentTexc(+w2, -h2, -d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	v[14] = Vertices::PosNormalTangentTexc(+w2, -h2, +d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-	v[15] = Vertices::PosNormalTangentTexc(-w2, -h2, +d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+	v[12] = Vertices::PosColorNormalTangentTex(-w2, -h2, -d2, cl.R(), cl.G(), cl.B(), cl.A(), 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	v[13] = Vertices::PosColorNormalTangentTex(+w2, -h2, -d2, cl.R(), cl.G(), cl.B(), cl.A(), 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	v[14] = Vertices::PosColorNormalTangentTex(+w2, -h2, +d2, cl.R(), cl.G(), cl.B(), cl.A(), 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+	v[15] = Vertices::PosColorNormalTangentTex(-w2, -h2, +d2, cl.R(), cl.G(), cl.B(), cl.A(), 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
 	// Fill in the left face vertex data.
-	v[16] = Vertices::PosNormalTangentTexc(-w2, -h2, +d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f);
-	v[17] = Vertices::PosNormalTangentTexc(-w2, +h2, +d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f);
-	v[18] = Vertices::PosNormalTangentTexc(-w2, +h2, -d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f);
-	v[19] = Vertices::PosNormalTangentTexc(-w2, -h2, -d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f);
+	v[16] = Vertices::PosColorNormalTangentTex(-w2, -h2, +d2, cl.R(), cl.G(), cl.B(), cl.A(), -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f);
+	v[17] = Vertices::PosColorNormalTangentTex(-w2, +h2, +d2, cl.R(), cl.G(), cl.B(), cl.A(), -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f);
+	v[18] = Vertices::PosColorNormalTangentTex(-w2, +h2, -d2, cl.R(), cl.G(), cl.B(), cl.A(), -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f);
+	v[19] = Vertices::PosColorNormalTangentTex(-w2, -h2, -d2, cl.R(), cl.G(), cl.B(), cl.A(), -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f);
 
 	// Fill in the right face vertex data.
-	v[20] = Vertices::PosNormalTangentTexc(+w2, -h2, -d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f);
-	v[21] = Vertices::PosNormalTangentTexc(+w2, +h2, -d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
-	v[22] = Vertices::PosNormalTangentTexc(+w2, +h2, +d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f);
-	v[23] = Vertices::PosNormalTangentTexc(+w2, -h2, +d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
+	v[20] = Vertices::PosColorNormalTangentTex(+w2, -h2, -d2, cl.R(), cl.G(), cl.B(), cl.A(), 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f);
+	v[21] = Vertices::PosColorNormalTangentTex(+w2, +h2, -d2, cl.R(), cl.G(), cl.B(), cl.A(), 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+	v[22] = Vertices::PosColorNormalTangentTex(+w2, +h2, +d2, cl.R(), cl.G(), cl.B(), cl.A(), 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f);
+	v[23] = Vertices::PosColorNormalTangentTex(+w2, -h2, +d2, cl.R(), cl.G(), cl.B(), cl.A(), 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
 
 	meshData.Vertices.assign(&v[0], &v[24]);
  
@@ -96,7 +96,7 @@ MeshData GeometryGenerator::CreateBox(float width, float height, float depth, ui
     return meshData;
 }
 
-MeshData GeometryGenerator::CreateSphere(float radius, uint32 sliceCount, uint32 stackCount)
+MeshData GeometryGenerator::CreateSphere(float radius, uint32 sliceCount, uint32 stackCount, Color cl)
 {
 	MeshData meshData;
 
@@ -124,12 +124,17 @@ MeshData GeometryGenerator::CreateSphere(float radius, uint32 sliceCount, uint32
 		{
 			float theta = j * thetaStep;
 
-			Vertices::PosNormalTangentTexc v;
+			Vertices::PosColorNormalTangentTex v;
 
 			// spherical to cartesian
 			v.Position.x = radius * sinf(phi) * cosf(theta);
 			v.Position.y = radius * cosf(phi);
 			v.Position.z = radius * sinf(phi) * sinf(theta);
+
+			v.Color.x = cl.R();
+			v.Color.y = cl.G();
+			v.Color.z = cl.B();
+			v.Color.w = cl.A();
 
 			// Partial derivative of P with respect to theta
 			v.Tangent.x = -radius * sinf(phi) * sinf(theta);
@@ -213,17 +218,17 @@ void GeometryGenerator::Subdivide(MeshData& meshData)
 	uint32 numTris = (uint32)inputCopy.Indices32.size()/3;
 	for(uint32 i = 0; i < numTris; ++i)
 	{
-		Vertices::PosNormalTangentTexc v0 = inputCopy.Vertices[ inputCopy.Indices32[i*3+0] ];
-		Vertices::PosNormalTangentTexc v1 = inputCopy.Vertices[ inputCopy.Indices32[i*3+1] ];
-		Vertices::PosNormalTangentTexc v2 = inputCopy.Vertices[ inputCopy.Indices32[i*3+2] ];
+		Vertices::PosColorNormalTangentTex v0 = inputCopy.Vertices[ inputCopy.Indices32[i*3+0] ];
+		Vertices::PosColorNormalTangentTex v1 = inputCopy.Vertices[ inputCopy.Indices32[i*3+1] ];
+		Vertices::PosColorNormalTangentTex v2 = inputCopy.Vertices[ inputCopy.Indices32[i*3+2] ];
 
 		//
 		// Generate the midpoints.
 		//
 
-		Vertices::PosNormalTangentTexc m0 = MidPoint(v0, v1);
-		Vertices::PosNormalTangentTexc m1 = MidPoint(v1, v2);
-		Vertices::PosNormalTangentTexc m2 = MidPoint(v0, v2);
+		Vertices::PosColorNormalTangentTex m0 = MidPoint(v0, v1);
+		Vertices::PosColorNormalTangentTex m1 = MidPoint(v1, v2);
+		Vertices::PosColorNormalTangentTex m2 = MidPoint(v0, v2);
 
 		//
 		// Add new geometry.
@@ -254,10 +259,13 @@ void GeometryGenerator::Subdivide(MeshData& meshData)
 	}
 }
 
-Vertices::PosNormalTangentTexc GeometryGenerator::MidPoint(const Vertices::PosNormalTangentTexc& v0, const Vertices::PosNormalTangentTexc& v1)
+Vertices::PosColorNormalTangentTex GeometryGenerator::MidPoint(const Vertices::PosColorNormalTangentTex& v0, const Vertices::PosColorNormalTangentTex& v1)
 {
     XMVECTOR p0 = XMLoadFloat3(&v0.Position);
     XMVECTOR p1 = XMLoadFloat3(&v1.Position);
+
+	XMVECTOR c0 = XMLoadFloat4(&v0.Color);
+	XMVECTOR c1 = XMLoadFloat4(&v1.Color);
 
     XMVECTOR n0 = XMLoadFloat3(&v0.Normal);
     XMVECTOR n1 = XMLoadFloat3(&v1.Normal);
@@ -270,21 +278,23 @@ Vertices::PosNormalTangentTexc GeometryGenerator::MidPoint(const Vertices::PosNo
 
     // Compute the midpoints of all the attributes.  Vectors need to be normalized
     // since linear interpolating can make them not unit length.  
-    XMVECTOR pos = 0.5f*(p0 + p1);
+    XMVECTOR pos = 0.5f * (p0 + p1);
+	XMVECTOR col = 0.5f * (c0 + c1);
     XMVECTOR normal = XMVector3Normalize(0.5f*(n0 + n1));
     XMVECTOR tangent = XMVector3Normalize(0.5f*(tan0+tan1));
-    XMVECTOR tex = 0.5f*(tex0 + tex1);
+    XMVECTOR tex = 0.5f * (tex0 + tex1);
 
-	Vertices::PosNormalTangentTexc v;
+	Vertices::PosColorNormalTangentTex v;
     XMStoreFloat3(&v.Position, pos);
-    XMStoreFloat3(&v.Normal, normal);
+	XMStoreFloat4(&v.Color, col);
+	XMStoreFloat3(&v.Normal, normal);
     XMStoreFloat3(&v.Tangent, tangent);
     XMStoreFloat2(&v.Texc, tex);
 
     return v;
 }
 
-MeshData GeometryGenerator::CreateGeosphere(float radius, uint32 numSubdivisions)
+MeshData GeometryGenerator::CreateGeosphere(float radius, uint32 numSubdivisions, Color cl)
 {
     MeshData meshData;
 
@@ -359,7 +369,7 @@ MeshData GeometryGenerator::CreateGeosphere(float radius, uint32 numSubdivisions
     return meshData;
 }
 
-MeshData GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius, float height, uint32 sliceCount, uint32 stackCount)
+MeshData GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius, float height, uint32 sliceCount, uint32 stackCount, Color cl)
 {
     MeshData meshData;
 
@@ -384,12 +394,17 @@ MeshData GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius, 
 		float dTheta = 2.0f*XM_PI/sliceCount;
 		for(uint32 j = 0; j <= sliceCount; ++j)
 		{
-			Vertices::PosNormalTangentTexc vertex;
+			Vertices::PosColorNormalTangentTex vertex;
 
 			float c = cosf(j*dTheta);
 			float s = sinf(j*dTheta);
 
 			vertex.Position = XMFLOAT3(r*c, y, r*s);
+
+			vertex.Color.x = cl.R();
+			vertex.Color.y = cl.G();
+			vertex.Color.z = cl.B();
+			vertex.Color.w = cl.A();
 
 			vertex.Texc.x = (float)j/sliceCount;
 			vertex.Texc.y = 1.0f - (float)i/stackCount;
@@ -472,11 +487,11 @@ void GeometryGenerator::BuildCylinderTopCap(float bottomRadius, float topRadius,
 		float u = x/height + 0.5f;
 		float v = z/height + 0.5f;
 
-		meshData.Vertices.push_back(Vertices::PosNormalTangentTexc(x, y, z, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, u, v) );
+		meshData.Vertices.push_back(Vertices::PosColorNormalTangentTex(x, y, z, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, u, v) );
 	}
 
 	// Cap center vertex.
-	meshData.Vertices.push_back(Vertices::PosNormalTangentTexc(0.0f, y, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.5f, 0.5f) );
+	meshData.Vertices.push_back(Vertices::PosColorNormalTangentTex(0.0f, y, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.5f, 0.5f) );
 
 	// Index of center vertex.
 	uint32 centerIndex = (uint32)meshData.Vertices.size()-1;
@@ -511,11 +526,11 @@ void GeometryGenerator::BuildCylinderBottomCap(float bottomRadius, float topRadi
 		float u = x/height + 0.5f;
 		float v = z/height + 0.5f;
 
-		meshData.Vertices.push_back(Vertices::PosNormalTangentTexc(x, y, z, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, u, v) );
+		meshData.Vertices.push_back(Vertices::PosColorNormalTangentTex(x, y, z, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, u, v) );
 	}
 
 	// Cap center vertex.
-	meshData.Vertices.push_back(Vertices::PosNormalTangentTexc(0.0f, y, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.5f, 0.5f) );
+	meshData.Vertices.push_back(Vertices::PosColorNormalTangentTex(0.0f, y, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.5f, 0.5f) );
 
 	// Cache the index of center vertex.
 	uint32 centerIndex = (uint32)meshData.Vertices.size()-1;
@@ -593,7 +608,7 @@ MeshData GeometryGenerator::CreateGrid(float width, float depth, uint32 m, uint3
     return meshData;
 }
 
-MeshData GeometryGenerator::CreateQuad(float x, float y, float w, float h, float depth)
+MeshData GeometryGenerator::CreateQuad(float x, float y, float w, float h, float depth, Color cl)
 {
     MeshData meshData;
 
@@ -601,26 +616,30 @@ MeshData GeometryGenerator::CreateQuad(float x, float y, float w, float h, float
 	meshData.Indices32.resize(6);
 
 	// Position coordinates specified in NDC space.
-	meshData.Vertices[0] = Vertices::PosNormalTangentTexc(
+	meshData.Vertices[0] = Vertices::PosColorNormalTangentTex(
         x, y - h, depth,
+		cl.R(), cl.G(), cl.B(), cl.A(),
 		0.0f, 0.0f, -1.0f,
 		1.0f, 0.0f, 0.0f,
 		0.0f, 1.0f);
 
-	meshData.Vertices[1] = Vertices::PosNormalTangentTexc(
+	meshData.Vertices[1] = Vertices::PosColorNormalTangentTex(
 		x, y, depth,
+		cl.R(), cl.G(), cl.B(), cl.A(),
 		0.0f, 0.0f, -1.0f,
 		1.0f, 0.0f, 0.0f,
 		0.0f, 0.0f);
 
-	meshData.Vertices[2] = Vertices::PosNormalTangentTexc(
+	meshData.Vertices[2] = Vertices::PosColorNormalTangentTex(
 		x+w, y, depth,
+		cl.R(), cl.G(), cl.B(), cl.A(),
 		0.0f, 0.0f, -1.0f,
 		1.0f, 0.0f, 0.0f,
 		1.0f, 0.0f);
 
-	meshData.Vertices[3] = Vertices::PosNormalTangentTexc(
+	meshData.Vertices[3] = Vertices::PosColorNormalTangentTex(
 		x+w, y-h, depth,
+		cl.R(), cl.G(), cl.B(), cl.A(),
 		0.0f, 0.0f, -1.0f,
 		1.0f, 0.0f, 0.0f,
 		1.0f, 1.0f);

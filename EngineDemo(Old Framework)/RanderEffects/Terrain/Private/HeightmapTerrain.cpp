@@ -3,7 +3,7 @@
 #include "Vertex.h"
 #include "Grass.h"
 #include "Material.h"
-#include "stb_image/stb_image.h"
+#include "stb_image.h"
 
 using namespace DirectX::PackedVector;
 

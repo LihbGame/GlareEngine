@@ -173,7 +173,7 @@ std::string textype;
 ::ModelMesh ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 {
 	// Data to fill
-	std::vector<Vertices::PosNormalTangentTexc> vertices;
+	std::vector<Vertices::PosNormalTangentTex> vertices;
 	std::vector<UINT> indices;
 	std::vector<Texture> textures;
 
@@ -190,7 +190,7 @@ std::string textype;
 
 	for (UINT i = 0; i < mesh->mNumVertices; i++)
 	{
-		Vertices::PosNormalTangentTexc vertex;
+		Vertices::PosNormalTangentTex vertex;
 
 		//Position
 		if (mesh->HasPositions())
@@ -386,7 +386,7 @@ std::vector<Texture> ModelLoader::LoadMaterialTextures(aiMaterial* mat, aiTextur
 		bool skip = false;
 		for (UINT j = 0; j < Textures.size(); j++)
 		{
-			if (std::strcmp(Textures[j].Filename.c_str(), str.C_Str()) == 0)
+			if (std::wcscmp(Textures[j].Filename.c_str(), StringToWString(str.C_Str()).c_str()) == 0)
 			{
 				textures.push_back(Textures[j]);
 				skip = true; // A texture with the same filepath has already been loaded, continue to next one. (optimization)
@@ -411,8 +411,8 @@ std::vector<Texture> ModelLoader::LoadMaterialTextures(aiMaterial* mat, aiTextur
 				std::wstring filenamews = std::wstring(filename.begin(), filename.end());
 				EngineUtility::CreateWICTextureFromFile(dev, pCommandList, texture.Resource.ReleaseAndGetAddressOf(), texture.UploadHeap.ReleaseAndGetAddressOf(), filenamews);
 			}
-			texture.type = typeName;
-			texture.Filename = str.C_Str();
+			texture.type = StringToWString(typeName);
+			texture.Filename = StringToWString(str.C_Str());
 			textures.push_back(texture);
 			this->Textures.push_back(texture);  // Store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
 		}

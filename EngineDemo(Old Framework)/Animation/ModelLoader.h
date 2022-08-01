@@ -2,8 +2,8 @@
 
 #include "Animations.h"
 #include "ModelMesh.h"
-#include "..\EngineDemo(Old Framework)/TextureManage.h"
-#include "../../../GlareEngine/GraphicEffects/Animation/ModelMesh.h"
+#include "TextureManage.h"
+#include "ModelMesh.h"
 
 
 class ModelLoader
