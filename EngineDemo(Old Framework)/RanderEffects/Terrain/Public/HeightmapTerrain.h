@@ -1,9 +1,11 @@
 #pragma once
+
 #include "EngineUtility.h"
 #include "Camera.h"
 #include "TextureManage.h"
 #include "FrameResource.h"
 #include "ModelMesh.h"
+
 class Grass;
 
 class HeightmapTerrain
@@ -11,9 +13,9 @@ class HeightmapTerrain
 public:
 	struct InitInfo
 	{
-		string HeightMapFilename;
-		string LayerMapFilename[5];
-		string BlendMapFilename;
+		std::string HeightMapFilename;
+		std::string LayerMapFilename[5];
+		std::string BlendMapFilename;
 		float HeightScale;
 		UINT HeightmapWidth;
 		UINT HeightmapHeight;
@@ -39,7 +41,7 @@ public:
 
 	ID3D12Resource* GetHeightMapSRV() { return mHeightMapSRV.Get(); }
 
-	unordered_map<string, vector<Texture*>>& GetAllTerrainTextures()
+	std::unordered_map<std::string, std::vector<Texture*>>& GetAllTerrainTextures()
 	{
 		return TerrainTextures;
 	}
@@ -59,7 +61,7 @@ public:
 	int GetHeightMapIndex()const{ return mHeightMapIndex; }
 	int GetBlendMapIndex()const { return mBlendMapIndex; }
 
-	void LoadHeightMapFromFile(string filename);
+	void LoadHeightMapFromFile(std::string filename);
 
 private:
 	void LoadHeightmapAsset();
@@ -98,7 +100,7 @@ private:
 	std::vector<float> mHeightmap;
 
 	//All Textures
-	unordered_map<string, vector<Texture*>> TerrainTextures;
+	std::unordered_map<std::string, std::vector<Texture*>> TerrainTextures;
 
 	std::unique_ptr<::MeshGeometry> mGeometries;
 

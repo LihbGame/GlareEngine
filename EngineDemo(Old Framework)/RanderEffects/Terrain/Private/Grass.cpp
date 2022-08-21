@@ -52,7 +52,7 @@ void Grass::BuildGrassVB()
 
 
 	auto geo = std::make_unique<MeshGeometry>();
-	geo->Name = "GrassGeo";
+	geo->Name = L"GrassGeo";
 
 	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
 	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
@@ -71,7 +71,7 @@ void Grass::BuildGrassVB()
 	submesh.StartIndexLocation = 0;
 	submesh.BaseVertexLocation = 0;
 
-	geo->DrawArgs["Grass"] = submesh;
+	geo->DrawArgs[L"Grass"] = submesh;
 
 	mGeometries = std::move(geo);
 }
@@ -87,14 +87,15 @@ void Grass::BuildMaterials()
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 		XMFLOAT3(0.1f, 0.1f, 0.1f),
 		MatTransform,
-		MaterialType::NormalPBRMat);
+		MaterialType::NormalPBRMat,
+		mTextureManage->GetNumFrameResources());
 }
 
 void Grass::FillSRVDescriptorHeap(int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor)
 {
-	vector<ID3D12Resource*> PBRTexResource;
+	std::vector<ID3D12Resource*> PBRTexResource;
 	PBRTexResource.resize(PBRTextureType::Count);
-	wstring e = L"PBRGrass";
+	std::wstring e = L"PBRGrass";
 	PBRTexResource[PBRTextureType::DiffuseSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_albedo")->Resource.Get();
 	PBRTexResource[PBRTextureType::NormalSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_normal")->Resource.Get();
 	PBRTexResource[PBRTextureType::AoSrvHeapIndex] = mTextureManage->GetTexture(e + L"\\" + e + L"_ao")->Resource.Get();

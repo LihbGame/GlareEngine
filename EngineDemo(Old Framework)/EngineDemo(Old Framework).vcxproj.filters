@@ -5,15 +5,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Animation">
-      <UniqueIdentifier>{0594649a-76ee-4be4-a7d8-bbdc709270f5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shaders">
-      <UniqueIdentifier>{4b0f09ad-8c71-47c0-8191-2a5d4cb84ee8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UImisc">
-      <UniqueIdentifier>{3f431656-8148-495a-be29-f0e0fc1d3162}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Head Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
@@ -21,6 +12,39 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="资源文件\Shaders">
+      <UniqueIdentifier>{4b0f09ad-8c71-47c0-8191-2a5d4cb84ee8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Head Files\Animation">
+      <UniqueIdentifier>{0594649a-76ee-4be4-a7d8-bbdc709270f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Animation">
+      <UniqueIdentifier>{560d0d8e-e3d5-492d-b83e-ae8a1be61c00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Head Files\EngineCore">
+      <UniqueIdentifier>{de338be1-f95f-4ebf-8ee7-2ad44f9a8f2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Head Files\EngineCore\Engine">
+      <UniqueIdentifier>{43f3c507-49bd-46c7-8712-837ad31fd3c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Head Files\EngineCore\Graphics">
+      <UniqueIdentifier>{02a53788-a07e-4f7e-9f29-2d9672e2af32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Head Files\EngineCore\Math">
+      <UniqueIdentifier>{2db07e28-d821-486d-bb83-7e49977cc418}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Head Files\EngineEditor">
+      <UniqueIdentifier>{08210e23-e6e7-4b0c-8762-d1650f8a34db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Head Files\EngineEditor\ImgUIEditor">
+      <UniqueIdentifier>{1ba4e313-8cb1-4b89-8a92-4e6747a70662}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Head Files\ShaderSource">
+      <UniqueIdentifier>{c8ee1252-a8cb-4571-b961-1b8185dfe0a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ShaderSource">
+      <UniqueIdentifier>{b32b5137-a253-4c29-a310-8bbfc3c95a32}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -36,37 +60,7 @@
     <ClInclude Include="FrameResource.h">
       <Filter>Head Files</Filter>
     </ClInclude>
-    <ClInclude Include="ShaderSource\Public\BaseShader.h">
-      <Filter>Head Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderSource\Public\ComplexStaticModelInstanceShader.h">
-      <Filter>Head Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderSource\Public\GerstnerWaveShader.h">
-      <Filter>Head Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderSource\Public\GrassShader.h">
-      <Filter>Head Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderSource\Public\HeightMapTerrainShader.h">
-      <Filter>Head Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderSource\Public\ShockWaveWaterShader.h">
-      <Filter>Head Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderSource\Public\SimpleGeometryInstanceShader.h">
-      <Filter>Head Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderSource\Public\SimpleGeometryShadowMapShader.h">
-      <Filter>Head Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderSource\Public\SkinAnimeShader.h">
-      <Filter>Head Files</Filter>
-    </ClInclude>
     <ClInclude Include="ShaderSource\Public\SkyShader.h">
-      <Filter>Head Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderSource\Public\WaterRefractionMaskShader.h">
       <Filter>Head Files</Filter>
     </ClInclude>
     <ClInclude Include="RanderEffects\HDRSky\Public\Sky.h">
@@ -99,41 +93,251 @@
     <ClInclude Include="RanderEffects\Water\Public\Waves.h">
       <Filter>Head Files</Filter>
     </ClInclude>
-    <ClInclude Include="EngineDemo.h">
-      <Filter>Head Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BaseApp.h">
+    <ClInclude Include="Direct3D12Window.h">
       <Filter>Head Files</Filter>
     </ClInclude>
     <ClInclude Include="UploadBuffer.h">
       <Filter>Head Files</Filter>
     </ClInclude>
-    <ClInclude Include="TextureManage.h">
-      <Filter>Head Files</Filter>
-    </ClInclude>
     <ClInclude Include="Animation\Animations.h">
-      <Filter>Animation</Filter>
+      <Filter>Head Files\Animation</Filter>
     </ClInclude>
     <ClInclude Include="Animation\AnimEvaluator.h">
-      <Filter>Animation</Filter>
+      <Filter>Head Files\Animation</Filter>
     </ClInclude>
     <ClInclude Include="Animation\ModelLoader.h">
-      <Filter>Animation</Filter>
+      <Filter>Head Files\Animation</Filter>
     </ClInclude>
     <ClInclude Include="Animation\ModelMesh.h">
-      <Filter>Animation</Filter>
+      <Filter>Head Files\Animation</Filter>
     </ClInclude>
     <ClInclude Include="Animation\OzzAnimePlayBack.h">
-      <Filter>Animation</Filter>
+      <Filter>Head Files\Animation</Filter>
     </ClInclude>
     <ClInclude Include="Material.h">
       <Filter>Head Files</Filter>
     </ClInclude>
-    <ClInclude Include="EngineGUI.h">
-      <Filter>Head Files</Filter>
-    </ClInclude>
     <ClInclude Include="GeometryGenerator.h">
       <Filter>Head Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation\MeshStruct.h">
+      <Filter>Head Files\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Engine\EngineLog.h">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Engine\EngineProfiling.h">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Engine\EngineUtility.h">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Engine\FileUtility.h">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Engine\GameTimer.h">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Engine\InputLayout.h">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Engine\Materials.h">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Engine\Vertex.h">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Engine\d3dx12.h">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Engine\EngineAdjust.h">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Engine\EngineGlobal.h">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\ReadbackBuffer.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\RootSignature.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\SamplerManager.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\ShadowBuffer.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\TextureManage.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\TextureManager.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\WICTextureLoader12.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\BufferManager.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\Camera.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\Color.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\ColorBuffer.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\CommandAllocatorPool.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\CommandContext.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\CommandListManager.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\CommandSignature.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\DepthBuffer.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\DescriptorHeap.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\Display.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\DynamicDescriptorHeap.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\DynamicUploadBuffer.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\GPUBuffer.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\GPUResource.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\GPUTimeManager.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\GraphicsCommon.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\GraphicsCore.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\LinearAllocator.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\PipelineState.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Graphics\PixelBuffer.h">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Math\Hash.h">
+      <Filter>Head Files\EngineCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Math\MathHelper.h">
+      <Filter>Head Files\EngineCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Math\Matrix3.h">
+      <Filter>Head Files\EngineCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Math\Matrix4.h">
+      <Filter>Head Files\EngineCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Math\Quaternion.h">
+      <Filter>Head Files\EngineCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Math\Random.h">
+      <Filter>Head Files\EngineCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Math\Scalar.h">
+      <Filter>Head Files\EngineCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Math\Transform.h">
+      <Filter>Head Files\EngineCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Math\Vector.h">
+      <Filter>Head Files\EngineCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Math\VectorMath.h">
+      <Filter>Head Files\EngineCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Math\BoundingBox.h">
+      <Filter>Head Files\EngineCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Math\BoundingPlane.h">
+      <Filter>Head Files\EngineCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Math\BoundingSphere.h">
+      <Filter>Head Files\EngineCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCore\Math\Common.h">
+      <Filter>Head Files\EngineCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineEditor\ImgUIEditor\imgui.h">
+      <Filter>Head Files\EngineEditor\ImgUIEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineEditor\ImgUIEditor\imgui_impl_dx12.h">
+      <Filter>Head Files\EngineEditor\ImgUIEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineEditor\ImgUIEditor\imgui_impl_win32.h">
+      <Filter>Head Files\EngineEditor\ImgUIEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineEditor\ImgUIEditor\imgui_internal.h">
+      <Filter>Head Files\EngineEditor\ImgUIEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineEditor\ImgUIEditor\imstb_rectpack.h">
+      <Filter>Head Files\EngineEditor\ImgUIEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineEditor\ImgUIEditor\imstb_textedit.h">
+      <Filter>Head Files\EngineEditor\ImgUIEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineEditor\ImgUIEditor\imstb_truetype.h">
+      <Filter>Head Files\EngineEditor\ImgUIEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineEditor\ImgUIEditor\EngineGUI.h">
+      <Filter>Head Files\EngineEditor\ImgUIEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineEditor\ImgUIEditor\imconfig.h">
+      <Filter>Head Files\EngineEditor\ImgUIEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderSource\Public\BaseShader.h">
+      <Filter>Head Files\ShaderSource</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderSource\Public\ComplexStaticModelInstanceShader.h">
+      <Filter>Head Files\ShaderSource</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderSource\Public\GerstnerWaveShader.h">
+      <Filter>Head Files\ShaderSource</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderSource\Public\GrassShader.h">
+      <Filter>Head Files\ShaderSource</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderSource\Public\HeightMapTerrainShader.h">
+      <Filter>Head Files\ShaderSource</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderSource\Public\ShockWaveWaterShader.h">
+      <Filter>Head Files\ShaderSource</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderSource\Public\SimpleGeometryInstanceShader.h">
+      <Filter>Head Files\ShaderSource</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderSource\Public\SimpleGeometryShadowMapShader.h">
+      <Filter>Head Files\ShaderSource</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderSource\Public\SkinAnimeShader.h">
+      <Filter>Head Files\ShaderSource</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderSource\Public\WaterRefractionMaskShader.h">
+      <Filter>Head Files\ShaderSource</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -170,71 +374,209 @@
     <ClCompile Include="RanderEffects\Water\Private\Waves.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\ComplexStaticModelInstanceShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\GerstnerWaveShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\GrassShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\HeightMapTerrainShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\ShockWaveWaterShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\SimpleGeometryInstanceShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\SimpleGeometryShadowMapShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\SkinAnimeShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\SkyShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSource\Private\WaterRefractionMaskShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PSOManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EngineDemo.cpp">
+    <ClCompile Include="Direct3D12Window.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BaseApp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureManage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation\Animations.cpp">
-      <Filter>Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation\AnimEvaluator.cpp">
-      <Filter>Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation\ModelLoader.cpp">
-      <Filter>Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation\ModelMesh.cpp">
-      <Filter>Animation</Filter>
     </ClCompile>
     <ClCompile Include="Material.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EngineGUI.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GeometryGenerator.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation\Animations.cpp">
+      <Filter>Source Files\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation\AnimEvaluator.cpp">
+      <Filter>Source Files\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation\ModelLoader.cpp">
+      <Filter>Source Files\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation\ModelMesh.cpp">
+      <Filter>Source Files\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="WinMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\EngineLog.cpp">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\EngineProfiling.cpp">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\EngineUtility.cpp">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\FileUtility.cpp">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\GameTimer.cpp">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\InputLayout.cpp">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\Materials.cpp">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\Vertex.cpp">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\EngineAdjust.cpp">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Engine\EngineGlobal.cpp">
+      <Filter>Head Files\EngineCore\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\RootSignature.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\SamplerManager.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\ShadowBuffer.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\TextureManage.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\TextureManager.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\WICTextureLoader12.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\BufferManager.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Camera.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Color.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\ColorBuffer.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\CommandAllocatorPool.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\CommandContext.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\CommandListManager.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\CommandSignature.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\DepthBuffer.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\DescriptorHeap.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\Display.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\DynamicDescriptorHeap.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\DynamicUploadBuffer.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\GPUBuffer.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\GPUTimeManager.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\GraphicsCommon.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\GraphicsCore.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\LinearAllocator.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\PipelineState.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\PixelBuffer.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Graphics\ReadbackBuffer.cpp">
+      <Filter>Head Files\EngineCore\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Math\MathHelper.cpp">
+      <Filter>Head Files\EngineCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Math\Random.cpp">
+      <Filter>Head Files\EngineCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCore\Math\BoundingSphere.cpp">
+      <Filter>Head Files\EngineCore\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui.cpp">
+      <Filter>Head Files\EngineEditor\ImgUIEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_demo.cpp">
+      <Filter>Head Files\EngineEditor\ImgUIEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_draw.cpp">
+      <Filter>Head Files\EngineEditor\ImgUIEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_impl_dx12.cpp">
+      <Filter>Head Files\EngineEditor\ImgUIEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_impl_win32.cpp">
+      <Filter>Head Files\EngineEditor\ImgUIEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_tables.cpp">
+      <Filter>Head Files\EngineEditor\ImgUIEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_widgets.cpp">
+      <Filter>Head Files\EngineEditor\ImgUIEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
+      <Filter>Head Files\EngineEditor\ImgUIEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSource\Private\BaseShader.cpp">
+      <Filter>Source Files\ShaderSource</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSource\Private\ComplexStaticModelInstanceShader.cpp">
+      <Filter>Source Files\ShaderSource</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSource\Private\GerstnerWaveShader.cpp">
+      <Filter>Source Files\ShaderSource</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSource\Private\GrassShader.cpp">
+      <Filter>Source Files\ShaderSource</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSource\Private\HeightMapTerrainShader.cpp">
+      <Filter>Source Files\ShaderSource</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSource\Private\ShockWaveWaterShader.cpp">
+      <Filter>Source Files\ShaderSource</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSource\Private\SimpleGeometryInstanceShader.cpp">
+      <Filter>Source Files\ShaderSource</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSource\Private\SimpleGeometryShadowMapShader.cpp">
+      <Filter>Source Files\ShaderSource</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSource\Private\SkinAnimeShader.cpp">
+      <Filter>Source Files\ShaderSource</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSource\Private\SkyShader.cpp">
+      <Filter>Source Files\ShaderSource</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderSource\Private\WaterRefractionMaskShader.cpp">
+      <Filter>Source Files\ShaderSource</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -251,125 +593,106 @@
     <None Include="..\Resource\Textures\ICONS\Arrow.cur">
       <Filter>资源文件</Filter>
     </None>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="..\Resource\UImisc\fonts\binary_to_compressed_c.cpp">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\fonts\Cousine-Regular.ttf">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\fonts\DroidSans.ttf">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\fonts\Karla-Regular.ttf">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\fonts\ProggyClean.ttf">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\fonts\ProggyTiny.ttf">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\fonts\Roboto-Medium.ttf">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\cpp\imgui_stdlib.cpp">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\cpp\imgui_stdlib.h">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\freetype\imgui_freetype.cpp">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\freetype\imgui_freetype.h">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\natvis\imgui.natvis">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\Resource\UImisc\single_file\imgui_single_file.h">
-      <Filter>UImisc</Filter>
-    </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\Common.hlsli">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\ComplexModelInstancePS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\DefaultPS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\DefaultVS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\Fog.hlsli">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\GrassGS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\GrassPS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\GrassShadowGS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\GrassShadowVS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\GrassVS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\HeightMapTerrainDS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\HeightMapTerrainHS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\HeightMapTerrainPS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\HeightMapTerrainVS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\PBRLighting.hlsli">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\ShockWaveWaterPS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\ShockWaveWaterVS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\SimpleGeoInstancePS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\SimpleGeoInstanceShadowPS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\SimpleGeoInstanceShadowVS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\SimpleGeoInstanceVS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\SkyPS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\SkyVS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\TerrainConstBuffer.hlsli">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\WaterRefractionMaskPS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="Shaders\WaterRefractionMaskVS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>资源文件\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\Cousine-Regular.ttf">
+      <Filter>资源文件</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\DroidSans.ttf">
+      <Filter>资源文件</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\natvis\imgui.natvis">
+      <Filter>资源文件</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\Karla-Regular.ttf">
+      <Filter>资源文件</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\ProggyClean.ttf">
+      <Filter>资源文件</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\ProggyTiny.ttf">
+      <Filter>资源文件</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\Resource\UImisc\fonts\Roboto-Medium.ttf">
+      <Filter>资源文件</Filter>
     </CopyFileToFolders>
   </ItemGroup>
 </Project>

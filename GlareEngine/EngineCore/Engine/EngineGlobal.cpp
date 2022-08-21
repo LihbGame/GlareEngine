@@ -1,9 +1,9 @@
 #include "EngineGlobal.h"
 
-string EngineGlobal::TextureAssetPath = "../Resource/Textures/";
-string EngineGlobal::TerrainAssetPath = TextureAssetPath + "Terrain/";
-string EngineGlobal::WaterAssetPath = TextureAssetPath + "Water/";
-string EngineGlobal::SkyAssetPath = TextureAssetPath + "HDRSky/";
-string EngineGlobal::ModelAssetPath = "../Resource/Model/";
+std::wstring EngineGlobal::TextureAssetPath = L"../Resource/Textures/";
+std::wstring EngineGlobal::TerrainAssetPath = TextureAssetPath + L"Terrain/";
+std::wstring EngineGlobal::WaterAssetPath = TextureAssetPath + L"Water/";
+std::wstring EngineGlobal::SkyAssetPath = TextureAssetPath + L"HDRSky/";
+std::wstring EngineGlobal::ModelAssetPath = L"../Resource/Model/";
 
 Scene* EngineGlobal::gCurrentScene = nullptr;

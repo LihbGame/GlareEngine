@@ -52,14 +52,14 @@ UINT Animation::FindScaling(float p_animation_time, const aiNodeAnim* p_node_ani
     return 0;
 }
 
-const aiNodeAnim* Animation::FindNodeAnim(const aiAnimation* p_animation, const string p_node_name)
+const aiNodeAnim* Animation::FindNodeAnim(const aiAnimation* p_animation, const std::string p_node_name)
 {
     // channel in Animation contains aiNodeAnim (aiNodeAnim its transformation for bones)
     // numChannels == numBones
     for (UINT i = 0; i < p_animation->mNumChannels; i++)
     {
         const aiNodeAnim* node_anim = p_animation->mChannels[i]; 
-        if (string(node_anim->mNodeName.data) == p_node_name)
+        if (std::string(node_anim->mNodeName.data) == p_node_name)
         {
             return node_anim;
         }
@@ -144,7 +144,7 @@ aiVector3D Animation::CalcInterpolatedScaling(float p_animation_time, const aiNo
 
 void Animation::ReadNodeHierarchy(float p_animation_time, const aiNode* p_node, const aiMatrix4x4 parent_transform)
 {
-    string node_name(p_node->mName.data);
+    std::string node_name(p_node->mName.data);
 
     const aiAnimation* Animation = pAnimeScene->mAnimations[0];
     aiMatrix4x4 node_transform= p_node->mTransformation;
@@ -189,7 +189,7 @@ void Animation::ReadNodeHierarchy(float p_animation_time, const aiNode* p_node, 
 
 }
 
-void Animation::UpadateBoneTransform(double time_in_sec, vector<XMFLOAT4X4>& transforms)
+void Animation::UpadateBoneTransform(double time_in_sec, std::vector<XMFLOAT4X4>& transforms)
 {
     aiMatrix4x4 identity_matrix; // = mat4(1.0f);
 
@@ -212,7 +212,7 @@ void Animation::SetUpMesh(ID3D12Device* dev, ID3D12GraphicsCommandList* CommandL
 {
     const UINT vbByteSize = (UINT)bones_id_weights_for_each_vertex.size() * sizeof(VertexBoneData);
 
-    mBoneGeo.Name = "Bone Mesh";
+    mBoneGeo.Name = L"Bone Mesh";
     ThrowIfFailed(D3DCreateBlob(vbByteSize, &mBoneGeo.VertexBufferCPU));
     CopyMemory(mBoneGeo.VertexBufferCPU->GetBufferPointer(), bones_id_weights_for_each_vertex.data(), vbByteSize);
 
@@ -435,7 +435,7 @@ void AnimationMesh::SetUpMesh(ID3D12Device* dev, ID3D12GraphicsCommandList* Comm
 {
     const UINT vbByteSize = (UINT)bones_id_weights_for_each_vertex.size() * sizeof(VertexBoneData);
 
-    mBoneGeo.Name = "Bone Mesh";
+    mBoneGeo.Name = L"Bone Mesh";
     ThrowIfFailed(D3DCreateBlob(vbByteSize, &mBoneGeo.VertexBufferCPU));
     CopyMemory(mBoneGeo.VertexBufferCPU->GetBufferPointer(), bones_id_weights_for_each_vertex.data(), vbByteSize);
 

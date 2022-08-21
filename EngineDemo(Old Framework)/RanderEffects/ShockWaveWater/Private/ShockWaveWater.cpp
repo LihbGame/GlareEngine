@@ -1,6 +1,6 @@
 #include "ShockWaveWater.h"
-#include "BaseApp.h"
-ShockWaveWater::ShockWaveWater(ID3D12Device* device, UINT width, UINT height,bool Is4xMsaa, TextureManage* TextureManage)
+
+ShockWaveWater::ShockWaveWater(ID3D12Device* device, UINT width, UINT height, bool Is4xMsaa, TextureManage* TextureManage)
 	: mWidth(width),
 	mHeight(height),
 	mIs4xMsaa(Is4xMsaa),
@@ -12,19 +12,19 @@ ShockWaveWater::ShockWaveWater(ID3D12Device* device, UINT width, UINT height,boo
 {
 	// Create the RTV heap.
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-	srvHeapDesc.NumDescriptors =1;
+	srvHeapDesc.NumDescriptors = 1;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mReflectionRTVHeap)))
 
-	// Create the DSV heap.
-	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc1 = {};
+		// Create the DSV heap.
+		D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc1 = {};
 	srvHeapDesc1.NumDescriptors = 1;
 	srvHeapDesc1.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 	srvHeapDesc1.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc1, IID_PPV_ARGS(&mReflectionDSVHeap)))
 
-	BuildResource();
+		BuildResource();
 }
 
 ShockWaveWater::~ShockWaveWater()
@@ -72,7 +72,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE ShockWaveWater::RefractionDescriptor() const
 }
 
 void ShockWaveWater::BuildDescriptors(
-	CD3DX12_CPU_DESCRIPTOR_HANDLE RefractionSRVDescriptor, 
+	CD3DX12_CPU_DESCRIPTOR_HANDLE RefractionSRVDescriptor,
 	CD3DX12_CPU_DESCRIPTOR_HANDLE ReflectionSRVDescriptor,
 	CD3DX12_CPU_DESCRIPTOR_HANDLE WavesBumpDescriptor)
 {
@@ -80,7 +80,7 @@ void ShockWaveWater::BuildDescriptors(
 	mRefractionSRVDescriptor = RefractionSRVDescriptor;
 	mReflectionSRVDescriptor = ReflectionSRVDescriptor;
 	mWavesBumpDescriptor = WavesBumpDescriptor;
-	
+
 
 	LoadTexture();
 	//  Create the descriptors
@@ -124,7 +124,7 @@ void ShockWaveWater::FillSRVDescriptorHeap(int* SRVIndex, CD3DX12_CPU_DESCRIPTOR
 void ShockWaveWater::BuildDescriptors()
 {
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	rtvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DMS;
 
 	md3dDevice->CreateRenderTargetView(
@@ -135,7 +135,7 @@ void ShockWaveWater::BuildDescriptors()
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	srvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MostDetailedMip = 0;
 	srvDesc.Texture2D.MipLevels = 1;
@@ -153,7 +153,7 @@ void ShockWaveWater::BuildResource()
 		sampleCount = 4;
 	}
 	D3D12_RESOURCE_DESC MapDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-		DXGI_FORMAT_R8G8B8A8_UNORM,
+		DXGI_FORMAT_R16G16B16A16_FLOAT,
 		mWidth,
 		mHeight,
 		1, // This render target view has only one texture.
@@ -161,82 +161,87 @@ void ShockWaveWater::BuildResource()
 		sampleCount
 	);
 #pragma region ReflectionMap
-		MapDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+	MapDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 
-		D3D12_CLEAR_VALUE ReflectionClearValue = {};
-		ReflectionClearValue.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		ReflectionClearValue.Color[0] = { 0.0f };
-		ReflectionClearValue.Color[1] = { 0.0f };
-		ReflectionClearValue.Color[2] = { 0.0f };
-		ReflectionClearValue.Color[3] = { 0.0f };
+	D3D12_CLEAR_VALUE ReflectionClearValue = {};
+	ReflectionClearValue.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+	ReflectionClearValue.Color[0] = { 0.0f };
+	ReflectionClearValue.Color[1] = { 0.0f };
+	ReflectionClearValue.Color[2] = { 0.0f };
+	ReflectionClearValue.Color[3] = { 0.0f };
 
-			ThrowIfFailed(md3dDevice->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE,
-			&MapDesc,
-			D3D12_RESOURCE_STATE_RESOLVE_SOURCE,
-			&ReflectionClearValue,
-			IID_PPV_ARGS(mReflectionRTV.ReleaseAndGetAddressOf())
-		));
+	D3D12_HEAP_PROPERTIES HeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+	ThrowIfFailed(md3dDevice->CreateCommittedResource(
+		&HeapProperties,
+		D3D12_HEAP_FLAG_NONE,
+		&MapDesc,
+		D3D12_RESOURCE_STATE_RESOLVE_SOURCE,
+		&ReflectionClearValue,
+		IID_PPV_ARGS(mReflectionRTV.ReleaseAndGetAddressOf())
+	));
 
-		mReflectionRTV->SetName(L"Reflection Render Target");
+	mReflectionRTV->SetName(L"Reflection Render Target");
 
-		D3D12_RESOURCE_DESC MapDescDsv = CD3DX12_RESOURCE_DESC::Tex2D(
-			DXGI_FORMAT_D24_UNORM_S8_UINT,
-			mWidth,
-			mHeight,
-			1, // This render target view has only one texture.
-			1, // Use a single mipmap level
-			sampleCount
-		);
-		MapDescDsv.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-		D3D12_CLEAR_VALUE optClear;
-		optClear.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		optClear.DepthStencil.Depth = 1.0f;
-		optClear.DepthStencil.Stencil = 0;
-		ThrowIfFailed(md3dDevice->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE,
-			&MapDescDsv,
-			D3D12_RESOURCE_STATE_DEPTH_WRITE,
-			&optClear,
-			IID_PPV_ARGS(mDepthMapDSV.GetAddressOf())));
+	D3D12_RESOURCE_DESC MapDescDsv = CD3DX12_RESOURCE_DESC::Tex2D(
+		DXGI_FORMAT_D24_UNORM_S8_UINT,
+		mWidth,
+		mHeight,
+		1, // This render target view has only one texture.
+		1, // Use a single mipmap level
+		sampleCount
+	);
+	MapDescDsv.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+	D3D12_CLEAR_VALUE optClear;
+	optClear.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	optClear.DepthStencil.Depth = 1.0f;
+	optClear.DepthStencil.Stencil = 0;
+
+	HeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+	ThrowIfFailed(md3dDevice->CreateCommittedResource(
+		&HeapProperties,
+		D3D12_HEAP_FLAG_NONE,
+		&MapDescDsv,
+		D3D12_RESOURCE_STATE_DEPTH_WRITE,
+		&optClear,
+		IID_PPV_ARGS(mDepthMapDSV.GetAddressOf())));
 
 
 #pragma endregion ReflectionMap
-	
+
 #pragma region RefractionMap
 
-		D3D12_RESOURCE_DESC RefractionMapDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-			DXGI_FORMAT_R8G8B8A8_UNORM,
-			mWidth,
-			mHeight,
-			1, // This render target view has only one texture.
-			1, // Use a single mipmap level
-			1
-		);
+	D3D12_RESOURCE_DESC RefractionMapDesc = CD3DX12_RESOURCE_DESC::Tex2D(
+		DXGI_FORMAT_R16G16B16A16_FLOAT,
+		mWidth,
+		mHeight,
+		1, // This render target view has only one texture.
+		1, // Use a single mipmap level
+		1
+	);
 
 
-		RefractionMapDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+	RefractionMapDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-		ThrowIfFailed(md3dDevice->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE,
-			&RefractionMapDesc,
-			D3D12_RESOURCE_STATE_RESOLVE_DEST,
-			nullptr,
-			IID_PPV_ARGS(mSingleRefractionSRV.ReleaseAndGetAddressOf())
-		));
+	HeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+	ThrowIfFailed(md3dDevice->CreateCommittedResource(
+		&HeapProperties,
+		D3D12_HEAP_FLAG_NONE,
+		&RefractionMapDesc,
+		D3D12_RESOURCE_STATE_RESOLVE_DEST,
+		nullptr,
+		IID_PPV_ARGS(mSingleRefractionSRV.ReleaseAndGetAddressOf())
+	));
 #pragma endregion RefractionMap
 
-		ThrowIfFailed(md3dDevice->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE,
-			&RefractionMapDesc,
-			D3D12_RESOURCE_STATE_RESOLVE_DEST,
-			nullptr,
-			IID_PPV_ARGS(mSingleReflectionSRV.ReleaseAndGetAddressOf())
-		));
+	HeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+	ThrowIfFailed(md3dDevice->CreateCommittedResource(
+		&HeapProperties,
+		D3D12_HEAP_FLAG_NONE,
+		&RefractionMapDesc,
+		D3D12_RESOURCE_STATE_RESOLVE_DEST,
+		nullptr,
+		IID_PPV_ARGS(mSingleReflectionSRV.ReleaseAndGetAddressOf())
+	));
 
 
 }

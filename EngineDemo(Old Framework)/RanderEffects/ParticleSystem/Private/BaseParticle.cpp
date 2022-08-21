@@ -1,6 +1,7 @@
 #include "BaseParticle.h"
 #include "PSOManager.h"
 #include "Vertex.h"
+
 BaseParticle::BaseParticle()
 {
 	//≥ı ºªØ
@@ -32,7 +33,7 @@ void BaseParticle::SetEmitDir(const XMFLOAT3& emitDirW)
 	mEmitDirW = emitDirW;
 }
 
-void BaseParticle::Init(int ParticleID, string ParticleTextureName, UINT maxParticles, PSO* Pso)
+void BaseParticle::Init(int ParticleID, std::string ParticleTextureName, UINT maxParticles, PSO* Pso)
 {
 	mMaxParticles = maxParticles;
 

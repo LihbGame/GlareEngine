@@ -132,8 +132,9 @@ void ShadowMap::BuildResource()
 	optClear.DepthStencil.Depth = 1.0f;
 	optClear.DepthStencil.Stencil = 0;
 
+	D3D12_HEAP_PROPERTIES HeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 	ThrowIfFailed(md3dDevice->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		&HeapProperties,
 		D3D12_HEAP_FLAG_NONE,
 		&texDesc,
 		D3D12_RESOURCE_STATE_DEPTH_WRITE,
@@ -144,7 +145,7 @@ void ShadowMap::BuildResource()
 
 
 
-void ShadowMap::UpdateShadowTransform(const GameTimer& gt)
+void ShadowMap::UpdateShadowTransform()
 {
 
 	// Animate the lights (and hence shadows).

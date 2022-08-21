@@ -1,11 +1,12 @@
 #pragma once
-#include "BaseApp.h"
+
 #include "MathHelper.h"
 #include "InputLayout.h"
+
 class BaseShader
 {
 public:
-	BaseShader(wstring VSShaderPath, wstring PSShaderPath, wstring HSShaderPath = L"", wstring DSShaderPath = L"", wstring GSShaderPath = L"", _In_reads_opt_(_Inexpressible_(defines->Name != NULL)) const D3D_SHADER_MACRO* defines = nullptr);
+	BaseShader(std::wstring VSShaderPath, std::wstring PSShaderPath, std::wstring HSShaderPath = L"", std::wstring DSShaderPath = L"", std::wstring GSShaderPath = L"", _In_reads_opt_(_Inexpressible_(defines->Name != NULL)) const D3D_SHADER_MACRO* defines = nullptr);
 	~BaseShader();
 
 
@@ -23,11 +24,11 @@ private:
 	ComPtr<ID3DBlob> mHSShaders;
 	ComPtr<ID3DBlob> mDSShaders;
 
-	wstring mVSShaderPath;
-	wstring mPSShaderPath;
-	wstring mGSShaderPath;
-	wstring mHSShaderPath;
-	wstring mDSShaderPath;
+	std::wstring mVSShaderPath;
+	std::wstring mPSShaderPath;
+	std::wstring mGSShaderPath;
+	std::wstring mHSShaderPath;
+	std::wstring mDSShaderPath;
 protected:
 };
 

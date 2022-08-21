@@ -21,24 +21,21 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{819b941b-3428-4faa-a97e-5a0611c634e6}</ProjectGuid>
+    <ProjectGuid>{a058c94a-a4b9-444f-afb8-7dcc5b13f332}</ProjectGuid>
     <RootNamespace>GlareEngine</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.22000.0</WindowsTargetPlatformVersion>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <ProjectName>GlareEngine</ProjectName>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -49,9 +46,9 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -75,37 +72,27 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>.\EngineEditor;.\Sky\Public;.\Main\Public;.\Water\Public;.\ShaderSource\Public;.\PSO\Public;.\Core\Public;$(IncludePath)</IncludePath>
-    <EnableManagedIncrementalBuild>false</EnableManagedIncrementalBuild>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>.\Dependences\include\DirectXTK12\Src;.\Dependences\include\DirectXTK12\Src\Shaders\Compiled;.\Dependences\include\DirectXTK12\Inc;.\GraphicEffects;.\;.\GraphicEffects\Misc;.\EngineCore\Engine;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\EngineCore\Graphics;.\Dependences\include;.\GraphicEffects\Animation;.\EngineCore\Model;.\EngineCore;$(OutDir);$(IncludePath)</IncludePath>
-    <LibraryPath>.\Dependences\lib\ozz\debug;.\Dependences\lib;$(LibraryPath)</LibraryPath>
-    <AllProjectIncludesArePublic>false</AllProjectIncludesArePublic>
+    <IncludePath>C:\Users\Ehobits\source\repos\Ehobits\GlareEngine\3rd\DirectXTK12\Src;C:\Users\Ehobits\source\repos\Ehobits\GlareEngine\3rd\DirectXTK12\Src\Shaders\Compiled;C:\Users\Ehobits\source\repos\Ehobits\GlareEngine\3rd\DirectXTK12\Inc;C:\Users\Ehobits\source\repos\Ehobits\GlareEngine\EngineDemo%28Old Framework%29\EngineCore\Graphics;C:\Users\Ehobits\source\repos\Ehobits\GlareEngine\EngineDemo%28Old Framework%29\EngineCore\Engine;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>.\;..\x64\Release;.\GraphicEffects\Sky\Public;..\EngineDemo%28Old Framework%29;.\GraphicEffects\Misc;.\EngineCore\Engine\Public;.\EngineCore\Graphics\Public;.\EngineEditor\ImgUIEditor;.\EngineCore\Math;.\Animation;.\Dependences\include;$(IncludePath)</IncludePath>
-    <LibraryPath>.\Dependences\lib;.\Dependences\lib\ozz\release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>false</ConformanceMode>
-      <OpenMPSupport>false</OpenMPSupport>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -114,11 +101,11 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -127,714 +114,39 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>false</ConformanceMode>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>sample_framework_d.lib;ozz_geometry_d.lib;ozz_animation_d.lib;ozz_base_d.lib;ozz_options_d.lib;ozz_animation_tools_d.lib;ozz_animation_offline_d.lib;assimp-vc142-mtd.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <FxCompile>
-      <ShaderModel>6.0</ShaderModel>
-      <VariableName>g_p%(Filename)</VariableName>
-      <HeaderFileOutput>$(SolutionDir)\$(Platform)\$(Configuration)\CompiledShaders\%(Filename).h</HeaderFileOutput>
-      <ObjectFileOutput>
-      </ObjectFileOutput>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <EntryPointName>main</EntryPointName>
-      <ShaderType>Vertex</ShaderType>
-      <AssemblerOutput>
-      </AssemblerOutput>
-      <AssemblerOutputFile>
-      </AssemblerOutputFile>
-      <AdditionalOptions>-Qembed_debug %(AdditionalOptions)</AdditionalOptions>
-    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>false</ConformanceMode>
-      <LanguageStandard>Default</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ozz_geometry_r.lib;ozz_animation_r.lib;ozz_base_r.lib;ozz_options_r.lib;ozz_animation_tools_r.lib;ozz_animation_offline_r.lib;assimp-vc142-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <FxCompile>
-      <VariableName>g_p%(Filename)</VariableName>
-      <HeaderFileOutput>$(SolutionDir)\$(Platform)\$(Configuration)\CompiledShaders\%(Filename).h</HeaderFileOutput>
-      <ObjectFileOutput />
-      <ShaderModel>6.0</ShaderModel>
-    </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="Dependences\include\DirectXTK12\Inc\SimpleMath.inl" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestEqNe.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestEqNeNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestLtGt.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_PSAlphaTestLtGtNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_VSAlphaTest.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_VSAlphaTestNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_VSAlphaTestVc.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\AlphaTestEffect_VSAlphaTestVcNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasic.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicPixelLighting.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicPixelLightingTx.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicTx.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicTxNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicVertexLighting.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicVertexLightingNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicVertexLightingTx.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_PSBasicVertexLightingTxNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasic.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLighting.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTx.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTxBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTxVc.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingTxVcBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingVc.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicPixelLightingVcBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicTx.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicTxNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicTxVc.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicTxVcNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVc.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVcNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLighting.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTx.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTxBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTxVc.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingTxVcBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingVc.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingVcBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_PSHemiAmbient.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_PSRGBBiTangents.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_PSRGBNormals.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_PSRGBTangents.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebug.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugBnInst.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugInst.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugVc.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugVcBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugVcBnInst.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DebugEffect_VSDebugVcInst.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DualTextureEffect_PSDualTexture.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DualTextureEffect_PSDualTextureNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DualTextureEffect_VSDualTexture.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DualTextureEffect_VSDualTextureNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DualTextureEffect_VSDualTextureVc.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\DualTextureEffect_VSDualTextureVcNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMap.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLighting.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingFresnel.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingFresnelNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapDualParabolaPixelLightingNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLighting.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLightingFresnel.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLightingFresnelNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapPixelLightingNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpecular.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpecularNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLighting.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingFresnel.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingFresnelNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_PSEnvMapSpherePixelLightingNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMap.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapFresnel.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapFresnelBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapPixelLighting.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\EnvironmentMapEffect_VSEnvMapPixelLightingBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\GenerateMips_main.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTx.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTxNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTxNoFogSpec.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_PSNormalPixelLightingTxNoSpec.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTx.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxBnInst.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxInst.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxNoSpec.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxNoSpecBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxNoSpecBnInst.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxNoSpecInst.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVc.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcBnInst.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcInst.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcNoSpec.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcNoSpecBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcNoSpecBnInst.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcNoSpecInst.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSSkinnedPixelLightingTx.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSSkinnedPixelLightingTxBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSSkinnedPixelLightingTxNoSpec.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\NormalMapEffect_VSSkinnedPixelLightingTxNoSpecBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_PSConstant.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_PSTextured.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_PSTexturedEmissive.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_PSTexturedEmissiveVelocity.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_PSTexturedVelocity.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSConstant.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSConstantBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSConstantBnInst.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSConstantInst.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSConstantVelocity.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSConstantVelocityBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSSkinned.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PBREffect_VSSkinnedBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSBloomBlur.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSBloomCombine.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSBloomExtract.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSCopy.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSDownScale2x2.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSDownScale4x4.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSGaussianBlur5x5.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSMerge.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSMonochrome.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_PSSepia.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_VSQuad.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_VSQuadDual.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\PostProcess_VSQuadNoCB.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_PSSkinnedPixelLighting.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_PSSkinnedVertexLighting.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_PSSkinnedVertexLightingNoFog.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_VSSkinnedPixelLightingFourBones.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_VSSkinnedPixelLightingFourBonesBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_VSSkinnedVertexLightingFourBones.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SkinnedEffect_VSSkinnedVertexLightingFourBonesBn.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SpriteEffect_SpritePixelShader.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SpriteEffect_SpritePixelShaderHeap.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SpriteEffect_SpriteVertexShader.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\SpriteEffect_SpriteVertexShaderHeap.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSACESFilmic.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSACESFilmic_SRGB.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSCopy.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSHDR10.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSReinhard.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSReinhard_SRGB.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSSaturate.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PSSaturate_SRGB.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_PS_SRGB.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\Shaders\Compiled\ToneMap_VSQuad.inc" />
-    <None Include="Dependences\include\DirectXTK12\Src\TeapotData.inc" />
-    <CopyFileToFolders Include="Dependences\lib\assimp-vc142-mtd.dll">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-      <FileType>Document</FileType>
-      <DestinationFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename)%(Extension)</DestinationFileName>
-    </CopyFileToFolders>
-    <None Include="EngineCore\Graphics\Color.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_connected_components.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_c_lexer.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_divide.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_ds.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_dxt.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_easy_font.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_herringbone_wang_tile.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_hexwave.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_image.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_image_resize.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_image_write.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_include.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_leakcheck.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_rect_pack.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_sprintf.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_textedit.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_tilemap_editor.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_truetype.h" />
-    <ClInclude Include="Dependences\include\stb_image\stb_voxel_render.h" />
-    <ClInclude Include="EngineCore\Engine\EngineThread.h" />
-    <ClInclude Include="EngineCore\Engine\FileUtility.h" />
-    <ClInclude Include="EngineCore\Graphics\Display.h" />
-    <ClInclude Include="EngineCore\Engine\EngineGlobal.h" />
-    <ClInclude Include="EngineCore\Graphics\Render.h" />
-    <ClInclude Include="EngineCore\Graphics\TextureConvert.h" />
-    <ClInclude Include="EngineCore\Graphics\UploadBuffer.h" />
-    <ClInclude Include="EngineCore\Math\BoundingBox.h" />
-    <ClInclude Include="EngineCore\Math\BoundingPlane.h" />
-    <ClInclude Include="EngineCore\Math\BoundingSphere.h" />
-    <ClInclude Include="EngineCore\Math\Frustum.h" />
-    <ClInclude Include="EngineCore\Math\Matrix3.h" />
-    <ClInclude Include="EngineCore\Math\Matrix4.h" />
-    <ClInclude Include="EngineCore\Math\Quaternion.h" />
-    <ClInclude Include="EngineCore\Math\Transform.h" />
-    <ClInclude Include="EngineCore\Model\Animation.h" />
-    <ClInclude Include="EngineCore\Model\glTF.h" />
-    <ClInclude Include="EngineCore\Model\IndexOptimize.h" />
-    <ClInclude Include="EngineCore\Model\MeshBuilder.h" />
-    <ClInclude Include="EngineCore\Model\Model.h" />
-    <ClInclude Include="EngineCore\Model\json.hpp" />
-    <ClInclude Include="EngineCore\Model\glTFModelLoader.h" />
-    <ClInclude Include="GraphicEffects\Animation\MeshStruct.h" />
-    <ClInclude Include="GraphicEffects\Animation\ModelMesh.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\Audio.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\BufferHelpers.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\CommonStates.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\DDSTextureLoader.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\DescriptorHeap.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\DirectXHelpers.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\EffectPipelineStateDescription.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\Effects.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\GamePad.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\GeometricPrimitive.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\GraphicsMemory.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\Keyboard.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\Mouse.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\PostProcess.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\PrimitiveBatch.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\RenderTargetState.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\ResourceUploadBatch.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\ScreenGrab.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\SimpleMath.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\SpriteBatch.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\SpriteFont.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\VertexTypes.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Inc\WICTextureLoader.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Src\AlignedNew.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Src\Bezier.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Src\BinaryReader.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Src\d3dx12.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Src\DDS.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Src\DemandCreate.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Src\EffectCommon.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Src\Geometry.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Src\DXLinearAllocator.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Src\LoaderHelpers.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Src\pch.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Src\PlatformHelpers.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Src\SDKMesh.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Src\SharedResourcePool.h" />
-    <ClInclude Include="Dependences\include\DirectXTK12\Src\vbo.h" />
-    <ClInclude Include="EngineCore\Engine\Materials.h" />
-    <ClInclude Include="EngineCore\Engine\Scene.h" />
-    <ClInclude Include="EngineCore\Engine\SceneManager.h" />
-    <ClInclude Include="EngineCore\Graphics\TextureManager.h" />
-    <ClInclude Include="EngineCore\Math\Random.h" />
-    <ClInclude Include="GraphicEffects\InstanceModel\glTFInstanceModel.h" />
-    <ClInclude Include="GraphicEffects\InstanceModel\InstanceModel.h" />
-    <ClInclude Include="GraphicEffects\InstanceModel\SimpleModelGenerator.h" />
-    <ClInclude Include="GraphicEffects\Misc\ConstantBuffer.h" />
-    <ClInclude Include="GraphicEffects\Misc\CubeRenderTarget.h" />
-    <ClInclude Include="GraphicEffects\GI\IBL.h" />
-    <ClInclude Include="GraphicEffects\Particles\ParticleEffect.h" />
-    <ClInclude Include="GraphicEffects\Particles\ParticleEffectProperties.h" />
-    <ClInclude Include="GraphicEffects\Particles\ParticleShaderStructs.h" />
-    <ClInclude Include="GraphicEffects\Shadow\ShadowMap.h" />
-    <ClInclude Include="GraphicEffects\Sky\Sky.h" />
-    <ClInclude Include="GraphicEffects\DXR\D3D12RaytracingHelper.h" />
-    <ClInclude Include="EngineCore\Engine\EngineAdjust.h" />
-    <ClInclude Include="EngineCore\Engine\EngineInput.h" />
-    <ClInclude Include="EngineCore\Engine\EngineLog.h" />
-    <ClInclude Include="EngineCore\Engine\EngineProfiling.h" />
-    <ClInclude Include="EngineCore\Engine\GameCore.h" />
-    <None Include="EngineCore\Graphics\GPUTimeManager.h" />
-    <None Include="EngineCore\Graphics\ColorBuffer.h" />
-    <None Include="EngineCore\Graphics\CommandAllocatorPool.h" />
-    <None Include="EngineCore\Graphics\CommandContext.h" />
-    <None Include="EngineCore\Graphics\CommandListManager.h" />
-    <None Include="EngineCore\Graphics\CommandSignature.h" />
-    <None Include="EngineCore\Graphics\DepthBuffer.h" />
-    <None Include="EngineCore\Graphics\DescriptorHeap.h" />
-    <None Include="EngineCore\Graphics\DynamicDescriptorHeap.h" />
-    <None Include="EngineCore\Graphics\DynamicUploadBuffer.h" />
-    <None Include="EngineCore\Graphics\GPUResource.h" />
-    <None Include="EngineCore\Graphics\GraphicsCore.h" />
-    <None Include="EngineCore\Graphics\SamplerManager.h" />
-    <None Include="EngineCore\Graphics\PixelBuffer.h" />
-    <None Include="EngineCore\Graphics\GraphicsCommon.h" />
-    <None Include="EngineCore\Graphics\LinearAllocator.h" />
-    <None Include="EngineCore\Graphics\PipelineState.h" />
-    <None Include="EngineCore\Graphics\ReadbackBuffer.h" />
-    <None Include="EngineCore\Graphics\RootSignature.h" />
-    <ClInclude Include="EngineCore\Graphics\BufferManager.h" />
-    <ClInclude Include="EngineCore\Graphics\ShadowBuffer.h" />
-    <ClInclude Include="EngineCore\Math\Common.h" />
-    <ClInclude Include="EngineCore\Math\Hash.h" />
-    <ClInclude Include="EngineCore\Math\Scalar.h" />
-    <ClInclude Include="EngineCore\Math\Vector.h" />
-    <ClInclude Include="EngineCore\Math\VectorMath.h" />
-    <ClInclude Include="EngineCore\Engine\InputLayout.h" />
     <ClInclude Include="EngineCore\Engine\d3dx12.h" />
-    <ClInclude Include="EngineCore\Engine\Camera.h" />
-    <ClInclude Include="EngineCore\Engine\GameTimer.h" />
-    <ClInclude Include="EngineCore\Engine\GeometryGenerator.h" />
-    <ClInclude Include="EngineCore\Math\MathHelper.h" />
-    <ClInclude Include="EngineCore\Engine\EngineUtility.h" />
-    <ClInclude Include="EngineCore\Engine\Vertex.h" />
-    <ClInclude Include="EngineCore\Graphics\WICTextureLoader12.h" />
-    <ClInclude Include="EngineEditor\ImgUIEditor\EngineGUI.h" />
-    <ClInclude Include="EngineEditor\ImgUIEditor\imconfig.h" />
-    <ClInclude Include="EngineEditor\ImgUIEditor\imgui.h" />
-    <ClInclude Include="EngineEditor\ImgUIEditor\imgui_impl_dx12.h" />
-    <ClInclude Include="EngineEditor\ImgUIEditor\imgui_impl_win32.h" />
-    <ClInclude Include="EngineEditor\ImgUIEditor\imgui_internal.h" />
-    <ClInclude Include="EngineEditor\ImgUIEditor\imstb_rectpack.h" />
-    <ClInclude Include="EngineEditor\ImgUIEditor\imstb_textedit.h" />
-    <ClInclude Include="EngineEditor\ImgUIEditor\imstb_truetype.h" />
-    <None Include="EngineCore\Math\Functions.inl" />
-    <None Include="EngineCore\Graphics\GPUBuffer.h" />
-    <ClInclude Include="GraphicEffects\Misc\RenderObject.h" />
-    <ClInclude Include="GraphicEffects\Animation\ModelLoader.h" />
-    <ClInclude Include="GraphicEffects\Terrain\Terrain.h" />
-    <ClInclude Include="ShaderSource\Public\BaseShader.h" />
-    <ClInclude Include="ShaderSource\Public\ComplexStaticModelInstanceShader.h" />
-    <ClInclude Include="ShaderSource\Public\GrassShader.h" />
-    <ClInclude Include="ShaderSource\Public\HeightMapTerrainShader.h" />
-    <ClInclude Include="ShaderSource\Public\ShockWaveWaterShader.h" />
-    <ClInclude Include="ShaderSource\Public\SimpleGeometryInstanceShader.h" />
-    <ClInclude Include="ShaderSource\Public\GerstnerWaveShader.h" />
-    <ClInclude Include="ShaderSource\Public\SkinAnimeShader.h" />
-    <ClInclude Include="ShaderSource\Public\SkyShader.h" />
-    <ClInclude Include="ShaderSource\Public\SimpleGeometryShadowMapShader.h" />
-    <ClInclude Include="ShaderSource\Public\WaterRefractionMaskShader.h" />
-    <None Include="packages.config" />
-    <None Include="Shaders\Misc\ColorSpaceUtility.hlsli" />
-    <None Include="Shaders\Misc\CommonResource.hlsli" />
-    <None Include="Shaders\Misc\PBRLighting.hlsli" />
-    <None Include="Shaders\Misc\ShaderUtility.hlsli" />
-    <None Include="Shaders\Misc\ToneMappingUtility.hlsli" />
-    <None Include="Shaders\Terrain\TerrainHeader.hlsli" />
+    <ClInclude Include="EngineCore\Engine\EngineGlobal.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Dependences\include\stb_image\stb_vorbis.c" />
-    <ClCompile Include="EngineCore\Engine\EngineThread.cpp" />
-    <ClCompile Include="EngineCore\Graphics\Display.cpp" />
     <ClCompile Include="EngineCore\Engine\EngineGlobal.cpp" />
-    <ClCompile Include="EngineCore\Engine\FileUtility.cpp" />
-    <ClCompile Include="EngineCore\Graphics\Render.cpp" />
-    <ClCompile Include="EngineCore\Graphics\UploadBuffer.cpp" />
-    <ClCompile Include="EngineCore\Math\BoundingSphere.cpp" />
-    <ClCompile Include="EngineCore\Math\Frustum.cpp" />
-    <ClCompile Include="EngineCore\Model\Animation.cpp" />
-    <ClCompile Include="EngineCore\Model\glTF.cpp" />
-    <ClCompile Include="EngineCore\Model\IndexOptimize.cpp" />
-    <ClCompile Include="EngineCore\Model\MeshBuilder.cpp" />
-    <ClCompile Include="EngineCore\Model\Model.cpp" />
-    <ClCompile Include="EngineCore\Model\glTFModelLoader.cpp" />
-    <ClCompile Include="GraphicEffects\Animation\ModelLoader.cpp" />
-    <ClCompile Include="GraphicEffects\InstanceModel\glTFInstanceModel.cpp" />
-    <ClCompile Include="GraphicEffects\InstanceModel\InstanceModel.cpp" />
-    <ClCompile Include="GraphicEffects\InstanceModel\SimpleModelGenerator.cpp" />
-    <ClCompile Include="GraphicEffects\Terrain\Terrain.cpp" />
-    <ClCompile Include="EngineCore\Graphics\TextureConvert.cpp" />
-    <ClCompile Include="EngineCore\Graphics\Color.cpp" />
-    <ClCompile Include="GraphicEffects\Animation\ModelMesh.cpp" />
-    <ClCompile Include="GraphicEffects\Misc\ConstantBuffer.cpp" />
-    <ClCompile Include="GraphicEffects\Misc\CubeRenderTarget.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\AlphaTestEffect.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\BasicEffect.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\BasicPostProcess.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\BinaryReader.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\BufferHelpers.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\CommonStates.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\DDSTextureLoader.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\DebugEffect.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\DXDescriptorHeap.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\DirectXHelpers.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\DualPostProcess.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\DualTextureEffect.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\EffectCommon.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\EffectFactory.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\EffectPipelineStateDescription.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\EffectTextureFactory.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\EnvironmentMapEffect.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\GamePad.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\GeometricPrimitive.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\Geometry.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\GraphicsMemory.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\Keyboard.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\DXLinearAllocator.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\ModelLoadCMO.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\ModelLoadSDKMESH.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\ModelLoadVBO.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\Mouse.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\NormalMapEffect.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\PBREffect.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\PBREffectFactory.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\pch.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\PrimitiveBatch.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\ResourceUploadBatch.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\ScreenGrab.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\SimpleMath.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\SkinnedEffect.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\SpriteBatch.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\SpriteFont.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\ToneMapPostProcess.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\VertexTypes.cpp" />
-    <ClCompile Include="Dependences\include\DirectXTK12\Src\WICTextureLoader.cpp" />
-    <ClCompile Include="EngineCore\Engine\Materials.cpp" />
-    <ClCompile Include="EngineCore\Engine\Scene.cpp" />
-    <ClCompile Include="EngineCore\Engine\SceneManager.cpp" />
-    <ClCompile Include="EngineCore\Graphics\TextureManager.cpp" />
-    <ClCompile Include="EngineCore\Math\Random.cpp" />
-    <ClCompile Include="GraphicEffects\GI\IBL.cpp" />
-    <ClCompile Include="GraphicEffects\Misc\RenderObject.cpp" />
-    <ClCompile Include="GraphicEffects\Particles\ParticleEffect.cpp" />
-    <ClCompile Include="GraphicEffects\Particles\ParticleEmissionProperties.cpp" />
-    <ClCompile Include="GraphicEffects\Shadow\ShadowMap.cpp" />
-    <ClCompile Include="GraphicEffects\Sky\Sky.cpp" />
-    <ClCompile Include="EngineCore\Graphics\CommandAllocatorPool.cpp" />
-    <ClCompile Include="EngineCore\Graphics\GraphicsCore.cpp" />
-    <ClCompile Include="EngineCore\Graphics\SamplerManager.cpp" />
-    <ClCompile Include="EngineCore\Graphics\DescriptorHeap.cpp" />
-    <ClCompile Include="EngineCore\Graphics\ColorBuffer.cpp" />
-    <ClCompile Include="EngineCore\Graphics\CommandListManager.cpp" />
-    <ClCompile Include="GraphicEffects\DXR\D3D12RaytracingHelper.cpp" />
-    <ClCompile Include="EngineCore\Graphics\CommandSignature.cpp" />
-    <ClCompile Include="EngineCore\Graphics\CommandContext.cpp" />
-    <ClCompile Include="EngineCore\Engine\EngineAdjust.cpp" />
-    <ClCompile Include="EngineCore\Engine\EngineInput.cpp" />
-    <ClCompile Include="EngineCore\Engine\EngineProfiling.cpp" />
-    <ClCompile Include="EngineCore\Engine\EngineLog.cpp" />
-    <ClCompile Include="EngineCore\Engine\GameCore.cpp" />
-    <ClCompile Include="EngineCore\Graphics\GPUTimeManager.cpp" />
-    <ClCompile Include="EngineCore\Graphics\BufferManager.cpp" />
-    <ClCompile Include="EngineCore\Graphics\PixelBuffer.cpp" />
-    <ClCompile Include="EngineCore\Graphics\ReadbackBuffer.cpp" />
-    <ClCompile Include="EngineCore\Graphics\DepthBuffer.cpp" />
-    <ClCompile Include="EngineCore\Graphics\RootSignature.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="EngineCore\Graphics\PipelineState.cpp" />
-    <ClCompile Include="EngineCore\Graphics\DynamicDescriptorHeap.cpp" />
-    <ClCompile Include="EngineCore\Graphics\DynamicUploadBuffer.cpp" />
-    <ClCompile Include="EngineCore\Graphics\LinearAllocator.cpp" />
-    <ClCompile Include="EngineCore\Graphics\GraphicsCommon.cpp" />
-    <ClCompile Include="EngineCore\Graphics\ShadowBuffer.cpp" />
-    <ClCompile Include="EngineCore\Engine\Camera.cpp" />
-    <ClCompile Include="EngineCore\Engine\GameTimer.cpp" />
-    <ClCompile Include="EngineCore\Engine\GeometryGenerator.cpp" />
-    <ClCompile Include="EngineCore\Engine\InputLayout.cpp" />
-    <ClCompile Include="EngineCore\Math\MathHelper.cpp" />
-    <ClCompile Include="EngineCore\Engine\EngineUtility.cpp" />
-    <ClCompile Include="EngineCore\Engine\Vertex.cpp" />
-    <ClCompile Include="EngineCore\Graphics\WICTextureLoader12.cpp" />
-    <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp" />
-    <ClCompile Include="EngineEditor\ImgUIEditor\imgui.cpp" />
-    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_demo.cpp" />
-    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_draw.cpp" />
-    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_impl_dx12.cpp" />
-    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_impl_win32.cpp" />
-    <ClCompile Include="EngineEditor\ImgUIEditor\imgui_widgets.cpp" />
-    <ClCompile Include="EngineCore\Graphics\GPUBuffer.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Textures\ICONS\gamecontroller_128px_1180532_easyicon.net.ico" />
-    <Image Include="Textures\ICONS\gameicon.ico" />
-    <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="UIAutomationProvider" />
-    <Reference Include="UIAutomationTypes" />
-    <Reference Include="WindowsBase" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Textures\ICONS\Arrow.cur" />
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="Dependences\lib\ozz\debug\ozz_animation_d.lib" />
-    <Library Include="Dependences\lib\ozz\debug\ozz_animation_offline_d.lib" />
-    <Library Include="Dependences\lib\ozz\debug\ozz_animation_tools_d.lib" />
-    <Library Include="Dependences\lib\ozz\debug\ozz_base_d.lib" />
-    <Library Include="Dependences\lib\ozz\debug\ozz_geometry_d.lib" />
-    <Library Include="Dependences\lib\ozz\debug\ozz_options_d.lib" />
-    <Library Include="Dependences\lib\ozz\debug\sample_framework_d.lib" />
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Shaders\GI\BakingBRDFPS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-    </FxCompile>
-    <FxCompile Include="Shaders\GI\BakingEnvDiffusePS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-    </FxCompile>
-    <FxCompile Include="Shaders\GI\BakingEnvDiffuseVS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-    </FxCompile>
-    <FxCompile Include="Shaders\GI\PreFilteredEnvironmentMapPS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-    </FxCompile>
-    <FxCompile Include="Shaders\PBRInstanceModel\InstanceModelPS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ALPHA_TEST</PreprocessorDefinitions>
-    </FxCompile>
-    <FxCompile Include="Shaders\PBRInstanceModel\InstanceModelVS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-    </FxCompile>
-    <FxCompile Include="Shaders\Misc\ScreenQuadVS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.0</ShaderModel>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">g_p%(Filename)</VariableName>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </ObjectFileOutput>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\CompiledShaders\%(Filename).h</HeaderFileOutput>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\CompiledShaders\%(Filename).h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </ObjectFileOutput>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">g_p%(Filename)</VariableName>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
-      <FileType>Document</FileType>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Qembed_debug %(AdditionalOptions)</AdditionalOptions>
-    </FxCompile>
-    <FxCompile Include="Shaders\Present\BufferCopyPS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">g_p%(Filename)</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\CompiledShaders\%(Filename).h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </ObjectFileOutput>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Qembed_debug %(AdditionalOptions)</AdditionalOptions>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.0</ShaderModel>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">g_p%(Filename)</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\CompiledShaders\%(Filename).h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </ObjectFileOutput>
-    </FxCompile>
-    <FxCompile Include="Shaders\Present\PresentSDRPS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">g_p%(Filename)</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\CompiledShaders\%(Filename).h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </ObjectFileOutput>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.0</ShaderModel>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">g_p%(Filename)</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\CompiledShaders\%(Filename).h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </ObjectFileOutput>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\Shaders\Misc</AdditionalIncludeDirectories>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Qembed_debug %(AdditionalOptions)</AdditionalOptions>
-    </FxCompile>
-    <FxCompile Include="Shaders\Shadow\ModelShadowPS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ALPHA_TEST</PreprocessorDefinitions>
-    </FxCompile>
-    <FxCompile Include="Shaders\Shadow\ModelShadowVS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-    </FxCompile>
-    <FxCompile Include="Shaders\Sky\SkyPS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </AdditionalIncludeDirectories>
-    </FxCompile>
-    <FxCompile Include="Shaders\Sky\SkyVS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <FileType>Document</FileType>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </AdditionalIncludeDirectories>
-    </FxCompile>
-    <None Include="Shaders\Terrain\TerrainDS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Domain</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Domain</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Domain</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Domain</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-      <FileType>Document</FileType>
-    </None>
-    <None Include="Shaders\Terrain\TerrainHS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Hull</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Hull</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Hull</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Hull</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">TERRAIN</PreprocessorDefinitions>
-      <FileType>Document</FileType>
-    </None>
-    <FxCompile Include="Shaders\Terrain\TerrainPS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-    </FxCompile>
-    <FxCompile Include="Shaders\Terrain\TerrainVS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">TERRAIN</PreprocessorDefinitions>
-    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets" Condition="Exists('..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets')" />
-    <Import Project="..\packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets" Condition="Exists('..\packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets')" />
-    <Import Project="..\packages\directxtex_desktop_win10.2022.5.10.1\build\native\directxtex_desktop_win10.targets" Condition="Exists('..\packages\directxtex_desktop_win10.2022.5.10.1\build\native\directxtex_desktop_win10.targets')" />
-    <Import Project="..\packages\directxmesh_desktop_win10.2022.5.10.2\build\native\directxmesh_desktop_win10.targets" Condition="Exists('..\packages\directxmesh_desktop_win10.2022.5.10.2\build\native\directxmesh_desktop_win10.targets')" />
   </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>这台计算机上缺少此项目引用的 NuGet 程序包。使用“NuGet 程序包还原”可下载这些程序包。有关更多信息，请参见 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的文件是 {0}。</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets'))" />
-    <Error Condition="!Exists('..\packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets'))" />
-    <Error Condition="!Exists('..\packages\directxtex_desktop_win10.2022.5.10.1\build\native\directxtex_desktop_win10.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtex_desktop_win10.2022.5.10.1\build\native\directxtex_desktop_win10.targets'))" />
-    <Error Condition="!Exists('..\packages\directxmesh_desktop_win10.2022.5.10.2\build\native\directxmesh_desktop_win10.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxmesh_desktop_win10.2022.5.10.2\build\native\directxmesh_desktop_win10.targets'))" />
-  </Target>
 </Project>

@@ -1,6 +1,8 @@
 #pragma once
+
 #include "EngineUtility.h"
 #include "TextureManage.h"
+
 class ShockWaveWater
 {
 public:

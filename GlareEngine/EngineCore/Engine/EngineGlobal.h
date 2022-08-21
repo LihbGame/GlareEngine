@@ -1,16 +1,16 @@
 #pragma once
-#include <string>
+#include <xstring>
 
 class Scene;
-using namespace std;
+
 class EngineGlobal
 {
 public:
-	static string TextureAssetPath;
-	static string TerrainAssetPath;
-	static string WaterAssetPath;
-	static string SkyAssetPath;
-	static string ModelAssetPath;
+	static std::wstring TextureAssetPath;
+	static std::wstring TerrainAssetPath;
+	static std::wstring WaterAssetPath;
+	static std::wstring SkyAssetPath;
+	static std::wstring ModelAssetPath;
 
 	static Scene* gCurrentScene;
 };

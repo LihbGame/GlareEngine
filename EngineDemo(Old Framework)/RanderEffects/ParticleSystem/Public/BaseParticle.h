@@ -1,6 +1,9 @@
 #pragma once
+
 #include "EngineUtility.h"
+
 class PSO;
+
 class BaseParticle
 {
 public:
@@ -13,7 +16,7 @@ public:
 	 void SetEmitPos(const XMFLOAT3& emitPosW);
 	 void SetEmitDir(const XMFLOAT3& emitDirW);
 
-	 void Init(int ParticleID, string ParticleTextureName,
+	 void Init(int ParticleID, std::string ParticleTextureName,
 		UINT maxParticles,
 		 PSO* Pso);
 

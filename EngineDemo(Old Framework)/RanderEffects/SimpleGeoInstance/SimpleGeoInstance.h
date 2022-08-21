@@ -28,7 +28,7 @@ public:
 	void FillSRVDescriptorHeap(int* SRVIndex,
 		CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor);
 
-    const std::vector<wstring>& GetTextureNames() { return mPBRTextureName; }
+    const std::vector<std::wstring>& GetTextureNames() { return mPBRTextureName; }
 private:
 
     void BuildSimpleGeometryMesh(SimpleGeometry GeoType);
@@ -36,6 +36,6 @@ private:
     ID3D12GraphicsCommandList* pCommandList;
     ID3D12Device* pd3dDevice;
     std::unique_ptr<::MeshGeometry> mSimpleMesh;
-    std::vector<wstring> mPBRTextureName;
+    std::vector<std::wstring> mPBRTextureName;
     TextureManage* pTextureManage = nullptr;
 };

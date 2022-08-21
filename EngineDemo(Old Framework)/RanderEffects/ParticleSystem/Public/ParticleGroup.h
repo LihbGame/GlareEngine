@@ -11,7 +11,7 @@ public:
 	void RemoveParticle(int ParticleID);
 	void DrawParticle();
 private:
-	vector<BaseParticle*> Particles;
+	std::vector<BaseParticle*> Particles;
 	int ParticleGroupID = 0;
 };
 

@@ -68,9 +68,9 @@ public:
 
 	void InitializeScene(ID3D12GraphicsCommandList* CommandList, GraphicsContext& InitializeContext);
 
-	void CreateModelInstance(ID3D12GraphicsCommandList* CommandList,string ModelName, int Num_X, int Num_Y);
+	void CreateModelInstance(ID3D12GraphicsCommandList* CommandList, std::string ModelName, int Num_X, int Num_Y);
 
-	void CreateSimpleModelInstance(ID3D12GraphicsCommandList* CommandList,string ModelName, SimpleModelType Type, string MaterialName, int Num_X, int Num_Y);
+	void CreateSimpleModelInstance(ID3D12GraphicsCommandList* CommandList, std::string ModelName, SimpleModelType Type, std::string MaterialName, int Num_X, int Num_Y);
 protected:
 	// 处理鼠标输入的重载函数
 	virtual void OnMouseDown(WPARAM btnState, int x, int y);
@@ -80,21 +80,21 @@ private:
 	//Only one scene
 	Scene* gScene = nullptr;
 	//Scene data 
-	vector<unique_ptr<InstanceModel>> mModels;
+	std::vector<std::unique_ptr<InstanceModel>> mModels;
 	//Main Camera
-	unique_ptr<Camera> mCamera;
+	std::unique_ptr<Camera> mCamera;
 	//Sky
-	unique_ptr<CSky> mSky;
+	std::unique_ptr<CSky> mSky;
 	//Shadow map
-	unique_ptr<ShadowMap> mShadowMap;
+	std::unique_ptr<ShadowMap> mShadowMap;
 	//UI
-	unique_ptr<EngineGUI> mEngineUI;
+	std::unique_ptr<EngineGUI> mEngineUI;
 	
 	float mCameraSpeed = CAMERA_SPEED;
 
 	D3D12_RECT mClientRect = { 0 };
 	//scene manager
-	unique_ptr<SceneManager> mSceneManager;
+	std::unique_ptr<SceneManager> mSceneManager;
 
 	//PSO Common Property
 	//PSOCommonProperty mCommonProperty;
@@ -112,12 +112,12 @@ CREATE_APPLICATION(App);
 void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext& InitializeContext)
 {
 	//Main Camera
-	mCamera = make_unique<Camera>(REVERSE_Z);
+	mCamera = std::make_unique<Camera>(REVERSE_Z);
 	mCamera->LookAt(XMFLOAT3(-200, 200, 200), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 1, 0));
 	//Sky Initialize
-	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
+	mSky = std::make_unique<CSky>(CommandList, 5.0f, 20, 20);
 	//Shadow map Initialize
-	mShadowMap = make_unique<ShadowMap>(XMFLOAT3(0.57735f, -0.47735f, 0.57735f), SHADOWMAPSIZE, SHADOWMAPSIZE);
+	mShadowMap = std::make_unique<ShadowMap>(XMFLOAT3(0.57735f, -0.47735f, 0.57735f), SHADOWMAPSIZE, SHADOWMAPSIZE);
 	//Create PBR Materials
 	SimpleModelGenerator::GetInstance(CommandList)->CreatePBRMaterials();
 
@@ -213,9 +213,9 @@ void App::Startup(void)
 	GraphicsContext& InitializeContext = GraphicsContext::Begin(L"Initialize");
 	ID3D12GraphicsCommandList* CommandList = InitializeContext.GetCommandList();
 	//UI Init
-	mEngineUI = make_unique<EngineGUI>(CommandList);
+	mEngineUI = std::make_unique<EngineGUI>(CommandList);
 	//Scene Manager
-	mSceneManager = make_unique<SceneManager>(CommandList);
+	mSceneManager = std::make_unique<SceneManager>(CommandList);
 	//Create scene
 	InitializeScene(CommandList, InitializeContext);
 
@@ -275,40 +275,43 @@ void App::UpdateSceneState(float DeltaTime)
 
 void App::UpdateWindow(float DeltaTime)
 {
-	if (EngineGUI::mWindowMaxSize && !mMaximized)
-	{
-		SendMessage(g_hWnd, WM_SYSCOMMAND, SC_MAXIMIZE, NULL);
-	}
-	if (!EngineGUI::mWindowMaxSize && mMaximized)
-	{
-		SendMessage(g_hWnd, WM_SYSCOMMAND, SC_RESTORE, NULL);
-	}
+	//if (!mMaximized)
+	//{
+	//	SendMessage(g_hWnd, WM_SYSCOMMAND, SC_MAXIMIZE, NULL);
+	//}
+	//if (mMaximized)
+	//{
+	//	SendMessage(g_hWnd, WM_SYSCOMMAND, SC_RESTORE, NULL);
+	//}
 }
 
 void App::UpdateCamera(float DeltaTime)
 {
+	float x = 0.0f, y = 0.0f, z = 0.0f;
+	
 	mCameraSpeed = mEngineUI->GetCameraModeSpeed();
 
 	if (EngineInput::IsPressed(GInput::kKey_W))
 	{
-		mCamera->Walk(mCameraSpeed * DeltaTime);
+		z = mCameraSpeed / DeltaTime;
 	}
 
 	if (EngineInput::IsPressed(GInput::kKey_S))
 	{
-		mCamera->Walk(-mCameraSpeed * DeltaTime);
+		z = -mCameraSpeed / DeltaTime;
 	}
 
 	if (EngineInput::IsPressed(GInput::kKey_A))
 	{
-		mCamera->Strafe(-mCameraSpeed * DeltaTime);
+		x = -mCameraSpeed / DeltaTime;
 	}
 
 	if (EngineInput::IsPressed(GInput::kKey_D))
 	{
-		mCamera->Strafe(mCameraSpeed * DeltaTime);
+		x = mCameraSpeed / DeltaTime;
 	}
 
+	mCamera->Move(x, y, z);
 	mEngineUI->SetCameraPosition(mCamera->GetPosition3f());
 
 	//update camera matrix
@@ -418,7 +421,7 @@ void App::OnMouseMove(WPARAM btnState, int x, int y)
 }
 
 
-void App::CreateModelInstance(ID3D12GraphicsCommandList* CommandList,string ModelName, int Num_X, int Num_Y)
+void App::CreateModelInstance(ID3D12GraphicsCommandList* CommandList, std::string ModelName, int Num_X, int Num_Y)
 {
 	assert(CommandList);
 	const ModelRenderData* ModelData = ModelLoader::GetModelLoader(CommandList)->GetModelRenderData(ModelName);
@@ -439,12 +442,12 @@ void App::CreateModelInstance(ID3D12GraphicsCommandList* CommandList,string Mode
 			}
 		}
 	}
-	auto lModel = make_unique<InstanceModel>(StringToWString(ModelName), InstanceData);
+	auto lModel = std::make_unique<InstanceModel>(StringToWString(ModelName), InstanceData);
 	lModel->SetShadowFlag(true);
 	mModels.push_back(std::move(lModel));
 }
 
-void App::CreateSimpleModelInstance(ID3D12GraphicsCommandList* CommandList, string ModelName, SimpleModelType Type, string MaterialName, int Num_X, int Num_Y)
+void App::CreateSimpleModelInstance(ID3D12GraphicsCommandList* CommandList, std::string ModelName, SimpleModelType Type, std::string MaterialName, int Num_X, int Num_Y)
 {
 	assert(CommandList);
 	const ModelRenderData* ModelData = SimpleModelGenerator::GetInstance(CommandList)->CreateSimpleModelRanderData(ModelName, Type, MaterialName);
@@ -466,7 +469,7 @@ void App::CreateSimpleModelInstance(ID3D12GraphicsCommandList* CommandList, stri
 			}
 		}
 	}
-	auto lModel = make_unique<InstanceModel>(StringToWString(ModelName), InstanceData);
+	auto lModel = std::make_unique<InstanceModel>(StringToWString(ModelName), InstanceData);
 	//lModel->SetShadowFlag(true);
 	mModels.push_back(std::move(lModel));
 }
