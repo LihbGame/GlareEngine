@@ -41,8 +41,8 @@ struct AnimationSet
 // position within the animation's playback.
 struct AnimationState
 {
-	enum eMode { kStopped, kPlaying, kLooping };
+	enum eMode { eStopped, ePlaying, eLooping };
 	eMode state;
 	float time;
-	AnimationState() : state(kStopped), time(0.0f) {}
+	AnimationState() : state(eStopped), time(0.0f) {}
 };

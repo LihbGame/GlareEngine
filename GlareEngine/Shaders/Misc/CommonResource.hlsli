@@ -3,6 +3,14 @@
 #define MAX2DSRVSIZE 256
 #define MAXCUBESRVSIZE 32
 
+
+// Shadow map related variables
+#define NUM_SAMPLES 20
+#define BLOCKER_SEARCH_NUM_SAMPLES NUM_SAMPLES
+#define PCF_NUM_SAMPLES NUM_SAMPLES
+#define NUM_RINGS 10
+
+
 struct InstanceData
 {
     float4x4 World;
@@ -251,43 +259,6 @@ float2 ParallaxMapping(uint HeightMapIndex, float2 texCoords, float3 viewDir, fl
 
 
 
-//---------------------------------------------------------------------------------------
-// PCF for shadow mapping.
-//---------------------------------------------------------------------------------------
-
-float CalcShadowFactor(float4 shadowPosH)
-{
-    // Complete projection by doing division by w.
-    shadowPosH.xyz /= shadowPosH.w;
-
-    // Depth in NDC space.
-    float depth = shadowPosH.z;
-
-    uint width, height, numMips;
-    gSRVMap[48].GetDimensions(0, width, height, numMips);
-
-    // Texel size.
-    float dx = 1.0f / (float) width;
-
-    float percentLit = 0.0f;
-    const float2 offsets[9] =
-    {
-        float2(-dx, -dx), float2(0.0f, -dx), float2(dx, -dx),
-        float2(-dx, 0.0f), float2(0.0f, 0.0f), float2(dx, 0.0f),
-        float2(-dx, +dx), float2(0.0f, +dx), float2(dx, +dx)
-    };
-
-    [unroll]
-    for (int i = 0; i < 9; ++i)
-    {
-        percentLit += gSRVMap[gShadowMapIndex].SampleCmpLevelZero(gSamplerShadow,
-            shadowPosH.xy + offsets[i], depth).r;
-    }
-    percentLit /= 9.0f;
-    return clamp(percentLit, 0.1f, 1.0f);
-}
-
-
 // 如果框完全位于平面的后面(负半空间),则返回true。
 bool AABBBehindPlaneTest(float3 center, float3 extents, float4 plane)
 {
@@ -316,4 +287,59 @@ bool AABBOutsideFrustumTest(float3 center, float3 extents, float4 frustumPlanes[
         }
     }
     return false;
+}
+
+
+
+///Noise Function
+
+
+//One Dimensional (0-1)
+float Noise_1to1(float x) {
+    return frac(sin(x) * 10000.0f);
+}
+//Two Dimensional (0-1)
+float Noise_2to1(float2 uv) {
+    const float a = 12.9898f, b = 78.233f, c = 43758.5453f;
+    float dt = dot(uv.xy, float2(a, b)), sn = fmod(dt, PI);
+    return frac(sin(sn) * c);
+}
+
+//Poisson Disk
+groupshared float2 poissonDisk[NUM_SAMPLES];
+
+void poissonDiskSamples(const in float2 randomSeed) {
+
+    float ANGLE_STEP = PI2 * float(NUM_RINGS) / float(NUM_SAMPLES);
+    float INV_NUM_SAMPLES = 1.0 / float(NUM_SAMPLES);
+
+    float angle = Noise_2to1(randomSeed) * PI2;
+    float radius = INV_NUM_SAMPLES;
+    float radiusStep = radius;
+
+    for (int i = 0; i < NUM_SAMPLES; i++) {
+        poissonDisk[i] = float2(cos(angle), sin(angle)) * pow(radius, 0.75);
+        radius += radiusStep;
+        angle += ANGLE_STEP;
+    }
+}
+
+void uniformDiskSamples(const in float2 randomSeed) {
+
+    float randNum = Noise_2to1(randomSeed);
+    float sampleX = Noise_1to1(randNum);
+    float sampleY = Noise_1to1(sampleX);
+
+    float angle = sampleX * PI2;
+    float radius = sqrt(sampleY);
+
+    for (int i = 0; i < NUM_SAMPLES; i++) {
+        poissonDisk[i] = float2(radius * cos(angle), radius * sin(angle));
+
+        sampleX = Noise_1to1(sampleY);
+        sampleY = Noise_1to1(sampleX);
+
+        angle = sampleX * PI2;
+        radius = sqrt(sampleY);
+    }
 }

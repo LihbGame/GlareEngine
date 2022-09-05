@@ -186,8 +186,9 @@ namespace GlareEngine
 
 			} while (UpdateApplication(app) && !gExit);    // Returns false to quit loop
 
-			TerminateApplication(app);
 			ShutdownGraphics();
+			TerminateApplication(app);
+			
 		}
 
 

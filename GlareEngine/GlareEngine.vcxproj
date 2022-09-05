@@ -512,6 +512,7 @@
     <None Include="Shaders\Misc\PBRLighting.hlsli" />
     <None Include="Shaders\Misc\ShaderUtility.hlsli" />
     <None Include="Shaders\Misc\ToneMappingUtility.hlsli" />
+    <None Include="Shaders\Shadow\RealTimeShadowHelper.hlsli" />
     <None Include="Shaders\Terrain\TerrainHeader.hlsli" />
   </ItemGroup>
   <ItemGroup>

@@ -773,6 +773,7 @@
     <None Include="Shaders\Terrain\TerrainDS.hlsl" />
     <None Include="Shaders\Terrain\TerrainHS.hlsl" />
     <None Include="packages.config" />
+    <None Include="Shaders\Shadow\RealTimeShadowHelper.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Dependences\lib\ozz\debug\ozz_animation_d.lib" />

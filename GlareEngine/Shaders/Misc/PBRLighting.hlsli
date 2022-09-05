@@ -1,5 +1,8 @@
 #define MaxLights 16
-#define PI 3.1415
+
+#define EPS 1e-3
+#define PI 3.141592653589793
+#define PI2 6.283185307179586
 
 // Defaults for number of lights.
 #ifndef NUM_DIR_LIGHTS
@@ -149,7 +152,7 @@ float3 F_Schlick(in float3 f0, in float f90, in float u)
 {
  return f0 + ( f90 - f0 ) * pow(1.0f - u , 5.0f);
 }
-//Disney diffuse BRDF code with renormalization of its energy
+//Disney diffuse BRDF code with renormalization of its energy(Burley's diffuse BRDF)
 float Fr_DisneyDiffuse(float NdotV, float NdotL, float LdotH,float linearRoughness)
 {
     float energyFactor = lerp(1.0, 1.0 / 1.51, linearRoughness);
