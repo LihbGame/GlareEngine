@@ -800,6 +800,7 @@
     <FxCompile Include="Shaders\GI\BakingBRDFPS.hlsl" />
     <FxCompile Include="Shaders\Terrain\TerrainVS.hlsl" />
     <FxCompile Include="Shaders\Terrain\TerrainPS.hlsl" />
+    <FxCompile Include="Shaders\Present\PresentHDRPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="Dependences\lib\assimp-vc142-mtd.dll" />

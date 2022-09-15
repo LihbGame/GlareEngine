@@ -18,6 +18,7 @@
 #include "CompiledShaders/PresentSDRPS.h"
 #include "CompiledShaders/ScreenQuadVS.h"
 #include "CompiledShaders/BufferCopyPS.h"
+#include "CompiledShaders/PresentHDRPS.h"
 
 // 该宏决定是否检测是否有 HDR 显示并启用 HDR10 输出。
 // 目前，在启用 HDR 显示的情况下，像素放大功能被破坏。
@@ -233,10 +234,10 @@ namespace GlareEngine
 
 		//Create HDR PSO
 		PresentHDRPS = PresentSDRPS;
-		//PresentHDRPS.SetPixelShader(g_pPresentHDRPS, sizeof(g_pPresentHDRPS));
-		//DXGI_FORMAT SwapChainFormats[2] = { DXGI_FORMAT_R10G10B10A2_UNORM, DXGI_FORMAT_R10G10B10A2_UNORM };
-		//PresentHDRPS.SetRenderTargetFormats(2, SwapChainFormats, DXGI_FORMAT_UNKNOWN);
-		//PresentHDRPS.Finalize();
+		PresentHDRPS.SetPixelShader(g_pPresentHDRPS, sizeof(g_pPresentHDRPS));
+		DXGI_FORMAT SwapChainFormats[2] = { DXGI_FORMAT_R10G10B10A2_UNORM, DXGI_FORMAT_R10G10B10A2_UNORM };
+		PresentHDRPS.SetRenderTargetFormats(2, SwapChainFormats, DXGI_FORMAT_UNKNOWN);
+		PresentHDRPS.Finalize();
 
 	}
 
@@ -277,7 +278,7 @@ namespace GlareEngine
 	void Display::PreparePresentHDR()
 	{
 		GraphicsContext& Context = GraphicsContext::Begin(L"Present");
-
+		Context.PIXBeginEvent(L"Prepare Present HDR");
 		// We're going to be reading these buffers to write to the swap chain buffer(s)
 		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		Context.TransitionResource(g_DisplayBuffers[g_CurrentBuffer], D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -294,7 +295,7 @@ namespace GlareEngine
 
 		Context.SetPipelineState(PresentHDRPS);
 		Context.SetRenderTargets(_countof(RTVs), RTVs);
-		Context.SetViewportAndScissor(0, 0, g_NativeWidth, g_NativeHeight);
+		Context.SetViewportAndScissor(0, 0, g_DisplayWidth, g_DisplayHeight);
 		struct Constants
 		{
 			float RcpDstWidth;
@@ -307,6 +308,7 @@ namespace GlareEngine
 			(float)g_HDRPaperWhite, (float)g_MaxDisplayLuminance, (int32_t)HDRDebugMode };
 		Context.SetConstantArray(1, sizeof(Constants) / 4, (float*)&consts);
 		Context.Draw(3);
+		Context.PIXEndEvent();
 		// Close the final context to be executed before frame present.
 		Context.Finish();
 	}

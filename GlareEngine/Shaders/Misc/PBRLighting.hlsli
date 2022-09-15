@@ -309,6 +309,7 @@ float4 ComputeLighting(Light gLights[MaxLights], Material mat,
 #if (NUM_DIR_LIGHTS > 0)
     for(i = 0; i < NUM_DIR_LIGHTS; ++i)
     {
+        gLights[i].Strength *= shadowFactor[0];
         result += ComputeDirectionalLight(gLights[i], mat, normal, toEye, F0);
     }
 #endif

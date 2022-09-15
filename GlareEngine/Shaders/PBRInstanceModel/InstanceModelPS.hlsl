@@ -48,11 +48,11 @@ float4 main(PosNorTanTexOut pin) : SV_Target
     Material mat = { diffuseAlbedo, matData.mFresnelR0, Roughness, Metallic, AO };
 // Only the first light casts a shadow.
     float3 shadowFactor = float3(1.0f, 1.0f, 1.0f);
-    shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
+    shadowFactor[0] = PCF(pin.ShadowPosH);
     float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
 	bumpedNormalW, toEyeW, shadowFactor);
 
-    float4 litColor = (ambient + directLight) * shadowFactor[0];
+    float4 litColor = ambient + directLight;
 
 // Common convention to take alpha from diffuse material.
     litColor.a = diffuseAlbedo.a;

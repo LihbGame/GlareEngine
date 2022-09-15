@@ -38,3 +38,35 @@ float CalcShadowFactor(float4 shadowPosH)
     percentLit /= 9.0f;
     return clamp(percentLit, 0.1f, 1.0f);
 }
+
+float PCF(float4 shadowPosH)
+{
+    // Complete projection by doing division by w.
+    shadowPosH.xyz /= shadowPosH.w;
+
+    // Depth in NDC space.
+    float depth = shadowPosH.z;
+
+    uint width, height, numMips;
+    gSRVMap[gShadowMapIndex].GetDimensions(0, width, height, numMips);
+
+    // Texel size.
+    float dx = 1.0f / (float)width;
+
+
+    float  visibility = 0.0;
+
+    float  filterSize = dx;
+    //caculate poisson disk samples
+    DiskSamples poissonDisk = poissonDiskSamples(shadowPosH.xy);
+
+    [unroll]
+    for (int i = 0; i < NUM_SAMPLES; i++)
+    {
+        float2  texcoords = poissonDisk.Samples[i] * filterSize + shadowPosH.xy;
+        visibility += gSRVMap[gShadowMapIndex].SampleCmpLevelZero(gSamplerShadow,
+            texcoords, depth).r;
+    }
+
+    return visibility / float(NUM_SAMPLES);
+}

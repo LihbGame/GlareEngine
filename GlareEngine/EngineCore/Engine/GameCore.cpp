@@ -128,6 +128,7 @@ namespace GlareEngine
 			Display::PreparePresent();
 			//RenderUI
 			Game.RenderUI();
+
 			//Present
 			Display::Present();
 

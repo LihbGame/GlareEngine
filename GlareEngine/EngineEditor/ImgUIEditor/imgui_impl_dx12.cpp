@@ -494,11 +494,23 @@ bool    ImGui_ImplDX12_CreateDeviceObjects()
               float2 uv  : TEXCOORD0;\
             };\
             \
+            float3 RemoveREC2084Curve(float3 N)\
+            {   \
+            float m1 = 2610.0 / 4096.0 / 4;\
+            float m2 = 2523.0 / 4096.0 * 128;\
+            float c1 = 3424.0 / 4096.0;\
+            float c2 = 2413.0 / 4096.0 * 32;\
+            float c3 = 2392.0 / 4096.0 * 32;\
+            float3 Np = pow(N, 1 / m2);\
+            return pow(max(Np - c1, 0) / (c2 - c3 * Np), 1 / m1);\
+            }\
+            \
             PS_INPUT main(VS_INPUT input)\
             {\
               PS_INPUT output;\
               output.pos = mul( ProjectionMatrix, float4(input.pos.xy, 0.f, 1.f));\
               output.col = input.col;\
+              output.col.rgb= (output.col.rgb+.1f)/(output.col.rgb+1.0f);\
               output.uv  = input.uv;\
               return output;\
             }";

@@ -305,26 +305,34 @@ float Noise_2to1(float2 uv) {
     return frac(sin(sn) * c);
 }
 
-//Poisson Disk
-groupshared float2 poissonDisk[NUM_SAMPLES];
 
-void poissonDiskSamples(const in float2 randomSeed) {
+
+//Poisson Disk
+struct DiskSamples
+{
+    float2 Samples[NUM_SAMPLES];
+};
+
+
+DiskSamples poissonDiskSamples(const in float2 randomSeed) {
 
     float ANGLE_STEP = PI2 * float(NUM_RINGS) / float(NUM_SAMPLES);
     float INV_NUM_SAMPLES = 1.0 / float(NUM_SAMPLES);
-
+    
     float angle = Noise_2to1(randomSeed) * PI2;
     float radius = INV_NUM_SAMPLES;
     float radiusStep = radius;
 
+    DiskSamples poissonDisk;
     for (int i = 0; i < NUM_SAMPLES; i++) {
-        poissonDisk[i] = float2(cos(angle), sin(angle)) * pow(radius, 0.75);
+        poissonDisk.Samples[i] = float2(cos(angle), sin(angle)) * pow(radius, 0.75);
         radius += radiusStep;
         angle += ANGLE_STEP;
     }
+    return poissonDisk;
 }
 
-void uniformDiskSamples(const in float2 randomSeed) {
+DiskSamples uniformDiskSamples(const in float2 randomSeed) {
 
     float randNum = Noise_2to1(randomSeed);
     float sampleX = Noise_1to1(randNum);
@@ -332,9 +340,9 @@ void uniformDiskSamples(const in float2 randomSeed) {
 
     float angle = sampleX * PI2;
     float radius = sqrt(sampleY);
-
+    DiskSamples poissonDisk;
     for (int i = 0; i < NUM_SAMPLES; i++) {
-        poissonDisk[i] = float2(radius * cos(angle), radius * sin(angle));
+        poissonDisk.Samples[i] = float2(radius * cos(angle), radius * sin(angle));
 
         sampleX = Noise_1to1(sampleY);
         sampleY = Noise_1to1(sampleX);
@@ -342,4 +350,5 @@ void uniformDiskSamples(const in float2 randomSeed) {
         angle = sampleX * PI2;
         radius = sqrt(sampleY);
     }
+    return poissonDisk;
 }
