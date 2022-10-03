@@ -467,6 +467,6 @@ void App::CreateSimpleModelInstance(ID3D12GraphicsCommandList* CommandList, stri
 		}
 	}
 	auto lModel = make_unique<InstanceModel>(StringToWString(ModelName), InstanceData); 
-	//lModel->SetShadowFlag(true);
+	lModel->SetShadowFlag(false);
 	mModels.push_back(std::move(lModel));
 }

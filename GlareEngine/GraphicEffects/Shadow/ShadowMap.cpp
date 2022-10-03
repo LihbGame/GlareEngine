@@ -124,7 +124,7 @@ void ShadowMap::Draw(GraphicsContext& Context,vector<RenderObject*> RenderObject
 
 	for (auto& object:RenderObjects)
 	{
-		if (object->GetVisible() && object->GetShadowFlag())
+		if (object->GetVisible() && object->GetShadowRenderFlag())
 		{
 			Context.PIXBeginEvent(object->GetName().c_str());
 			object->DrawShadow(Context, &mShadowPSO);

@@ -43,6 +43,9 @@ public:
 	void SetShadowFlag(bool IsCastShadow) { mShouldCastShadow = IsCastShadow; }
 	bool GetShadowFlag()const { return mShouldCastShadow; }
 
+	void SetShadowRenderFlag(bool IsShadowRender) { mShouldShadowRender = IsShadowRender; }
+	bool GetShadowRenderFlag()const { return mShouldShadowRender; }
+
 	void SetVisible(bool isVisible) { mIsVisible = isVisible; }
 	bool GetVisible()const { return mIsVisible; }
 
@@ -58,6 +61,7 @@ protected:
 	//Name
 	wstring mName;
 	bool mShouldCastShadow = false;
+	bool mShouldShadowRender = false;
 	bool mIsVisible = true;
 };
 
