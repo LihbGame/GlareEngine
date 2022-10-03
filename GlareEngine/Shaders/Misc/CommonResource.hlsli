@@ -9,7 +9,7 @@
 #define BLOCKER_SEARCH_NUM_SAMPLES NUM_SAMPLES
 #define PCF_NUM_SAMPLES NUM_SAMPLES
 #define NUM_RINGS 10
-
+#define EPS 1e-3
 
 struct InstanceData
 {

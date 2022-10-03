@@ -1,0 +1,24 @@
+#pragma once
+#include "RenderObject.h"
+
+namespace PostProcessing 
+{
+    void Initialize(ID3D12GraphicsCommandList * CommandList);
+
+    void BuildSRV(ID3D12GraphicsCommandList* CommandList);
+
+    void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr);
+
+    void DrawBeforeToneMapping();
+    void DrawAfterToneMapping();
+
+    void DrawUI();
+
+    void Update(float dt);
+
+    void BuildPSO(const PSOCommonProperty CommonProperty);
+
+    //PSO
+    extern GraphicsPSO mPSO;
+}
+

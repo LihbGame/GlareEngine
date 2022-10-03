@@ -342,10 +342,12 @@ namespace GlareEngine
 
 		GPUTimeManager::Initialize(4096);
 
-		/*TemporalEffects::Initialize();
-		PostEffects::Initialize();
-		SSAO::Initialize();
-		ParticleEffectManager::Initialize(3840, 2160);*/
+		//TemporalEffects::Initialize();
+		
+		//PostEffects::Initialize();
+		
+		//SSAO::Initialize();
+		//ParticleEffectManager::Initialize(3840, 2160);
 	}
 
 	void ShutdownGraphics(void)

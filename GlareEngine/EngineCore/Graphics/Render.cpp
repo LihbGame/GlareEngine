@@ -10,6 +10,7 @@
 #include "GI/IBL.h"
 #include "InstanceModel/InstanceModel.h"
 #include "InstanceModel/glTFInstanceModel.h"
+#include "PostProcessing/PostProcessing.h"
 
 namespace GlareEngine
 {
@@ -122,6 +123,7 @@ namespace GlareEngine
 		ShadowMap::BuildPSO(gCommonProperty);
 		IBL::BuildPSOs(gCommonProperty);
 		Terrain::BuildPSO(gCommonProperty);
+		PostProcessing::BuildPSO(gCommonProperty);
 	}
 
 }

@@ -33,7 +33,9 @@ void Scene::VisibleUpdateForType()
 	TypeVisible[ObjectType::Model] = m_pGUI->IsShowModel();
 	TypeVisible[ObjectType::Shadow] = m_pGUI->IsShowShadow();
 
+	static bool lastShadowVisible= TypeVisible[ObjectType::Shadow];
 	bool ShadowVisible = TypeVisible[ObjectType::Shadow];
+
 	for (auto& object : m_pRenderObjects)
 	{
 		//update visible
@@ -42,9 +44,9 @@ void Scene::VisibleUpdateForType()
 			object->SetVisible(TypeVisible[object->mObjectType]);
 		}
 		//update Model shadow visible
-		if (object->mObjectType == ObjectType::Model && ShadowVisible != object->GetShadowFlag())
+		if (object->mObjectType == ObjectType::Model && ShadowVisible != lastShadowVisible)
 		{
-			object->SetShadowFlag(ShadowVisible);
+			object->SetShadowFlag(ShadowVisible || object->GetShadowFlag());
 		}
 	}
 }

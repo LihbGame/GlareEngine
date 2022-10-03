@@ -211,6 +211,7 @@
     <ClInclude Include="EngineCore\Model\IndexOptimize.h" />
     <ClInclude Include="EngineCore\Model\MeshBuilder.h" />
     <ClInclude Include="EngineCore\Graphics\Render.h" />
+    <ClInclude Include="GraphicEffects\PostProcessing\PostProcessing.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineEditor\ImgUIEditor\EngineGUI.cpp">
@@ -570,6 +571,9 @@
     <ClCompile Include="EngineCore\Model\glTFModelLoader.cpp">
       <Filter>MainSource</Filter>
     </ClCompile>
+    <ClCompile Include="GraphicEffects\PostProcessing\PostProcessing.cpp">
+      <Filter>MainSource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ICONS\GAME_128px_1199103_easyicon.net.ico">
@@ -801,6 +805,7 @@
     <FxCompile Include="Shaders\Terrain\TerrainVS.hlsl" />
     <FxCompile Include="Shaders\Terrain\TerrainPS.hlsl" />
     <FxCompile Include="Shaders\Present\PresentHDRPS.hlsl" />
+    <FxCompile Include="Shaders\PostProcessing\FbmPostPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="Dependences\lib\assimp-vc142-mtd.dll" />

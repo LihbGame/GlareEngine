@@ -7,6 +7,7 @@
 #include "EngineAdjust.h"
 #include "EngineProfiling.h"
 #include "EngineGUI.h"
+#include "PostProcessing/PostProcessing.h"
 
 #include <dwmapi.h>
 #include <windowsx.h>
@@ -80,7 +81,7 @@ namespace GlareEngine
 
 		void PreRender(GameApp& Game)
 		{
-			//hdr or ldr
+			//Tone Mapping hdr or ldr
 			Display::PreparePresent();
 			//RenderUI
 			Game.RenderUI();
@@ -122,9 +123,9 @@ namespace GlareEngine
 			//RenderScene
 			Game.RenderScene();
 
-			//PostEffects::Render();
+			//PostProcessing::DrawBeforeToneMapping();
 
-			//hdr or ldr
+			//Tone Mapping hdr or ldr
 			Display::PreparePresent();
 			//RenderUI
 			Game.RenderUI();

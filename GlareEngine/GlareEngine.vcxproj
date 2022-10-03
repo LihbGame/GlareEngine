@@ -438,6 +438,7 @@
     <ClInclude Include="GraphicEffects\Particles\ParticleEffect.h" />
     <ClInclude Include="GraphicEffects\Particles\ParticleEffectProperties.h" />
     <ClInclude Include="GraphicEffects\Particles\ParticleShaderStructs.h" />
+    <ClInclude Include="GraphicEffects\PostProcessing\PostProcessing.h" />
     <ClInclude Include="GraphicEffects\Shadow\ShadowMap.h" />
     <ClInclude Include="GraphicEffects\Sky\Sky.h" />
     <ClInclude Include="GraphicEffects\DXR\D3D12RaytracingHelper.h" />
@@ -535,6 +536,7 @@
     <ClCompile Include="GraphicEffects\InstanceModel\glTFInstanceModel.cpp" />
     <ClCompile Include="GraphicEffects\InstanceModel\InstanceModel.cpp" />
     <ClCompile Include="GraphicEffects\InstanceModel\SimpleModelGenerator.cpp" />
+    <ClCompile Include="GraphicEffects\PostProcessing\PostProcessing.cpp" />
     <ClCompile Include="GraphicEffects\Terrain\Terrain.cpp" />
     <ClCompile Include="EngineCore\Graphics\TextureConvert.cpp" />
     <ClCompile Include="EngineCore\Graphics\Color.cpp" />
@@ -717,6 +719,12 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
       <FileType>Document</FileType>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Qembed_debug %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcessing\FbmPostPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="Shaders\Present\BufferCopyPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
