@@ -8,9 +8,9 @@
 //--------------------------------------------------------------------------------------
 
 #include "pch.h"
-#include "DirectXHelpers.h"
+#include "DirectXTK12/Inc/DirectXHelpers.h"
 #include "PlatformHelpers.h"
-#include "ResourceUploadBatch.h"
+#include "DirectXTK12/Inc/ResourceUploadBatch.h"
 #include "LoaderHelpers.h"
 
 using namespace DirectX;

@@ -1,6 +1,6 @@
 #include "SceneManager.h"
-#include "RenderObject.h"
-#include "ModelLoader.h"
+#include "Misc/RenderObject.h"
+#include "Animation/ModelLoader.h"
 
 using namespace  GlareEngine;
 

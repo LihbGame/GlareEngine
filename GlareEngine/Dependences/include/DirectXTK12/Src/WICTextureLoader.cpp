@@ -22,12 +22,12 @@
 
 #include "pch.h"
 
-#include "WICTextureLoader.h"
+#include "DirectXTK12/Inc/WICTextureLoader.h"
 
-#include "DirectXHelpers.h"
+#include "DirectXTK12/Inc/DirectXHelpers.h"
 #include "PlatformHelpers.h"
 #include "LoaderHelpers.h"
-#include "ResourceUploadBatch.h"
+#include "DirectXTK12/Inc/ResourceUploadBatch.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;

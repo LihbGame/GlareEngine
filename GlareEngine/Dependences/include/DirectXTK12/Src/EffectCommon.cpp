@@ -10,7 +10,7 @@
 #include "pch.h"
 #include "EffectCommon.h"
 #include "DemandCreate.h"
-#include "ResourceUploadBatch.h"
+#include "DirectXTK12/Inc/ResourceUploadBatch.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;

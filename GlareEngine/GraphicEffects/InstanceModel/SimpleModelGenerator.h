@@ -1,6 +1,6 @@
 #pragma once
-#include "ModelMesh.h"
-#include "GeometryGenerator.h"
+#include "Animation/ModelMesh.h"
+#include "Engine/GeometryGenerator.h"
 
 using namespace GlareEngine;
 

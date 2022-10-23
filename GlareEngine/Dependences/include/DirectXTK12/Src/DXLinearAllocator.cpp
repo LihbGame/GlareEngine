@@ -8,7 +8,7 @@
 //--------------------------------------------------------------------------------------
 
 #include "pch.h"
-#include "DirectXHelpers.h"
+#include "DirectXTK12/Inc/DirectXHelpers.h"
 #include "PlatformHelpers.h"
 #include "DXLinearAllocator.h"
 

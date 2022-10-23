@@ -1,5 +1,5 @@
 #include "Color.h"
-#include "VectorMath.h"
+#include "Math/VectorMath.h"
 using DirectX::XMVECTORU32;
 using namespace GlareEngine;
 

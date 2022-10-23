@@ -10,7 +10,7 @@
 
 #include "pch.h"
 
-#include "GamePad.h"
+#include "DirectXTK12/Inc/GamePad.h"
 #include "PlatformHelpers.h"
 
 using namespace DirectX;

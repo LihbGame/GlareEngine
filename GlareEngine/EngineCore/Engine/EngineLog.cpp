@@ -1,5 +1,5 @@
-#include "EngineLog.h"
-#include "EngineUtility.h"
+#include "Engine/EngineLog.h"
+#include "Engine/EngineUtility.h"
 
 vector<wstring> EngineLog::DisplayLogs = {};
 vector<wstring>  EngineLog::FilterDisplayLogs = {};

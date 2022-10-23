@@ -1,8 +1,9 @@
 #include "Sky.h"
-#include "GeometryGenerator.h"
-#include "TextureManager.h"
-#include "ConstantBuffer.h"
+#include "Engine/GeometryGenerator.h"
+#include "Graphics/TextureManager.h"
+#include "Misc/ConstantBuffer.h"
 #include "EngineGUI.h"
+
 //shader
 #include "CompiledShaders/SkyVS.h"
 #include "CompiledShaders/SkyPS.h"

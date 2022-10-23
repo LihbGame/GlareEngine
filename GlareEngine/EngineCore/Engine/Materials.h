@@ -1,6 +1,6 @@
 #pragma once
 #include "EngineUtility.h"
-#include "TextureManager.h"
+#include "Graphics/TextureManager.h"
 
 namespace GlareEngine
 {

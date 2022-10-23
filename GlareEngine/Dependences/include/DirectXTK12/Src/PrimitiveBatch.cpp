@@ -8,10 +8,10 @@
 //--------------------------------------------------------------------------------------
 
 #include "pch.h"
-#include "PrimitiveBatch.h"
-#include "DirectXHelpers.h"
+#include "DirectXTK12/Inc/PrimitiveBatch.h"
+#include "DirectXTK12/Inc/DirectXHelpers.h"
 #include "PlatformHelpers.h"
-#include "GraphicsMemory.h"
+#include "DirectXTK12/Inc/GraphicsMemory.h"
 
 using namespace DirectX;
 using namespace DirectX::Internal;

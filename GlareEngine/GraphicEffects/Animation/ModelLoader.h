@@ -1,7 +1,7 @@
 #pragma once
 #include "ModelMesh.h"
-#include "TextureManager.h"
-#include "Materials.h"
+#include "Graphics/TextureManager.h"
+#include "Engine/Materials.h"
 #include <assimp\Importer.hpp>
 #include <assimp\scene.h>
 #include <assimp\postprocess.h>

@@ -4,6 +4,7 @@
 /x64/
 /build/
 /lib/
+/bin/
 /GlareEngine/Debug/
 /GlareEngine/x64/
 /GlareEngine/Release/
@@ -18,7 +19,10 @@
 /GameDemo/x64/
 /GameDemo/Release/
 /GameDemo/.vs/
-/EngineDemo(Old Framework)/Debug/
-/EngineDemo(Old Framework)/x64/
-/EngineDemo(Old Framework)/Release/
-/EngineDemo(Old Framework)/.vs/
+/EngineDemo_Old/Debug/
+/EngineDemo_Old/x64/
+/EngineDemo_Old/Release/
+/EngineDemo_Old/.vs/
+/EngineDemo_Old/CMakeFiles/
+/EngineDemo_Old/cmake_install*
+/CMakeFiles/

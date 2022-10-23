@@ -1,6 +1,5 @@
 #include "BoundingSphere.h"
 
-
 using namespace GlareEngine::Math;
 
 BoundingSphere BoundingSphere::Union(const BoundingSphere& rhs)

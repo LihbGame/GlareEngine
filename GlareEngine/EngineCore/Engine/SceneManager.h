@@ -1,6 +1,6 @@
 #pragma once
-#include "GraphicsCore.h"
-#include "ModelMesh.h"
+#include "Graphics/GraphicsCore.h"
+#include "Animation/ModelMesh.h"
 #include "InstanceModel/InstanceModel.h"
 #include "InstanceModel/SimpleModelGenerator.h"
 #include "Scene.h"

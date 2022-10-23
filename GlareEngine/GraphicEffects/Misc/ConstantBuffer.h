@@ -1,9 +1,9 @@
 #pragma once
-#include "EngineUtility.h"
-#include "MathHelper.h"
-#include "Vertex.h"
-#include "Matrix3.h"
-#include "Matrix4.h"
+#include "Engine/EngineUtility.h"
+#include "Math/MathHelper.h"
+#include "Engine/Vertex.h"
+#include "Math/Matrix3.h"
+#include "Math/Matrix4.h"
 
 // The order of textures for PBR materials
 enum 

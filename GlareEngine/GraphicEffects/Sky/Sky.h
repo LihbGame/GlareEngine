@@ -1,7 +1,7 @@
 #pragma once
-#include "RenderObject.h"
-#include "PipelineState.h"
-#include "MeshStruct.h"
+#include "Misc/RenderObject.h"
+#include "Graphics/PipelineState.h"
+#include "Animation/MeshStruct.h"
 using namespace GlareEngine;
 
 class CSky :

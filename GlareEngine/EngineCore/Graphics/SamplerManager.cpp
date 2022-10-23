@@ -1,6 +1,6 @@
 #include "SamplerManager.h"
 #include "GraphicsCore.h"
-#include "Hash.h"
+#include "Math/Hash.h"
 
 namespace
 {

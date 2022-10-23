@@ -1,5 +1,5 @@
-#include "EngineInput.h"
-#include "EngineUtility.h"
+#include "Engine/EngineInput.h"
+#include "Engine/EngineUtility.h"
 
 #define USE_XINPUT
 #include <XInput.h>

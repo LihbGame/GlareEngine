@@ -1,8 +1,8 @@
 #include "Scene.h"
-#include "ModelLoader.h"
+#include "Animation/ModelLoader.h"
 #include "Shadow/ShadowMap.h"
 #include "EngineGUI.h"
-#include "Render.h"
+#include "Graphics/Render.h"
 
 /// Scene/////////////////////////////////////////////
 

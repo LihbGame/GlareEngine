@@ -8,14 +8,14 @@
 //--------------------------------------------------------------------------------------
 
 #include "pch.h"
-#include "Model.h"
+#include "DirectXTK12/Inc/Model.h"
 
-#include "CommonStates.h"
-#include "DescriptorHeap.h"
-#include "DirectXHelpers.h"
+#include "DirectXTK12/Inc/CommonStates.h"
+#include "DirectXTK12/Inc/DescriptorHeap.h"
+#include "DirectXTK12/Inc/DirectXHelpers.h"
 #include "Effects.h"
 #include "PlatformHelpers.h"
-#include "ResourceUploadBatch.h"
+#include "DirectXTK12/Inc/ResourceUploadBatch.h"
 
 using namespace DirectX;
 

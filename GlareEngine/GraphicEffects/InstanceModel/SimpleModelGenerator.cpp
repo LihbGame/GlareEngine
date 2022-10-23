@@ -1,5 +1,5 @@
 #include "SimpleModelGenerator.h"
-#include "TextureManager.h"
+#include "Graphics/TextureManager.h"
 
 const char* ModelPBRMaterials[]
 {

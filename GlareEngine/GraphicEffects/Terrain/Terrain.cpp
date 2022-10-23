@@ -1,8 +1,8 @@
 #include "Terrain.h"
-#include "GeometryGenerator.h"
-#include "Vertex.h"
-#include "EngineGlobal.h"
-#include "Scene.h"
+#include "Engine/GeometryGenerator.h"
+#include "Engine/Vertex.h"
+#include "Engine/EngineGlobal.h"
+#include "Engine/Scene.h"
 #include "EngineGUI.h"
 #include "stb_image/stb_image.h"
 

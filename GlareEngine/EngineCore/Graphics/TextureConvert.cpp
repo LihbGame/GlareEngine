@@ -1,7 +1,7 @@
 #include "TextureConvert.h"
-#include "EngineUtility.h"
+#include "Engine/EngineUtility.h"
 #include "DirectXTex.h"
-#include "EngineLog.h"
+#include "Engine/EngineLog.h"
 
 #define GetFlag(f) ((Flags & f) != 0)
 

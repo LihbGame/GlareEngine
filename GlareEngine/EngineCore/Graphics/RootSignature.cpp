@@ -1,6 +1,6 @@
 #include "RootSignature.h"
 #include "GraphicsCore.h"
-#include "Hash.h"
+#include "Math/Hash.h"
 #include <map>
 #include <thread>
 #include <mutex>

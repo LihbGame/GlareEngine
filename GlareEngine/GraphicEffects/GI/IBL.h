@@ -1,6 +1,6 @@
 #pragma once
-#include "CubeRenderTarget.h"
-#include "RenderObject.h"
+#include "Misc/CubeRenderTarget.h"
+#include "Misc/RenderObject.h"
 
 // Preview:
 // 1.Baking Environment Diffuse reflection

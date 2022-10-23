@@ -1,5 +1,5 @@
 #include "CubeRenderTarget.h"
-#include "GraphicsCore.h"
+#include "Graphics/GraphicsCore.h"
 CubeRenderTarget::CubeRenderTarget(UINT width, UINT height,UINT mipmap, XMFLOAT3 CameraPostion, DXGI_FORMAT format)
 	:mWidth(width),
 	mHeight(height),

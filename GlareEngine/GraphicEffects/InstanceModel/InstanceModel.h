@@ -1,9 +1,9 @@
 #pragma once
 
-#include "EngineUtility.h"
-#include "GeometryGenerator.h"
-#include "Vertex.h"
-#include "RenderObject.h"
+#include "Engine/EngineUtility.h"
+#include "Engine/GeometryGenerator.h"
+#include "Engine/Vertex.h"
+#include "Misc/RenderObject.h"
 
 class InstanceModel 
 	:public RenderObject

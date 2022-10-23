@@ -15,13 +15,13 @@
 
 #include "pch.h"
 
-#include "DDSTextureLoader.h"
+#include "DirectXTK12/Inc/DDSTextureLoader.h"
 
 #include "PlatformHelpers.h"
 #include "DDS.h"
-#include "DirectXHelpers.h"
+#include "DirectXTK12/Inc/DirectXHelpers.h"
 #include "LoaderHelpers.h"
-#include "ResourceUploadBatch.h"
+#include "DirectXTK12/Inc/ResourceUploadBatch.h"
 #include <wrl.h>
 #include <d3d11.h>
 using namespace Microsoft::WRL;

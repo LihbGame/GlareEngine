@@ -11,14 +11,14 @@
 
 #include <memory>
 
-#include "Effects.h"
+#include "DirectXTK12/Inc/Effects.h"
 #include "PlatformHelpers.h"
 #include "SharedResourcePool.h"
 #include "AlignedNew.h"
-#include "DescriptorHeap.h"
-#include "GraphicsMemory.h"
-#include "DirectXHelpers.h"
-#include "RenderTargetState.h"
+#include "DirectXTK12/Inc/DescriptorHeap.h"
+#include "DirectXTK12/Inc/GraphicsMemory.h"
+#include "DirectXTK12/Inc/DirectXHelpers.h"
+#include "DirectXTK12/Inc/RenderTargetState.h"
 
 // BasicEffect, SkinnedEffect, et al, have many things in common, but also significant
 // differences (for instance, not all the effects support lighting). This header breaks

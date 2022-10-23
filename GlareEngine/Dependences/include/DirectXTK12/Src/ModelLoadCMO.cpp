@@ -8,9 +8,9 @@
 //--------------------------------------------------------------------------------------
 
 #include "pch.h"
-#include "CommonStates.h"
-#include "Model.h"
-#include "DirectXHelpers.h"
+#include "DirectXTK12/Inc/CommonStates.h"
+#include "DirectXTK12/Inc/Model.h"
+#include "DirectXTK12/Inc/DirectXHelpers.h"
 #include "BinaryReader.h"
 #include "PlatformHelpers.h"
 

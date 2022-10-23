@@ -9,7 +9,7 @@
 //--------------------------------------------------------------------------------------
 
 #include "pch.h"
-#include "Keyboard.h"
+#include "DirectXTK12/Inc/Keyboard.h"
 
 #include "PlatformHelpers.h"
 

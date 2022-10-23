@@ -1,10 +1,10 @@
 #pragma once
-#include "RenderObject.h"
-#include "EngineUtility.h"
-#include "Camera.h"
-#include "TextureManager.h"
-#include "ModelMesh.h"
-#include "ConstantBuffer.h"
+#include "Misc/RenderObject.h"
+#include "Engine/EngineUtility.h"
+#include "Engine/Camera.h"
+#include "Graphics/TextureManager.h"
+#include "Animation/ModelMesh.h"
+#include "Misc/ConstantBuffer.h"
 
 struct TerrainInitInfo
 {

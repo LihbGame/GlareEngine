@@ -9,7 +9,7 @@
 //--------------------------------------------------------------------------------------
 
 #include "pch.h"
-#include "Mouse.h"
+#include "DirectXTK12/Inc/Mouse.h"
 
 #include "PlatformHelpers.h"
 

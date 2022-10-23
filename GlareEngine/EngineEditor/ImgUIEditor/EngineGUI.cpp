@@ -1,12 +1,12 @@
 #include "EngineGUI.h"
 #include <dxgi.h>
-#include "EngineUtility.h"
-#include "EngineLog.h"
-#include "EngineAdjust.h"
-#include "GraphicsCore.h"
-#include "GameCore.h"
-#include "TextureManager.h"
-#include "Render.h"
+#include "Engine/EngineUtility.h"
+#include "Engine/EngineLog.h"
+#include "Engine/EngineAdjust.h"
+#include "Graphics/GraphicsCore.h"
+#include "Engine/GameCore.h"
+#include "Graphics/TextureManager.h"
+#include "Graphics/Render.h"
 
 using Microsoft::WRL::ComPtr;
 using namespace GlareEngine::GameCore;

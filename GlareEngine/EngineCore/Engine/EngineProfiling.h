@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "CommandContext.h"
+#include "Graphics/CommandContext.h"
 
 namespace GlareEngine
 {

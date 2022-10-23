@@ -3,10 +3,10 @@
 #include <array>
 #include "EngineProfiling.h"
 #include "GameTimer.h"
-#include "GraphicsCore.h"
+#include "Graphics/GraphicsCore.h"
 #include "EngineInput.h"
-#include "GPUTimeManager.h"
-#include "CommandContext.h"
+#include "Graphics/GPUTimeManager.h"
+#include "Graphics/CommandContext.h"
 #include "EngineAdjust.h"
 #include "EngineLog.h"
 

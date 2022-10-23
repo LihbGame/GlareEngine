@@ -4,8 +4,8 @@
 #include "GraphicsCore.h"
 #include "RootSignature.h"
 #include "PipelineState.h"
-#include "Hash.h"
-#include "EngineLog.h"
+#include "Math/Hash.h"
+#include "Engine/EngineLog.h"
 
 using namespace std;
 using Microsoft::WRL::ComPtr;

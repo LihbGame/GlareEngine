@@ -1,5 +1,5 @@
 #pragma once
-#include "GPUBuffer.h"
+#include "Graphics/GPUBuffer.h"
 #include "ParticleEffectProperties.h"
 #include "ParticleShaderStructs.h"
 

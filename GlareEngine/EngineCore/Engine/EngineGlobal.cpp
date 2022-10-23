@@ -1,4 +1,4 @@
-#include "EngineGlobal.h"
+#include "Engine/EngineGlobal.h"
 
 string EngineGlobal::TextureAssetPath = "../Resource/Textures/";
 string EngineGlobal::TerrainAssetPath = TextureAssetPath + "Terrain/";

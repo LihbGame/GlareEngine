@@ -8,9 +8,9 @@
 //--------------------------------------------------------------------------------------
 
 #include "pch.h"
-#include "BufferHelpers.h"
-#include "DirectXHelpers.h"
-#include "ResourceUploadBatch.h"
+#include "DirectXTK12/Inc/BufferHelpers.h"
+#include "DirectXTK12/Inc/DirectXHelpers.h"
+#include "DirectXTK12/Inc/ResourceUploadBatch.h"
 #include "LoaderHelpers.h"
 #include "PlatformHelpers.h"
 

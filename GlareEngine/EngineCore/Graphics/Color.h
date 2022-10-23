@@ -1,6 +1,6 @@
 #pragma once
 #include <DirectXMath.h>
-#include "Common.h"
+#include "Math/Common.h"
 using namespace DirectX;
 
 namespace GlareEngine

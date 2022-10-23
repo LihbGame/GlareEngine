@@ -8,7 +8,7 @@
 //--------------------------------------------------------------------------------------
 
 #include "pch.h"
-#include "VertexTypes.h"
+#include "DirectXTK12/Inc/VertexTypes.h"
 
 using namespace DirectX;
 

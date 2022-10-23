@@ -1,6 +1,6 @@
 #include "Materials.h"
-#include "GraphicsCore.h"
-#include "GraphicsCommon.h"
+#include "Graphics/GraphicsCore.h"
+#include "Graphics/GraphicsCommon.h"
 
 namespace GlareEngine
 {

@@ -1,5 +1,4 @@
 #pragma once
-
 #include "GPUResource.h"
 
 namespace GlareEngine

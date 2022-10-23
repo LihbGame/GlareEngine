@@ -22,8 +22,8 @@
 
 #include "pch.h"
 
-#include "ScreenGrab.h"
-#include "DirectXHelpers.h"
+#include "DirectXTK12/Inc/ScreenGrab.h"
+#include "DirectXTK12/Inc/DirectXHelpers.h"
 
 #include "PlatformHelpers.h"
 #include "DDS.h"

@@ -8,9 +8,9 @@
 //--------------------------------------------------------------------------------------
 
 #include "pch.h"
-#include "EffectPipelineStateDescription.h"
+#include "DirectXTK12/Inc/EffectPipelineStateDescription.h"
 
-#include "DirectXHelpers.h"
+#include "DirectXTK12/Inc/DirectXHelpers.h"
 #include "PlatformHelpers.h"
 
 

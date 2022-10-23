@@ -8,11 +8,11 @@
 //--------------------------------------------------------------------------------------
 
 #include "pch.h"
-#include "Effects.h"
-#include "CommonStates.h"
-#include "DirectXHelpers.h"
+#include "DirectXTK12/Inc/Effects.h"
+#include "DirectXTK12/Inc/CommonStates.h"
+#include "DirectXTK12/Inc/DirectXHelpers.h"
 #include "PlatformHelpers.h"
-#include "DescriptorHeap.h"
+#include "DirectXTK12/Inc/DescriptorHeap.h"
 
 #include <mutex>
 

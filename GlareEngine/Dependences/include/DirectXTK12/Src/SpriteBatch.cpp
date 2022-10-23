@@ -9,14 +9,14 @@
 
 #include "pch.h"
 
-#include "SpriteBatch.h"
-#include "CommonStates.h"
-#include "VertexTypes.h"
+#include "DirectXTK12/Inc/SpriteBatch.h"
+#include "DirectXTK12/Inc/CommonStates.h"
+#include "DirectXTK12/Inc/VertexTypes.h"
 #include "SharedResourcePool.h"
 #include "AlignedNew.h"
-#include "ResourceUploadBatch.h"
-#include "GraphicsMemory.h"
-#include "DirectXHelpers.h"
+#include "DirectXTK12/Inc/ResourceUploadBatch.h"
+#include "DirectXTK12/Inc/GraphicsMemory.h"
+#include "DirectXTK12/Inc/DirectXHelpers.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;

@@ -1,7 +1,7 @@
 #pragma once
 #include "ParticleShaderStructs.h"
-#include "Color.h"
-#include "Vector.h"
+#include "Graphics/Color.h"
+#include "Math/Vector.h"
 using namespace GlareEngine::Math;
 
 struct ParticleEffectProperties

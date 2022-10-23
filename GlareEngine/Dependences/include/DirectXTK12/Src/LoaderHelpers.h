@@ -13,7 +13,7 @@
 #pragma once
 
 #include "DDS.h"
-#include "DDSTextureLoader.h"
+#include "DirectXTK12/Inc/DDSTextureLoader.h"
 #include "PlatformHelpers.h"
 
 

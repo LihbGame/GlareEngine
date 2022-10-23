@@ -35,13 +35,13 @@
 #include <ppltasks.h>
 
 #include "d3dx12.h"
-#include "DDSTextureLoader.h"
-#include "WICTextureLoader.h"
+#include "DirectXTK12/Inc/DDSTextureLoader.h"
+#include "DirectXTK12/Inc/WICTextureLoader.h"
 #include "pix3.h"
-#include "MathHelper.h"
+#include "Math/MathHelper.h"
 #include "GameTimer.h"
-#include "VectorMath.h"
-#include "Color.h"
+#include "Math/VectorMath.h"
+#include "Graphics/Color.h"
 #include "EngineAdjust.h"
 #include "Camera.h"
 #include "EngineGlobal.h"

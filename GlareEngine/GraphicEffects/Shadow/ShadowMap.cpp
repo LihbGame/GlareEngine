@@ -1,5 +1,5 @@
 #include "ShadowMap.h"
-#include "GraphicsCore.h"
+#include "Graphics/GraphicsCore.h"
 
 //shader
 #include "CompiledShaders/ModelShadowVS.h"

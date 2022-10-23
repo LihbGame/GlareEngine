@@ -8,7 +8,7 @@
 //--------------------------------------------------------------------------------------
 
 #include "pch.h"
-#include "GraphicsMemory.h"
+#include "DirectXTK12/Inc/GraphicsMemory.h"
 #include "PlatformHelpers.h"
 #include "DXLinearAllocator.h"
 

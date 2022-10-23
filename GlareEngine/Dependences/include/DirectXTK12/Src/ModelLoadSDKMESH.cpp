@@ -8,16 +8,16 @@
 //--------------------------------------------------------------------------------------
 
 #include "pch.h"
-#include "Model.h"
+#include "DirectXTK12/Inc/Model.h"
 
 #include "Effects.h"
-#include "VertexTypes.h"
+#include "DirectXTK12/Inc/VertexTypes.h"
 
-#include "DirectXHelpers.h"
+#include "DirectXTK12/Inc/DirectXHelpers.h"
 #include "PlatformHelpers.h"
 #include "BinaryReader.h"
-#include "DescriptorHeap.h"
-#include "CommonStates.h"
+#include "DirectXTK12/Inc/DescriptorHeap.h"
+#include "DirectXTK12/Inc/CommonStates.h"
 
 #include "SDKMesh.h"
 

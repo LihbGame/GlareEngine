@@ -3,7 +3,7 @@
 #define CAMERA_H
 
 #include "EngineUtility.h"
-#include "Frustum.h"
+#include "Math/Frustum.h"
 
 
 class Camera

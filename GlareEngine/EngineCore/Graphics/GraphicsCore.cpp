@@ -5,15 +5,15 @@
 #include "CommandListManager.h"
 #include "RootSignature.h"
 #include "CommandSignature.h"
-#include "EngineAdjust.h"
+#include "Engine/EngineAdjust.h"
 #include "ColorBuffer.h"
 #include "GPUTimeManager.h"
-#include "EngineLog.h"
+#include "Engine/EngineLog.h"
 #include "BufferManager.h"
 #include "TextureManager.h"
 #include "Display.h"
 
-#include "ScreenGrab.h"
+#include "DirectXTK12/Inc/ScreenGrab.h"
 //Shaders
 #include "CompiledShaders/PresentSDRPS.h"
 #include "CompiledShaders/ScreenQuadVS.h"

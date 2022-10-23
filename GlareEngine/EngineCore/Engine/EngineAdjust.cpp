@@ -1,9 +1,9 @@
 #include "EngineUtility.h"
 #include "EngineAdjust.h"
 #include "EngineInput.h"
-#include "Color.h"
-#include "GraphicsCore.h"
-#include "CommandContext.h"
+#include "Graphics/Color.h"
+#include "Graphics/GraphicsCore.h"
+#include "Graphics/CommandContext.h"
 
 using namespace std;
 using namespace GlareEngine;

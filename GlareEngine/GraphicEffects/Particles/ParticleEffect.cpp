@@ -1,5 +1,5 @@
 #include "ParticleEffect.h"
-#include "Random.h"
+#include "Math/Random.h"
 
 using namespace GlareEngine::Math;
 

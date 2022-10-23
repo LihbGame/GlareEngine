@@ -13,14 +13,14 @@
 
 #include "glTF.h"
 
-#include "EngineUtility.h"
-#include "CommandContext.h"
-#include "SamplerManager.h"
+#include "Engine/EngineUtility.h"
+#include "Graphics/CommandContext.h"
+#include "Graphics/SamplerManager.h"
 //#include "UploadBuffer.h"
-#include "GraphicsCore.h"
-#include "FileUtility.h"
-#include "EngineLog.h"
-#include "Functions.inl"
+#include "Graphics/GraphicsCore.h"
+#include "Engine/FileUtility.h"
+#include "Engine/EngineLog.h"
+#include "Math/Functions.inl"
 
 #include <fstream>
 #include <iostream>

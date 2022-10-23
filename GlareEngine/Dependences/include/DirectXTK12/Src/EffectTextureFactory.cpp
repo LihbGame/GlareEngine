@@ -9,13 +9,13 @@
 
 #include "pch.h"
 
-#include "Effects.h"
-#include "DirectXHelpers.h"
-#include "DDSTextureLoader.h"
-#include "DescriptorHeap.h"
+#include "DirectXTK12/Inc/Effects.h"
+#include "DirectXTK12/Inc/DirectXHelpers.h"
+#include "DirectXTK12/Inc/DDSTextureLoader.h"
+#include "DirectXTK12/Inc/DescriptorHeap.h"
 #include "PlatformHelpers.h"
-#include "ResourceUploadBatch.h"
-#include "WICTextureLoader.h"
+#include "DirectXTK12/Inc/ResourceUploadBatch.h"
+#include "DirectXTK12/Inc/WICTextureLoader.h"
 
 #include <mutex>
 

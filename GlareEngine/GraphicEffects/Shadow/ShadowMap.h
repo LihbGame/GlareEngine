@@ -1,7 +1,7 @@
 #pragma once
-#include "EngineUtility.h"
-#include "ShadowBuffer.h"
-#include "RenderObject.h"
+#include "Engine/EngineUtility.h"
+#include "Graphics/ShadowBuffer.h"
+#include "Misc/RenderObject.h"
 
 struct ShadowConstantBuffer 
 {

@@ -1,6 +1,4 @@
 #pragma once
-
-
 #include "Matrix3.h"
 #include "BoundingSphere.h"
 

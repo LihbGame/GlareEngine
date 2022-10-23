@@ -8,7 +8,7 @@
 // http://go.microsoft.com/fwlink/?LinkID=615561
 //--------------------------------------------------------------------------------------
 
-#include "VertexTypes.h"
+#include "DirectXTK12/Inc/VertexTypes.h"
 
 namespace DirectX
 {

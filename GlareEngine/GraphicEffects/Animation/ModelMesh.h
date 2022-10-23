@@ -1,7 +1,7 @@
 #pragma once
-#include "EngineUtility.h"
+#include "Engine/EngineUtility.h"
 #include "MeshStruct.h"
-#include "Vertex.h"
+#include "Engine/Vertex.h"
 
 namespace GlareEngine
 {

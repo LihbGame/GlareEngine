@@ -9,8 +9,8 @@
 
 #include "pch.h"
 #include "PlatformHelpers.h"
-#include "DirectXHelpers.h"
-#include "DescriptorHeap.h"
+#include "DirectXTK12/Inc/DirectXHelpers.h"
+#include "DirectXTK12/Inc/DescriptorHeap.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;

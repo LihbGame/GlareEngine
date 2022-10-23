@@ -1,7 +1,7 @@
 #pragma once
-#include "EngineUtility.h"
-#include "ColorBuffer.h"
-#include "ConstantBuffer.h"
+#include "Engine/EngineUtility.h"
+#include "Graphics/ColorBuffer.h"
+#include "Misc/ConstantBuffer.h"
 
 enum class CubeMapFace : int
 {

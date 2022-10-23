@@ -1,5 +1,5 @@
 #include "Camera.h"
-#include "VectorMath.h"
+#include "Math/VectorMath.h"
 
 using namespace DirectX;
 using namespace GlareEngine::Math;

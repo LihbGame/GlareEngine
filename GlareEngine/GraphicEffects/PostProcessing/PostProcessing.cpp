@@ -1,7 +1,7 @@
 #include "PostProcessing.h"
-#include "GraphicsCommon.h"
-#include "SamplerManager.h"
-#include "CommandSignature.h"
+#include "Graphics/GraphicsCommon.h"
+#include "Graphics/SamplerManager.h"
+#include "Graphics/CommandSignature.h"
 
 
 //shaders

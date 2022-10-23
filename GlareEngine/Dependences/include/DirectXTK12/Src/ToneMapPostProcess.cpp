@@ -8,14 +8,14 @@
 //--------------------------------------------------------------------------------------
 
 #include "pch.h"
-#include "PostProcess.h"
+#include "DirectXTK12/Inc/PostProcess.h"
 
 #include "AlignedNew.h"
-#include "CommonStates.h"
+#include "DirectXTK12/Inc/CommonStates.h"
 #include "DemandCreate.h"
-#include "DirectXHelpers.h"
-#include "EffectPipelineStateDescription.h"
-#include "GraphicsMemory.h"
+#include "DirectXTK12/Inc/DirectXHelpers.h"
+#include "DirectXTK12/Inc/EffectPipelineStateDescription.h"
+#include "DirectXTK12/Inc/GraphicsMemory.h"
 #include "SharedResourcePool.h"
 
 using namespace DirectX;

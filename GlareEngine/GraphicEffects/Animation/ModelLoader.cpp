@@ -1,6 +1,6 @@
 #include "ModelLoader.h"
-#include "EngineLog.h"
-#include "GraphicsCore.h"
+#include "Engine/EngineLog.h"
+#include "Graphics/GraphicsCore.h"
 
 using namespace GlareEngine; 
 

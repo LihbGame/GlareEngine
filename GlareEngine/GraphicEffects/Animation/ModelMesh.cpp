@@ -1,5 +1,5 @@
 #include "ModelMesh.h"
-#include "GraphicsCore.h"
+#include "Graphics/GraphicsCore.h"
 
 using namespace GlareEngine;
 

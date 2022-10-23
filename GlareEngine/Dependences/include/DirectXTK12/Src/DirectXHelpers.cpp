@@ -8,8 +8,8 @@
 //--------------------------------------------------------------------------------------
 
 #include "pch.h"
-#include "DirectXHelpers.h"
-#include "GraphicsMemory.h"
+#include "DirectXTK12/Inc/DirectXHelpers.h"
+#include "DirectXTK12/Inc/GraphicsMemory.h"
 #include "PlatformHelpers.h"
 
 using namespace DirectX;
