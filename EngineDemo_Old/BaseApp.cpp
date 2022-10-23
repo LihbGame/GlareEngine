@@ -403,6 +403,7 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		// WM_DESTROY is sent when the window is being destroyed.
 	case WM_DESTROY:
+		exit(0);
 		PostQuitMessage(0);
 		return 0;
 
