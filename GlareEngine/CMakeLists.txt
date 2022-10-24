@@ -20,10 +20,10 @@ string(CONCAT OUTPATH "/Vn\"g_p%(Filename)\" /Fh\"" ${shaderPath} "\\CompiledSha
 set_source_files_properties(${SHADER_SOURCES} PROPERTIES VS_SHADER_FLAGS ${OUTPATH})
 
 file(GLOB_RECURSE VS_SHADER_SOURCES ${ENGINE_ROOT_DIR}/Shaders/*VS.hlsl)
-set_source_files_properties(${VS_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Vertex VS_SHADER_MODEL "6.6")
+set_source_files_properties(${VS_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Vertex VS_SHADER_MODEL "6.0")
 
 file(GLOB_RECURSE PS_SHADER_SOURCES ${ENGINE_ROOT_DIR}/Shaders/*PS.hlsl)
-set_source_files_properties(${PS_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Pixel VS_SHADER_MODEL "6.6")
+set_source_files_properties(${PS_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Pixel VS_SHADER_MODEL "6.0")
 
 file(GLOB_RECURSE GS_SHADER_SOURCES ${ENGINE_ROOT_DIR}/Shaders/*GS.hlsl)
 set_source_files_properties(${GS_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Geometry VS_TOOL_OVERRIDE "none")
