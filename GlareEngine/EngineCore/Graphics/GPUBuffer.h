@@ -1,10 +1,9 @@
 #pragma once
 #include "GPUResource.h"
 
-class CommandContext;
-
 namespace GlareEngine
 {
+	class CommandContext;
 	class UploadBuffer;
 	class GPUBuffer :public GPUResource
 	{
