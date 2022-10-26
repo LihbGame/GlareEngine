@@ -5,7 +5,8 @@
 #include "Graphics/CommandContext.h"
 #include "Graphics/UploadBuffer.h"
 #include "Graphics/TextureManager.h"
-
+#include "Model/Model.h"
+#include "Misc/ConstantBuffer.h"
 
 class MeshSorter
 {
@@ -16,31 +17,40 @@ public:
 	MeshSorter(BatchType type)
 	{
 		m_BatchType = type;
-		//m_Camera = nullptr;
+		m_Camera = nullptr;
 		m_Viewport = {};
 		m_Scissor = {};
 		m_NumRTVs = 0;
 		m_DSV = nullptr;
-		//m_SortObjects.clear();
+		m_SortObjects.clear();
 		m_SortKeys.clear();
 		std::memset(m_PassCounts, 0, sizeof(m_PassCounts));
 		m_CurrentPass = eZPass;
 		m_CurrentDraw = 0;
 	}
 
-	//const Frustum& GetWorldFrustum() const { return m_Camera->GetWorldSpaceFrustum(); }
-	//const Frustum& GetViewFrustum() const { return m_Camera->GetViewSpaceFrustum(); }
-	//const Matrix4& GetViewMatrix() const { return m_Camera->GetViewMatrix(); }
+	const Frustum& GetWorldFrustum() const { return m_Camera->GetWorldSpaceFrustum(); }
+	const Frustum& GetViewFrustum() const { return m_Camera->GetViewSpaceFrustum(); }
+	const Matrix4& GetViewMatrix() const { return Matrix4(m_Camera->GetView()); }
 
-	//void AddMesh(const Mesh& mesh, float distance,
-	//	D3D12_GPU_VIRTUAL_ADDRESS meshCBV,
-	//	D3D12_GPU_VIRTUAL_ADDRESS materialCBV,
-	//	D3D12_GPU_VIRTUAL_ADDRESS bufferPtr,
-	//	const Joint* skeleton = nullptr);
+	void AddMesh(const Mesh& mesh, float distance,
+		D3D12_GPU_VIRTUAL_ADDRESS meshCBV,
+		D3D12_GPU_VIRTUAL_ADDRESS materialCBV,
+		D3D12_GPU_VIRTUAL_ADDRESS bufferPtr,
+		const Joint* skeleton = nullptr);
 
 	void Sort();
 
-	//void RenderMeshes(DrawPass pass, GraphicsContext& context, GlobalConstants& globals);
+	void RenderMeshes(DrawPass pass, GraphicsContext& context, MainConstants& globals);
+
+	void SetCamera(const Camera& camera) { m_Camera = &camera; }
+	void SetViewport(const D3D12_VIEWPORT& viewport) { m_Viewport = viewport; }
+	void SetScissor(const D3D12_RECT& scissor) { m_Scissor = scissor; }
+	void AddRenderTarget(ColorBuffer& RTV)
+	{
+		assert(m_NumRTVs < 8);
+		m_RTV[m_NumRTVs++] = &RTV;
+	}
 
 private:
 
@@ -59,23 +69,23 @@ private:
 		};
 	};
 
-	//struct SortObject
-	//{
-	//	const Mesh* mesh;
-	//	const Joint* skeleton;
-	//	D3D12_GPU_VIRTUAL_ADDRESS meshCBV;
-	//	D3D12_GPU_VIRTUAL_ADDRESS materialCBV;
-	//	D3D12_GPU_VIRTUAL_ADDRESS bufferPtr;
-	//};
+	struct SortObject
+	{
+		const Mesh* mesh;
+		const Joint* skeleton;
+		D3D12_GPU_VIRTUAL_ADDRESS meshCBV;
+		D3D12_GPU_VIRTUAL_ADDRESS materialCBV;
+		D3D12_GPU_VIRTUAL_ADDRESS bufferPtr;
+	};
 
-	//std::vector<SortObject> m_SortObjects;
+	std::vector<SortObject> m_SortObjects;
 	std::vector<uint64_t> m_SortKeys;
 	BatchType m_BatchType;
 	uint32_t m_PassCounts[eNumPasses];
 	DrawPass m_CurrentPass;
 	uint32_t m_CurrentDraw;
 
-	//const BaseCamera* m_Camera;
+	const Camera* m_Camera;
 	D3D12_VIEWPORT m_Viewport;
 	D3D12_RECT m_Scissor;
 	uint32_t m_NumRTVs;

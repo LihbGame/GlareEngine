@@ -97,14 +97,17 @@ namespace GlareEngine
 			const ScaleAndTranslation sphereTransforms[],
 			const Joint* skeleton) const;*/
 
-		Math::BoundingSphere	m_BoundingSphere; // Object-space bounding sphere
+		Math::BoundingSphere	m_BoundingSphere; // Object space bounding sphere
 		AxisAlignedBox			m_BoundingBox;
+
 		ByteAddressBuffer		m_DataBuffer;
 		ByteAddressBuffer		m_MaterialConstants;
+
 		uint32_t	m_NumNodes;
 		uint32_t	m_NumMeshes;
 		uint32_t	m_NumAnimations;
 		uint32_t	m_NumJoints;
+
 		std::unique_ptr<uint8_t[]>			m_MeshData;
 		std::unique_ptr<GraphNode[]>		m_SceneGraph;
 		std::vector<Texture*>				m_Textures;
