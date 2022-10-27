@@ -16,6 +16,8 @@ namespace GlareEngine
 {
 	namespace Render
 	{
+		BoolVar SeparateZPass("Renderer/Separate Z Pass", true);
+
 		//Root Signature
 		RootSignature gRootSignature;
 		//PSO Common Property

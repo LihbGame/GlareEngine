@@ -1,5 +1,12 @@
 #pragma once
 #include <vector>
+#include "Graphics/GPUBuffer.h"
+#include "Math/VectorMath.h"
+#include "Engine/Camera.h"
+#include "Graphics/CommandContext.h"
+#include "Graphics/UploadBuffer.h"
+#include "Graphics/TextureManager.h"
+
 //Render Config 
 #define NUMFRAME 3
 #define MAX2DSRVSIZE 256
@@ -30,6 +37,8 @@ namespace GlareEngine
 		extern DescriptorHeap gModelTextureHeap;
 
 		extern DescriptorHeap gSamplerHeap;
+
+		extern BoolVar SeparateZPass;
 	}
 
 
