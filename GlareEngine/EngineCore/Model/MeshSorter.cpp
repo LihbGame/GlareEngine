@@ -42,6 +42,7 @@ void MeshSorter::AddMesh(const Mesh& mesh, float distance,
 	{
 		key.passID = eTransparent;
 		key.psoIdx = mesh.pso;
+		//Transparent object need revert distance
 		key.key = ~dist.u;
 		m_SortKeys.push_back(key.value);
 		m_PassCounts[eTransparent]++;
@@ -76,9 +77,12 @@ void MeshSorter::AddMesh(const Mesh& mesh, float distance,
 
 void MeshSorter::Sort()
 {
+	struct { bool operator()(uint64_t a, uint64_t b) const { return a < b; } } Cmp;
+	std::sort(m_SortKeys.begin(), m_SortKeys.end(), Cmp);
 }
 
 void MeshSorter::RenderMeshes(DrawPass pass, GraphicsContext& context, MainConstants& globals)
 {
+
 }
 

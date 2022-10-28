@@ -18,8 +18,12 @@ namespace GlareEngine
 	{
 		BoolVar SeparateZPass("Renderer/Separate Z Pass", true);
 
+		bool s_Initialized = false;
+
 		//Root Signature
 		RootSignature gRootSignature;
+		RootSignature m_RootSig;
+
 		//PSO Common Property
 		PSOCommonProperty gCommonProperty;
 		//Num Frame Resources
@@ -38,6 +42,9 @@ namespace GlareEngine
 
 	void Render::Initialize()
 	{
+		if (s_Initialized)
+			return;
+
 		BuildRootSignature();
 		BuildPSOs();
 
@@ -46,6 +53,7 @@ namespace GlareEngine
 		// Maybe only need 2 for wrap vs. clamp?  Currently we allocate 1 for 1 with textures
 		gSamplerHeap.Create(L"Scene Sampler Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 2048);
 
+		s_Initialized = true;
 	}
 
 	void Render::ShutDown()
