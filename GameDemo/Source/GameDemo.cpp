@@ -68,7 +68,7 @@ public:
 
 	void InitializeScene(ID3D12GraphicsCommandList* CommandList, GraphicsContext& InitializeContext);
 
-	void CreateModelInstance(ID3D12GraphicsCommandList* CommandList,string ModelName, int Num_X, int Num_Y);
+	void CreateModelInstance(ID3D12GraphicsCommandList* CommandList, string ModelName, int Num_X, int Num_Y, bool RotX = false);
 
 	void CreateSimpleModelInstance(ID3D12GraphicsCommandList* CommandList,string ModelName, SimpleModelType Type, string MaterialName, int Num_X, int Num_Y);
 protected:
@@ -175,7 +175,9 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			ID3D12GraphicsCommandList* CommandList = InitializeContext.GetCommandList();
 			//Instance models
 			CreateSimpleModelInstance(CommandList, "Grid_01", SimpleModelType::Grid, "PBRGrass01", 1, 1);
-			CreateModelInstance(CommandList, "BlueTree/Blue_Tree_02a.FBX", 5, 5);
+			CreateModelInstance(CommandList, "BlueTree/Blue_Tree_02a.FBX", 8, 8);
+			CreateModelInstance(CommandList, "BlueTree/Blue_Tree_03b.FBX", 4, 4, true);
+			CreateModelInstance(CommandList, "BlueTree/Blue_Tree_03c.FBX", 8, 8, true);
 			//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRrocky_shoreline1", 1, 1);
 			//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRRock046S", 1, 1);
 			//CreateModelInstance(CommandList,"TraumaGuard/TraumaGuard.FBX", 5, 5);
@@ -418,7 +420,7 @@ void App::OnMouseMove(WPARAM btnState, int x, int y)
 }
 
 
-void App::CreateModelInstance(ID3D12GraphicsCommandList* CommandList,string ModelName, int Num_X, int Num_Y)
+void App::CreateModelInstance(ID3D12GraphicsCommandList* CommandList,string ModelName, int Num_X, int Num_Y, bool RotX)
 {
 	assert(CommandList);
 	const ModelRenderData* ModelData = ModelLoader::GetModelLoader(CommandList)->GetModelRenderData(ModelName);
@@ -434,7 +436,15 @@ void App::CreateModelInstance(ID3D12GraphicsCommandList* CommandList,string Mode
 			{
 				InstanceRenderConstants IRC;
 				IRC.mMaterialIndex = ModelData->mSubModels[SubMeshIndex].mMaterial->mMatCBIndex;
-				XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(/*XMMatrixRotationX(MathHelper::Pi/2) * */XMMatrixRotationY(MathHelper::RandF() * MathHelper::Pi) * XMMatrixScaling(0.2f, 0.2f, 0.2f) * XMMatrixTranslation((i - Num_X / 2) * 50.0f, 0, (y - Num_Y / 2) * 50.0f)));
+				float scale = MathHelper::RandF() * 0.4f;
+				if (!RotX)
+				{
+					XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMatrixRotationY(MathHelper::RandF() * MathHelper::Pi) * XMMatrixScaling(scale, scale, scale) * XMMatrixTranslation((i - Num_X / 2) * 50.0f, 0, (y - Num_Y / 2) * 50.0f)));
+				}
+				else
+				{
+					XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMatrixRotationX(MathHelper::Pi/2) * XMMatrixRotationY(MathHelper::RandF() * MathHelper::Pi) * XMMatrixScaling(scale, scale, scale) * XMMatrixTranslation((i - Num_X / 2) * 50.0f, 0, (y - Num_Y / 2) * 50.0f)));
+				}
 				InstanceData.mInstanceConstants[SubMeshIndex].push_back(IRC);
 			}
 		}
@@ -460,7 +470,7 @@ void App::CreateSimpleModelInstance(ID3D12GraphicsCommandList* CommandList, stri
 				InstanceRenderConstants IRC;
 
 				IRC.mMaterialIndex = ModelData->mSubModels[SubMeshIndex].mMaterial->mMatCBIndex;
-				XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMatrixScaling(4, 4, 4) * XMMatrixTranslation(i * 60.0f, 0, y * 60.0f)));
+				XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMatrixScaling(5, 5, 5) * XMMatrixTranslation(i * 60.0f, 0, y * 60.0f)));
 				XMStoreFloat4x4(&IRC.mTexTransform, XMMatrixTranspose(XMMatrixScaling(3, 3, 3)));
 				InstanceData.mInstanceConstants[SubMeshIndex].push_back(IRC);
 			}

@@ -27,6 +27,7 @@ namespace GlareEngine
 	{
 		//Root Signature
 		extern RootSignature gRootSignature;
+		extern RootSignature m_RootSig;
 		//PSO Common Property
 		extern PSOCommonProperty gCommonProperty;
 		//Num Frame Resources

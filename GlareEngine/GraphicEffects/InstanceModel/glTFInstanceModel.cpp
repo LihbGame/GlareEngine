@@ -4,6 +4,12 @@
 #include "Model/Model.h"
 #include "Shadow/ShadowMap.h"
 
+//shaders
+#include "CompiledShaders/DepthOnlyVS.h"
+#include "CompiledShaders/CutoutDepthVS.h"
+#include "CompiledShaders/CutoutDepthPS.h"
+#include "CompiledShaders/DepthOnlySkinVS.h"
+
 using namespace GlareEngine::Render;
 
 vector<GraphicsPSO> glTFInstanceModel::gModelPSOs;
@@ -15,56 +21,55 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
     sm_PSOCommonProperty = CommonProperty;
 
 
-	//assert(gModelPSOs.size() == 0);
+	assert(gModelPSOs.size() == 0);
 
-	//// Depth Only PSOs
-	//GraphicsPSO DepthOnlyPSO(L"Render: Depth Only PSO");
-	//DepthOnlyPSO.SetRootSignature(gRootSignature);
+	// Depth Only PSOs
+	GraphicsPSO DepthOnlyPSO(L"Render: Depth Only PSO");
+	DepthOnlyPSO.SetRootSignature(gRootSignature);
 
-	//if (CommonProperty.IsMSAA)
-	//{
-	//	DepthOnlyPSO.SetRasterizerState(RasterizerDefaultMsaa);
-	//	DepthOnlyPSO.SetBlendState(BlendDisableAlphaToCoverage);
-	//}
-	//else
-	//{
-	//	DepthOnlyPSO.SetRasterizerState(RasterizerDefault);
-	//	DepthOnlyPSO.SetBlendState(BlendDisable);
-	//}
-	//DepthOnlyPSO.SetDepthStencilState(DepthStateReadWrite);
-	//DepthOnlyPSO.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
-	//DepthOnlyPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-	//DepthOnlyPSO.SetRenderTargetFormats(0, nullptr, DSV_FORMAT);
-	//DepthOnlyPSO.SetVertexShader(g_pDepthOnlyVS, sizeof(g_pDepthOnlyVS));
-	//DepthOnlyPSO.Finalize();
-	//gModelPSOs.push_back(DepthOnlyPSO);
-
-
-	////Cutout Depth PSO
-	//GraphicsPSO CutoutDepthPSO(L"Render: Cutout Depth PSO");
-	//CutoutDepthPSO = DepthOnlyPSO;
-	//CutoutDepthPSO.SetInputLayout((UINT)InputLayout::PosUV.size(), InputLayout::PosUV.data());
-	//if (CommonProperty.IsMSAA)
-	//{
-	//	CutoutDepthPSO.SetRasterizerState(RasterizerTwoSidedMsaa);
-	//}
-	//else
-	//{
-	//	CutoutDepthPSO.SetRasterizerState(RasterizerTwoSided);
-	//}
-	//CutoutDepthPSO.SetVertexShader(g_pCutoutDepthVS, sizeof(g_pCutoutDepthVS));
-	//CutoutDepthPSO.SetPixelShader(g_pCutoutDepthPS, sizeof(g_pCutoutDepthPS));
-	//CutoutDepthPSO.Finalize();
-	//gModelPSOs.push_back(CutoutDepthPSO);
+	if (CommonProperty.IsMSAA)
+	{
+		DepthOnlyPSO.SetRasterizerState(RasterizerDefaultMsaa);
+	}
+	else
+	{
+		DepthOnlyPSO.SetRasterizerState(RasterizerDefault);
+		DepthOnlyPSO.SetBlendState(BlendDisable);
+	}
+	DepthOnlyPSO.SetDepthStencilState(DepthStateReadWrite);
+	DepthOnlyPSO.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
+	DepthOnlyPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+	DepthOnlyPSO.SetRenderTargetFormats(0, nullptr, DSV_FORMAT);
+	DepthOnlyPSO.SetVertexShader(g_pDepthOnlyVS, sizeof(g_pDepthOnlyVS));
+	DepthOnlyPSO.Finalize();
+	gModelPSOs.push_back(DepthOnlyPSO);
 
 
-	////Skin Depth PSO
-	//GraphicsPSO SkinDepthOnlyPSO(L"Render: Skin Depth PSO");
-	//SkinDepthOnlyPSO = DepthOnlyPSO;
-	//SkinDepthOnlyPSO.SetInputLayout((UINT)InputLayout::SkinPos.size(), InputLayout::SkinPos.data());
-	//SkinDepthOnlyPSO.SetVertexShader(g_pDepthOnlySkinVS, sizeof(g_pDepthOnlySkinVS));
-	//SkinDepthOnlyPSO.Finalize();
-	//gModelPSOs.push_back(SkinDepthOnlyPSO);
+	//Cutout Depth PSO
+	GraphicsPSO CutoutDepthPSO(L"Render: Cutout Depth PSO");
+	CutoutDepthPSO = DepthOnlyPSO;
+	CutoutDepthPSO.SetInputLayout((UINT)InputLayout::PosUV.size(), InputLayout::PosUV.data());
+	if (CommonProperty.IsMSAA)
+	{
+		CutoutDepthPSO.SetRasterizerState(RasterizerTwoSidedMsaa);
+	}
+	else
+	{
+		CutoutDepthPSO.SetRasterizerState(RasterizerTwoSided);
+	}
+	CutoutDepthPSO.SetVertexShader(g_pCutoutDepthVS, sizeof(g_pCutoutDepthVS));
+	CutoutDepthPSO.SetPixelShader(g_pCutoutDepthPS, sizeof(g_pCutoutDepthPS));
+	CutoutDepthPSO.Finalize();
+	gModelPSOs.push_back(CutoutDepthPSO);
+
+
+	//Skin Depth PSO
+	GraphicsPSO SkinDepthOnlyPSO(L"Render: Skin Depth PSO");
+	SkinDepthOnlyPSO = DepthOnlyPSO;
+	SkinDepthOnlyPSO.SetInputLayout((UINT)InputLayout::SkinPos.size(), InputLayout::SkinPos.data());
+	SkinDepthOnlyPSO.SetVertexShader(g_pDepthOnlySkinVS, sizeof(g_pDepthOnlySkinVS));
+	SkinDepthOnlyPSO.Finalize();
+	gModelPSOs.push_back(SkinDepthOnlyPSO);
 
 	////Skin Cutout Depth PSO
 	//GraphicsPSO SkinCutoutDepthPSO(L"Render: Skin Cutout Depth PSO");
