@@ -72,9 +72,14 @@ void GlareEngine::GraphicsPSO::SetRenderTargetFormats(UINT NumRTVs, const DXGI_F
 	//Null format array conflicts with non-zero length
 	assert(NumRTVs == 0 || RTVFormats != nullptr);
 	for (UINT i = 0; i < NumRTVs; ++i)
+	{
+		assert(RTVFormats[i] != DXGI_FORMAT_UNKNOWN);
 		m_PSODesc.RTVFormats[i] = RTVFormats[i];
+	}
 	for (UINT i = NumRTVs; i < m_PSODesc.NumRenderTargets; ++i)
+	{
 		m_PSODesc.RTVFormats[i] = DXGI_FORMAT_UNKNOWN;
+	}
 	m_PSODesc.NumRenderTargets = NumRTVs;
 	m_PSODesc.DSVFormat = DSVFormat;
 	m_PSODesc.SampleDesc.Count = MsaaCount;

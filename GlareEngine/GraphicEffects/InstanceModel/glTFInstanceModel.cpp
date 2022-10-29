@@ -9,6 +9,9 @@
 #include "CompiledShaders/CutoutDepthVS.h"
 #include "CompiledShaders/CutoutDepthPS.h"
 #include "CompiledShaders/DepthOnlySkinVS.h"
+#include "CompiledShaders/CutoutDepthSkinVS.h"
+#include "CompiledShaders/ModelPS.h"
+#include "CompiledShaders/ModelVS.h"
 
 using namespace GlareEngine::Render;
 
@@ -20,8 +23,8 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 {
     sm_PSOCommonProperty = CommonProperty;
 
-
-	assert(gModelPSOs.size() == 0);
+	gModelPSOs.clear();
+	//assert(gModelPSOs.size() == 0);
 
 	// Depth Only PSOs
 	GraphicsPSO DepthOnlyPSO(L"Render: Depth Only PSO");
@@ -71,60 +74,60 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 	SkinDepthOnlyPSO.Finalize();
 	gModelPSOs.push_back(SkinDepthOnlyPSO);
 
-	////Skin Cutout Depth PSO
-	//GraphicsPSO SkinCutoutDepthPSO(L"Render: Skin Cutout Depth PSO");
-	//SkinCutoutDepthPSO = CutoutDepthPSO;
-	//SkinCutoutDepthPSO.SetInputLayout((UINT)InputLayout::SkinPosUV.size(), InputLayout::SkinPosUV.data());
-	//SkinCutoutDepthPSO.SetVertexShader(g_pCutoutDepthSkinVS, sizeof(g_pCutoutDepthSkinVS));
-	//SkinCutoutDepthPSO.Finalize();
-	//gModelPSOs.push_back(SkinCutoutDepthPSO);
+	//Skin Cutout Depth PSO
+	GraphicsPSO SkinCutoutDepthPSO(L"Render: Skin Cutout Depth PSO");
+	SkinCutoutDepthPSO = CutoutDepthPSO;
+	SkinCutoutDepthPSO.SetInputLayout((UINT)InputLayout::SkinPosUV.size(), InputLayout::SkinPosUV.data());
+	SkinCutoutDepthPSO.SetVertexShader(g_pCutoutDepthSkinVS, sizeof(g_pCutoutDepthSkinVS));
+	SkinCutoutDepthPSO.Finalize();
+	gModelPSOs.push_back(SkinCutoutDepthPSO);
 
-	//assert(gModelPSOs.size() == 4);
+	assert(gModelPSOs.size() == 4);
 
-	//// Shadow PSOs
+	// Shadow PSOs
 
-	//DepthOnlyPSO.SetRasterizerState(RasterizerShadow);
-	//DepthOnlyPSO.SetRenderTargetFormats(0, nullptr, ShadowMap::mFormat);
-	//DepthOnlyPSO.Finalize();
-	//gModelPSOs.push_back(DepthOnlyPSO);
+	DepthOnlyPSO.SetRasterizerState(RasterizerShadow);
+	DepthOnlyPSO.SetRenderTargetFormats(0, nullptr, ShadowMap::mFormat);
+	DepthOnlyPSO.Finalize();
+	gModelPSOs.push_back(DepthOnlyPSO);
 
-	//CutoutDepthPSO.SetRasterizerState(RasterizerShadowTwoSided);
-	//CutoutDepthPSO.SetRenderTargetFormats(0, nullptr, ShadowMap::mFormat);
-	//CutoutDepthPSO.Finalize();
-	//gModelPSOs.push_back(CutoutDepthPSO);
+	CutoutDepthPSO.SetRasterizerState(RasterizerShadowTwoSided);
+	CutoutDepthPSO.SetRenderTargetFormats(0, nullptr, ShadowMap::mFormat);
+	CutoutDepthPSO.Finalize();
+	gModelPSOs.push_back(CutoutDepthPSO);
 
-	//SkinDepthOnlyPSO.SetRasterizerState(RasterizerShadow);
-	//SkinDepthOnlyPSO.SetRenderTargetFormats(0, nullptr, ShadowMap::mFormat);
-	//SkinDepthOnlyPSO.Finalize();
-	//gModelPSOs.push_back(SkinDepthOnlyPSO);
+	SkinDepthOnlyPSO.SetRasterizerState(RasterizerShadow);
+	SkinDepthOnlyPSO.SetRenderTargetFormats(0, nullptr, ShadowMap::mFormat);
+	SkinDepthOnlyPSO.Finalize();
+	gModelPSOs.push_back(SkinDepthOnlyPSO);
 
-	//SkinCutoutDepthPSO.SetRasterizerState(RasterizerShadowTwoSided);
-	//SkinCutoutDepthPSO.SetRenderTargetFormats(0, nullptr, ShadowMap::mFormat);
-	//SkinCutoutDepthPSO.Finalize();
-	//gModelPSOs.push_back(SkinCutoutDepthPSO);
+	SkinCutoutDepthPSO.SetRasterizerState(RasterizerShadowTwoSided);
+	SkinCutoutDepthPSO.SetRenderTargetFormats(0, nullptr, ShadowMap::mFormat);
+	SkinCutoutDepthPSO.Finalize();
+	gModelPSOs.push_back(SkinCutoutDepthPSO);
 
-	//assert(gModelPSOs.size() == 8);
+	assert(gModelPSOs.size() == 8);
 
-	//// Default PSO
-	//sm_PBRglTFPSO.SetRootSignature(gRootSignature);
+	// Default PSO
+	sm_PBRglTFPSO.SetRootSignature(gRootSignature);
 
- //   if (CommonProperty.IsMSAA)
- //   {
- //       sm_PBRglTFPSO.SetRasterizerState(RasterizerDefaultMsaa);
- //       sm_PBRglTFPSO.SetBlendState(BlendDisableAlphaToCoverage);
- //   }
- //   else
- //   {
- //       sm_PBRglTFPSO.SetRasterizerState(RasterizerDefault);
- //       sm_PBRglTFPSO.SetBlendState(BlendDisable);
- //   }
-	//sm_PBRglTFPSO.SetDepthStencilState(DepthStateReadWrite);
- //   //set Input layout when you Get this PSO.
-	//sm_PBRglTFPSO.SetInputLayout(0, nullptr);
-	//sm_PBRglTFPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-	//sm_PBRglTFPSO.SetRenderTargetFormats(1, &DefaultHDRColorFormat, DSV_FORMAT, CommonProperty.MSAACount, CommonProperty.MSAAQuality);
-	//sm_PBRglTFPSO.SetVertexShader(g_pPBRVS, sizeof(g_pPBRVS));
-	//sm_PBRglTFPSO.SetPixelShader(g_pPBRPS, sizeof(g_pPBRPS));
+    if (CommonProperty.IsMSAA)
+    {
+        sm_PBRglTFPSO.SetRasterizerState(RasterizerDefaultMsaa);
+        sm_PBRglTFPSO.SetBlendState(BlendDisableAlphaToCoverage);
+    }
+    else
+    {
+        sm_PBRglTFPSO.SetRasterizerState(RasterizerDefault);
+        sm_PBRglTFPSO.SetBlendState(BlendDisable);
+    }
+	sm_PBRglTFPSO.SetDepthStencilState(DepthStateReadWrite);
+    //set Input layout when you Get this PSO.
+	sm_PBRglTFPSO.SetInputLayout(0, nullptr);
+	sm_PBRglTFPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+	sm_PBRglTFPSO.SetRenderTargetFormats(1, &DefaultHDRColorFormat, DSV_FORMAT, CommonProperty.MSAACount, CommonProperty.MSAAQuality);
+	sm_PBRglTFPSO.SetVertexShader(g_pModelVS, sizeof(g_pModelVS));
+	sm_PBRglTFPSO.SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
 
 }
 

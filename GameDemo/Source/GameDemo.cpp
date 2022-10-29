@@ -113,7 +113,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 {
 	//Main Camera
 	mCamera = make_unique<Camera>(REVERSE_Z);
-	mCamera->LookAt(XMFLOAT3(-200, 200, 200), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 1, 0));
+	mCamera->LookAt(XMFLOAT3(-300, 300, 300), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 1, 0));
 	//Sky Initialize
 	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
 	//Shadow map Initialize
@@ -176,8 +176,8 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			//Instance models
 			CreateSimpleModelInstance(CommandList, "Grid_01", SimpleModelType::Grid, "PBRGrass01", 1, 1);
 			CreateModelInstance(CommandList, "BlueTree/Blue_Tree_02a.FBX", 8, 8);
-			CreateModelInstance(CommandList, "BlueTree/Blue_Tree_03b.FBX", 4, 4, true);
-			CreateModelInstance(CommandList, "BlueTree/Blue_Tree_03c.FBX", 8, 8, true);
+			CreateModelInstance(CommandList, "BlueTree/Blue_Tree_03a.FBX", 4, 4, true);
+			CreateModelInstance(CommandList, "BlueTree/Blue_Tree_03d.FBX", 8, 8, true);
 			//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRrocky_shoreline1", 1, 1);
 			//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRRock046S", 1, 1);
 			//CreateModelInstance(CommandList,"TraumaGuard/TraumaGuard.FBX", 5, 5);
@@ -436,7 +436,7 @@ void App::CreateModelInstance(ID3D12GraphicsCommandList* CommandList,string Mode
 			{
 				InstanceRenderConstants IRC;
 				IRC.mMaterialIndex = ModelData->mSubModels[SubMeshIndex].mMaterial->mMatCBIndex;
-				float scale = MathHelper::RandF() * 0.4f;
+				float scale = MathHelper::RandF() * 0.3f;
 				if (!RotX)
 				{
 					XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMatrixRotationY(MathHelper::RandF() * MathHelper::Pi) * XMMatrixScaling(scale, scale, scale) * XMMatrixTranslation((i - Num_X / 2) * 50.0f, 0, (y - Num_Y / 2) * 50.0f)));

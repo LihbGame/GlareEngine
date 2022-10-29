@@ -16,7 +16,7 @@ source_group(TREE "${GLAREENGINE_ROOT_DIR}" FILES ${PACKAGE_FILES})
 
 set(shaderPath "${ENGINE_ROOT_DIR}/Shaders")
 file(MAKE_DIRECTORY ${shaderPath}/CompiledShaders)
-string(CONCAT OUTPATH "/Vn\"g_p%(Filename)\" /Fh\"" ${shaderPath} "\\CompiledShaders\\%(Filename).h\"")
+string(CONCAT OUTPATH "/Vn\"g_p%(Filename)\" /Fh\"" ${shaderPath} "\\CompiledShaders\\%(Filename).h\" -Qembed_debug /Zi")
 set_source_files_properties(${SHADER_SOURCES} PROPERTIES VS_SHADER_FLAGS ${OUTPATH})
 
 file(GLOB_RECURSE VS_SHADER_SOURCES ${ENGINE_ROOT_DIR}/Shaders/*VS.hlsl)
