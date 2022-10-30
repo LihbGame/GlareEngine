@@ -52,7 +52,6 @@ void Scene::VisibleUpdateForType()
 
 void Scene::BakingGIData(GraphicsContext& Context)
 {
-	mIBLGI.Initialize();
 	mIBLGI.PreBakeGIData(Context, m_pRenderObjectsType[(int)ObjectType::Sky].front());
 }
 

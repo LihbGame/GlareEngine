@@ -29,6 +29,8 @@ namespace GlareEngine
 	{
 	public:
 		static TextureManager* GetInstance(ID3D12GraphicsCommandList* pCommandList);
+		static std::wstring GetTextureRootFilePath() { return RootFilePath; }
+
 		static void Shutdown();
 
 		void CreatePBRTextures(string PathName, vector<Texture*>& Textures);
@@ -41,7 +43,7 @@ namespace GlareEngine
 		bool CreateTexture(std::wstring name, std::wstring filename, bool ForceSRGB = false);
 	private:
 		std::unordered_map<std::wstring, std::unique_ptr<Texture>> mTextures;
-		std::wstring RootFilePath = L"../Resource/Textures/";
+		static std::wstring RootFilePath;
 
 		static TextureManager* m_pTextureManagerInstance;
 		static ID3D12GraphicsCommandList* mCommandList;

@@ -11,7 +11,7 @@ string  PBRTextureFileType[] = {
 };
 
 
-
+std::wstring TextureManager::RootFilePath = L"../Resource/Textures/";
 
 namespace GlareEngine
 {

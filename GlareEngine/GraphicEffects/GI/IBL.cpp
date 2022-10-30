@@ -36,7 +36,6 @@ void IBL::Initialize()
 	GlobleSRVIndex::gBakingIntegrationBRDFIndex= AddToGlobalTextureSRVDescriptor(mBRDFLUT.GetSRV());
 	GlobleSRVIndex::gBakingPreFilteredEnvIndex = mPreFilteredEnvCube->GetSRVIndex();
 	GlobleSRVIndex::gBakingDiffuseCubeIndex = mIndirectDiffuseCube->GetSRVIndex();
-	GlobleSRVIndex::gBakingDiffuseCubeIndex = mIndirectDiffuseCube->GetSRVIndex();
 }
 
 void IBL::BakingEnvironmentDiffuse(GraphicsContext& Context)
@@ -58,6 +57,8 @@ void IBL::BakingEnvironmentDiffuse(GraphicsContext& Context)
 	}
 	Context.TransitionResource(mIndirectDiffuseCube->Resource(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
 	Context.PIXEndEvent();
+	Context.Flush(true);
+	mIndirectDiffuseCube->Resource().ExportToFile(TextureManager::GetTextureRootFilePath() + L"IndirectDiffuse.dds");
 }
 
 void IBL::BakingPreFilteredEnvironment(GraphicsContext& Context)
@@ -136,7 +137,21 @@ void IBL::BuildPSOs(const PSOCommonProperty CommonProperty)
 void IBL::PreBakeGIData(GraphicsContext& Context, RenderObject* Object)
 {
 	m_pSky = Object;
-	BakingEnvironmentDiffuse(Context);
+	Initialize();
+
+	bool isInitialize = CheckFileExist(TextureManager::GetTextureRootFilePath() + L"IndirectDiffuse.dds");
+	if (!isInitialize)
+	{
+		BakingEnvironmentDiffuse(Context);
+	}
+	else
+	{
+		// Create SRV to the entire cube map resource.
+		D3D12_CPU_DESCRIPTOR_HANDLE IndirectDiffuseCubeSrv = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		ID3D12Resource* IndirectDiffuseResource = TextureManager::GetInstance(Context.GetCommandList())->GetTexture(L"IndirectDiffuse", false)->Resource.Get();
+		g_Device->CreateShaderResourceView(IndirectDiffuseResource, nullptr, IndirectDiffuseCubeSrv);
+		GlobleSRVIndex::gBakingDiffuseCubeIndex = AddToGlobalCubeSRVDescriptor(IndirectDiffuseCubeSrv);
+	}
 	BakingPreFilteredEnvironment(Context);
 	BakingBRDF(Context);
 }
