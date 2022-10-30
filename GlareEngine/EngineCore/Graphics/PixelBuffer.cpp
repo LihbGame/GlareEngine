@@ -2,32 +2,36 @@
 #include "CommandContext.h"
 #include "ReadbackBuffer.h"
 #include <fstream>
+#include <DirectXTK12/Inc/ScreenGrab.h>
 
 namespace GlareEngine
 {
 	void PixelBuffer::ExportToFile(const std::wstring& FilePath)
 	{
-		// This very short command list only issues one API call and will be synchronized so we can immediately read
-		// the buffer contents.
-		ReadbackBuffer TempBuffer;
-		CommandContext& Context = CommandContext::Begin(L"Copy texture to memory");
-		uint32_t RowPitch = Context.ReadbackTexture(TempBuffer, *this);
-		Context.Finish(true);
+		SaveDDSTextureToFile(g_CommandManager.GetQueue().GetCommandQueue(), this->GetResource(), FilePath.c_str(), this->m_UsageState);
 
-		// Retrieve a CPU-visible pointer to the buffer memory.  Map the whole range for reading.
-		void* Memory = TempBuffer.Map();
-
-		// Open the file and write the header followed by the texel data.
-		std::ofstream OutFile(FilePath, std::ios::out | std::ios::binary);
-		OutFile.write((const char*)&m_Format, 4);
-		OutFile.write((const char*)&RowPitch, 4);
-		OutFile.write((const char*)&m_Width, 4);
-		OutFile.write((const char*)&m_Height, 4);
-		OutFile.write((const char*)Memory, TempBuffer.GetBufferSize());
-		OutFile.close();
-
-		// No values were written to the buffer, so use a null range when unmapping.
-		TempBuffer.Unmap();
+		//// This very short command list only issues one API call and will be synchronized so we can immediately read
+		//// the buffer contents.
+		//ReadbackBuffer TempBuffer;
+		//CommandContext& Context = CommandContext::Begin(L"Copy texture to memory");
+		//uint32_t RowPitch = Context.ReadbackTexture(TempBuffer, *this);
+		//Context.Finish(true);
+		//
+		//// Retrieve a CPU-visible pointer to the buffer memory.  Map the whole range for reading.
+		//void* Memory = TempBuffer.Map();
+		//
+		//// Open the file and write the header followed by the texel data.
+		//std::ofstream OutFile(FilePath, std::ios::out | std::ios::binary);
+		//OutFile.write((const char*)&m_Format, 4);
+		//OutFile.write((const char*)&RowPitch, 4);
+		//OutFile.write((const char*)&m_Width, 4);
+		//OutFile.write((const char*)&m_Height, 4);
+		//OutFile.write((const char*)Memory, TempBuffer.GetBufferSize());
+		//OutFile.close();
+		//
+		//
+		//// No values were written to the buffer, so use a null range when unmapping.
+		//TempBuffer.Unmap();
 	}
 
 	D3D12_RESOURCE_DESC PixelBuffer::DescribeTex2D(uint32_t Width, uint32_t Height, uint32_t DepthOrArraySize, uint32_t NumMips, DXGI_FORMAT Format, UINT Flags)
