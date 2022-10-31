@@ -19,7 +19,7 @@ namespace GlareEngine
 
 		//将原始像素缓冲区的内容写入文件。
 		// 注意，数据前面有一个16字节的头。 { DXGI_FORMAT, Pitch (像素), Width (像素), Height }。 
-		void ExportToFile(const std::wstring& FilePath);
+		void ExportToFile(const std::wstring& FilePath, bool isCube = false);
 
 	protected:
 

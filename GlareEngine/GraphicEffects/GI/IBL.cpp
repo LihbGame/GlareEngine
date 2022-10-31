@@ -7,6 +7,7 @@
 #include "CompiledShaders/PreFilteredEnvironmentMapPS.h"
 #include "CompiledShaders/ScreenQuadVS.h"
 #include "CompiledShaders/BakingBRDFPS.h"
+#include "Engine/EngineLog.h"
 
 #define  MaxMipLevels 5
 
@@ -57,8 +58,6 @@ void IBL::BakingEnvironmentDiffuse(GraphicsContext& Context)
 	}
 	Context.TransitionResource(mIndirectDiffuseCube->Resource(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
 	Context.PIXEndEvent();
-	Context.Flush(true);
-	mIndirectDiffuseCube->Resource().ExportToFile(TextureManager::GetTextureRootFilePath() + L"IndirectDiffuse.dds");
 }
 
 void IBL::BakingPreFilteredEnvironment(GraphicsContext& Context)
@@ -103,6 +102,14 @@ void IBL::BakingBRDF(GraphicsContext& Context)
 	Context.PIXEndEvent();
 }
 
+void IBL::SaveBakingDataToFiles(GraphicsContext& Context)
+{
+	Context.Flush(true);
+	mIndirectDiffuseCube->Resource().ExportToFile(TextureManager::GetTextureRootFilePath() + L"IndirectDiffuse.dds", true);
+	mBRDFLUT.ExportToFile(TextureManager::GetTextureRootFilePath() + L"IntegrationBRDF.dds");
+	mPreFilteredEnvCube->Resource().ExportToFile(TextureManager::GetTextureRootFilePath() + L"PreFilteredEnvironment.dds", true);
+}
+
 void IBL::BuildPSOs(const PSOCommonProperty CommonProperty)
 {
 	m_pRootSignature = CommonProperty.pRootSignature;
@@ -137,23 +144,51 @@ void IBL::BuildPSOs(const PSOCommonProperty CommonProperty)
 void IBL::PreBakeGIData(GraphicsContext& Context, RenderObject* Object)
 {
 	m_pSky = Object;
+
 	Initialize();
 
-	bool isInitialize = CheckFileExist(TextureManager::GetTextureRootFilePath() + L"IndirectDiffuse.dds");
-	if (!isInitialize)
+	bool isInitialized = CheckFileExist(TextureManager::GetTextureRootFilePath() + L"IndirectDiffuse.dds")&&
+		CheckFileExist(TextureManager::GetTextureRootFilePath() + L"PreFilteredEnvironment.dds")&&
+		CheckFileExist(TextureManager::GetTextureRootFilePath() + L"IntegrationBRDF.dds");
+
+	if (!isInitialized)
 	{
+		EngineLog::AddLog(L"PreBaking GI Data!");
 		BakingEnvironmentDiffuse(Context);
+		BakingPreFilteredEnvironment(Context);
+		BakingBRDF(Context);
+		SaveBakingDataToFiles(Context);
 	}
 	else
 	{
-		// Create SRV to the entire cube map resource.
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srvDesc.Format = DXGI_FORMAT_R11G11B10_FLOAT;
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+		srvDesc.TextureCube.MostDetailedMip = 0;
+		srvDesc.TextureCube.MipLevels = 1;
+		srvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
+
+		// EnvironmentDiffuse
 		D3D12_CPU_DESCRIPTOR_HANDLE IndirectDiffuseCubeSrv = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		ID3D12Resource* IndirectDiffuseResource = TextureManager::GetInstance(Context.GetCommandList())->GetTexture(L"IndirectDiffuse", false)->Resource.Get();
-		g_Device->CreateShaderResourceView(IndirectDiffuseResource, nullptr, IndirectDiffuseCubeSrv);
+		g_Device->CreateShaderResourceView(IndirectDiffuseResource, &srvDesc, IndirectDiffuseCubeSrv);
 		GlobleSRVIndex::gBakingDiffuseCubeIndex = AddToGlobalCubeSRVDescriptor(IndirectDiffuseCubeSrv);
+
+		//PreFilteredEnvironment
+		srvDesc.TextureCube.MipLevels = MaxMipLevels;
+		D3D12_CPU_DESCRIPTOR_HANDLE PreFilteredCubeSrv = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		ID3D12Resource* PreFilteredResource = TextureManager::GetInstance(Context.GetCommandList())->GetTexture(L"PreFilteredEnvironment", false)->Resource.Get();
+		g_Device->CreateShaderResourceView(PreFilteredResource, &srvDesc, PreFilteredCubeSrv);
+		GlobleSRVIndex::gBakingPreFilteredEnvIndex = AddToGlobalCubeSRVDescriptor(PreFilteredCubeSrv);
+
+		//Integration BRDF
+		D3D12_CPU_DESCRIPTOR_HANDLE IntegrationBRDFSrv = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		ID3D12Resource* IntegrationBRDFResource = TextureManager::GetInstance(Context.GetCommandList())->GetTexture(L"IntegrationBRDF", false)->Resource.Get();
+		g_Device->CreateShaderResourceView(IntegrationBRDFResource, nullptr, IntegrationBRDFSrv);
+		GlobleSRVIndex::gBakingIntegrationBRDFIndex = AddToGlobalTextureSRVDescriptor(IntegrationBRDFSrv);
 	}
-	BakingPreFilteredEnvironment(Context);
-	BakingBRDF(Context);
+	
 }
 
 

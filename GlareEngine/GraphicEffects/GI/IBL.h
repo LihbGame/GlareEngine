@@ -23,6 +23,7 @@ private:
 	void BakingEnvironmentDiffuse(GraphicsContext& Context);
 	void BakingPreFilteredEnvironment(GraphicsContext& Context);
 	void BakingBRDF(GraphicsContext& Context);
+	void SaveBakingDataToFiles(GraphicsContext& Context);
 private:
 	unique_ptr<CubeRenderTarget> mIndirectDiffuseCube;
 	unique_ptr<CubeRenderTarget> mPreFilteredEnvCube;

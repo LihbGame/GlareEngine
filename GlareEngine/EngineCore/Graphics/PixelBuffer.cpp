@@ -3,12 +3,26 @@
 #include "ReadbackBuffer.h"
 #include <fstream>
 #include <DirectXTK12/Inc/ScreenGrab.h>
+#include <DirectXTex.h>
+#include <Engine/EngineLog.h>
 
 namespace GlareEngine
 {
-	void PixelBuffer::ExportToFile(const std::wstring& FilePath)
+	void PixelBuffer::ExportToFile(const std::wstring& FilePath, bool isCube)
 	{
-		SaveDDSTextureToFile(g_CommandManager.GetQueue().GetCommandQueue(), this->GetResource(), FilePath.c_str(), this->m_UsageState);
+		//SaveDDSTextureToFile(g_CommandManager.GetQueue().GetCommandQueue(), this->GetResource(), FilePath.c_str(), this->m_UsageState);
+
+		ScratchImage image;
+		HRESULT result = CaptureTexture(g_CommandManager.GetQueue().GetCommandQueue(), this->GetResource(), isCube, image, this->m_UsageState);
+
+		if (SUCCEEDED(result))
+		{
+			result = SaveToDDSFile(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DDS_FLAGS_NONE, FilePath.c_str());
+			if (FAILED(result))
+			{
+				EngineLog::AddLog(L"%ws Save Failed!", FilePath.c_str());
+			}
+		}
 
 		//// This very short command list only issues one API call and will be synchronized so we can immediately read
 		//// the buffer contents.
