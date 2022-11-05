@@ -42,7 +42,7 @@ void MeshSorter::AddMesh(const Mesh& mesh, float distance,
 	{
 		key.passID = eTransparent;
 		key.psoIdx = mesh.pso;
-		//Transparent object need revert distance
+		//Transparent object need revert distance ,From far to near
 		key.key = ~dist.u;
 		m_SortKeys.push_back(key.value);
 		m_PassCounts[eTransparent]++;
