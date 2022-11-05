@@ -173,6 +173,10 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 		mEngineThread.AddTask([&]() {
 			GraphicsContext& InitializeContext = GraphicsContext::Begin(L"Load and Initialize Models");
 			ID3D12GraphicsCommandList* CommandList = InitializeContext.GetCommandList();
+
+			//Baking GI Data
+			gScene->BakingGIData(InitializeContext);
+
 			//Instance models
 			CreateSimpleModelInstance(CommandList, "Grid_01", SimpleModelType::Grid, "PBRGrass01", 1, 1);
 			CreateModelInstance(CommandList, "BlueTree/Blue_Tree_02a.FBX", 8, 8, 0);
@@ -195,10 +199,8 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 
 			//Create Model Materials Constant Buffer
 			MaterialManager::GetMaterialInstance()->CreateMaterialsConstantBuffer();
-			});
 
-		//Baking GI Data
-		gScene->BakingGIData(InitializeContext);
+			});
 
 		//Create all Materials Constant Buffer
 		MaterialManager::GetMaterialInstance()->CreateMaterialsConstantBuffer();

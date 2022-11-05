@@ -188,7 +188,6 @@ void IBL::PreBakeGIData(GraphicsContext& Context, RenderObject* Object)
 		g_Device->CreateShaderResourceView(IntegrationBRDFResource, nullptr, IntegrationBRDFSrv);
 		GlobleSRVIndex::gBakingIntegrationBRDFIndex = AddToGlobalTextureSRVDescriptor(IntegrationBRDFSrv);
 	}
-	
 }
 
 
