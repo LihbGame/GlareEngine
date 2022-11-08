@@ -20,7 +20,7 @@ void InstanceModel::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 	{
 		//Set Instance data
 		const vector<InstanceRenderConstants>& InstanceData = mInstanceData.mInstanceConstants[SubModelIndex];
-		Context.SetDynamicSRV(5, sizeof(InstanceRenderConstants)* InstanceData.size(), (void*)InstanceData.data());
+		Context.SetDynamicSRV((int)RootSignatureType::eInstanceConstantData, sizeof(InstanceRenderConstants)* InstanceData.size(), (void*)InstanceData.data());
 		
 		if (SpecificPSO)
 		{
@@ -47,7 +47,7 @@ void InstanceModel::DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificSh
 	{
 		//Set Instance data
 		const vector<InstanceRenderConstants>& InstanceData = mInstanceData.mInstanceConstants[SubModelIndex];
-		Context.SetDynamicSRV((int)RootSignatureType::eInstancConstantData, sizeof(InstanceRenderConstants) * InstanceData.size(), (void*)InstanceData.data());
+		Context.SetDynamicSRV((int)RootSignatureType::eInstanceConstantData, sizeof(InstanceRenderConstants) * InstanceData.size(), (void*)InstanceData.data());
 
 		Context.SetPipelineState(*SpecificShadowPSO);
 

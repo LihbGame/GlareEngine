@@ -10,6 +10,7 @@ namespace GlareEngine
 	struct PSOCommonProperty
 	{
 		RootSignature* pRootSignature = nullptr;
+		RootSignature* pModelRootSignature = nullptr;
 		bool IsWireframe = false;
 		bool IsMSAA = false;
 		int MSAACount = 1;

@@ -77,7 +77,7 @@ namespace GlareEngine
 		//Material Constant Data
 		gRootSignature[(int)RootSignatureType::eMaterialConstantData].InitAsBufferSRV(1, 1);
 		//Instance Constant Data 
-		gRootSignature[(int)RootSignatureType::eInstancConstantData].InitAsBufferSRV(0, 1);
+		gRootSignature[(int)RootSignatureType::eInstanceConstantData].InitAsBufferSRV(0, 1);
 
 		//Static Samplers
 		gRootSignature.InitStaticSampler(0, SamplerLinearWrapDesc);
@@ -89,10 +89,9 @@ namespace GlareEngine
 		gRootSignature.InitStaticSampler(6, SamplerPointBorderDesc);
 		gRootSignature.InitStaticSampler(7, SamplerLinearBorderDesc);
 
-		gRootSignature.Finalize(L"Forward Rendering", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+		gRootSignature.Finalize(L"Root Signature", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		gCommonProperty.pRootSignature = &gRootSignature;
-
 	}
 
 	uint8_t Render::GetPSO(uint16_t psoFlags)
