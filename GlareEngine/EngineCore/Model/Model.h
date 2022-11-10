@@ -11,6 +11,7 @@
 
 namespace GlareEngine
 {
+	class MeshSorter;
 	namespace ModelPSOFlags
 	{
 		enum : uint16_t
@@ -92,10 +93,10 @@ namespace GlareEngine
 
 		~Model() { Destroy(); }
 
-		/*void AddToRender(MeshSorter& sorter,
+		void AddToRender(MeshSorter& sorter,
 			const GPUBuffer& meshConstants,
 			const ScaleAndTranslation sphereTransforms[],
-			const Joint* skeleton) const;*/
+			const Joint* skeleton) const;
 
 		Math::BoundingSphere	m_BoundingSphere; // Object space bounding sphere
 		AxisAlignedBox			m_BoundingBox;

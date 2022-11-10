@@ -1,12 +1,13 @@
 #pragma once
 #include "Matrix3.h"
-#include "BoundingSphere.h"
 
 using namespace GlareEngine::Math;
 namespace GlareEngine
 {
     namespace Math
     {
+        class BoundingSphere;
+
         // This transform strictly prohibits non-uniform scale.  Scale itself is barely tolerated.
         class OrthogonalTransform
         {
@@ -79,12 +80,7 @@ namespace GlareEngine
             INLINE Scalar GetScale() const { return m_repr.GetW(); }
             INLINE Vector3 GetTranslation() const { return (Vector3)m_repr; }
 
-            /*INLINE BoundSphere operator*(const BoundSphere& sphere) const
-            {
-                Vector4 scaledSphere = (Vector4)sphere * GetScale();
-                Vector4 translation = Vector4(SetWToZero(m_repr));
-                return BoundSphere(scaledSphere + translation);
-            }*/
+            BoundingSphere operator*(const BoundingSphere& sphere) const;
 
         private:
             Vector4 m_repr;
