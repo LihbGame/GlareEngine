@@ -118,10 +118,7 @@ namespace GlareEngine
                 return (vec * transpose.m_translationScale.GetScale()) * transpose.m_rotation + transpose.m_translationScale.GetTranslation();
             }
 
-            //INLINE BoundSphere operator*(BoundSphere sphere) const
-            //{
-            //    return BoundSphere(*this * sphere.GetCenter(), GetScale() * sphere.GetRadius());
-            //}
+            BoundingSphere operator*(BoundingSphere sphere) const;
 
         private:
             Quaternion m_rotation;
@@ -176,9 +173,9 @@ namespace GlareEngine
             static INLINE AffineTransform MakeScale(Vector3 scale) { return AffineTransform(Matrix3::MakeScale(scale)); }
             static INLINE AffineTransform MakeTranslation(Vector3 translate) { return AffineTransform(translate); }
 
-            INLINE Vector3 operator* (Vector3 vec) const { return vec * m_basis + m_translation; }
+            friend INLINE Vector3 operator* (Vector3 vec, const AffineTransform& mat){ return vec * mat.m_basis + mat.m_translation; }
             INLINE AffineTransform operator* (const AffineTransform& mat) const {
-                return AffineTransform(m_basis * mat.m_basis, *this * mat.GetTranslation());
+                return AffineTransform(m_basis * mat.m_basis, mat.GetTranslation() * *this);
             }
 
         private:

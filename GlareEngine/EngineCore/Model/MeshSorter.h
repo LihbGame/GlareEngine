@@ -32,7 +32,7 @@ namespace GlareEngine
 
 		const Frustum& GetWorldFrustum() const { return m_Camera->GetWorldSpaceFrustum(); }
 		const Frustum& GetViewFrustum() const { return m_Camera->GetViewSpaceFrustum(); }
-		const Matrix4& GetViewMatrix() const { return Matrix4(m_Camera->GetView()); }
+		const Matrix4 GetViewMatrix() const { return Matrix4(m_Camera->GetView()); }
 
 		void AddMesh(const Mesh& mesh, float distance,
 			D3D12_GPU_VIRTUAL_ADDRESS meshCBV,

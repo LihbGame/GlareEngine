@@ -97,7 +97,7 @@ namespace GlareEngine
 			Frustum result;
 
 			for (int i = 0; i < 8; ++i)
-				result.m_FrustumCorners[i] = xform * frustum.m_FrustumCorners[i];
+				result.m_FrustumCorners[i] = frustum.m_FrustumCorners[i] * xform;
 
 			Matrix4 XForm = Transpose(Invert(Matrix4(xform)));
 
