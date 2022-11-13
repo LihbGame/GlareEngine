@@ -4,15 +4,15 @@
 enum class RootSignatureType :int
 {
 	eMainConstantBuffer,
-	//eMaterialConstants,
+	eMaterialConstants,
 	eCommonConstantBuffer,
-	//eMaterialSRVs,
+	eMaterialSRVs,
 	eCubeTextures,
 	ePBRTextures,
-	//eMaterialSamplers,
+	eMaterialSamplers,
 	eMaterialConstantData,
 	eInstanceConstantData,
-	//eSkinMatrices,
+	eSkinMatrices,
 	eRootSignatureSize
 };
 

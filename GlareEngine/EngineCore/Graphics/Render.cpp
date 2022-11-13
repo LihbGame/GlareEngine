@@ -22,7 +22,6 @@ namespace GlareEngine
 
 		//Root Signature
 		RootSignature gRootSignature;
-		RootSignature m_RootSig;
 
 		//PSO Common Property
 		PSOCommonProperty gCommonProperty;
@@ -70,24 +69,32 @@ namespace GlareEngine
 			//2.Shadow  Constant Buffer
 			//3.Terrain Constant buffer
 		gRootSignature[(int)RootSignatureType::eCommonConstantBuffer].InitAsConstantBuffer(1);
+		//Material Constants 
+		gRootSignature[(int)RootSignatureType::eMaterialConstants].InitAsConstantBuffer(2);
+		//PBR Material SRVs 
+		gRootSignature[(int)RootSignatureType::eMaterialSRVs].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAXPBRSRVSIZE);
 		//Sky Cube Texture
-		gRootSignature[(int)RootSignatureType::eCubeTextures].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAXCUBESRVSIZE);
-		//Cook BRDF PBR Textures 
-		gRootSignature[(int)RootSignatureType::ePBRTextures].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MAXCUBESRVSIZE, MAX2DSRVSIZE);
+		gRootSignature[(int)RootSignatureType::eCubeTextures].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MAXPBRSRVSIZE, MAXCUBESRVSIZE);
+		//Cook 2D And other PBR Textures 
+		gRootSignature[(int)RootSignatureType::ePBRTextures].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MAXCUBESRVSIZE+ MAXPBRSRVSIZE, MAX2DSRVSIZE);
+		//Material Samplers
+		gRootSignature[(int)RootSignatureType::eMaterialSamplers].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 10, D3D12_SHADER_VISIBILITY_PIXEL);
+		//Skin Matrices 
+		gRootSignature[(int)RootSignatureType::eSkinMatrices].InitAsBufferSRV(2, 1);
 		//Material Constant Data
 		gRootSignature[(int)RootSignatureType::eMaterialConstantData].InitAsBufferSRV(1, 1);
 		//Instance Constant Data 
 		gRootSignature[(int)RootSignatureType::eInstanceConstantData].InitAsBufferSRV(0, 1);
 
 		//Static Samplers
-		gRootSignature.InitStaticSampler(0, SamplerLinearWrapDesc);
-		gRootSignature.InitStaticSampler(1, SamplerAnisoWrapDesc);
-		gRootSignature.InitStaticSampler(2, SamplerShadowDesc);
-		gRootSignature.InitStaticSampler(3, SamplerLinearClampDesc);
-		gRootSignature.InitStaticSampler(4, SamplerVolumeWrapDesc);
-		gRootSignature.InitStaticSampler(5, SamplerPointClampDesc);
-		gRootSignature.InitStaticSampler(6, SamplerPointBorderDesc);
-		gRootSignature.InitStaticSampler(7, SamplerLinearBorderDesc);
+		gRootSignature.InitStaticSampler(10, SamplerLinearWrapDesc);
+		gRootSignature.InitStaticSampler(11, SamplerAnisoWrapDesc);
+		gRootSignature.InitStaticSampler(12, SamplerShadowDesc);
+		gRootSignature.InitStaticSampler(13, SamplerLinearClampDesc);
+		gRootSignature.InitStaticSampler(14, SamplerVolumeWrapDesc);
+		gRootSignature.InitStaticSampler(15, SamplerPointClampDesc);
+		gRootSignature.InitStaticSampler(16, SamplerPointBorderDesc);
+		gRootSignature.InitStaticSampler(17, SamplerLinearBorderDesc);
 
 		gRootSignature.Finalize(L"Root Signature", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 

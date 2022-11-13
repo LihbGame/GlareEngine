@@ -251,5 +251,5 @@ Math::OrientedBox GlareEngine::ModelInstance::GetBoundingBox() const
 	if (m_Model == nullptr)
 		return AxisAlignedBox(Vector3(eZero), Vector3(eZero));
 
-	return m_Locator * m_Model->m_BoundingBox;
+	return m_Model->m_BoundingBox * m_Locator;
 }

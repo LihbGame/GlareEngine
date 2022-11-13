@@ -2,7 +2,7 @@
 
 #define MAX2DSRVSIZE 256
 #define MAXCUBESRVSIZE 32
-
+#define MAXPBRSRVSIZE 10
 
 // Shadow map related variables
 #define NUM_SAMPLES 20
@@ -36,21 +36,24 @@ struct MaterialData
     uint mHeightMapIndex;
 };
 
+SamplerState gMaterialSampler[10]         : register(s0);
 
 //static sampler
-SamplerState gSamplerLinearWrap         : register(s0);
-SamplerState gSamplerAnisoWrap          : register(s1);
-SamplerState gSamplerLinearClamp        : register(s3);
-SamplerState gSamplerVolumeWrap         : register(s4);
-SamplerState gSamplerPointClamp         : register(s5);
-SamplerState gSamplerPointBorder        : register(s6);
-SamplerState gSamplerLinearBorder       : register(s7);
-SamplerComparisonState gSamplerShadow   : register(s2);
+SamplerState gSamplerLinearWrap         : register(s10);
+SamplerState gSamplerAnisoWrap          : register(s11);
+SamplerState gSamplerLinearClamp        : register(s13);
+SamplerState gSamplerVolumeWrap         : register(s14);
+SamplerState gSamplerPointClamp         : register(s15);
+SamplerState gSamplerPointBorder        : register(s16);
+SamplerState gSamplerLinearBorder       : register(s17);
+SamplerComparisonState gSamplerShadow   : register(s12);
 
 //Texture array, only supported for shader model 5.1+. Unlike Texture2DArray,
 //Textures in this array can have different sizes and formats, making it more flexible than texture arrays.
-TextureCube gCubeMaps[MAXCUBESRVSIZE]   : register(t0);
-Texture2D gSRVMap[MAX2DSRVSIZE]         : register(t32);
+
+Texture2D   gPBRMaterialTexture[MAXPBRSRVSIZE]          : register(t0);
+TextureCube gCubeMaps[MAXCUBESRVSIZE]                   : register(t10);
+Texture2D   gSRVMap[MAX2DSRVSIZE]                       : register(t42);
 
 
 StructuredBuffer<MaterialData> gMaterialData : register(t1, space1);

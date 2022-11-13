@@ -52,9 +52,9 @@ namespace GlareEngine
                 m_repr.SetTranslation(box.GetMin());
             }
 
-            friend OrientedBox operator* (const AffineTransform& xform, const OrientedBox& obb)
+            friend OrientedBox operator* (const OrientedBox& obb, const AffineTransform& xform)
             {
-                return (OrientedBox&)(xform * obb.m_repr);
+                return (OrientedBox&)(obb.m_repr * xform);
             }
 
             Vector3 GetDimensions() const { return m_repr.GetX() + m_repr.GetY() + m_repr.GetZ(); }
@@ -64,14 +64,14 @@ namespace GlareEngine
             AffineTransform m_repr;
         };
 
-        INLINE OrientedBox operator* (const UniformTransform& xform, const OrientedBox& obb)
+        INLINE OrientedBox operator* (const OrientedBox& obb, const UniformTransform& xform)
         {
-            return AffineTransform(xform) * obb;
+            return obb * AffineTransform(xform);
         }
 
-        INLINE OrientedBox operator* (const UniformTransform& xform, const AxisAlignedBox& aabb)
+        INLINE OrientedBox operator* (const AxisAlignedBox& aabb, const UniformTransform& xform)
         {
-            return AffineTransform(xform) * OrientedBox(aabb);
+            return OrientedBox(aabb) * AffineTransform(xform);
         }
 
     } // namespace Math
