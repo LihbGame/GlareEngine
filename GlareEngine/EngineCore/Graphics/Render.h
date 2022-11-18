@@ -28,10 +28,9 @@ namespace GlareEngine
 	{
 		//Root Signature
 		extern RootSignature gRootSignature;
-		extern RootSignature m_RootSig;
 		//PSO Common Property
 		extern PSOCommonProperty gCommonProperty;
-		//Num Frame Resources
+		//Number Frame Resources
 		extern const int gNumFrameResources;
 
 		extern std::vector<GraphicsPSO> gCommonPSOs;

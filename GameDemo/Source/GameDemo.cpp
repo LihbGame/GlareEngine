@@ -18,6 +18,8 @@
 #include "Shadow/ShadowMap.h"
 #include "Terrain/Terrain.h"
 #include "Graphics/Render.h"
+#include "Model/Model.h"
+#include "Model/glTFModelLoader.h"
 
 //lib
 #pragma comment(lib, "dxgi.lib")
@@ -178,6 +180,9 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			gScene->BakingGIData(InitializeContext);
 
 			//Instance models
+
+			//ModelInstance m_ModelInst = GlareEngine::LoadModel(L"D:/glTF-Sample-Models-master/2.0/Box/glTF/Box.gltf");
+
 			CreateSimpleModelInstance(CommandList, "Grid_01", SimpleModelType::Grid, "PBRGrass01", 1, 1);
 			CreateModelInstance(CommandList, "BlueTree/Blue_Tree_02a.FBX", 8, 8, 0);
 			CreateModelInstance(CommandList, "BlueTree/Blue_Tree_03a.FBX", 8, 8, 10.0f, true);

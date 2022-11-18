@@ -355,7 +355,7 @@ void LoadMaterials(Model& model,
 		uint32_t SRVDescriptorTable = Render::gModelTextureHeap.GetOffsetOfHandle(TextureHandles);
 
 		uint32_t DestCount = eNumTextures;
-		uint32_t SourceCounts[eNumTextures] = { 1, 1, 1, 1, 1, 1 };
+		uint32_t SourceCounts[eNumTextures] = { 1, 1, 1, 1, 1};
 
 		D3D12_CPU_DESCRIPTOR_HANDLE DefaultTextures[eNumTextures] =
 		{
@@ -364,7 +364,6 @@ void LoadMaterials(Model& model,
 			GetDefaultTexture(eWhiteOpaque2D),
 			GetDefaultTexture(eBlackTransparent2D),
 			GetDefaultTexture(eDefaultNormalMap),
-			GetDefaultTexture(eBlackOpaque2D)
 		};
 
 		D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[eNumTextures];

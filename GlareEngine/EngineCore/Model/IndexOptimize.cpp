@@ -6,10 +6,13 @@
 #include <ASSERT.h>
 #include <math.h>
 #include <algorithm>
+#include <memory>
 
 #include "IndexOptimize.h"
 
-namespace
+using namespace std;
+
+namespace GlareEngine
 {
 	// code for computing vertex score was taken, as much as possible
 	// directly from the original publication.
@@ -191,15 +194,15 @@ namespace
 	{
 		assert(cacheSize <= eMaxVertexCacheSize);
 
-		std::unique_ptr<OptimizeVertexData[]> vertexDataList(new OptimizeVertexData[indexCount]); // upper bounds on size is indexCount
-		std::unique_ptr<uint32_t[]> vertexRemap(new uint32_t[indexCount]);
-		std::unique_ptr<uint32_t[]> activeFaceList(new uint32_t[indexCount]);
+		unique_ptr<OptimizeVertexData[]> vertexDataList(new OptimizeVertexData[indexCount]); // upper bounds on size is indexCount
+		unique_ptr<uint32_t[]> vertexRemap(new uint32_t[indexCount]);
+		unique_ptr<uint32_t[]> activeFaceList(new uint32_t[indexCount]);
 
 		size_t faceCount = indexCount / 3;
-		std::unique_ptr<uint8_t[]> processedFaceList(new uint8_t[faceCount]);
+		unique_ptr<uint8_t[]> processedFaceList(new uint8_t[faceCount]);
 		memset(processedFaceList.get(), 0, sizeof(uint8_t) * faceCount);
-		std::unique_ptr<uint32_t[]> faceSorted(new uint32_t[faceCount]);
-		std::unique_ptr<uint32_t[]> faceReverseLookup(new uint32_t[faceCount]);
+		unique_ptr<uint32_t[]> faceSorted(new uint32_t[faceCount]);
+		unique_ptr<uint32_t[]> faceReverseLookup(new uint32_t[faceCount]);
 
 		// build the vertex remap table
 		uint32_t uniqueVertexCount = 0;
@@ -415,5 +418,4 @@ namespace
 			entriesInCache0 = std::min(entriesInCache1, cacheSize);
 		}
 	}
-
 }

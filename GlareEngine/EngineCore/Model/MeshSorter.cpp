@@ -1,7 +1,8 @@
 #include "MeshSorter.h"
 #include "Graphics/Render.h"
+#include "Graphics/DepthBuffer.h"
 
-#pragma warning(disable:4319) // '~': zero extending 'uint32_t' to 'uint64_t' of greater size
+#pragma warning(disable:4319) //zero extending 'uint32_t' to 'uint64_t' of greater size
 
 using namespace GlareEngine::Render;
 
@@ -83,6 +84,42 @@ void MeshSorter::Sort()
 
 void MeshSorter::RenderMeshes(DrawPass pass, GraphicsContext& context, MainConstants& globals)
 {
+	assert(m_DSV != nullptr);
+
+	context.SetRootSignature(gRootSignature);
+	context.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gModelTextureHeap.GetHeapPointer());
+	context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, gSamplerHeap.GetHeapPointer());
+
+	// Set common shader constants
+	XMStoreFloat4x4(&globals.ViewProj, m_Camera->GetView() * m_Camera->GetProj());
+	globals.EyePosW = m_Camera->GetPosition3f();
+	context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &globals);
+
+
+	//shadow batch
+	if (m_BatchType == eShadows)
+	{
+		context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+		context.ClearDepth(*m_DSV);
+		context.SetDepthStencilTarget(m_DSV->GetDSV());
+
+		if (m_Viewport.Width == 0)
+		{
+			m_Viewport.TopLeftX = 0.0f;
+			m_Viewport.TopLeftY = 0.0f;
+			m_Viewport.Width = (float)m_DSV->GetWidth();
+			m_Viewport.Height = (float)m_DSV->GetHeight();
+			m_Viewport.MaxDepth = 1.0f;
+			m_Viewport.MinDepth = 0.0f;
+
+			m_Scissor.left = 0;
+			m_Scissor.right = m_DSV->GetWidth();
+			m_Scissor.top = 0;
+			m_Scissor.bottom = m_DSV->GetHeight();
+		}
+	}
+
 
 }
 

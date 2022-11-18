@@ -13,7 +13,6 @@ enum
 	eOcclusion, 
 	eEmissive, 
 	eNormal, 
-	eHeight, 
 	eNumTextures 
 };
 

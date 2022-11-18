@@ -53,6 +53,8 @@ namespace GlareEngine
 			m_RTV[m_NumRTVs++] = &RTV;
 		}
 
+		void SetDepthStencilTarget(DepthBuffer& DSV) { m_DSV = &DSV; }
+
 	private:
 
 		struct SortKey

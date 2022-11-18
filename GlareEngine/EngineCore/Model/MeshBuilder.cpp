@@ -2,7 +2,7 @@
 #include "Graphics/TextureConvert.h"
 #include "glTF.h"
 #include "Model.h"
-#include "IndexOptimize.h"
+#include "Model/IndexOptimize.h"
 #include "Math/VectorMath.h"
 #include "DirectXMesh.h"
 #include "Engine/EngineLog.h"
