@@ -12,6 +12,9 @@
 #include <dwmapi.h>
 #include <windowsx.h>
 #include "resource.h"
+
+#define CURSOR_NAME "../Resource/Textures/ICONS/Cursor.cur"
+
 #pragma comment(lib, "runtimeobject.lib")
 #pragma comment(lib, "Dwmapi.lib")
 namespace GlareEngine
@@ -49,6 +52,8 @@ namespace GlareEngine
 			//当前所调用该函数的程序实例句柄
 			HINSTANCE hInst = hand;
 
+			HCURSOR cursor = LoadCursorFromFileA(CURSOR_NAME);
+
 			// Register class
 			WNDCLASSEX wcex;
 			wcex.cbSize = sizeof(WNDCLASSEX);
@@ -58,7 +63,7 @@ namespace GlareEngine
 			wcex.cbWndExtra = 0;
 			wcex.hInstance = hInst;
 			wcex.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON5));
-			wcex.hCursor = LoadCursor(hInst, MAKEINTRESOURCE(IDC_CURSOR1));
+			wcex.hCursor = cursor;// LoadCursor(hInst, MAKEINTRESOURCE(IDC_CURSOR1));
 			wcex.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 			wcex.lpszMenuName = nullptr;
 			wcex.lpszClassName = className;
@@ -71,7 +76,8 @@ namespace GlareEngine
 			}
 			// Create window
 			RECT rc = { 0, 0,(LONG)g_DisplayWidth, (LONG)g_DisplayHeight };
-			AdjustWindowRect(&rc, WS_POPUPWINDOW, FALSE);
+			AdjustWindowRect(&rc, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_POPUPWINDOW, false);
+
 
 			g_hWnd = CreateWindow(className, className, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_POPUPWINDOW, 100, 100,
 				rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInst, nullptr);
@@ -176,7 +182,6 @@ namespace GlareEngine
 
 			ShowWindow(g_hWnd, SW_SHOW);
 			UpdateWindow(g_hWnd);
-
 			do
 			{
 				MSG msg = {};
