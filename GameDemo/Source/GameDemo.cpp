@@ -407,20 +407,20 @@ void App::OnMouseMove(WPARAM btnState, int x, int y)
 		if (mLastMousePos.y >= ((LONG)WindowRect.bottom - RESIZE_RANGE) &&
 			mLastMousePos.x >= ((LONG)WindowRect.right - RESIZE_RANGE))
 		{
-			SetCursor(LoadCursor(NULL, IDC_SIZENWSE));
+			SetCursor(GameCore::gCursorSizeNWSE);
 			mCursorType = CursorType::SIZENWSE;
 			return;
 		}
 		if (mLastMousePos.y >= ((LONG)WindowRect.bottom - RESIZE_RANGE) &&
 			mLastMousePos.y <= ((LONG)WindowRect.bottom))
 		{
-			SetCursor(LoadCursor(NULL, IDC_SIZENS));
+			SetCursor(GameCore::gCursorSizeNS);
 			mCursorType = CursorType::SIZENS;
 		}
 		else if (mLastMousePos.x >= ((LONG)WindowRect.right - RESIZE_RANGE) &&
 			mLastMousePos.x <= ((LONG)WindowRect.right))
 		{
-			SetCursor(LoadCursor(NULL, IDC_SIZEWE));
+			SetCursor(GameCore::gCursorSizeWE);
 			mCursorType = CursorType::SIZEWE;
 		}
 	}

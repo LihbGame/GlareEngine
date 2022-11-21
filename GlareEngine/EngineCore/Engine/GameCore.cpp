@@ -13,7 +13,10 @@
 #include <windowsx.h>
 #include "resource.h"
 
-#define CURSOR_NAME "../Resource/Textures/ICONS/Cursor.cur"
+#define CURSOR_NAME "../Resource/Textures/ICONS/Anime Cursor/AnimeCursor1.ani"
+#define CURSOR_SIZENWSE "../Resource/Textures/ICONS/Cursor/dgn1.cur"
+#define CURSOR_SIZENS "../Resource/Textures/ICONS/Cursor/vert.cur"
+#define CURSOR_SIZEWE "../Resource/Textures/ICONS/Cursor/horz.cur"
 
 #pragma comment(lib, "runtimeobject.lib")
 #pragma comment(lib, "Dwmapi.lib")
@@ -35,6 +38,11 @@ namespace GlareEngine
 
 		GameApp* GameApp::mGameApp = nullptr;
 		HWND g_hWnd = nullptr;
+		HCURSOR gCursor = nullptr;
+		HCURSOR gCursorSizeNWSE = nullptr;
+		HCURSOR gCursorSizeNS = nullptr;
+		HCURSOR gCursorSizeWE = nullptr;
+
 
 		LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
@@ -52,7 +60,10 @@ namespace GlareEngine
 			//当前所调用该函数的程序实例句柄
 			HINSTANCE hInst = hand;
 
-			HCURSOR cursor = LoadCursorFromFileA(CURSOR_NAME);
+			gCursor = LoadCursorFromFileA(CURSOR_NAME);
+			gCursorSizeNWSE = LoadCursorFromFileA(CURSOR_SIZENWSE);
+			gCursorSizeNS = LoadCursorFromFileA(CURSOR_SIZENS);
+			gCursorSizeWE = LoadCursorFromFileA(CURSOR_SIZEWE);
 
 			// Register class
 			WNDCLASSEX wcex;
@@ -63,7 +74,7 @@ namespace GlareEngine
 			wcex.cbWndExtra = 0;
 			wcex.hInstance = hInst;
 			wcex.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON5));
-			wcex.hCursor = cursor;// LoadCursor(hInst, MAKEINTRESOURCE(IDC_CURSOR1));
+			wcex.hCursor = gCursor;// LoadCursor(hInst, MAKEINTRESOURCE(IDC_CURSOR1));
 			wcex.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 			wcex.lpszMenuName = nullptr;
 			wcex.lpszClassName = className;
@@ -352,15 +363,15 @@ namespace GlareEngine
 						switch (mCursorType)
 						{
 						case CursorType::SIZENWSE:
-							SetCursor(LoadCursor(NULL, IDC_SIZENWSE));
+							SetCursor(gCursorSizeNWSE);
 							SendMessage(g_hWnd, WM_SYSCOMMAND, SC_SIZE | WMSZ_BOTTOMRIGHT, NULL);
 							break;
 						case CursorType::SIZENS:
-							SetCursor(LoadCursor(NULL, IDC_SIZENS));
+							SetCursor(gCursorSizeNS);
 							SendMessage(g_hWnd, WM_SYSCOMMAND, SC_SIZE | WMSZ_BOTTOM, NULL);
 							break;
 						case CursorType::SIZEWE:
-							SetCursor(LoadCursor(NULL, IDC_SIZEWE));
+							SetCursor(gCursorSizeWE);
 							SendMessage(g_hWnd, WM_SYSCOMMAND, SC_SIZE | WMSZ_RIGHT, NULL);
 							break;
 						case CursorType::Count:
