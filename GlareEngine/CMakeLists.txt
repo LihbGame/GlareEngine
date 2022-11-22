@@ -16,14 +16,16 @@ source_group(TREE "${GLAREENGINE_ROOT_DIR}" FILES ${PACKAGE_FILES})
 
 set(shaderPath "${ENGINE_ROOT_DIR}/Shaders")
 file(MAKE_DIRECTORY ${shaderPath}/CompiledShaders)
-string(CONCAT OUTPATH "/Vn\"g_p%(Filename)\" /Fh\"" ${shaderPath} "\\CompiledShaders\\%(Filename).h\" -Qembed_debug /Zi")
-set_source_files_properties(${SHADER_SOURCES} PROPERTIES VS_SHADER_FLAGS ${OUTPATH})
+
+set_source_files_properties(${SHADER_SOURCES} PROPERTIES VS_SHADER_MODEL "6.0")
+set_source_files_properties(${SHADER_SOURCES} PROPERTIES VS_SHADER_VARIABLE_NAME "g_p%(Filename)")
+set_source_files_properties(${SHADER_SOURCES} PROPERTIES VS_SHADER_OUTPUT_HEADER_FILE "${shaderPath}\\CompiledShaders\\%(Filename).h")
 
 file(GLOB_RECURSE VS_SHADER_SOURCES ${ENGINE_ROOT_DIR}/Shaders/*VS.hlsl)
-set_source_files_properties(${VS_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Vertex VS_SHADER_MODEL "6.0")
+set_source_files_properties(${VS_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Vertex)
 
 file(GLOB_RECURSE PS_SHADER_SOURCES ${ENGINE_ROOT_DIR}/Shaders/*PS.hlsl)
-set_source_files_properties(${PS_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Pixel VS_SHADER_MODEL "6.0")
+set_source_files_properties(${PS_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Pixel)
 
 file(GLOB_RECURSE GS_SHADER_SOURCES ${ENGINE_ROOT_DIR}/Shaders/*GS.hlsl)
 set_source_files_properties(${GS_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Geometry VS_TOOL_OVERRIDE "none")
