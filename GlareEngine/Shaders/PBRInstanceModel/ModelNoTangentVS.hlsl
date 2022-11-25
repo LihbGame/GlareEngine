@@ -1,4 +1,2 @@
-float4 main( float4 pos : POSITION ) : SV_POSITION
-{
-	return pos;
-}
+#define NO_TANGENT_FRAME 1
+#include "ModelVS.hlsl"
