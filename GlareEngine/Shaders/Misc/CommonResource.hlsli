@@ -9,7 +9,10 @@
 #define BLOCKER_SEARCH_NUM_SAMPLES NUM_SAMPLES
 #define PCF_NUM_SAMPLES NUM_SAMPLES
 #define NUM_RINGS 10
-#define EPS 1e-3
+
+// Numeric constants
+static const float3 DielectricSpecular = float3(0.04, 0.04, 0.04);
+
 
 struct InstanceData
 {
@@ -51,7 +54,6 @@ SamplerComparisonState gSamplerShadow   : register(s12);
 //Texture array, only supported for shader model 5.1+. Unlike Texture2DArray,
 //Textures in this array can have different sizes and formats, making it more flexible than texture arrays.
 
-Texture2D   gPBRMaterialTexture[MAXPBRSRVSIZE]          : register(t0);
 TextureCube gCubeMaps[MAXCUBESRVSIZE]                   : register(t10);
 Texture2D   gSRVMap[MAX2DSRVSIZE]                       : register(t42);
 
@@ -90,6 +92,8 @@ cbuffer MainPass : register(b0)
     int gBakingDiffuseCubeIndex;
     int gBakingPreFilteredEnvIndex;
     int gBakingIntegrationBRDFIndex;
+    float IBLRange;
+    float IBLBias;
 };    
 
 

@@ -36,7 +36,7 @@ float CalcShadowFactor(float4 shadowPosH)
             shadowPosH.xy + offsets[i], depth).r;
     }
     percentLit /= 9.0f;
-    return clamp(percentLit, 0.1f, 1.0f);
+    return clamp(percentLit, 0.0f, 1.0f);
 }
 
 float PCF(float4 shadowPosH)

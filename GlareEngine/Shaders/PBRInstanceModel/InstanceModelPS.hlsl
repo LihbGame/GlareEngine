@@ -33,7 +33,8 @@ float4 main(PosNorTanTexOut pin) : SV_Target
 
 // Indirect lighting.[IBL][GI]
     float NdotV = saturate(dot(bumpedNormalW, toEyeW));
-    float3 F = fresnelSchlickRoughness(NdotV, matData.mFresnelR0, Roughness);
+    float3 F0 = lerp(DielectricSpecular, diffuseAlbedo.rgb, Metallic);
+    float3 F = FresnelSchlickRoughness(NdotV, F0, Roughness);
     float3 kS = F;
     float3 kD = 1.0 - kS;
     kD *= 1.0 - Metallic;
@@ -43,7 +44,6 @@ float4 main(PosNorTanTexOut pin) : SV_Target
     float2 BRDF = gSRVMap[gBakingIntegrationBRDFIndex].Sample(gSamplerLinearClamp, float2(NdotV, Roughness)).xy;
     float3 Specular = PrefilteredColor*(F * BRDF.x + BRDF.y);
     float4 ambient = float4((kD * Diffuse.rgb + Specular) * AO, 1.0f);
-
 
     Material mat = { diffuseAlbedo, matData.mFresnelR0, Roughness, Metallic, AO };
 // Only the first light casts a shadow.

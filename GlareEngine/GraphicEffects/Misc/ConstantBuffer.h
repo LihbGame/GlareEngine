@@ -30,7 +30,6 @@ __declspec(align(256)) struct MaterialConstants
 	float normalTextureScale;			// default=1
 	float metallicFactor;				// default=1
 	float roughnessFactor;				// default=1
-	float heightFactor;					// default=1
 	union
 	{
 		uint32_t flags;
@@ -97,10 +96,9 @@ struct MainConstants
 	int mSkyCubeIndex = 0;
 	int mBakingDiffuseCubeIndex = 0;
 	int gBakingPreFilteredEnvIndex = 0;
-
 	int gBakingIntegrationBRDFIndex = 0;
-	int mPad01 = 0;
-	int mPad02 = 0;
+	float IBLRange = 4.0f;
+	float IBLBias = 0.0f;
 	int mPad03 = 0;
 };
 

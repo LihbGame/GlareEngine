@@ -44,7 +44,7 @@ float3 fresnelSchlick(float cosTheta, float3 F0)
 }
 
 
-float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
+float3 FresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
 {
     float InvRoughness = 1.0f - roughness;
     return F0 + (max(float3(InvRoughness, InvRoughness, InvRoughness), F0) - F0) * pow(1.0f - cosTheta, 5.0f);
@@ -127,8 +127,6 @@ float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
 }
 
 
-
-
 float CalcAttenuation(float d, float falloffStart, float falloffEnd)
 {
     // Linear falloff.
@@ -152,6 +150,12 @@ float3 F_Schlick(in float3 f0, in float f90, in float u)
 {
  return f0 + ( f90 - f0 ) * pow(1.0f - u , 5.0f);
 }
+
+float Fresnel_Shlick(float F0, float F90, float cosine)
+{
+    return lerp(F0, F90, pow(1.0 - cosine, 5.0f));
+}
+
 //Disney diffuse BRDF code with renormalization of its energy(Burley's diffuse BRDF)
 float Fr_DisneyDiffuse(float NdotV, float NdotL, float LdotH,float linearRoughness)
 {
@@ -162,7 +166,6 @@ float Fr_DisneyDiffuse(float NdotV, float NdotL, float LdotH,float linearRoughne
     float viewScatter = F_Schlick(f0, fd90, NdotV).r;
     return lightScatter * viewScatter * energyFactor;
 }
-
 
 //BlinnPhong
 float3 BlinnPhong(float3 lightStrength, float3 lightVec, float3 normal, float3 toEye, Material mat)
@@ -195,8 +198,8 @@ float3 CookTorranceBRDF(float3 radiance, float3 N, float3 H, float3 V, float3 L,
     float3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
 
     float3 kS = F;
-    float3 kD = float3(1.0f, 1.0f, 1.0f) - kS;
-    //float3 kD = Fr_DisneyDiffuse(NdotV, NdotL, LdotH, mat.Roughness);
+    //float3 kD = float3(1.0f, 1.0f, 1.0f) - kS;
+    float3 kD = Fr_DisneyDiffuse(NdotV, NdotL, LdotH, mat.Roughness);
     kD *= (1.0 - mat.metallic);
 
     float3 nominator = NDF * G * F;
