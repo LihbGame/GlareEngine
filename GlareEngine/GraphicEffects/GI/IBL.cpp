@@ -8,6 +8,7 @@
 #include "CompiledShaders/ScreenQuadVS.h"
 #include "CompiledShaders/BakingBRDFPS.h"
 #include "Engine/EngineLog.h"
+#include "Graphics/Render.h"
 
 #define  MaxMipLevels 5
 
@@ -49,7 +50,7 @@ void IBL::BakingEnvironmentDiffuse(GraphicsContext& Context)
 	Context.SetViewport(mIndirectDiffuseCube->Viewport(0));
 	Context.SetScissor(mIndirectDiffuseCube->ScissorRect());
 	Context.TransitionResource(mIndirectDiffuseCube->Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-	Context.SetDynamicDescriptors((int)RootSignatureType::eCubeTextures, 0, (UINT)g_CubeSRV.size(), g_CubeSRV.data());
+	Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, Render::gTextureHeap[0]);
 	for (int i = 0; i < 6; i++)
 	{
 		Context.SetRenderTarget(mIndirectDiffuseCube->RTV(i));

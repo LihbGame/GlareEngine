@@ -5,6 +5,8 @@
 #include "Graphics/Render.h"
 
 /// Scene/////////////////////////////////////////////
+using namespace GlareEngine::Render;
+
 
 Scene::Scene(string name, ID3D12GraphicsCommandList* pCommandList)
 	:mName(name),
@@ -240,14 +242,14 @@ void Scene::ForwardRendering()
 
 	Context.SetRootSignature(*m_pRootSignature);
 
+	Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gTextureHeap.GetHeapPointer());
+
 	//set main constant buffer
 	Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(mMainConstants), &mMainConstants);
-
-
 	//Set Cube SRV
-	Context.SetDynamicDescriptors((int)RootSignatureType::eCubeTextures, 0, (UINT)g_CubeSRV.size(), g_CubeSRV.data());
+	Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[0]);
 	//Set Textures SRV
-	Context.SetDynamicDescriptors((int)RootSignatureType::ePBRTextures, 0, (UINT)g_TextureSRV.size(), g_TextureSRV.data());
+	Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE]);
 	//Set Material Data
 	const vector<MaterialConstant>& MaterialData = MaterialManager::GetMaterialInstance()->GetMaterialsConstantBuffer();
 	Context.SetDynamicSRV((int)RootSignatureType::eMaterialConstantData, sizeof(MaterialConstant) * MaterialData.size(), MaterialData.data());

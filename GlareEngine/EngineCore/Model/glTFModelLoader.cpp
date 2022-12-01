@@ -351,8 +351,8 @@ void LoadMaterials(Model& model,
 	{
 		const MaterialTextureData& srcMat = materialTextures[matIdx];
 
-		DescriptorHandle TextureHandles = Render::gModelTextureHeap.Alloc(eNumTextures);
-		uint32_t SRVDescriptorTable = Render::gModelTextureHeap.GetOffsetOfHandle(TextureHandles);
+		DescriptorHandle TextureHandles = Render::gTextureHeap.Alloc(eNumTextures);
+		uint32_t SRVDescriptorTable = Render::gTextureHeap.GetOffsetOfHandle(TextureHandles);
 
 		uint32_t DestCount = eNumTextures;
 		uint32_t SourceCounts[eNumTextures] = { 1, 1, 1, 1, 1};

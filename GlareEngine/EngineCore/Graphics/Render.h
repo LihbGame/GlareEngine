@@ -35,7 +35,7 @@ namespace GlareEngine
 
 		extern std::vector<GraphicsPSO> gCommonPSOs;
 
-		extern DescriptorHeap gModelTextureHeap;
+		extern DescriptorHeap gTextureHeap;
 
 		extern DescriptorHeap gSamplerHeap;
 
@@ -53,5 +53,6 @@ namespace GlareEngine
 		void BuildRootSignature();
 		void BuildPSOs();
 		void BuildCommonPSOs(const PSOCommonProperty CommonProperty);
+		void CopyTextureHeap();
 	}
 }

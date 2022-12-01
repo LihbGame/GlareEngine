@@ -30,7 +30,7 @@ namespace GlareEngine
 
 		vector<GraphicsPSO> gCommonPSOs;
 
-		DescriptorHeap gModelTextureHeap;
+		DescriptorHeap gTextureHeap;
 
 		DescriptorHeap gSamplerHeap;
 	}
@@ -45,7 +45,7 @@ namespace GlareEngine
 		BuildRootSignature();
 		BuildPSOs();
 
-		gModelTextureHeap.Create(L"Scene Texture Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4096);
+		gTextureHeap.Create(L"Scene Texture Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4096);
 
 		// Maybe only need 2 for wrap vs. clamp?  Currently we allocate 1 for 1 with textures
 		gSamplerHeap.Create(L"Scene Sampler Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 2048);
@@ -55,7 +55,7 @@ namespace GlareEngine
 
 	void Render::ShutDown()
 	{
-		gModelTextureHeap.Destroy();
+		gTextureHeap.Destroy();
 		gSamplerHeap.Destroy();
 	}
 
@@ -125,6 +125,31 @@ namespace GlareEngine
 		//gPSOs.push_back(DepthOnlyPSO);
 
 
+	}
+
+	void Render::CopyTextureHeap()
+	{
+		UINT CubeTextureSize = g_CubeSRV.size();
+		D3D12_CPU_DESCRIPTOR_HANDLE CubeSRV[MAXCUBESRVSIZE];
+		UINT CubeSrcTextureSize[MAXCUBESRVSIZE];
+		for (size_t CubeSRVIndex = 0; CubeSRVIndex < CubeTextureSize; CubeSRVIndex++)
+		{
+			CubeSRV[CubeSRVIndex] = g_CubeSRV[CubeSRVIndex];
+			CubeSrcTextureSize[CubeSRVIndex] = 1;
+		}
+		g_Device->CopyDescriptors(1, &gTextureHeap[0], &CubeTextureSize,
+			CubeTextureSize, CubeSRV, CubeSrcTextureSize, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+		UINT Texture2DSize = g_TextureSRV.size();
+		D3D12_CPU_DESCRIPTOR_HANDLE Texture2DSRV[MAX2DSRVSIZE];
+		UINT Texture2DSrcSize[MAX2DSRVSIZE];
+		for (size_t Texture2DSRVIndex = 0; Texture2DSRVIndex < Texture2DSize; Texture2DSRVIndex++)
+		{
+			Texture2DSRV[Texture2DSRVIndex] = g_TextureSRV[Texture2DSRVIndex];
+			Texture2DSrcSize[Texture2DSRVIndex] = 1;
+		}
+		g_Device->CopyDescriptors(1, &gTextureHeap[MAXCUBESRVSIZE], &Texture2DSize,
+			Texture2DSize, Texture2DSRV, Texture2DSrcSize, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	}
 
 

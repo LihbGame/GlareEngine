@@ -88,7 +88,7 @@ void MeshSorter::RenderMeshes(DrawPass pass, GraphicsContext& context, MainConst
 
 	context.SetRootSignature(gRootSignature);
 	context.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gModelTextureHeap.GetHeapPointer());
+	context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gTextureHeap.GetHeapPointer());
 	context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, gSamplerHeap.GetHeapPointer());
 
 	// Set common shader constants

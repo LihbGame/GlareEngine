@@ -205,6 +205,8 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			//Create Model Materials Constant Buffer
 			MaterialManager::GetMaterialInstance()->CreateMaterialsConstantBuffer();
 
+			//Copy Descriptors Texture Heap
+			Render::CopyTextureHeap();
 			});
 
 		//Create all Materials Constant Buffer
