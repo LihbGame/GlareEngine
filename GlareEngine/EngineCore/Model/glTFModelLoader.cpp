@@ -351,9 +351,6 @@ void LoadMaterials(Model& model,
 	{
 		const MaterialTextureData& srcMat = materialTextures[matIdx];
 
-		DescriptorHandle TextureHandles = Render::gTextureHeap.Alloc(eNumTextures);
-		uint32_t SRVDescriptorTable = Render::gTextureHeap.GetOffsetOfHandle(TextureHandles);
-
 		uint32_t DestCount = eNumTextures;
 		uint32_t SourceCounts[eNumTextures] = { 1, 1, 1, 1, 1};
 
@@ -373,11 +370,11 @@ void LoadMaterials(Model& model,
 				SourceTextures[j] = DefaultTextures[j];
 			else
 				SourceTextures[j] = model.m_Textures[srcMat.stringIdx[j]]->GetSRV();
+
+			AddToGlobalTextureSRVDescriptor(SourceTextures[j]);
 		}
 
-		//Copy Descriptor to Model Texture Heap
-		g_Device->CopyDescriptors(1, &TextureHandles, &DestCount,
-			DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		uint32_t SRVDescriptorTable = MAXCUBESRVSIZE + g_TextureSRV.size() - eNumTextures;
 
 		// See if this combination of samplers has been used before. 
 		// If not, allocate more from the heap and copy in the descriptors.
