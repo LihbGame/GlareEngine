@@ -1,9 +1,6 @@
 #pragma once
 #include "Misc/RenderObject.h"
 
-
-
-
 class glTFInstanceModel :
     public RenderObject
 {

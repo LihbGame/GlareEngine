@@ -1,6 +1,8 @@
 #include "MeshSorter.h"
 #include "Graphics/Render.h"
 #include "Graphics/DepthBuffer.h"
+#include "Graphics/BufferManager.h"
+#include "InstanceModel/glTFInstanceModel.h"
 
 #pragma warning(disable:4319) //zero extending 'uint32_t' to 'uint64_t' of greater size
 
@@ -119,7 +121,119 @@ void MeshSorter::RenderMeshes(DrawPass pass, GraphicsContext& context, MainConst
 			m_Scissor.bottom = m_DSV->GetHeight();
 		}
 	}
+	else
+	{
+		for (uint32_t i = 0; i < m_NumRTVs; ++i)
+		{
+			assert(m_RTV[i] != nullptr);
+			assert(m_DSV->GetWidth() == m_RTV[i]->GetWidth());
+			assert(m_DSV->GetHeight() == m_RTV[i]->GetHeight());
+		}
 
+		if (m_Viewport.Width == 0)
+		{
+			m_Viewport.TopLeftX = 0.0f;
+			m_Viewport.TopLeftY = 0.0f;
+			m_Viewport.Width = (float)m_DSV->GetWidth();
+			m_Viewport.Height = (float)m_DSV->GetHeight();
+			m_Viewport.MaxDepth = 1.0f;
+			m_Viewport.MinDepth = 0.0f;
 
+			m_Scissor.left = 0;
+			m_Scissor.right = m_DSV->GetWidth();
+			m_Scissor.top = 0;
+			m_Scissor.bottom = m_DSV->GetHeight();
+		}
+	}
+
+	for (; m_CurrentPass <= pass; m_CurrentPass = (DrawPass)(m_CurrentPass + 1))
+	{
+		const uint32_t passCount = m_PassCounts[m_CurrentPass];
+		if (passCount == 0)
+			continue;
+
+		if (m_BatchType == eDefault)
+		{
+			switch (m_CurrentPass)
+			{
+			case eZPass:
+				context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+				context.SetDepthStencilTarget(m_DSV->GetDSV());
+				break;
+			case eOpaque:
+				if (SeparateZPass)
+				{
+					context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_READ);
+					context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
+					context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), m_DSV->GetDSV_DepthReadOnly());
+				}
+				else
+				{
+					context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+					context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
+					context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), m_DSV->GetDSV());
+				}
+				break;
+			case eTransparent:
+				context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_READ);
+				context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
+				context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), m_DSV->GetDSV_DepthReadOnly());
+				break;
+			}
+		}
+
+		context.SetViewportAndScissor(m_Viewport, m_Scissor);
+		context.FlushResourceBarriers();
+
+		const uint32_t lastDraw = m_CurrentDraw + passCount;
+
+		//finish draw current pass
+		while (m_CurrentDraw < lastDraw)
+		{
+			SortKey key;
+			//get the key from Sorted Keys
+			key.value = m_SortKeys[m_CurrentDraw];
+			//use key get object 
+			const SortObject& object = m_SortObjects[key.objectIdx];
+			const Mesh& mesh = *object.mesh;
+
+			context.SetConstantBuffer((UINT)RootSignatureType::eCommonConstantBuffer, object.meshCBV);
+			context.SetConstantBuffer((UINT)RootSignatureType::eMaterialConstants, object.materialCBV);
+			context.SetDescriptorTable((UINT)RootSignatureType::eMaterialSRVs, gTextureHeap[mesh.srvTable]);
+			context.SetDescriptorTable((UINT)RootSignatureType::eMaterialSamplers, gSamplerHeap[mesh.samplerTable]);
+			if (mesh.numJoints > 0)
+			{
+				//Unspecified joint matrix array
+				assert(object.skeleton != nullptr);
+				context.SetDynamicSRV((UINT)RootSignatureType::eSkinMatrices, sizeof(Joint) * mesh.numJoints, object.skeleton + mesh.startJoint);
+			}
+			context.SetPipelineState(glTFInstanceModel::gModelPSOs[key.psoIdx]);
+
+			if (m_CurrentPass == eZPass)
+			{
+				bool alphaTest = (mesh.psoFlags & ModelPSOFlags::eAlphaTest) == ModelPSOFlags::eAlphaTest;
+				uint32_t stride = alphaTest ? 16u : 12u;
+				if (mesh.numJoints > 0)
+					stride += 16;
+				context.SetVertexBuffer(0, { object.bufferPtr + mesh.vbDepthOffset, mesh.vbDepthSize, stride });
+			}
+			else
+			{
+				context.SetVertexBuffer(0, { object.bufferPtr + mesh.vbOffset, mesh.vbSize, mesh.vbStride });
+			}
+
+			context.SetIndexBuffer({ object.bufferPtr + mesh.ibOffset, mesh.ibSize, (DXGI_FORMAT)mesh.ibFormat });
+
+			for (uint32_t i = 0; i < mesh.numDraws; ++i)
+				context.DrawIndexed(mesh.draw[i].primCount, mesh.draw[i].startIndex, mesh.draw[i].baseVertex);
+
+			++m_CurrentDraw;
+		}
+	}
+
+	if (m_BatchType == eShadows)
+	{
+		context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	}
 }
 

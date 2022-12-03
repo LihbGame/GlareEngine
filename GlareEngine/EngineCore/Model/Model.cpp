@@ -214,6 +214,15 @@ void GlareEngine::ModelInstance::Update(GraphicsContext& gfxContext, float delta
 	gfxContext.TransitionResource(m_MeshConstantsGPU, D3D12_RESOURCE_STATE_GENERIC_READ);
 }
 
+void GlareEngine::ModelInstance::AddToRender(MeshSorter& sorter) const
+{
+	if (m_Model != nullptr)
+	{
+		m_Model->AddToRender(sorter, m_MeshConstantsGPU, (const ScaleAndTranslation*)m_BoundingSphereTransforms.get(),
+			m_Skeleton.get());
+	}
+}
+
 void GlareEngine::ModelInstance::Resize(float newRadius)
 {
 	if (m_Model == nullptr)

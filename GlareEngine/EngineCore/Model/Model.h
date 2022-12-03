@@ -138,7 +138,7 @@ namespace GlareEngine
 		bool IsNull(void) const { return m_Model == nullptr; }
 
 		void Update(GraphicsContext& Context, float deltaTime);
-		//void AddToRender(Renderer::MeshSorter& sorter) const;
+		void AddToRender(MeshSorter& sorter) const;
 
 		void Resize(float newRadius);
 		Math::Vector3 GetCenter() const;
