@@ -20,6 +20,7 @@
 #include "Graphics/Render.h"
 #include "Model/Model.h"
 #include "Model/glTFModelLoader.h"
+#include "InstanceModel/glTFInstanceModel.h"
 
 //lib
 #pragma comment(lib, "dxgi.lib")
@@ -83,6 +84,7 @@ private:
 	Scene* gScene = nullptr;
 	//Scene data 
 	vector<unique_ptr<InstanceModel>> mModels;
+	vector<unique_ptr<glTFInstanceModel>> mGLTFModels;
 	//Main Camera
 	unique_ptr<Camera> mCamera;
 	//Sky
@@ -181,7 +183,10 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 
 			//Instance models
 
-			ModelInstance m_ModelInst = GlareEngine::LoadModel(L"D:/glTF-Sample-Models-master/2.0/Box/glTF/Box.gltf");
+			auto modelInstance = make_unique<ModelInstance>(GlareEngine::LoadModel(L"D:/glTF-Sample-Models-master/2.0/DamagedHelmet/glTF/DamagedHelmet.gltf"));
+			auto GLTFModel = make_unique<glTFInstanceModel>(std::move(modelInstance));
+			mGLTFModels.push_back(std::move(GLTFModel));
+
 
 			CreateSimpleModelInstance(CommandList, "Grid_01", SimpleModelType::Grid, "PBRGrass01", 1, 1);
 			CreateModelInstance(CommandList, "BlueTree/Blue_Tree_02a.FBX", 8, 8, 0);
@@ -190,6 +195,13 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRrocky_shoreline1", 1, 1);
 			//CreateSimpleModelInstance(CommandList,"Sphere_01", SimpleModelType::Sphere, "PBRRock046S", 1, 1);
 			//CreateModelInstance(CommandList,"TraumaGuard/TraumaGuard.FBX", 5, 5);
+
+
+			//add gltf models
+			for (auto& model : mGLTFModels)
+			{
+				gScene->AddGLTFModelToScene(model.get());
+			}
 
 			//add models
 			for (auto& model : mModels)

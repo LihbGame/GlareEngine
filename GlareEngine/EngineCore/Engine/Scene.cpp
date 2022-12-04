@@ -3,6 +3,10 @@
 #include "Shadow/ShadowMap.h"
 #include "EngineGUI.h"
 #include "Graphics/Render.h"
+#include "Model/Model.h"
+#include "InstanceModel/glTFInstanceModel.h"
+#include "Model/MeshSorter.h"
+#include <Engine/EngineProfiling.h>
 
 /// Scene/////////////////////////////////////////////
 using namespace GlareEngine::Render;
@@ -17,6 +21,10 @@ Scene::Scene(string name, ID3D12GraphicsCommandList* pCommandList)
 
 void Scene::Update(float DeltaTime)
 {
+	ScopedTimer _prof(L"Update State");
+
+	GraphicsContext& Context = GraphicsContext::Begin(L"Scene Update");
+
 	//Update shadow map
 	m_pShadowMap->Update(DeltaTime);
 	//Update Main Constant Buffer
@@ -26,6 +34,13 @@ void Scene::Update(float DeltaTime)
 	{
 		object->Update(DeltaTime);
 	}
+	//Update GLTF Objects
+	for (auto& object : m_pGLTFRenderObjects)
+	{
+		object->Update(DeltaTime, &Context);
+	}
+
+	Context.Finish();
 }
 
 void Scene::VisibleUpdateForType()
@@ -87,6 +102,11 @@ void Scene::AddObjectToScene(RenderObject* Object)
 		break;
 	}
 	}
+}
+
+void Scene::AddGLTFModelToScene(RenderObject* Object)
+{
+	m_pGLTFRenderObjects.push_back(Object);
 }
 
 void Scene::RenderScene(RenderPipelineType Type)
@@ -306,7 +326,38 @@ void Scene::ForwardRendering()
 
 void Scene::ForwardPlusRendering()
 {
+	GraphicsContext& Context = GraphicsContext::Begin(L"Scene Render");
+
+
+	// Begin rendering depth
+	Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+	Context.ClearDepthAndStencil(g_SceneDepthBuffer, REVERSE_Z ? 0.0f : 1.0f);
+
+	//default batch
+	MeshSorter sorter(MeshSorter::eDefault);
+	sorter.SetCamera(*m_pCamera);
+	sorter.SetViewport(m_MainViewport);
+	sorter.SetScissor(m_MainScissor);
+	sorter.SetDepthStencilTarget(g_SceneDepthBuffer);
+	sorter.AddRenderTarget(g_SceneColorBuffer);
+
+
+	for (auto& model : m_pGLTFRenderObjects)
+	{
+		dynamic_cast<glTFInstanceModel*>(model)->GetModel()->AddToRender(sorter);
+	}
+
+	sorter.Sort();
+	///Depth Pre-Pass
+	{
+		ScopedTimer _prof(L"Depth Pre-Pass", Context);
+		sorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
+	}
+
+
+	Context.Finish();
 }
+
 
 void Scene::DeferredRendering()
 {

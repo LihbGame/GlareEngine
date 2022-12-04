@@ -20,7 +20,7 @@ public:
 
 	static void BuildPSO(const PSOCommonProperty CommonProperty);
 
-	void Update(float dt) {}
+	void Update(float dt, GraphicsContext* Context = nullptr) {}
 private:
 	//PSO
 	static GraphicsPSO mPSO;

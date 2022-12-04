@@ -207,12 +207,17 @@ void MeshSorter::RenderMeshes(DrawPass pass, GraphicsContext& context, MainConst
 				assert(object.skeleton != nullptr);
 				context.SetDynamicSRV((UINT)RootSignatureType::eSkinMatrices, sizeof(Joint) * mesh.numJoints, object.skeleton + mesh.startJoint);
 			}
+			//Set PSO
 			context.SetPipelineState(glTFInstanceModel::gModelPSOs[key.psoIdx]);
 
+
+			//Set Vertex Buffer
 			if (m_CurrentPass == eZPass)
 			{
 				bool alphaTest = (mesh.psoFlags & ModelPSOFlags::eAlphaTest) == ModelPSOFlags::eAlphaTest;
+				//if have UV data
 				uint32_t stride = alphaTest ? 16u : 12u;
+				//if have Joints data
 				if (mesh.numJoints > 0)
 					stride += 16;
 				context.SetVertexBuffer(0, { object.bufferPtr + mesh.vbDepthOffset, mesh.vbDepthSize, stride });
@@ -222,15 +227,19 @@ void MeshSorter::RenderMeshes(DrawPass pass, GraphicsContext& context, MainConst
 				context.SetVertexBuffer(0, { object.bufferPtr + mesh.vbOffset, mesh.vbSize, mesh.vbStride });
 			}
 
+			//Set Index Buffer
 			context.SetIndexBuffer({ object.bufferPtr + mesh.ibOffset, mesh.ibSize, (DXGI_FORMAT)mesh.ibFormat });
 
+			//Draw Call
 			for (uint32_t i = 0; i < mesh.numDraws; ++i)
 				context.DrawIndexed(mesh.draw[i].primCount, mesh.draw[i].startIndex, mesh.draw[i].baseVertex);
 
+			//To next Draw call
 			++m_CurrentDraw;
 		}
 	}
 
+	//change shadow map state to srv
 	if (m_BatchType == eShadows)
 	{
 		context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);

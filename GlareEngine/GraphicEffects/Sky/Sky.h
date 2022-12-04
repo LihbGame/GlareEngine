@@ -28,7 +28,7 @@ public:
 
     CD3DX12_CPU_DESCRIPTOR_HANDLE GetSkyCubeDescriptor() { return m_Descriptor; }
 
-    void Update(float dt);
+    void Update(float dt, GraphicsContext* Context = nullptr);
 private:
 	//PSO
 	static GraphicsPSO mPSO;

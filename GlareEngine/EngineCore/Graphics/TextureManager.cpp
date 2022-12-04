@@ -76,6 +76,10 @@ namespace GlareEngine
 	{
 		if (mTextures.find(name) == mTextures.end())
 		{
+			if (GetFileExtension(name) != L"")
+			{
+				name = RemoveExtension(name);
+			}
 			CreateTexture(name, RootFilePath + name + L".dds", ForceSRGB);
 		}
 		return mTextures[name];
@@ -86,6 +90,10 @@ namespace GlareEngine
 		bool isTextureCreated = true;
 		if (mTextures.find(name) == mTextures.end())
 		{
+			if (GetFileExtension(name) != L"")
+			{
+				name = RemoveExtension(name);
+			}
 			isTextureCreated = CreateTexture(name, name + L".dds", ForceSRGB);
 		}
 		return isTextureCreated ? mTextures[name].get() : nullptr;

@@ -17,6 +17,7 @@ public:
 	void Update(float DeltaTime);
 	//Add Objects to Scene
 	void AddObjectToScene(RenderObject* Object);
+	void AddGLTFModelToScene(RenderObject* Object);
 	//Render Scene
 	void RenderScene(RenderPipelineType Type);
 	//Draw UI
@@ -63,6 +64,7 @@ private:
 	D3D12_RECT m_MainScissor = { 0 };
 
 	vector<RenderObject*> m_pRenderObjects;
+	vector<RenderObject*> m_pGLTFRenderObjects;
 	vector<RenderObject*> m_pRenderObjectsType[(int)ObjectType::Count];
 
 	ShadowMap* m_pShadowMap = nullptr;

@@ -44,7 +44,7 @@ namespace GlareEngine
 
 		void RenderMeshes(DrawPass pass, GraphicsContext& context, MainConstants& globals);
 
-		void SetCamera(const Camera& camera) { m_Camera = &camera; }
+		void SetCamera(Camera& camera) { m_Camera = &camera; }
 		void SetViewport(const D3D12_VIEWPORT& viewport) { m_Viewport = viewport; }
 		void SetScissor(const D3D12_RECT& scissor) { m_Scissor = scissor; }
 		void AddRenderTarget(ColorBuffer& RTV)

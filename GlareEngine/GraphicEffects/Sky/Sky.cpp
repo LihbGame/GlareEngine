@@ -160,6 +160,6 @@ void CSky::BuildPSO(const PSOCommonProperty CommonProperty)
 	mPSO.Finalize();
 }
 
-void CSky::Update(float dt)
+void CSky::Update(float dt, GraphicsContext* Context)
 {
 }
