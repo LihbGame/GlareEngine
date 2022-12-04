@@ -20,7 +20,7 @@ file(MAKE_DIRECTORY ${shaderPath}/CompiledShaders)
 set_source_files_properties(${SHADER_SOURCES} PROPERTIES VS_SHADER_MODEL "6.0")
 set_source_files_properties(${SHADER_SOURCES} PROPERTIES VS_SHADER_VARIABLE_NAME "g_p%(Filename)")
 set_source_files_properties(${SHADER_SOURCES} PROPERTIES VS_SHADER_OUTPUT_HEADER_FILE "${shaderPath}\\CompiledShaders\\%(Filename).h")
-set_source_files_properties(${SHADER_SOURCES} PROPERTIES VS_SHADER_FLAGS "/Zi -Qembed_debug")
+set_source_files_properties(${SHADER_SOURCES} PROPERTIES VS_SHADER_FLAGS "/Zi -Qembed_debug /Od")
 
 
 file(GLOB_RECURSE VS_SHADER_SOURCES ${ENGINE_ROOT_DIR}/Shaders/*VS.hlsl)
