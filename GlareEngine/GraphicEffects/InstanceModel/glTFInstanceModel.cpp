@@ -52,7 +52,7 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 	DepthOnlyPSO.SetDepthStencilState(DepthStateReadWrite);
 	DepthOnlyPSO.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
 	DepthOnlyPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-	DepthOnlyPSO.SetRenderTargetFormats(0, nullptr, DSV_FORMAT);
+	DepthOnlyPSO.SetRenderTargetFormats(0, nullptr, g_SceneDepthBuffer.GetFormat());
 	DepthOnlyPSO.SetVertexShader(g_pDepthOnlyVS, sizeof(g_pDepthOnlyVS));
 	DepthOnlyPSO.Finalize();
 	gModelPSOs.push_back(DepthOnlyPSO);

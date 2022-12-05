@@ -168,6 +168,8 @@ namespace GlareEngine
 
 		assert(m_CurrentAllocator != nullptr);
 
+		PIXEndEvent();
+
 		CommandQueue& Queue = g_CommandManager.GetQueue(m_Type);
 
 		uint64_t FenceValue = Queue.ExecuteCommandList(m_CommandList);

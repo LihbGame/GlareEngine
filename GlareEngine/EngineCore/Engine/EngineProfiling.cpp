@@ -124,6 +124,11 @@ namespace GlareEngine
 		NestedTimingTree(const wstring& name, NestedTimingTree* parent = nullptr)
 			: m_Name(name), m_Parent(parent), m_IsExpanded(false) {}
 
+		~NestedTimingTree()
+		{
+			DeleteChildren();
+		}
+
 		NestedTimingTree* GetChild(const wstring& name)
 		{
 			auto iter = m_LUT.find(name);

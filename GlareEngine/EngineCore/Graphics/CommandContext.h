@@ -207,7 +207,9 @@ namespace GlareEngine
 
 		static GraphicsContext& Begin(const std::wstring& ID = L"")
 		{
-			return CommandContext::Begin(ID).GetGraphicsContext();
+			GraphicsContext& Context = CommandContext::Begin(ID).GetGraphicsContext();
+			Context.PIXBeginEvent(ID.c_str());
+			return Context;
 		}
 
 		void ClearUAV(GPUBuffer& Target);

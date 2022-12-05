@@ -94,7 +94,7 @@ void MeshSorter::RenderMeshes(DrawPass pass, GraphicsContext& context, MainConst
 	context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, gSamplerHeap.GetHeapPointer());
 
 	// Set common shader constants
-	XMStoreFloat4x4(&globals.ViewProj, m_Camera->GetView() * m_Camera->GetProj());
+	//XMStoreFloat4x4(&globals.ViewProj, m_Camera->GetView() * m_Camera->GetProj());
 	globals.EyePosW = m_Camera->GetPosition3f();
 	context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &globals);
 

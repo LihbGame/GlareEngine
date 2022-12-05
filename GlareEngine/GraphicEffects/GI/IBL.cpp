@@ -155,6 +155,8 @@ void IBL::PreBakeGIData(GraphicsContext& Context, RenderObject* Object)
 	if (!isInitialized)
 	{
 		EngineLog::AddLog(L"PreBaking GI Data!");
+		Render::CopyTextureHeap();
+		Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, Render::gTextureHeap.GetHeapPointer());
 		BakingEnvironmentDiffuse(Context);
 		BakingPreFilteredEnvironment(Context);
 		BakingBRDF(Context);

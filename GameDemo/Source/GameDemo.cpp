@@ -341,7 +341,7 @@ void App::UpdateCamera(float DeltaTime)
 
 void App::RenderScene(void)
 {
-	gScene->RenderScene(RenderPipelineType::Forward);
+	gScene->RenderScene(RenderPipelineType::Forward_Plus);
 }
 
 
