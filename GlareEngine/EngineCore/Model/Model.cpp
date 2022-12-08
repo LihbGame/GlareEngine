@@ -50,6 +50,7 @@ GlareEngine::ModelInstance::ModelInstance(std::shared_ptr<const Model> sourceMod
 {
 	static_assert((_alignof(MeshConstants) & 255) == 0, "CBVs need 256 byte alignment");
 
+	m_Locator.SetScale(Scalar(100));
 	if (sourceModel == nullptr)
 	{
 		m_MeshConstantsCPU.Destroy();

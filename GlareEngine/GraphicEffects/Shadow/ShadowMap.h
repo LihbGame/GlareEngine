@@ -41,8 +41,12 @@ public:
 	XMFLOAT4X4 GetShadowTransform()const { return mShadowTransform; }
 
 	XMFLOAT3 GetShadowedLightDir()const { return mBaseLightDirection; }
+
+	ShadowBuffer& GetShadowBuffer() { return mShadowBuffer; }
+
 private:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetDSV()const { return mShadowBuffer.GetDSV(); }
+
 	D3D12_CPU_DESCRIPTOR_HANDLE GetSRV()const { return mShadowBuffer.GetSRV(); }
 public:
 	static DXGI_FORMAT mFormat;

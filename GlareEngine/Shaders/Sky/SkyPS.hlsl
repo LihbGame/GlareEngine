@@ -13,7 +13,7 @@ float4 main(PosVSOut pin) : SV_Target
 	//litColor.rgb = litColor.rgb / (litColor.rgb + float3(1.0f, 1.0f, 1.0f));
 
 	// ÆØ¹âÉ«µ÷Ó³Éä
-    litColor.rgb = float3(1.0f, 1.0f, 1.0f) - exp(-litColor.rgb * exposure);
+    //litColor.rgb = float3(1.0f, 1.0f, 1.0f) - exp(-litColor.rgb * exposure);
 
     return litColor;
 }

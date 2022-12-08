@@ -29,12 +29,27 @@ vector<GraphicsPSO> glTFInstanceModel::gModelPSOs;
 GraphicsPSO glTFInstanceModel::sm_PBRglTFPSO;
 PSOCommonProperty glTFInstanceModel::sm_PSOCommonProperty;
 
+enum ModelPSO:int
+{
+    DepthOnlyPSO,
+    CutoutDepthPSO,
+    SkinDepthOnlyPSO,
+    SkinCutoutDepthPSO,
+    ShadowDepthOnlyPSO,
+    ShadowCutoutDepthPSO,
+    ShadowSkinDepthOnlyPSO,
+    ShadowSkinCutoutDepthPSO,
+    ColorPSOReadWriteDepth,
+    ColorPSOEqualDepth,
+    PSOCount
+};
+
+
 void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 {
     sm_PSOCommonProperty = CommonProperty;
 
-	gModelPSOs.clear();
-	//assert(gModelPSOs.size() == 0);
+    gModelPSOs.resize(ModelPSO::PSOCount);
 
 	// Depth Only PSOs
 	GraphicsPSO DepthOnlyPSO(L"Render: Depth Only PSO");
@@ -46,16 +61,24 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 	}
 	else
 	{
-		DepthOnlyPSO.SetRasterizerState(RasterizerDefault);
+		DepthOnlyPSO.SetRasterizerState(RasterizerDefaultCw);
 		DepthOnlyPSO.SetBlendState(BlendDisable);
 	}
-	DepthOnlyPSO.SetDepthStencilState(DepthStateReadWrite);
+
+    if (REVERSE_Z)
+    {
+        DepthOnlyPSO.SetDepthStencilState(DepthStateReadWriteReversed);
+    }
+    else
+    {
+        DepthOnlyPSO.SetDepthStencilState(DepthStateReadWrite);
+    }
 	DepthOnlyPSO.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
 	DepthOnlyPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 	DepthOnlyPSO.SetRenderTargetFormats(0, nullptr, g_SceneDepthBuffer.GetFormat());
 	DepthOnlyPSO.SetVertexShader(g_pDepthOnlyVS, sizeof(g_pDepthOnlyVS));
 	DepthOnlyPSO.Finalize();
-	gModelPSOs.push_back(DepthOnlyPSO);
+    gModelPSOs[ModelPSO::DepthOnlyPSO] = DepthOnlyPSO;
 
 
 	//Cutout Depth PSO
@@ -73,7 +96,7 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 	CutoutDepthPSO.SetVertexShader(g_pCutoutDepthVS, sizeof(g_pCutoutDepthVS));
 	CutoutDepthPSO.SetPixelShader(g_pCutoutDepthPS, sizeof(g_pCutoutDepthPS));
 	CutoutDepthPSO.Finalize();
-	gModelPSOs.push_back(CutoutDepthPSO);
+    gModelPSOs[ModelPSO::CutoutDepthPSO] = CutoutDepthPSO;
 
 
 	//Skin Depth PSO
@@ -82,7 +105,7 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 	SkinDepthOnlyPSO.SetInputLayout((UINT)InputLayout::SkinPos.size(), InputLayout::SkinPos.data());
 	SkinDepthOnlyPSO.SetVertexShader(g_pDepthOnlySkinVS, sizeof(g_pDepthOnlySkinVS));
 	SkinDepthOnlyPSO.Finalize();
-	gModelPSOs.push_back(SkinDepthOnlyPSO);
+    gModelPSOs[ModelPSO::SkinDepthOnlyPSO] = SkinDepthOnlyPSO;
 
 	//Skin Cutout Depth PSO
 	GraphicsPSO SkinCutoutDepthPSO(L"Render: Skin Cutout Depth PSO");
@@ -90,54 +113,91 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 	SkinCutoutDepthPSO.SetInputLayout((UINT)InputLayout::SkinPosUV.size(), InputLayout::SkinPosUV.data());
 	SkinCutoutDepthPSO.SetVertexShader(g_pCutoutDepthSkinVS, sizeof(g_pCutoutDepthSkinVS));
 	SkinCutoutDepthPSO.Finalize();
-	gModelPSOs.push_back(SkinCutoutDepthPSO);
-
-	assert(gModelPSOs.size() == 4);
+    gModelPSOs[ModelPSO::SkinCutoutDepthPSO] = SkinCutoutDepthPSO;
 
 	// Shadow PSOs
 	DepthOnlyPSO.SetRasterizerState(RasterizerShadow);
 	DepthOnlyPSO.SetRenderTargetFormats(0, nullptr, ShadowMap::mFormat);
 	DepthOnlyPSO.Finalize();
-	gModelPSOs.push_back(DepthOnlyPSO);
+    gModelPSOs[ModelPSO::ShadowDepthOnlyPSO] = DepthOnlyPSO;
 
 	CutoutDepthPSO.SetRasterizerState(RasterizerShadowTwoSided);
 	CutoutDepthPSO.SetRenderTargetFormats(0, nullptr, ShadowMap::mFormat);
 	CutoutDepthPSO.Finalize();
-	gModelPSOs.push_back(CutoutDepthPSO);
+    gModelPSOs[ModelPSO::ShadowCutoutDepthPSO] = CutoutDepthPSO;
 
 	SkinDepthOnlyPSO.SetRasterizerState(RasterizerShadow);
 	SkinDepthOnlyPSO.SetRenderTargetFormats(0, nullptr, ShadowMap::mFormat);
 	SkinDepthOnlyPSO.Finalize();
-	gModelPSOs.push_back(SkinDepthOnlyPSO);
+    gModelPSOs[ModelPSO::ShadowSkinDepthOnlyPSO] = SkinDepthOnlyPSO;
 
 	SkinCutoutDepthPSO.SetRasterizerState(RasterizerShadowTwoSided);
 	SkinCutoutDepthPSO.SetRenderTargetFormats(0, nullptr, ShadowMap::mFormat);
 	SkinCutoutDepthPSO.Finalize();
-	gModelPSOs.push_back(SkinCutoutDepthPSO);
-
-	assert(gModelPSOs.size() == 8);
+    gModelPSOs[ModelPSO::ShadowSkinCutoutDepthPSO] = SkinCutoutDepthPSO;
 
 	// Default PSO
 	sm_PBRglTFPSO.SetRootSignature(gRootSignature);
 
+
+    D3D12_RASTERIZER_DESC Rasterizer = RasterizerDefaultCw;
+    if (CommonProperty.IsWireframe)
+    {
+        Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
+        Rasterizer.FillMode = D3D12_FILL_MODE_WIREFRAME;
+    }
     if (CommonProperty.IsMSAA)
     {
-        sm_PBRglTFPSO.SetRasterizerState(RasterizerDefaultMsaa);
+        Rasterizer.MultisampleEnable = true;
+        sm_PBRglTFPSO.SetRasterizerState(Rasterizer);
         sm_PBRglTFPSO.SetBlendState(BlendDisableAlphaToCoverage);
     }
     else
     {
-        sm_PBRglTFPSO.SetRasterizerState(RasterizerDefault);
+        sm_PBRglTFPSO.SetRasterizerState(Rasterizer);
         sm_PBRglTFPSO.SetBlendState(BlendDisable);
     }
-	sm_PBRglTFPSO.SetDepthStencilState(DepthStateReadWrite);
+
+    if (REVERSE_Z)
+    {
+        sm_PBRglTFPSO.SetDepthStencilState(DepthStateReadWriteReversed);
+    }
+    else
+    {
+        sm_PBRglTFPSO.SetDepthStencilState(DepthStateReadWrite);
+    }
+
     //set Input layout when you get this PSO.
 	sm_PBRglTFPSO.SetInputLayout(0, nullptr);
 	sm_PBRglTFPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-	sm_PBRglTFPSO.SetRenderTargetFormats(1, &DefaultHDRColorFormat, DSV_FORMAT, CommonProperty.MSAACount, CommonProperty.MSAAQuality);
+	sm_PBRglTFPSO.SetRenderTargetFormats(1, &DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
 	sm_PBRglTFPSO.SetVertexShader(g_pModelVS, sizeof(g_pModelVS));
 	sm_PBRglTFPSO.SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
 
+    if (gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].GetPipelineStateObject() != nullptr)
+    {
+        if (CommonProperty.IsWireframe)
+        {
+            gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].SetDepthStencilState(DepthStateDisabled);
+            gModelPSOs[ModelPSO::ColorPSOEqualDepth].SetDepthStencilState(DepthStateDisabled);
+        }
+        else
+        {
+            if (REVERSE_Z)
+            {
+                gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].SetDepthStencilState(DepthStateReadWriteReversed);
+            }
+            else
+            {
+                gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].SetDepthStencilState(DepthStateReadWrite);
+            }
+            gModelPSOs[ModelPSO::ColorPSOEqualDepth].SetDepthStencilState(DepthStateTestEqual);
+        }
+        gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].SetRasterizerState(Rasterizer);
+        gModelPSOs[ModelPSO::ColorPSOEqualDepth].SetRasterizerState(Rasterizer);
+        gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].Finalize();
+        gModelPSOs[ModelPSO::ColorPSOEqualDepth].Finalize();
+    }
 }
 
 uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
@@ -260,7 +320,15 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
         {
             ColorPSO.SetBlendState(BlendPreMultiplied);
         }
-        ColorPSO.SetDepthStencilState(DepthStateReadOnly);
+
+        if (REVERSE_Z)
+        {
+            ColorPSO.SetDepthStencilState(DepthStateReadWriteReversed);
+        }
+        else
+        {
+            ColorPSO.SetDepthStencilState(DepthStateReadWrite);
+        }
     }
 
     ColorPSO.Finalize();
@@ -275,7 +343,7 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
     }
 
     // If not found, keep the new one, and return its index
-    gModelPSOs.push_back(ColorPSO);
+    gModelPSOs[ModelPSO::ColorPSOReadWriteDepth] = ColorPSO;
 
     // The returned PSO index has read-write depth.  The index+1 tests for equal depth.
     ColorPSO.SetDepthStencilState(DepthStateTestEqual);
@@ -285,7 +353,7 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
     for (uint32_t i = 0; i < gModelPSOs.size(); ++i)
         assert(ColorPSO.GetPipelineStateObject() != gModelPSOs[i].GetPipelineStateObject());
 #endif
-    gModelPSOs.push_back(ColorPSO);
+    gModelPSOs[ModelPSO::ColorPSOEqualDepth] = ColorPSO;
 
     assert(gModelPSOs.size() <= 256);//Out of room for unique PSOs
 

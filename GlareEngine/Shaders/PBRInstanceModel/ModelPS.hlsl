@@ -96,6 +96,21 @@ float3 IBL_Specular(SurfaceProperties Surface)
 }
 
 
+float3 GetNormal(float3 normalMapSample, float3 unitNormalW, float4 tangentW)
+{
+    // Build orthonormal basis.
+    float3 N = unitNormalW;
+    float3 T = normalize(tangentW.xyz);// normalize(tangentW - dot(tangentW, N) * N);
+    float3 B = normalize(cross(N, T)) * tangentW.w;// cross(N, T);
+
+    float3x3 TBN = float3x3(T, B, N);
+
+    // Transform from tangent space to world space.
+    float3 bumpedNormalW = mul(normalMapSample, TBN);
+
+    return bumpedNormalW;
+}
+
 float4 main(VSOutput vsOutput) : SV_Target0
 {
     // Load and modulate textures
@@ -110,7 +125,7 @@ float4 main(VSOutput vsOutput) : SV_Target0
     float3 normalMap = normalTexture.Sample(normalSampler, UVSET(NORMAL)) * 2.0 - 1.0;
     // glTF spec says to normalize N before and after scaling, but that's excessive
     normalMap = normalize(normalMap * float3(normalTextureScale, normalTextureScale, 1));
-    normal = NormalSampleToModelSpace(normalMap, normal, normalize(vsOutput.tangent.rgb));
+    normal = GetNormal(normalMap, normal, vsOutput.tangent);
 #endif
 
     SurfaceProperties Surface;

@@ -10,7 +10,8 @@
 #include "Engine/EngineLog.h"
 #include "Graphics/Render.h"
 
-#define  MaxMipLevels 5
+//1024 
+#define  MaxMipLevels 11
 
 GraphicsPSO IBL::mIndirectDiffusePSO;
 GraphicsPSO IBL::mPreFilteredEnvMapPSO;
@@ -32,7 +33,7 @@ IBL::~IBL()
 void IBL::Initialize()
 {
 	mIndirectDiffuseCube = make_unique<CubeRenderTarget>(BAKECUBESIZE, BAKECUBESIZE);
-	mPreFilteredEnvCube = make_unique<CubeRenderTarget>(BAKECUBESIZE / 2, BAKECUBESIZE / 2, MaxMipLevels);
+	mPreFilteredEnvCube = make_unique<CubeRenderTarget>(BAKECUBESIZE, BAKECUBESIZE, MaxMipLevels);
 	mBRDFLUT.Create(L"Integration BRDF LUT", BAKECUBESIZE / 2, BAKECUBESIZE / 2, 1, DXGI_FORMAT_R16G16_FLOAT);
 	
 	GlobleSRVIndex::gBakingIntegrationBRDFIndex= AddToGlobalTextureSRVDescriptor(mBRDFLUT.GetSRV());
@@ -71,7 +72,7 @@ void IBL::BakingPreFilteredEnvironment(GraphicsContext& Context)
 	Context.TransitionResource(mPreFilteredEnvCube->Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 	for (unsigned int mip = 0; mip < MaxMipLevels; ++mip)
 	{
-		float Roughness = (float)mip / (float)(MaxMipLevels - 1);
+		float Roughness = (float)mip / (float)(MaxMipLevels);
 		//reset viewport size for each Mipmap
 		Context.SetViewport(mPreFilteredEnvCube->Viewport(mip));
 		for (unsigned int i = 0; i < 6; ++i)
@@ -179,9 +180,11 @@ void IBL::PreBakeGIData(GraphicsContext& Context, RenderObject* Object)
 		GlobleSRVIndex::gBakingDiffuseCubeIndex = AddToGlobalCubeSRVDescriptor(IndirectDiffuseCubeSrv);
 
 		//PreFilteredEnvironment
-		srvDesc.TextureCube.MipLevels = MaxMipLevels;
+		
 		D3D12_CPU_DESCRIPTOR_HANDLE PreFilteredCubeSrv = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		ID3D12Resource* PreFilteredResource = TextureManager::GetInstance(Context.GetCommandList())->GetTexture(L"PreFilteredEnvironment", false)->Resource.Get();
+		srvDesc.TextureCube.MipLevels = PreFilteredResource->GetDesc().MipLevels;
+		srvDesc.Format = PreFilteredResource->GetDesc().Format;
 		g_Device->CreateShaderResourceView(PreFilteredResource, &srvDesc, PreFilteredCubeSrv);
 		GlobleSRVIndex::gBakingPreFilteredEnvIndex = AddToGlobalCubeSRVDescriptor(PreFilteredCubeSrv);
 

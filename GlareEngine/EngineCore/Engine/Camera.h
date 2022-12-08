@@ -71,7 +71,7 @@ public:
 	// After modifying camera position/orientation, call to rebuild the view matrix.
 	void UpdateViewMatrix();
 
-private:
+protected:
 	bool mIsReverseZ;
 	bool mIsInfiniteZ;
 
@@ -100,6 +100,32 @@ private:
 	//Frustum
 	Frustum m_FrustumVS;
 	Frustum m_FrustumWS;
+};
+
+
+
+class ShadowCamera : public Camera
+{
+public:
+
+	ShadowCamera(bool isReverseZ = false, bool isInfiniteZ = false) :Camera(isReverseZ, isInfiniteZ) {}
+
+	void UpdateMatrix(
+		Math::Vector3 LightDirection,		// Direction parallel to light, in direction of travel
+		Math::Vector3 ShadowCenter,			// Center location on far bounding plane of shadowed region
+		Math::Vector3 ShadowBounds,			// Width, height, and depth in world space represented by the shadow buffer
+		uint32_t BufferWidth,				// Shadow buffer width
+		uint32_t BufferHeight,				// Shadow buffer height--usually same as width
+		uint32_t BufferPrecision			// Bit depth of shadow buffer--usually 16 or 24
+	);
+
+	// Used to transform world space to texture space for shadow sampling
+	const Math::Matrix4& GetShadowMatrix() const { return m_ShadowMatrix; }
+
+	void LookAt(FXMVECTOR forward, FXMVECTOR up);
+private:
+
+	Math::Matrix4 m_ShadowMatrix;
 };
 
 #endif // CAMERA_H

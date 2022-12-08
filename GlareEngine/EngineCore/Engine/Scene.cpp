@@ -328,8 +328,7 @@ void Scene::ForwardPlusRendering()
 
 	// Begin rendering depth
 	Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
-	Context.ClearDepthAndStencil(g_SceneDepthBuffer, REVERSE_Z ? 0.0f : 1.0f);
-
+	Context.ClearDepthAndStencil(g_SceneDepthBuffer,REVERSE_Z ? 0.0f : 1.0f);
 	//default batch
 	MeshSorter sorter(MeshSorter::eDefault);
 	sorter.SetCamera(*m_pCamera);
@@ -352,6 +351,41 @@ void Scene::ForwardPlusRendering()
 		sorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
 	}
 
+	{
+		ScopedTimer _outerprof(L"Main Render", Context);
+
+		{
+			/*ScopedTimer _prof(L"Sun Shadow Map", Context);
+
+			MeshSorter shadowSorter(MeshSorter::eShadows);
+			shadowSorter.SetCamera(m_SunShadowCamera);
+			shadowSorter.SetDepthStencilTarget(m_pShadowMap->GetShadowBuffer());
+
+			for (auto& model : m_pGLTFRenderObjects)
+			{
+				dynamic_cast<glTFInstanceModel*>(model)->GetModel()->AddToRender(shadowSorter);
+			}
+
+			shadowSorter.Sort();
+			shadowSorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);*/
+		}
+
+		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+		Context.ClearRenderTarget(g_SceneColorBuffer);
+
+		{
+			ScopedTimer _prof(L"Render Color", Context);
+			Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
+			//Set Cube SRV
+			Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[0]);
+			//Set Textures SRV
+			Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE]);
+			Context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV_DepthReadOnly());
+			Context.SetViewportAndScissor(m_MainViewport, m_MainScissor);
+			sorter.RenderMeshes(MeshSorter::eOpaque, Context, mMainConstants);
+		}
+		sorter.RenderMeshes(MeshSorter::eTransparent, Context, mMainConstants);
+	}
 
 	Context.Finish();
 }

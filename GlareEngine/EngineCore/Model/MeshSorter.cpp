@@ -103,7 +103,7 @@ void MeshSorter::RenderMeshes(DrawPass pass, GraphicsContext& context, MainConst
 	if (m_BatchType == eShadows)
 	{
 		context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
-		context.ClearDepth(*m_DSV);
+		context.ClearDepthAndStencil(*m_DSV, REVERSE_Z ? 0.0f : 1.0f);
 		context.SetDepthStencilTarget(m_DSV->GetDSV());
 
 		if (m_Viewport.Width == 0)

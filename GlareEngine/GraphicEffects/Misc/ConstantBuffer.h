@@ -97,7 +97,7 @@ struct MainConstants
 	int mBakingDiffuseCubeIndex = 0;
 	int gBakingPreFilteredEnvIndex = 0;
 	int gBakingIntegrationBRDFIndex = 0;
-	float IBLRange = 4.0f;
+	float IBLRange = 10.0f;
 	float IBLBias = 0.0f;
 	int mPad03 = 0;
 };
