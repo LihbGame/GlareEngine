@@ -164,20 +164,20 @@ void MeshSorter::RenderMeshes(DrawPass pass, GraphicsContext& context, MainConst
 				if (SeparateZPass)
 				{
 					context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_READ);
-					context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
-					context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), m_DSV->GetDSV_DepthReadOnly());
+					context.TransitionResource(*m_RTV[0], D3D12_RESOURCE_STATE_RENDER_TARGET);
+					context.SetRenderTarget(m_RTV[0]->GetRTV(), m_DSV->GetDSV_DepthReadOnly());
 				}
 				else
 				{
 					context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-					context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
-					context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), m_DSV->GetDSV());
+					context.TransitionResource(*m_RTV[0], D3D12_RESOURCE_STATE_RENDER_TARGET);
+					context.SetRenderTarget(m_RTV[0]->GetRTV(), m_DSV->GetDSV());
 				}
 				break;
 			case eTransparent:
 				context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_READ);
-				context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
-				context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), m_DSV->GetDSV_DepthReadOnly());
+				context.TransitionResource(*m_RTV[0], D3D12_RESOURCE_STATE_RENDER_TARGET);
+				context.SetRenderTarget(m_RTV[0]->GetRTV(), m_DSV->GetDSV_DepthReadOnly());
 				break;
 			}
 		}

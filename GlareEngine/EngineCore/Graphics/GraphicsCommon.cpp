@@ -34,11 +34,14 @@ namespace GlareEngine
 
 	D3D12_RASTERIZER_DESC RasterizerDefault;    // Counter-clockwise
 	D3D12_RASTERIZER_DESC RasterizerWireframe;
+	D3D12_RASTERIZER_DESC RasterizerWireframeCw;
 	D3D12_RASTERIZER_DESC RasterizerDefaultMsaa;
 	D3D12_RASTERIZER_DESC RasterizerDefaultCw;    // Clockwise winding
 	D3D12_RASTERIZER_DESC RasterizerDefaultCwMsaa;
 	D3D12_RASTERIZER_DESC RasterizerTwoSided;
 	D3D12_RASTERIZER_DESC RasterizerTwoSidedMsaa;
+	D3D12_RASTERIZER_DESC RasterizerTwoSidedCw;
+	D3D12_RASTERIZER_DESC RasterizerTwoSidedCwMsaa;
 	D3D12_RASTERIZER_DESC RasterizerShadow;
 	D3D12_RASTERIZER_DESC RasterizerShadowCW;
 	D3D12_RASTERIZER_DESC RasterizerShadowTwoSided;
@@ -154,6 +157,9 @@ void GlareEngine::InitializeRasterizer(void)
 	RasterizerWireframe.CullMode = D3D12_CULL_MODE_NONE;
 	RasterizerWireframe.FillMode = D3D12_FILL_MODE_WIREFRAME;
 
+	RasterizerWireframeCw = RasterizerWireframe;
+	RasterizerWireframeCw.FrontCounterClockwise = FALSE;
+
 	RasterizerDefaultMsaa = RasterizerDefault;
 	RasterizerDefaultMsaa.MultisampleEnable = TRUE;
 
@@ -166,8 +172,14 @@ void GlareEngine::InitializeRasterizer(void)
 	RasterizerTwoSided = RasterizerDefault;
 	RasterizerTwoSided.CullMode = D3D12_CULL_MODE_NONE;
 
+	RasterizerTwoSidedCw = RasterizerTwoSided;
+	RasterizerTwoSidedCw.FrontCounterClockwise = FALSE;
+
 	RasterizerTwoSidedMsaa = RasterizerTwoSided;
 	RasterizerTwoSidedMsaa.MultisampleEnable = TRUE;
+
+	RasterizerTwoSidedCwMsaa = RasterizerTwoSidedMsaa;
+	RasterizerTwoSidedCwMsaa.FrontCounterClockwise = FALSE;
 
 	// Shadows need their own rasterizer state so we can reverse the winding of faces
 	RasterizerShadow = RasterizerDefault;
@@ -209,7 +221,7 @@ void GlareEngine::InitializeDepthState(void)
 	DepthStateReadOnly.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 
 	DepthStateReadOnlyReversed = DepthStateReadOnly;
-	DepthStateReadOnlyReversed.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+	DepthStateReadOnlyReversed.DepthFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
 
 	DepthStateTestEqual = DepthStateReadOnly;
 	DepthStateTestEqual.DepthFunc = D3D12_COMPARISON_FUNC_EQUAL;

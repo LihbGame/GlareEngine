@@ -183,7 +183,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 
 			//Instance models
 
-			auto modelInstance = make_unique<ModelInstance>(GlareEngine::LoadModel(L"D:/glTF-Sample-Models-master/2.0/DamagedHelmet/glTF/DamagedHelmet.gltf"));
+			auto modelInstance = make_unique<ModelInstance>(GlareEngine::LoadModel(L"D:\\glTF-Sample-Models-master\\2.0\\FlightHelmet\\glTF\\FlightHelmet.gltf"));
 			auto GLTFModel = make_unique<glTFInstanceModel>(std::move(modelInstance));
 			mGLTFModels.push_back(std::move(GLTFModel));
 

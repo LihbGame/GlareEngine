@@ -86,7 +86,7 @@ private:
 	float mWaterTransparent = 100.0f;
 
 	bool mWireframe = false;
-	bool mMSAA = false;
+	bool mMSAA = true;
 
 	float mGrassColor[3] = { 0.39f,0.196f,0.0f };
 	XMFLOAT3 mCameraPosition = { 0.0f,0.0f,0.0f };

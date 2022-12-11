@@ -32,6 +32,8 @@ namespace GlareEngine
 	extern D3D12_RASTERIZER_DESC RasterizerDefaultCwMsaa;
 	extern D3D12_RASTERIZER_DESC RasterizerTwoSided;
 	extern D3D12_RASTERIZER_DESC RasterizerTwoSidedMsaa;
+	extern D3D12_RASTERIZER_DESC RasterizerTwoSidedCw;
+	extern D3D12_RASTERIZER_DESC RasterizerTwoSidedCwMsaa;
 	extern D3D12_RASTERIZER_DESC RasterizerShadow;
 	extern D3D12_RASTERIZER_DESC RasterizerShadowCW;
 	extern D3D12_RASTERIZER_DESC RasterizerShadowTwoSided;

@@ -327,15 +327,34 @@ void Scene::ForwardPlusRendering()
 	GraphicsContext& Context = GraphicsContext::Begin(L"Scene Render");
 
 	// Begin rendering depth
-	Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
-	Context.ClearDepthAndStencil(g_SceneDepthBuffer,REVERSE_Z ? 0.0f : 1.0f);
+	//MSAA
+	if (IsMSAA)
+	{
+		Context.TransitionResource(g_SceneMSAADepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+		Context.ClearDepthAndStencil(g_SceneMSAADepthBuffer, REVERSE_Z ? 0.0f : 1.0f);
+	}
+	else
+	{
+		Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+		Context.ClearDepthAndStencil(g_SceneDepthBuffer, REVERSE_Z ? 0.0f : 1.0f);
+	}
 	//default batch
 	MeshSorter sorter(MeshSorter::eDefault);
 	sorter.SetCamera(*m_pCamera);
 	sorter.SetViewport(m_MainViewport);
 	sorter.SetScissor(m_MainScissor);
-	sorter.SetDepthStencilTarget(g_SceneDepthBuffer);
-	sorter.AddRenderTarget(g_SceneColorBuffer);
+
+	if (IsMSAA)
+	{
+		sorter.SetDepthStencilTarget(g_SceneMSAADepthBuffer);
+		sorter.AddRenderTarget(g_SceneMSAAColorBuffer);
+	}
+	else
+	{ 
+		sorter.SetDepthStencilTarget(g_SceneDepthBuffer);
+		sorter.AddRenderTarget(g_SceneColorBuffer);
+	}
+	
 
 
 	for (auto& model : m_pGLTFRenderObjects)
@@ -370,21 +389,54 @@ void Scene::ForwardPlusRendering()
 			shadowSorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);*/
 		}
 
-		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-		Context.ClearRenderTarget(g_SceneColorBuffer);
+		if (IsMSAA)
+		{
+			Context.TransitionResource(g_SceneMSAAColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+			Context.ClearRenderTarget(g_SceneMSAAColorBuffer);
+		}
+		else
+		{
+			Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+			Context.ClearRenderTarget(g_SceneColorBuffer);
+		}
+		
 
 		{
 			ScopedTimer _prof(L"Render Color", Context);
-			Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
 			//Set Cube SRV
 			Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[0]);
 			//Set Textures SRV
 			Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE]);
-			Context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV_DepthReadOnly());
+
+			if (IsMSAA)
+			{
+				Context.TransitionResource(g_SceneMSAADepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
+				Context.SetRenderTarget(g_SceneMSAAColorBuffer.GetRTV(), g_SceneMSAADepthBuffer.GetDSV_DepthReadOnly());
+			}
+			else
+			{
+				Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
+				Context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV_DepthReadOnly());
+			}
 			Context.SetViewportAndScissor(m_MainViewport, m_MainScissor);
+
+			//sky
+			if (m_pRenderObjectsType[(int)ObjectType::Sky].front()->GetVisible())
+			{
+				m_pRenderObjectsType[(int)ObjectType::Sky].front()->Draw(Context);
+			}
+
 			sorter.RenderMeshes(MeshSorter::eOpaque, Context, mMainConstants);
 		}
 		sorter.RenderMeshes(MeshSorter::eTransparent, Context, mMainConstants);
+	}
+
+	//MSAA
+	if (IsMSAA)
+	{
+		Context.TransitionResource(g_SceneMSAAColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
+		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, true);
+		Context.GetCommandList()->ResolveSubresource(g_SceneColorBuffer.GetResource(), 0, g_SceneMSAAColorBuffer.GetResource(), 0, DefaultHDRColorFormat);
 	}
 
 	Context.Finish();
