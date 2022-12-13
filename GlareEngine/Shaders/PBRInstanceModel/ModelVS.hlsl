@@ -13,7 +13,7 @@ struct Joint
     float4x3 NrmMatrix; // Inverse-transpose of PosMatrix
 };
 
-StructuredBuffer<Joint> Joints : register(t1,space1);
+StructuredBuffer<Joint> Joints : register(t2, space1);
 #endif
 
 struct VSInput

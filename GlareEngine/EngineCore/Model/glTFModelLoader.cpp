@@ -356,7 +356,7 @@ void LoadMaterials(Model& model,
 
 		D3D12_CPU_DESCRIPTOR_HANDLE DefaultTextures[eNumTextures] =
 		{
-			GetDefaultTexture(eWhiteOpaque2D),
+			GetDefaultTexture(eBlackOpaque2D),
 			GetDefaultTexture(eWhiteOpaque2D),
 			GetDefaultTexture(eWhiteOpaque2D),
 			GetDefaultTexture(eBlackTransparent2D),
@@ -366,7 +366,7 @@ void LoadMaterials(Model& model,
 		D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[eNumTextures];
 		for (uint32_t j = 0; j < eNumTextures; ++j)
 		{
-			if (srcMat.stringIdx[j] == 0xffff || model.m_Textures[srcMat.stringIdx[j]] == nullptr)
+			if (srcMat.stringIdx[j] == 0xffff /*|| model.m_Textures[srcMat.stringIdx[j]] == nullptr*/)
 				SourceTextures[j] = DefaultTextures[j];
 			else
 				SourceTextures[j] = model.m_Textures[srcMat.stringIdx[j]]->GetSRV();
@@ -628,8 +628,9 @@ bool GlareEngine::SaveModel(const std::wstring& filePath, const glTFModelData& m
 }
 
 
-std::shared_ptr<Model> GlareEngine::LoadModel(const std::wstring& filePath, bool forceRebuild)
+std::shared_ptr<Model> GlareEngine::LoadModel(const std::wstring& Path, bool forceRebuild)
 {
+	wstring filePath = StringToWString(EngineGlobal::ModelAssetPath) + Path;
 	const std::wstring ModelFileName = RemoveExtension(filePath) + L".Model";
 	const std::wstring fileName = RemoveBasePath(filePath);
 

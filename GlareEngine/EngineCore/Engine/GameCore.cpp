@@ -52,11 +52,6 @@ namespace GlareEngine
 
 		void InitializeWindow(HINSTANCE hand, const wchar_t* className)
 		{
-			//ASSERT_SUCCEEDED(CoInitializeEx(nullptr, COINITBASE_MULTITHREADED));
-			Microsoft::WRL::Wrappers::RoInitializeWrapper InitializeWinRT(RO_INIT_MULTITHREADED);
-			ThrowIfFailed(InitializeWinRT);
-
-
 			//当前所调用该函数的程序实例句柄
 			HINSTANCE hInst = hand;
 
@@ -185,6 +180,9 @@ namespace GlareEngine
 #if defined(DEBUG) | defined(_DEBUG)
 			_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
+
+			Microsoft::WRL::Wrappers::RoInitializeWrapper InitializeWinRT(RO_INIT_MULTITHREADED);
+			ThrowIfFailed(InitializeWinRT);
 
 			//初始化
 			InitializeWindow(hand, className);

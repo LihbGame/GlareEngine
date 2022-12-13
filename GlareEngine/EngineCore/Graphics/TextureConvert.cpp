@@ -1,7 +1,7 @@
 #include "TextureConvert.h"
 #include "Engine/EngineUtility.h"
-#include "DirectXTex.h"
 #include "Engine/EngineLog.h"
+#include "I:\\GlareEngine\\packages\\directxtex_desktop_win10.2022.10.18.1\\include\\DirectXTex.h"
 
 #define GetFlag(f) ((Flags & f) != 0)
 

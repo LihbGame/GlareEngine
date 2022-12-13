@@ -3,6 +3,7 @@
 #include "SamplerManager.h"
 #include "CommandSignature.h"
 #include "ColorBuffer.h"
+#include "Graphics/CommandContext.h"
 //#include "BitonicSort.h"
 
 namespace GlareEngine
@@ -74,20 +75,26 @@ void GlareEngine::InitializeAllCommonState(void)
 	InitializeDepthState();
 	InitializeBlendState();
 
-	DefaultTextures[eMagenta2D].SetClearColor(Color(1.0f, 0.0f, 1.0f, 1.0f));
-	DefaultTextures[eMagenta2D].Create(L"Magenta Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-	DefaultTextures[eBlackOpaque2D].SetClearColor(Color(0.0f, 0.0f, 0.0f, 1.0f));
-	DefaultTextures[eBlackOpaque2D].Create(L"BlackOpaque Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-	DefaultTextures[eBlackTransparent2D].SetClearColor(Color(0.0f, 0.0f, 0.0f, 0.0f));
-	DefaultTextures[eBlackTransparent2D].Create(L"BlackTransparent Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-	DefaultTextures[eWhiteOpaque2D].SetClearColor(Color(1.0f, 1.0f, 1.0f, 1.0f));
-	DefaultTextures[eWhiteOpaque2D].Create(L"WhiteOpaque Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-	DefaultTextures[eWhiteTransparent2D].SetClearColor(Color(1.0f, 1.0f, 1.0f, 0.0f));
-	DefaultTextures[eWhiteTransparent2D].Create(L"WhiteTransparent Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-	DefaultTextures[eDefaultNormalMap].SetClearColor(Color(0.0f, 0.0f, 1.0f, 0.0f));
-	DefaultTextures[eDefaultNormalMap].Create(L"DefaultNormalMap Default Texture", 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-	DefaultTextures[eBlackCubeMap].SetClearColor(Color(0.0f, 0.0f, 0.0f, 0.0f));
-	DefaultTextures[eBlackCubeMap].CreateArray(L"BlackCubeMap Default Texture", 1, 1, 1, 6, DXGI_FORMAT_R8G8B8A8_UNORM);
+	uint32_t MagentaPixel = 0xFFFF00FF;
+	DefaultTextures[eMagenta2D].Create2D(L"Magenta Default Texture", 4, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM, &MagentaPixel);
+
+	uint32_t BlackOpaqueTexel = 0xFF000000;
+	DefaultTextures[eBlackOpaque2D].Create2D(L"BlackOpaque Default Texture", 4, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM, &BlackOpaqueTexel);
+
+	uint32_t BlackTransparentTexel = 0x00000000;
+	DefaultTextures[eBlackTransparent2D].Create2D(L"BlackTransparent Default Texture", 4, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM,&BlackTransparentTexel);
+
+	uint32_t WhiteOpaqueTexel = 0xFFFFFFFF;
+	DefaultTextures[eWhiteOpaque2D].Create2D(L"WhiteOpaque Default Texture", 4, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM, &WhiteOpaqueTexel);
+
+	uint32_t WhiteTransparentTexel = 0x00FFFFFF;
+	DefaultTextures[eWhiteTransparent2D].Create2D(L"WhiteTransparent Default Texture", 4, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM, &WhiteTransparentTexel);
+
+	uint32_t FlatNormalTexel = 0x00FF8080;
+	DefaultTextures[eDefaultNormalMap].Create2D(L"DefaultNormalMap Default Texture", 4, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM, &FlatNormalTexel);
+
+	uint32_t BlackCubeTexels[6] = {};
+	DefaultTextures[eBlackCubeMap].CreateCube(L"BlackCubeMap Default Texture", 4, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM, BlackCubeTexels);
 
 
 	DispatchIndirectCommandSignature[0].Dispatch();

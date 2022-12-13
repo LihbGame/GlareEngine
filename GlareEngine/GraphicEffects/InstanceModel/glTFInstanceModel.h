@@ -6,7 +6,7 @@ class glTFInstanceModel :
     public RenderObject
 {
 public:
-	glTFInstanceModel(unique_ptr<ModelInstance> model) :mModel(std::move(model)) {};
+	glTFInstanceModel(unique_ptr<ModelInstance> model) :mModel(std::move(model)) { mObjectType = ObjectType::Model; };
 	~glTFInstanceModel() {};
 
 	virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr) {};

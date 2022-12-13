@@ -18,6 +18,27 @@
 #endif
 
 
+struct SurfaceProperties
+{
+    float3 N;           //surface normal
+    float3 V;           //normalized view vector
+    float3 c_diff;
+    float3 c_spec;      //The F0 reflectance value - 0.04 for non-metals, or RGB for metals.
+    float roughness;
+    float alpha;        // roughness squared
+    float alphaSqr;     // alpha squared
+    float NdotV;
+};
+
+struct LightProperties
+{
+    float3 L;           //normalized direction to light
+    float NdotL;
+    float LdotH;
+    float NdotH;
+};
+
+
 struct Light
 {
     float3 Strength;

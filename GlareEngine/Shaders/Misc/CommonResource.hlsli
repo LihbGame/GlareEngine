@@ -1,6 +1,6 @@
 #include "PBRLighting.hlsli"
 
-#define MAX2DSRVSIZE 256
+#define MAX2DSRVSIZE 1024
 #define MAXCUBESRVSIZE 32
 #define MAXPBRSRVSIZE 10
 

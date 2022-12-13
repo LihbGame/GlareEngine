@@ -7,7 +7,7 @@ namespace GlareEngine
 		public PixelBuffer
 	{
 	public:
-		ColorBuffer(Color ClearColor = Color(0.0f, 0.0f, 0.0f, 0.0f))
+		ColorBuffer(Color ClearColor = Color(1.0f, 1.0f, 1.0f, 1.0f))
 			: m_ClearColor(ClearColor), m_NumMipMaps(0), m_FragmentCount(1), m_SampleCount(1)
 		{
 			m_SRVHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
@@ -22,6 +22,9 @@ namespace GlareEngine
 		//创建一个颜色缓冲区。如果提供了一个地址，将不会分配内存。vmem地址允许你对缓冲区进行别名。 
 		void Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t NumMips,
 			DXGI_FORMAT Format, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN);
+
+		void Create2D(const std::wstring& Name, size_t RowPitchBytes, size_t Width, size_t Height, DXGI_FORMAT Format, const void* InitialData);
+		void CreateCube(const std::wstring& Name, size_t RowPitchBytes, size_t Width, size_t Height, DXGI_FORMAT Format, const void* InitialData);
 
 		//创建一个颜色缓冲区。 如果提供了一个地址，将不会分配内存。vmem地址允许你对缓冲区进行别名。 
 		void CreateArray(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t MipMap, uint32_t ArrayCount,

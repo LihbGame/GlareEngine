@@ -274,7 +274,7 @@ namespace GlareEngine
 			//开始GPU Time Buffer 的读取
 			GPUTimeManager::BeginReadBack();
 			//统计时间树的所有结点的时间
-			sm_RootScope.GatherTimes(FrameIndex);
+    			sm_RootScope.GatherTimes(FrameIndex);
 			//记录每帧的时间timer的0-1记录了本帧的时间
 			s_FrameDelta.RecordStat(FrameIndex, GPUTimeManager::GetTime(0));
 			//结束GPU Time Buffer 的读取

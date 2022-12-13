@@ -49,7 +49,7 @@ void GPUTimeManager::Initialize(uint32_t MaxNumTimers)
 	sm_ReadBackBuffer->SetName(L"GpuTimeStamp Buffer");
 
 	D3D12_QUERY_HEAP_DESC QueryHeapDesc;
-	QueryHeapDesc.Count = MaxNumTimers * 2;
+ 	QueryHeapDesc.Count = MaxNumTimers * 2;
 	QueryHeapDesc.NodeMask = 1;
 	QueryHeapDesc.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
 	ThrowIfFailed(g_Device->CreateQueryHeap(&QueryHeapDesc, IID_PPV_ARGS(&sm_QueryHeap)));
@@ -89,11 +89,15 @@ void GPUTimeManager::BeginReadBack(void)
 	D3D12_RANGE Range;
 	Range.Begin = 0;
 	Range.End = (sm_NumTimers * 2) * sizeof(uint64_t);
-	ThrowIfFailed(sm_ReadBackBuffer->Map(0, &Range, reinterpret_cast<void**>(&sm_TimeStampBuffer)));
+	HRESULT dd;
+	ThrowIfFailed(sm_ReadBackBuffer->Map(0, &Range, reinterpret_cast<void**>(&sm_TimeStampBuffer)))
 
-	sm_ValidTimeStart = sm_TimeStampBuffer[0];
-	sm_ValidTimeEnd = sm_TimeStampBuffer[1];
-
+	//ThrowIfFailed();
+	if (sm_TimeStampBuffer)
+	{
+		sm_ValidTimeStart = sm_TimeStampBuffer[0];
+		sm_ValidTimeEnd = sm_TimeStampBuffer[1];
+	}
 	//在第一帧中，时间戳查询堆中具有随机值，我们可以避免错误启动。
 	if (sm_ValidTimeEnd < sm_ValidTimeStart)
 	{

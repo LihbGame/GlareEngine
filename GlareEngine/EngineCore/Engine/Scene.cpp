@@ -21,24 +21,25 @@ Scene::Scene(string name, ID3D12GraphicsCommandList* pCommandList)
 
 void Scene::Update(float DeltaTime)
 {
-	GraphicsContext& Context = GraphicsContext::Begin(L"Scene Update");
 
 	//Update shadow map
 	m_pShadowMap->Update(DeltaTime);
 	//Update Main Constant Buffer
 	UpdateMainConstantBuffer(DeltaTime);
 	//Update Objects
-	for (auto &object: m_pRenderObjects)
+	for (auto& object : m_pRenderObjects)
 	{
 		object->Update(DeltaTime);
 	}
+
+	GraphicsContext& Context = GraphicsContext::Begin(L"Scene Update");
 	//Update GLTF Objects
 	for (auto& object : m_pGLTFRenderObjects)
 	{
 		object->Update(DeltaTime, &Context);
 	}
-
 	Context.Finish();
+
 }
 
 void Scene::VisibleUpdateForType()
@@ -51,6 +52,21 @@ void Scene::VisibleUpdateForType()
 	bool ShadowVisible = TypeVisible[ObjectType::Shadow];
 
 	for (auto& object : m_pRenderObjects)
+	{
+		//update Model shadow visible
+		if (object->mObjectType == ObjectType::Model)
+		{
+			object->SetShadowRenderFlag(ShadowVisible && object->GetShadowFlag());
+		}
+
+		if (TypeVisible[object->mObjectType] != object->GetVisible())  //update visible
+		{
+			object->SetVisible(TypeVisible[object->mObjectType]);
+		}
+	}
+
+
+	for (auto& object : m_pGLTFRenderObjects)
 	{
 		//update Model shadow visible
 		if (object->mObjectType == ObjectType::Model)
@@ -104,6 +120,7 @@ void Scene::AddObjectToScene(RenderObject* Object)
 
 void Scene::AddGLTFModelToScene(RenderObject* Object)
 {
+	dynamic_cast<glTFInstanceModel*>(Object)->GetModel()->LoopAllAnimations();
 	m_pGLTFRenderObjects.push_back(Object);
 }
 
@@ -359,7 +376,10 @@ void Scene::ForwardPlusRendering()
 
 	for (auto& model : m_pGLTFRenderObjects)
 	{
-		dynamic_cast<glTFInstanceModel*>(model)->GetModel()->AddToRender(sorter);
+		if (model->GetVisible())
+		{
+			dynamic_cast<glTFInstanceModel*>(model)->GetModel()->AddToRender(sorter);
+		}
 	}
 
 	sorter.Sort();

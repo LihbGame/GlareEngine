@@ -36,6 +36,106 @@ namespace GlareEngine
 		CreateDerivedViews(g_Device, Format, 1, NumMips);
 	}
 
+
+	void ColorBuffer::Create2D(const std::wstring& Name, size_t RowPitchBytes, size_t Width, size_t Height, DXGI_FORMAT Format, const void* InitialData)
+	{
+		Destroy();
+
+		m_UsageState = D3D12_RESOURCE_STATE_COPY_DEST;
+
+		m_Width = (uint32_t)Width;
+		m_Height = (uint32_t)Height;
+
+		D3D12_RESOURCE_DESC texDesc = {};
+		texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+		texDesc.Width = Width;
+		texDesc.Height = (UINT)Height;
+		texDesc.DepthOrArraySize = 1;
+		texDesc.MipLevels = 1;
+		texDesc.Format = Format;
+		texDesc.SampleDesc.Count = 1;
+		texDesc.SampleDesc.Quality = 0;
+		texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+		texDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+		D3D12_HEAP_PROPERTIES HeapProps;
+		HeapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+		HeapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+		HeapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+		HeapProps.CreationNodeMask = 1;
+		HeapProps.VisibleNodeMask = 1;
+
+		ThrowIfFailed(g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &texDesc,
+			m_UsageState, nullptr, IID_PPV_ARGS(m_pResource.ReleaseAndGetAddressOf())));
+
+		m_pResource->SetName(Name.c_str());
+
+		D3D12_SUBRESOURCE_DATA texResource;
+		texResource.pData = InitialData;
+		texResource.RowPitch = RowPitchBytes;
+		texResource.SlicePitch = RowPitchBytes * Height;
+
+		CommandContext::InitializeTexture(*this, 1, &texResource);
+
+		if (m_SRVHandle.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
+			m_SRVHandle = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		g_Device->CreateShaderResourceView(m_pResource.Get(), nullptr, m_SRVHandle);
+	}
+
+	void ColorBuffer::CreateCube(const std::wstring& Name, size_t RowPitchBytes, size_t Width, size_t Height, DXGI_FORMAT Format, const void* InitialData)
+	{
+		Destroy();
+
+		m_UsageState = D3D12_RESOURCE_STATE_COPY_DEST;
+
+		m_Width = (uint32_t)Width;
+		m_Height = (uint32_t)Height;
+
+		D3D12_RESOURCE_DESC texDesc = {};
+		texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+		texDesc.Width = Width;
+		texDesc.Height = (UINT)Height;
+		texDesc.DepthOrArraySize = 6;
+		texDesc.MipLevels = 1;
+		texDesc.Format = Format;
+		texDesc.SampleDesc.Count = 1;
+		texDesc.SampleDesc.Quality = 0;
+		texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+		texDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+		D3D12_HEAP_PROPERTIES HeapProps;
+		HeapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+		HeapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+		HeapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+		HeapProps.CreationNodeMask = 1;
+		HeapProps.VisibleNodeMask = 1;
+
+		ThrowIfFailed(g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &texDesc,
+			m_UsageState, nullptr, IID_PPV_ARGS(m_pResource.ReleaseAndGetAddressOf())));
+
+		m_pResource->SetName(Name.c_str());
+
+		D3D12_SUBRESOURCE_DATA texResource;
+		texResource.pData = InitialData;
+		texResource.RowPitch = RowPitchBytes;
+		texResource.SlicePitch = texResource.RowPitch * Height;
+
+		CommandContext::InitializeTexture(*this, 1, &texResource);
+
+		if (m_SRVHandle.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
+			m_SRVHandle = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
+		srvDesc.Format = Format;
+		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+		srvDesc.TextureCube.MipLevels = 1;
+		srvDesc.TextureCube.MostDetailedMip = 0;
+		srvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
+		g_Device->CreateShaderResourceView(m_pResource.Get(), &srvDesc, m_SRVHandle);
+	}
+
+
 	void ColorBuffer::CreateArray(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t MipMap, uint32_t ArrayCount, DXGI_FORMAT Format, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr)
 	{
 		D3D12_RESOURCE_FLAGS Flags = CombineResourceFlags();

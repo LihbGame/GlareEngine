@@ -9,7 +9,7 @@
 
 //Render Config 
 #define NUMFRAME 3
-#define MAX2DSRVSIZE 256
+#define MAX2DSRVSIZE 1024
 #define MAXCUBESRVSIZE 32
 #define MAXPBRSRVSIZE 10
 #define SHADOWMAPSIZE 1024

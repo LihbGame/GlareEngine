@@ -67,6 +67,7 @@ namespace GlareEngine
 				mCommandList, filename.c_str(),
 				tex.get()->Resource, tex.get()->UploadHeap, ForceSRGB));
 			mTextures[name] = std::move(tex);
+			mTextures[name]->Filename = WStringToString(name);
 			return true;
 		}
 		return false;

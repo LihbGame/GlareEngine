@@ -113,7 +113,7 @@ namespace GlareEngine
 			uint32_t m_StaleRootParamsBitMap;
 			uint32_t m_MaxCachedDescriptors;
 
-			static const uint32_t MaxNumDescriptors = 512;
+			static const uint32_t MaxNumDescriptors = 2048;
 			static const uint32_t MaxNumDescriptorTables = 16;
 
 			uint32_t ComputeStagedSize();

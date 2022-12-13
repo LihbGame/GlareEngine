@@ -183,7 +183,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 
 			//Instance models
 
-			auto modelInstance = make_unique<ModelInstance>(GlareEngine::LoadModel(L"D:\\glTF-Sample-Models-master\\2.0\\FlightHelmet\\glTF\\FlightHelmet.gltf"));
+			auto modelInstance = make_unique<ModelInstance>(GlareEngine::LoadModel(L"FlightHelmet/glTF/FlightHelmet.gltf"));
 			auto GLTFModel = make_unique<glTFInstanceModel>(std::move(modelInstance));
 			mGLTFModels.push_back(std::move(GLTFModel));
 
@@ -219,8 +219,11 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 
 			//Copy Descriptors Texture Heap
 			Render::CopyTextureHeap();
-			});
+		});
 
+
+		//Copy Descriptors Texture Heap
+		Render::CopyTextureHeap();
 		//Create all Materials Constant Buffer
 		MaterialManager::GetMaterialInstance()->CreateMaterialsConstantBuffer();
 

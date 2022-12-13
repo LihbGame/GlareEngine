@@ -271,6 +271,7 @@ namespace GlareEngine
 		Context.SetViewportAndScissor(0, 0, g_DisplayWidth, g_DisplayHeight);
 		Context.Draw(3);
 		// Close the final context to be executed before frame present.
+		Context.TransitionResource(g_DisplayBuffers[g_CurrentBuffer], D3D12_RESOURCE_STATE_PRESENT);
 		Context.PIXEndEvent();
 		Context.Finish();
 	}
