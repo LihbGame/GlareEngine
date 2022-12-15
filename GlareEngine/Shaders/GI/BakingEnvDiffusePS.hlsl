@@ -24,7 +24,7 @@ float4 main(PosVSOut pin) : SV_TARGET
     float3 right = normalize(cross(up, normal));
     up = normalize(cross(normal, right));
 
-    float sampleDelta = 0.2;
+    float sampleDelta = 0.025;
     float Samples = 0.0;
     for (float phi = 0.0; phi < 2.0 * PI; phi += sampleDelta)
     {
@@ -35,7 +35,11 @@ float4 main(PosVSOut pin) : SV_TARGET
             // tangent space to world
             float3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal;
 
-            irradiance += gCubeMaps[mSkyCubeIndex].Sample(gSamplerLinearWrap, sampleVec).rgb * cos(theta) * sin(theta);
+            //This is a stupid way to avoid the diffuse highlights of the hdr map (Irradiance<=1.0f)
+            float3 sampleColor = gCubeMaps[mSkyCubeIndex].Sample(gSamplerLinearWrap, sampleVec).rgb;
+            sampleColor /= (sampleColor + float3(1.0f, 1.0f, 1.0f));
+            sampleColor = pow(sampleColor, 1 / 2.2f);
+            irradiance += sampleColor * sin(theta) * cos(theta);
             Samples++;
         }
     }

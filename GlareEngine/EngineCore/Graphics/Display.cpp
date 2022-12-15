@@ -443,7 +443,7 @@ namespace GlareEngine
 		g_DisplayWidth = width;
 		g_DisplayHeight = height;
 
-		EngineLog::AddLog(L"Changing display resolution to %ux%u", g_DisplayWidth, g_DisplayHeight);
+		//EngineLog::AddLog(L"Changing display resolution to %ux%u", g_DisplayWidth, g_DisplayHeight);
 
 		//g_PreDisplayBuffer.Create(L"PreDisplay Buffer", width, height, 1, g_SwapChainFormat);
 

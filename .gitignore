@@ -9,8 +9,8 @@
 /GlareEngine/x64/
 /GlareEngine/Release/
 /GlareEngine/Shaders/CompiledShaders/
-/Resource/Textures/HDRSky/*
-!/Resource/Textures/HDRSky/SKY_LDR.dds
+#/Resource/Textures/HDRSky/*
+# !/Resource/Textures/HDRSky/SKY_LDR.dds
 /GlareEngine/Dependences/lib/assimp-vc142-mt.lib
 /GlareEngine/EngineEditor/NoesisUIEditor/Data/.vs/
 /GlareEngine/EngineEditor/NoesisUIEditor/Data/bin/

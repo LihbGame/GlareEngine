@@ -117,7 +117,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 {
 	//Main Camera
 	mCamera = make_unique<Camera>(REVERSE_Z);
-	mCamera->LookAt(XMFLOAT3(-300, 300, 300), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 1, 0));
+	mCamera->LookAt(XMFLOAT3(-200, 200, 200), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 1, 0));
 	//Sky Initialize
 	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
 	//Shadow map Initialize
@@ -183,7 +183,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 
 			//Instance models
 
-			auto modelInstance = make_unique<ModelInstance>(GlareEngine::LoadModel(L"FlightHelmet/glTF/FlightHelmet.gltf"));
+			auto modelInstance = make_unique<ModelInstance>(GlareEngine::LoadModel(L"DamagedHelmet/glTF/DamagedHelmet.gltf"));
 			auto GLTFModel = make_unique<glTFInstanceModel>(std::move(modelInstance));
 			mGLTFModels.push_back(std::move(GLTFModel));
 

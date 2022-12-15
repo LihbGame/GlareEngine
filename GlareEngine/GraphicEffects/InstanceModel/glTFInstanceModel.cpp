@@ -94,7 +94,7 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 	CutoutDepthPSO.SetInputLayout((UINT)InputLayout::PosUV.size(), InputLayout::PosUV.data());
 	if (CommonProperty.IsMSAA)
 	{
-        CutoutDepthPSO.SetBlendState(BlendPreMultipliedAlphaToCoverage);
+        CutoutDepthPSO.SetBlendState(BlendDisableAlphaToCoverage);
 		CutoutDepthPSO.SetRasterizerState(RasterizerTwoSidedCwMsaa);
 	}
 	else
@@ -198,11 +198,11 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
         {
             if (REVERSE_Z)
             {
-                gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].SetDepthStencilState(DepthStateReadWriteReversed);
+                gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].SetDepthStencilState(DepthStateReadOnlyReversed);
             }
             else
             {
-                gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].SetDepthStencilState(DepthStateReadWrite);
+                gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].SetDepthStencilState(DepthStateReadOnly);
             }
             gModelPSOs[ModelPSO::ColorPSOEqualDepth].SetDepthStencilState(DepthStateTestEqual);
         }
@@ -215,7 +215,11 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                 MSAARasterizer.CullMode = D3D12_CULL_MODE_NONE;
                 MSAARasterizer.FillMode = D3D12_FILL_MODE_WIREFRAME;
             }
-            MSAARasterizer.CullMode = D3D12_CULL_MODE_NONE;
+            else
+            {
+                MSAARasterizer.CullMode = D3D12_CULL_MODE_BACK;
+                MSAARasterizer.FillMode = D3D12_FILL_MODE_SOLID;
+            }
 			gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].SetRasterizerState(MSAARasterizer);
 			gModelPSOs[ModelPSO::ColorPSOEqualDepth].SetRasterizerState(MSAARasterizer);
         }
@@ -227,7 +231,11 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                 Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
                 Rasterizer.FillMode = D3D12_FILL_MODE_WIREFRAME;
 			}
-            Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
+			else
+			{
+                Rasterizer.CullMode = D3D12_CULL_MODE_BACK;
+                Rasterizer.FillMode = D3D12_FILL_MODE_SOLID;
+			}
 			gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].SetRasterizerState(Rasterizer);
 			gModelPSOs[ModelPSO::ColorPSOEqualDepth].SetRasterizerState(Rasterizer);
         }
@@ -346,16 +354,16 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
         if (sm_PSOCommonProperty.IsMSAA)
         {
             ColorPSO.SetRasterizerState(RasterizerTwoSidedCwMsaa);
-            ColorPSO.SetBlendState(BlendDisable);
+            ColorPSO.SetBlendState(BlendDisableAlphaToCoverage);
             mMSAARasterizer = RasterizerTwoSidedCwMsaa;
-            mCoverageBlend = BlendDisable;
+            mCoverageBlend = BlendDisableAlphaToCoverage;
         }
         else
         {
             ColorPSO.SetRasterizerState(RasterizerTwoSidedCw);
-            ColorPSO.SetBlendState(BlendDisable);
+            ColorPSO.SetBlendState(BlendDisableAlphaToCoverage);
 			mRasterizer = RasterizerTwoSidedCw;
-			mBlend = BlendDisable;
+			mBlend = BlendDisableAlphaToCoverage;
         }
     }
 
@@ -372,16 +380,16 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
     {
         if(sm_PSOCommonProperty.IsMSAA)
         { 
-            ColorPSO.SetRasterizerState(RasterizerTwoSidedCwMsaa);
-            mMSAARasterizer = RasterizerTwoSidedCwMsaa;
+            ColorPSO.SetRasterizerState(RasterizerDefaultCwMsaa);
+            mMSAARasterizer = RasterizerDefaultCwMsaa;
         }
         else
         {
             ColorPSO.SetRasterizerState(RasterizerTwoSidedCw);
 			mRasterizer = RasterizerTwoSidedCw;
         }
-        ColorPSO.SetBlendState(BlendPreMultiplied);
-        mBlend = BlendPreMultiplied;
+        ColorPSO.SetBlendState(BlendTraditional);
+        mBlend = BlendTraditional;
 
 		if (REVERSE_Z)
 		{

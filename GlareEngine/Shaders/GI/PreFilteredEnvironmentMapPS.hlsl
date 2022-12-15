@@ -1,5 +1,7 @@
 #include "../Misc/CommonResource.hlsli"
 
+#define MAX_LUNINANCE 100
+
 cbuffer CubePass : register(b1)
 {
     float4x4 View;
@@ -31,8 +33,9 @@ float4 main(PosVSOut pin) : SV_TARGET
         float NdotL = max(dot(N, L), 0.0);
         if (NdotL > 0.0f)
         {
-
-            PrefilteredColor += gCubeMaps[mSkyCubeIndex].Sample(gSamplerLinearWrap, L).rgb * NdotL;
+            float3 sampleColor = gCubeMaps[mSkyCubeIndex].Sample(gSamplerLinearWrap, L).rgb;
+            sampleColor = clamp(sampleColor, 0.0f, MAX_LUNINANCE);
+            PrefilteredColor += sampleColor * NdotL;
             TotalWeight += NdotL;
         }
     }

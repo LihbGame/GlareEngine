@@ -176,6 +176,7 @@ void IBL::PreBakeGIData(GraphicsContext& Context, RenderObject* Object)
 		// EnvironmentDiffuse
 		D3D12_CPU_DESCRIPTOR_HANDLE IndirectDiffuseCubeSrv = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		ID3D12Resource* IndirectDiffuseResource = TextureManager::GetInstance(Context.GetCommandList())->GetTexture(L"IndirectDiffuse", false)->Resource.Get();
+		srvDesc.Format = IndirectDiffuseResource->GetDesc().Format;
 		g_Device->CreateShaderResourceView(IndirectDiffuseResource, &srvDesc, IndirectDiffuseCubeSrv);
 		GlobleSRVIndex::gBakingDiffuseCubeIndex = AddToGlobalCubeSRVDescriptor(IndirectDiffuseCubeSrv);
 
@@ -191,6 +192,7 @@ void IBL::PreBakeGIData(GraphicsContext& Context, RenderObject* Object)
 		//Integration BRDF
 		D3D12_CPU_DESCRIPTOR_HANDLE IntegrationBRDFSrv = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		ID3D12Resource* IntegrationBRDFResource = TextureManager::GetInstance(Context.GetCommandList())->GetTexture(L"IntegrationBRDF", false)->Resource.Get();
+		srvDesc.Format = IntegrationBRDFResource->GetDesc().Format;
 		g_Device->CreateShaderResourceView(IntegrationBRDFResource, nullptr, IntegrationBRDFSrv);
 		GlobleSRVIndex::gBakingIntegrationBRDFIndex = AddToGlobalTextureSRVDescriptor(IntegrationBRDFSrv);
 	}

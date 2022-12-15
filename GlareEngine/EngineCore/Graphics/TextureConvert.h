@@ -17,7 +17,7 @@ namespace GlareEngine
 
     inline uint8_t TextureOptions(bool sRGB, bool hasAlpha = false, bool invertY = false)
     {
-        return (sRGB ? eSRGB : 0) | (hasAlpha ? ePreserveAlpha : 0) | (invertY ? eFlipVertical : 0);
+        return (sRGB ? eSRGB : 0) | (hasAlpha ? ePreserveAlpha : 0) | (invertY ? eFlipVertical : 0) | eDefaultBC;
     }
 
     // If the DDS version of the texture specified does not exist or is older than the source texture, reconvert it.

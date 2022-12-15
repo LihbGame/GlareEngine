@@ -84,7 +84,7 @@ void CSky::BuildSkySRV(ID3D12GraphicsCommandList* CommandList)
 
 	auto BuildDescriptor = [&]
 	{
-		skyTex = TextureManager::GetInstance(CommandList)->GetTexture(SkyPath, false)->Resource;
+		skyTex = TextureManager::GetInstance(CommandList)->GetTexture(SkyPath)->Resource;
 		D3D12_SHADER_RESOURCE_VIEW_DESC SkysrvDesc = {};
 		SkysrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		SkysrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
