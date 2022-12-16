@@ -45,12 +45,21 @@ void GlareEngine::Model::Destroy()
 	m_SceneGraph = nullptr;
 }
 
-GlareEngine::ModelInstance::ModelInstance(std::shared_ptr<const Model> sourceModel)
+GlareEngine::ModelInstance::ModelInstance(std::shared_ptr<const Model> sourceModel,float Scale,bool IsNegetiveZForward)
 	: m_Model(sourceModel), m_Locator(eIdentity)
 {
 	static_assert((_alignof(MeshConstants) & 255) == 0, "CBVs need 256 byte alignment");
 
-	m_Locator.SetScale(Scalar(100));
+	if (IsNegetiveZForward)
+	{
+		m_Locator.SetScale(Scalar(Vector3(Scale, Scale, -Scale)));
+		m_Locator.SetRotation((Quaternion)XMMatrixRotationZ(MathHelper::Pi));
+	}
+	else
+	{
+		m_Locator.SetScale(Scalar(Vector3(Scale)));
+	}
+
 	if (sourceModel == nullptr)
 	{
 		m_MeshConstantsCPU.Destroy();

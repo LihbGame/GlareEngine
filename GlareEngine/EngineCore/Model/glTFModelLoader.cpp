@@ -630,7 +630,11 @@ bool GlareEngine::SaveModel(const std::wstring& filePath, const glTFModelData& m
 
 std::shared_ptr<Model> GlareEngine::LoadModel(const std::wstring& Path, bool forceRebuild)
 {
-	wstring filePath = StringToWString(EngineGlobal::ModelAssetPath) + Path;
+	wstring filePath = Path;
+	if (Path.rfind(':') == std::wstring::npos)
+	{
+		filePath = StringToWString(EngineGlobal::ModelAssetPath) + Path;
+	}
 	const std::wstring ModelFileName = RemoveExtension(filePath) + L".Model";
 	const std::wstring fileName = RemoveBasePath(filePath);
 

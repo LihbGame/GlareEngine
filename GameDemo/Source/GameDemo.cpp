@@ -117,7 +117,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 {
 	//Main Camera
 	mCamera = make_unique<Camera>(REVERSE_Z);
-	mCamera->LookAt(XMFLOAT3(-200, 200, 200), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 1, 0));
+	mCamera->LookAt(XMFLOAT3(200, 200, -200), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 1, 0));
 	//Sky Initialize
 	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
 	//Shadow map Initialize
@@ -136,19 +136,19 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	{
 		Light SceneLights[3];
 		SceneLights[0].Direction = mShadowMap->GetShadowedLightDir();
-		SceneLights[0].Strength = { 0.5f, 0.5f, 0.5f };
+		SceneLights[0].Strength = { 0.3f, 0.3f, 0.3f };
 		SceneLights[0].FalloffStart = 1.0f;
 		SceneLights[0].FalloffEnd = 50.0f;
 		SceneLights[0].Position = { 20,20,20 };
 
 		SceneLights[1].Direction = XMFLOAT3(-0.57735f, -0.47735f, 0.57735f);
-		SceneLights[1].Strength = { 0.5f, 0.5f, 0.5f };
+		SceneLights[1].Strength = { 0.2f, 0.2f, 0.2f };
 		SceneLights[1].FalloffStart = 1.0f;
 		SceneLights[1].FalloffEnd = 50.0f;
 		SceneLights[1].Position = { 20,20,20 };
 
 		SceneLights[2].Direction = XMFLOAT3(0.57735f, -0.47735f, -0.57735f);
-		SceneLights[2].Strength = { 0.5f, 0.5f, 0.5f };
+		SceneLights[2].Strength = { 0.2f, 0.2f, 0.2f };
 		SceneLights[2].FalloffStart = 1.0f;
 		SceneLights[2].FalloffEnd = 50.0f;
 		SceneLights[2].Position = { 20,20,20 };
@@ -183,7 +183,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 
 			//Instance models
 
-			auto modelInstance = make_unique<ModelInstance>(GlareEngine::LoadModel(L"DamagedHelmet/glTF/DamagedHelmet.gltf"));
+			auto modelInstance = make_unique<ModelInstance>(GlareEngine::LoadModel(L"DamagedHelmet/glTF/DamagedHelmet.gltf"), 100.0f);
 			auto GLTFModel = make_unique<glTFInstanceModel>(std::move(modelInstance));
 			mGLTFModels.push_back(std::move(GLTFModel));
 

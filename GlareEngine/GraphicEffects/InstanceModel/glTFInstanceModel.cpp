@@ -64,11 +64,11 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 
 	if (CommonProperty.IsMSAA)
 	{
-		DepthOnlyPSO.SetRasterizerState(RasterizerDefaultCwMsaa);
+		DepthOnlyPSO.SetRasterizerState(RasterizerDefaultMsaa);
 	}
 	else
 	{
-		DepthOnlyPSO.SetRasterizerState(RasterizerDefaultCw);
+		DepthOnlyPSO.SetRasterizerState(RasterizerDefault);
 	}
     DepthOnlyPSO.SetBlendState(BlendDisable);
 
@@ -95,12 +95,12 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 	if (CommonProperty.IsMSAA)
 	{
         CutoutDepthPSO.SetBlendState(BlendDisableAlphaToCoverage);
-		CutoutDepthPSO.SetRasterizerState(RasterizerTwoSidedCwMsaa);
+		CutoutDepthPSO.SetRasterizerState(RasterizerTwoSidedMsaa);
 	}
 	else
 	{
         CutoutDepthPSO.SetBlendState(BlendDisable);
-		CutoutDepthPSO.SetRasterizerState(RasterizerTwoSidedCw);
+		CutoutDepthPSO.SetRasterizerState(RasterizerTwoSided);
 	}
 	CutoutDepthPSO.SetVertexShader(g_pCutoutDepthVS, sizeof(g_pCutoutDepthVS));
 	CutoutDepthPSO.SetPixelShader(g_pCutoutDepthPS, sizeof(g_pCutoutDepthPS));
@@ -149,7 +149,7 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 	sm_PBRglTFPSO.SetRootSignature(gRootSignature);
 
 
-    D3D12_RASTERIZER_DESC Rasterizer = RasterizerDefaultCw;
+    D3D12_RASTERIZER_DESC Rasterizer = RasterizerDefault;
     if (CommonProperty.IsWireframe)
     {
         Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
@@ -343,9 +343,9 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
     }
 
 
-	mMSAARasterizer = RasterizerDefaultCwMsaa;
+	mMSAARasterizer = RasterizerDefaultMsaa;
 	mCoverageBlend = BlendDisable;
-	mRasterizer = RasterizerDefaultCw;
+	mRasterizer = RasterizerDefault;
 	mBlend = BlendDisable;
 
     
@@ -353,16 +353,16 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
     {
         if (sm_PSOCommonProperty.IsMSAA)
         {
-            ColorPSO.SetRasterizerState(RasterizerTwoSidedCwMsaa);
+            ColorPSO.SetRasterizerState(RasterizerTwoSidedMsaa);
             ColorPSO.SetBlendState(BlendDisableAlphaToCoverage);
-            mMSAARasterizer = RasterizerTwoSidedCwMsaa;
+            mMSAARasterizer = RasterizerTwoSidedMsaa;
             mCoverageBlend = BlendDisableAlphaToCoverage;
         }
         else
         {
-            ColorPSO.SetRasterizerState(RasterizerTwoSidedCw);
+            ColorPSO.SetRasterizerState(RasterizerTwoSided);
             ColorPSO.SetBlendState(BlendDisableAlphaToCoverage);
-			mRasterizer = RasterizerTwoSidedCw;
+			mRasterizer = RasterizerTwoSided;
 			mBlend = BlendDisableAlphaToCoverage;
         }
     }
@@ -380,13 +380,13 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
     {
         if(sm_PSOCommonProperty.IsMSAA)
         { 
-            ColorPSO.SetRasterizerState(RasterizerDefaultCwMsaa);
-            mMSAARasterizer = RasterizerDefaultCwMsaa;
+            ColorPSO.SetRasterizerState(RasterizerDefaultMsaa);
+            mMSAARasterizer = RasterizerDefaultMsaa;
         }
         else
         {
-            ColorPSO.SetRasterizerState(RasterizerTwoSidedCw);
-			mRasterizer = RasterizerTwoSidedCw;
+            ColorPSO.SetRasterizerState(RasterizerTwoSided);
+			mRasterizer = RasterizerTwoSided;
         }
         ColorPSO.SetBlendState(BlendTraditional);
         mBlend = BlendTraditional;

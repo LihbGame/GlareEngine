@@ -1,5 +1,6 @@
 #include "../Misc/CommonResource.hlsli"
 
+
 cbuffer CubePass : register(b1)
 {
     float4x4 View;

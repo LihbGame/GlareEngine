@@ -130,7 +130,7 @@ namespace GlareEngine
 			m_MeshConstantsCPU.Destroy();
 			m_MeshConstantsGPU.Destroy();
 		}
-		ModelInstance(std::shared_ptr<const Model> sourceModel);
+		ModelInstance(std::shared_ptr<const Model> sourceModel, float Scale = 1.0f, bool IsNegetiveZForward = true);
 		ModelInstance(const ModelInstance& modelInstance);
 
 		ModelInstance& operator=(std::shared_ptr<const Model> sourceModel);
@@ -156,6 +156,7 @@ namespace GlareEngine
 
 	private:
 		std::shared_ptr<const Model> m_Model;
+
 		UploadBuffer m_MeshConstantsCPU;
 		ByteAddressBuffer m_MeshConstantsGPU;
 		std::unique_ptr<__m128[]> m_BoundingSphereTransforms;
