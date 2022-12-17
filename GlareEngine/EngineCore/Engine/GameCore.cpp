@@ -13,7 +13,7 @@
 #include <windowsx.h>
 #include "resource.h"
 
-#define CURSOR_NAME "../Resource/Textures/ICONS/Anime Cursor/AnimeCursor1.ani"
+#define CURSOR_NAME "../Resource/Textures/ICONS/Anime Cursor/AnimeCursor2.ani"
 #define CURSOR_SIZENWSE "../Resource/Textures/ICONS/Cursor/dgn1.cur"
 #define CURSOR_SIZENS "../Resource/Textures/ICONS/Cursor/vert.cur"
 #define CURSOR_SIZEWE "../Resource/Textures/ICONS/Cursor/horz.cur"

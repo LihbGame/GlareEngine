@@ -18,6 +18,16 @@
 #endif
 
 
+struct Light
+{
+    float3 Strength;
+    float FalloffStart;     // point/spot light only
+    float3 Direction;       // directional/spot light only
+    float FalloffEnd;       // point/spot light only
+    float3 Position;        // point light only
+    float SpotPower;        // spot light only
+};
+
 struct SurfaceProperties
 {
     float3 N;           //surface normal
@@ -33,21 +43,13 @@ struct SurfaceProperties
 struct LightProperties
 {
     float3 L;           //normalized direction to light
+    float3 H;           
     float NdotL;
     float LdotH;
     float NdotH;
+    Light light;
 };
 
-
-struct Light
-{
-    float3 Strength;
-    float FalloffStart;     // point/spot light only
-    float3 Direction;       // directional/spot light only
-    float FalloffEnd;       // point/spot light only
-    float3 Position;        // point light only
-    float SpotPower;        // spot light only
-};
 
 struct Material
 {
@@ -354,5 +356,80 @@ float4 ComputeLighting(Light gLights[MaxLights], Material mat,
 
     return float4(result, 0.0f);
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+float3 CookTorranceBRDF(in LightProperties LightProper, in SurfaceProperties Surface)
+{
+    float NDF = DistributionGGX(Surface.N, LightProper.H, Surface.roughness);
+    float G = GeometrySmith(Surface.N, Surface.V, LightProper.L, Surface.roughness);
+    float3 F = fresnelSchlick(max(dot(LightProper.H, Surface.V), 0.0), Surface.c_spec);
+
+    //float3 kS = F;
+    //float3 kD = float3(1.0f, 1.0f, 1.0f) - kS;
+    float3 kD = Fr_DisneyDiffuse(Surface.NdotV, LightProper.NdotL, LightProper.LdotH, Surface.roughness);
+
+    float3 nominator = NDF * G * F;
+    float denominator = 4.0 * Surface.NdotV * LightProper.NdotL + 0.001f;
+    float3 specular = nominator / denominator;
+
+    // outgoing radiance Lo
+    return (kD * Surface.c_diff /* PI*/ + specular) * LightProper.light.Strength * LightProper.NdotL;
+}
+
+
+LightProperties GetLightProperties(in Light light, in SurfaceProperties Surface)
+{
+    LightProperties LightProp;
+    LightProp.L = normalize(-light.Direction);
+
+    // Half vector
+    LightProp.H = normalize(LightProp.L + Surface.V);
+
+    // Pre-compute dot products
+    LightProp.NdotL = saturate(dot(Surface.N, LightProp.L));
+    LightProp.LdotH = saturate(dot(LightProp.L, LightProp.H));
+    LightProp.NdotH = saturate(dot(Surface.N, LightProp.H));
+    LightProp.light = light;
+    return LightProp;
+}
+
+
+float3 ComputeDirectionalLight(in LightProperties LightProper, in SurfaceProperties Surface)
+{
+    return CookTorranceBRDF(LightProper, Surface);
+}
+
+
+float3 ComputeLighting(in Light lights[MaxLights], in SurfaceProperties Surface)
+{
+    float3 LightResult = float3(0, 0, 0);
+
+    int i = 0;
+#if (NUM_DIR_LIGHTS > 0)
+    for (i = 0; i < NUM_DIR_LIGHTS; ++i)
+    {
+        //gLights[i].Strength *= shadowFactor[0];
+        LightProperties lightProperties = GetLightProperties(lights[i], Surface);
+        LightResult += ComputeDirectionalLight(lightProperties, Surface);
+    }
+#endif
+
+#if (NUM_POINT_LIGHTS > 0)
+    for (i = NUM_DIR_LIGHTS; i < NUM_DIR_LIGHTS + NUM_POINT_LIGHTS; ++i)
+    {
+        //LightResult += ComputePointLight(gLights[i], mat, pos, normal, toEye, F0);
+    }
+#endif
+
+#if (NUM_SPOT_LIGHTS > 0)
+    for (i = NUM_DIR_LIGHTS + NUM_POINT_LIGHTS; i < NUM_DIR_LIGHTS + NUM_POINT_LIGHTS + NUM_SPOT_LIGHTS; ++i)
+    {
+        //LightResult += ComputeSpotLight(gLights[i], mat, pos, normal, toEye, F0);
+    }
+#endif 
+    return  LightResult;
+}
+
 
 

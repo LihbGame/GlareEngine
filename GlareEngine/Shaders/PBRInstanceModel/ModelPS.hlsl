@@ -79,8 +79,8 @@ float3 GetNormal(float3 normalMapSample, float3 unitNormalW, float4 tangentW)
 {
     // Build orthonormal basis.
     float3 N = unitNormalW;
-    float3 T = normalize(tangentW.xyz);// normalize(tangentW - dot(tangentW, N) * N);
-    float3 B = normalize(cross(N, T)) * tangentW.w;// cross(N, T);
+    float3 T = normalize(tangentW.xyz - dot(tangentW.xyz, N) * N);
+    float3 B = cross(N, T);
 
     float3x3 TBN = float3x3(T, B, N);
 
@@ -121,10 +121,7 @@ float4 main(VSOutput vsOutput) : SV_Target0
     float3 color = emissive;
 
     //Lighting and Shadow
-
-
-
-
+    color += ComputeLighting(gLights, Surface);
 
 
     //SSAO
