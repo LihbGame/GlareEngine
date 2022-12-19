@@ -13,6 +13,8 @@ public:
 	Scene(string name, ID3D12GraphicsCommandList* pCommandList);
 	~Scene() {};
 public:
+	string GetName() { return mName; }
+	void SetName(string name) { mName = name; }
 	//Update Scene 
 	void Update(float DeltaTime);
 	//Add Objects to Scene

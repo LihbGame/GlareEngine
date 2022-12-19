@@ -7,6 +7,7 @@
 #include "Engine/GameCore.h"
 #include "Graphics/TextureManager.h"
 #include "Graphics/Render.h"
+#include "Engine/Scene.h"
 
 using Microsoft::WRL::ComPtr;
 using namespace GlareEngine::GameCore;
@@ -28,6 +29,14 @@ XMFLOAT2 EngineGUI::GetEngineLogoSize()
 {
 	float IconSize = g->IO.DisplaySize.x * 0.075f;
 	return XMFLOAT2(IconSize, IconSize * 1.15f);
+}
+
+void EngineGUI::SetScenes(vector<Scene*> scenes)
+{
+	for (auto& scene: scenes)
+	{
+		mSceneName += scene->GetName() + '\0';
+	}
 }
 
 void EngineGUI::InitGUI()
@@ -257,7 +266,10 @@ void EngineGUI::DrawControlPanel(float IconWindowHigh)
 	ImGui::Text("Camera Move Speed");
 	ImGui::SliderFloat("   ", &CameraMoveSpeed, 0.0f, 500.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 
-	ImGui::Text("Show Scene");
+
+	ImGui::Separator();
+	ImGui::Text("Choose Scene");
+	ImGui::Combo("", &mSceneIndex, mSceneName.c_str());
 	ImGui::Checkbox("Shadow", &show_shadow);
 	ImGui::Checkbox("Model", &show_model);
 	ImGui::Checkbox("Sky", &show_sky);

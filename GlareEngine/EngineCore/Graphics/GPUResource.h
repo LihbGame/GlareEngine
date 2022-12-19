@@ -27,9 +27,12 @@ namespace GlareEngine
 
 		virtual void Destroy()
 		{
-			m_pResource = nullptr;
-			m_GPUVirtualAddress = D3D12_GPU_VIRTUAL_ADDRESS_NULL;
-			++m_VersionID;
+			if (m_pResource != nullptr)
+			{
+				m_pResource = nullptr;
+				m_GPUVirtualAddress = D3D12_GPU_VIRTUAL_ADDRESS_NULL;
+				++m_VersionID;
+			}
 		}
 
 		ID3D12Resource* operator->() { return m_pResource.Get(); }

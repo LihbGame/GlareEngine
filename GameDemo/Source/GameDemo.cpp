@@ -74,14 +74,16 @@ public:
 	void CreateModelInstance(ID3D12GraphicsCommandList* CommandList, string ModelName, int Num_X, int Num_Y,float offset, bool RotX = false);
 
 	void CreateSimpleModelInstance(ID3D12GraphicsCommandList* CommandList,string ModelName, SimpleModelType Type, string MaterialName, int Num_X, int Num_Y);
+
+	void LoadGITFModel(wstring modelName,float SizeScale);
 protected:
 	// 处理鼠标输入的重载函数
 	virtual void OnMouseDown(WPARAM btnState, int x, int y);
 	virtual void OnMouseUp(WPARAM btnState, int x, int y);
 	virtual void OnMouseMove(WPARAM btnState, int x, int y);
 private:
-	//Only one scene
-	Scene* gScene = nullptr;
+	//scene
+	vector<Scene*> gScenes;
 	//Scene data 
 	vector<unique_ptr<InstanceModel>> mModels;
 	vector<unique_ptr<glTFInstanceModel>> mGLTFModels;
@@ -131,44 +133,52 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 
 	//////Build Scene//////////
 	assert(mSceneManager);
-	gScene = mSceneManager->CreateScene("Test Scene");
 	auto InitScene = [&]()
 	{
 		Light SceneLights[3];
 		SceneLights[0].Direction = mShadowMap->GetShadowedLightDir();
-		SceneLights[0].Strength = { 1.0f, 1.0f, 1.0f };
+		SceneLights[0].Strength = { 0.2f, 0.2f, 0.2f };
 		SceneLights[0].FalloffStart = 1.0f;
 		SceneLights[0].FalloffEnd = 50.0f;
 		SceneLights[0].Position = { 20,20,20 };
 
 		SceneLights[1].Direction = XMFLOAT3(-0.57735f, -0.47735f, 0.57735f);
-		SceneLights[1].Strength = { 1.0f, 1.0f, 1.0f };
+		SceneLights[1].Strength = { 0.2f, 0.2f, 0.2f };
 		SceneLights[1].FalloffStart = 1.0f;
 		SceneLights[1].FalloffEnd = 50.0f;
 		SceneLights[1].Position = { 20,20,20 };
 
 		SceneLights[2].Direction = XMFLOAT3(0.57735f, -0.47735f, -0.57735f);
-		SceneLights[2].Strength = { 1.0f, 1.0f, 1.0f };
+		SceneLights[2].Strength = { 0.2f, 0.2f, 0.2f };
 		SceneLights[2].FalloffStart = 1.0f;
 		SceneLights[2].FalloffEnd = 50.0f;
 		SceneLights[2].Position = { 20,20,20 };
 
-		assert(gScene);
-		//set global scene
-		EngineGlobal::gCurrentScene = gScene;
-		//set Root Signature
-		gScene->SetRootSignature(&gRootSignature);
-		//Set UI
-		gScene->SetSceneUI(mEngineUI.get());
-		//set camera
-		gScene->SetCamera(mCamera.get());
-		//set scene lights
-		gScene->SetSceneLights(SceneLights);
-		//set Shadow map 
-		gScene->SetShadowMap(mShadowMap.get());
-		//add hdr Sky
-		gScene->AddObjectToScene(mSky.get());
+		gScenes.push_back(mSceneManager->CreateScene("SciFi Helmet"));
+		gScenes.push_back(mSceneManager->CreateScene("Damaged Helmet"));
+		gScenes.push_back(mSceneManager->CreateScene("Flight Helmet"));
+		gScenes.push_back(mSceneManager->CreateScene("Blue Tree"));
 
+		mEngineUI->SetScenes(gScenes);
+
+		//set global scene
+		EngineGlobal::gCurrentScene = gScenes[0];
+
+		for (auto& scene : gScenes)
+		{
+			//set Root Signature
+			scene->SetRootSignature(&gRootSignature);
+			//Set UI
+			scene->SetSceneUI(mEngineUI.get());
+			//set camera
+			scene->SetCamera(mCamera.get());
+			//set scene lights
+			scene->SetSceneLights(SceneLights);
+			//set Shadow map 
+			scene->SetShadowMap(mShadowMap.get());
+			//add hdr Sky
+			scene->AddObjectToScene(mSky.get());
+		}
 		InitializeContext.Flush(true);
 		//Release Upload Temporary Textures (must flush GPU command wait for texture already load in GPU)
 		TextureManager::GetInstance(CommandList)->ReleaseUploadTextures();
@@ -179,14 +189,13 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			ID3D12GraphicsCommandList* CommandList = InitializeContext.GetCommandList();
 
 			//Baking GI Data
-			gScene->BakingGIData(InitializeContext);
+			EngineGlobal::gCurrentScene->BakingGIData(InitializeContext);
 
 			//Instance models
-
-			auto modelInstance = make_unique<ModelInstance>(GlareEngine::LoadModel(L"SciFiHelmet/glTF/SciFiHelmet.gltf"), 100.0f);
-			auto GLTFModel = make_unique<glTFInstanceModel>(std::move(modelInstance));
-			mGLTFModels.push_back(std::move(GLTFModel));
-
+			LoadGITFModel(L"SciFiHelmet/glTF/SciFiHelmet.gltf",80);
+			LoadGITFModel(L"DamagedHelmet/glTF/DamagedHelmet.gltf",100);
+			LoadGITFModel(L"FlightHelmet/glTF/FlightHelmet.gltf",200);
+	
 
 			CreateSimpleModelInstance(CommandList, "Grid_01", SimpleModelType::Grid, "PBRGrass01", 1, 1);
 			CreateModelInstance(CommandList, "BlueTree/Blue_Tree_02a.FBX", 8, 8, 0);
@@ -198,15 +207,22 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 
 
 			//add gltf models
-			for (auto& model : mGLTFModels)
+			/*for (auto& model : mGLTFModels)
 			{
 				gScene->AddGLTFModelToScene(model.get());
-			}
+			}*/
 
-			//add models
+			// Scene 1
+			gScenes[0]->AddGLTFModelToScene(mGLTFModels[0].get());
+			// Scene 2
+			gScenes[1]->AddGLTFModelToScene(mGLTFModels[1].get());
+			// Scene 3
+			gScenes[2]->AddGLTFModelToScene(mGLTFModels[2].get());
+
+			//	Scene 4
 			for (auto& model : mModels)
 			{
-				gScene->AddObjectToScene(model.get());
+				gScenes[3]->AddObjectToScene(model.get());
 			}
 
 			InitializeContext.Finish(true);
@@ -264,26 +280,28 @@ void App::Update(float DeltaTime)
 	UpdateCamera(DeltaTime);
 	UpdateSceneState(DeltaTime);
 	//update scene
-	gScene->Update(DeltaTime);
+	EngineGlobal::gCurrentScene->Update(DeltaTime);
 }
 
 void App::UpdateSceneState(float DeltaTime)
 {
-	assert(gScene);
-	gScene->VisibleUpdateForType();
+	EngineGlobal::gCurrentScene = gScenes[mEngineUI->GetSceneIndex()];
+
+	assert(EngineGlobal::gCurrentScene);
+	EngineGlobal::gCurrentScene->VisibleUpdateForType();
 
 	bool IsStateChange = false;
-	if (mEngineUI->IsWireframe() != gScene->IsWireFrame)
+	if (mEngineUI->IsWireframe() != EngineGlobal::gCurrentScene->IsWireFrame)
 	{
-		gScene->IsWireFrame = mEngineUI->IsWireframe();
-		gCommonProperty.IsWireframe = gScene->IsWireFrame;
+		EngineGlobal::gCurrentScene->IsWireFrame = mEngineUI->IsWireframe();
+		gCommonProperty.IsWireframe = EngineGlobal::gCurrentScene->IsWireFrame;
 		IsStateChange = true;
 	}
-	if (mEngineUI->IsMSAA() != gScene->IsMSAA)
+	if (mEngineUI->IsMSAA() != EngineGlobal::gCurrentScene->IsMSAA)
 	{
-		gScene->IsMSAA = mEngineUI->IsMSAA();
-		gCommonProperty.IsMSAA = gScene->IsMSAA;
-		if (gScene->IsMSAA)
+		EngineGlobal::gCurrentScene->IsMSAA = mEngineUI->IsMSAA();
+		gCommonProperty.IsMSAA = EngineGlobal::gCurrentScene->IsMSAA;
+		if (EngineGlobal::gCurrentScene->IsMSAA)
 		{
 			gCommonProperty.MSAACount = MSAACOUNT;
 		}
@@ -344,7 +362,14 @@ void App::UpdateCamera(float DeltaTime)
 
 void App::RenderScene(void)
 {
-	gScene->RenderScene(RenderPipelineType::Forward_Plus);
+	if (EngineGlobal::gCurrentScene->GetName() == "Blue Tree")
+	{
+		EngineGlobal::gCurrentScene->RenderScene(RenderPipelineType::Forward);
+	}
+	else
+	{
+		EngineGlobal::gCurrentScene->RenderScene(RenderPipelineType::Forward_Plus);
+	}
 }
 
 
@@ -352,7 +377,7 @@ void App::RenderUI()
 {
 	if (!mIsHideUI)
 	{
-		gScene->DrawUI();
+		EngineGlobal::gCurrentScene->DrawUI();
 	}
 }
 
@@ -363,7 +388,10 @@ void App::OnResize(uint32_t width, uint32_t height)
 	//窗口调整大小，因此更新宽高比并重新计算投影矩阵;
 	mCamera->SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, FAR_Z);
 	//resize Viewport and Scissor
-	gScene->ResizeViewport(width, height);
+	for (auto& scene:gScenes)
+	{
+		scene->ResizeViewport(width, height);
+	}
 
 	//Client Rect
 	mClientRect = { static_cast<LONG>(mClientWidth * CLIENT_FROMLEFT),
@@ -503,4 +531,12 @@ void App::CreateSimpleModelInstance(ID3D12GraphicsCommandList* CommandList, stri
 	auto lModel = make_unique<InstanceModel>(StringToWString(ModelName), InstanceData); 
 	lModel->SetShadowFlag(false);
 	mModels.push_back(std::move(lModel));
+}
+
+
+void App::LoadGITFModel(wstring name, float SizeScale)
+{
+	auto modelInstance = make_unique<ModelInstance>(GlareEngine::LoadModel(name), SizeScale);
+	auto GLTFModel = make_unique<glTFInstanceModel>(std::move(modelInstance));
+	mGLTFModels.push_back(std::move(GLTFModel));
 }

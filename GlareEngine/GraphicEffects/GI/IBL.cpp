@@ -26,7 +26,6 @@ IBL::IBL()
 
 IBL::~IBL()
 {
-	mBRDFLUT->Release();
 }
 
 

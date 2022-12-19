@@ -35,10 +35,13 @@ public:
 
 	float GetGrassMinWind()const { return GrassMinWind; }
 	float GetGrassMaxWind()const { return GrassMaxWind; }
+	int GetSceneIndex() const { return mSceneIndex; }
 
 	XMFLOAT2 GetEngineLogoSize();
 
 	void SetCameraPosition(const XMFLOAT3& position) { mCameraPosition = position; }
+	void SetScenes(vector<Scene*> scene);
+
 
 	XMFLOAT3 GetGrassColor()const { return XMFLOAT3(mGrassColor); }
 	float GetPerGrassHeight()const { return mPerGrassHeight; }
@@ -87,6 +90,9 @@ private:
 
 	bool mWireframe = false;
 	bool mMSAA = true;
+
+	int mSceneIndex = 0;
+	string mSceneName;
 
 	float mGrassColor[3] = { 0.39f,0.196f,0.0f };
 	XMFLOAT3 mCameraPosition = { 0.0f,0.0f,0.0f };
