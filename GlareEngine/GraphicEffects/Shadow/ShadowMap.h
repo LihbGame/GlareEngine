@@ -38,12 +38,15 @@ public:
 
 	void Update(float DeltaTime);
 
-	XMFLOAT4X4 GetShadowTransform()const { return mShadowTransform; }
-
 	XMFLOAT3 GetShadowedLightDir()const { return mBaseLightDirection; }
 
 	ShadowBuffer& GetShadowBuffer() { return mShadowBuffer; }
 
+	XMFLOAT4X4 GetView() const { return mLightView; }
+
+	XMFLOAT4X4 GetProj() const { return mLightProj; }
+
+	XMFLOAT4X4 GetShadowTransform()const { return mShadowTransform; }
 private:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetDSV()const { return mShadowBuffer.GetDSV(); }
 

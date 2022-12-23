@@ -44,6 +44,8 @@ public:
 	void SetRootSignature(RootSignature* rootSignature);
 public:
 	Camera* m_pCamera = nullptr;
+	ShadowCamera* m_pSunShadowCamera = nullptr;
+
 	EngineGUI* m_pGUI = nullptr;
 
 	bool IsWireFrame = false;

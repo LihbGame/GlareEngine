@@ -39,6 +39,7 @@ namespace GlareEngine
             INLINE Matrix4(const AffineTransform& xform) { *this = Matrix4(xform.GetBasis(), xform.GetTranslation()); }
             INLINE Matrix4(const OrthogonalTransform& xform) { *this = Matrix4(Matrix3(xform.GetRotation()), xform.GetTranslation()); }
             INLINE explicit Matrix4(const XMMATRIX& mat) { m_mat = mat; }
+            INLINE explicit Matrix4(const XMFLOAT4X4& mat) { m_mat = XMLoadFloat4x4(&mat); }
             INLINE explicit Matrix4(EIdentityTag) { m_mat = XMMatrixIdentity(); }
             INLINE explicit Matrix4(EZeroTag) { m_mat.r[0] = m_mat.r[1] = m_mat.r[2] = m_mat.r[3] = SplatZero(); }
 

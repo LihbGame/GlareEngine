@@ -5,6 +5,7 @@
 #include "EngineUtility.h"
 #include "Math/Frustum.h"
 
+class ShadowMap;
 
 class Camera
 {
@@ -95,7 +96,6 @@ protected:
 	DirectX::XMFLOAT4X4 mView = MathHelper::Identity4x4();
 	DirectX::XMFLOAT4X4 mProj = MathHelper::Identity4x4();
 
-
 	Matrix4 mCameraToWorld;
 	//Frustum
 	Frustum m_FrustumVS;
@@ -108,24 +108,17 @@ class ShadowCamera : public Camera
 {
 public:
 
-	ShadowCamera(bool isReverseZ = false, bool isInfiniteZ = false) :Camera(isReverseZ, isInfiniteZ) {}
+	ShadowCamera(ShadowMap* shadowMap) :m_pShadowMap(shadowMap) {}
 
-	void UpdateMatrix(
-		Math::Vector3 LightDirection,		// Direction parallel to light, in direction of travel
-		Math::Vector3 ShadowCenter,			// Center location on far bounding plane of shadowed region
-		Math::Vector3 ShadowBounds,			// Width, height, and depth in world space represented by the shadow buffer
-		uint32_t BufferWidth,				// Shadow buffer width
-		uint32_t BufferHeight,				// Shadow buffer height--usually same as width
-		uint32_t BufferPrecision			// Bit depth of shadow buffer--usually 16 or 24
-	);
+	const Math::Matrix4 GetView() const;
 
-	// Used to transform world space to texture space for shadow sampling
-	const Math::Matrix4& GetShadowMatrix() const { return m_ShadowMatrix; }
+	const Frustum& GetViewSpaceFrustum();
 
-	void LookAt(FXMVECTOR forward, FXMVECTOR up);
+	const Frustum& GetWorldSpaceFrustum() const { return m_FrustumWS; }
+
 private:
-
-	Math::Matrix4 m_ShadowMatrix;
+	ShadowMap* m_pShadowMap = nullptr;
 };
+
 
 #endif // CAMERA_H
