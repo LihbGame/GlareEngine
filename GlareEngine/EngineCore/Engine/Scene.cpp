@@ -393,11 +393,11 @@ void Scene::ForwardPlusRendering()
 		ScopedTimer _outerprof(L"Main Render", Context);
 
 		{
-			/*ScopedTimer _prof(L"Sun Shadow Map", Context);
+			ScopedTimer _prof(L"Sun Shadow Map", Context);
 
 			MeshSorter shadowSorter(MeshSorter::eShadows);
-			shadowSorter.SetCamera(m_SunShadowCamera);
-			shadowSorter.SetDepthStencilTarget(m_pShadowMap->GetShadowBuffer());
+			shadowSorter.SetCamera(*m_pSunShadowCamera.get());
+			shadowSorter.SetDepthStencilTarget(m_pSunShadowCamera->GetShadowMap()->GetShadowBuffer());
 
 			for (auto& model : m_pGLTFRenderObjects)
 			{
@@ -405,7 +405,7 @@ void Scene::ForwardPlusRendering()
 			}
 
 			shadowSorter.Sort();
-			shadowSorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);*/
+			shadowSorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
 		}
 
 		if (IsMSAA)
@@ -442,6 +442,7 @@ void Scene::ForwardPlusRendering()
 			//sky
 			if (m_pRenderObjectsType[(int)ObjectType::Sky].front()->GetVisible())
 			{
+				Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &mMainConstants);
 				m_pRenderObjectsType[(int)ObjectType::Sky].front()->Draw(Context);
 			}
 

@@ -190,7 +190,7 @@ void GlareEngine::InitializeRasterizer(void)
 
 	// Shadows need their own rasterizer state so we can reverse the winding of faces
 	RasterizerShadow = RasterizerDefault;
-	RasterizerShadow.CullMode = D3D12_CULL_MODE_FRONT;  // Hacked here rather than fixing the content
+	//RasterizerShadow.CullMode = D3D12_CULL_MODE_FRONT;  // Hacked here rather than fixing the content
 	RasterizerShadow.SlopeScaledDepthBias = 1.0f;
 	RasterizerShadow.DepthBiasClamp = 0.0f;
 	RasterizerShadow.DepthBias = 25000;

@@ -3,6 +3,7 @@
 #include "Graphics/DepthBuffer.h"
 #include "Graphics/BufferManager.h"
 #include "InstanceModel/glTFInstanceModel.h"
+#include "Shadow/ShadowMap.h"
 
 #pragma warning(disable:4319) //zero extending 'uint32_t' to 'uint64_t' of greater size
 
@@ -84,7 +85,7 @@ void MeshSorter::Sort()
 	std::sort(m_SortKeys.begin(), m_SortKeys.end(), Cmp);
 }
 
-void MeshSorter::RenderMeshes(DrawPass pass, GraphicsContext& context, MainConstants& globals)
+void MeshSorter::RenderMeshes(DrawPass pass, GraphicsContext& context, MainConstants globals)
 {
 	assert(m_DSV != nullptr);
 
@@ -96,6 +97,12 @@ void MeshSorter::RenderMeshes(DrawPass pass, GraphicsContext& context, MainConst
 	// Set common shader constants
 	//XMStoreFloat4x4(&globals.ViewProj, m_Camera->GetView() * m_Camera->GetProj());
 	globals.EyePosW = m_Camera->GetPosition3f();
+
+	if (m_BatchType == eShadows)
+	{
+		globals.ViewProj =dynamic_cast<ShadowCamera*>(m_Camera)->GetShadowMap()->GetViewProj();
+	}
+
 	context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &globals);
 
 
@@ -103,7 +110,7 @@ void MeshSorter::RenderMeshes(DrawPass pass, GraphicsContext& context, MainConst
 	if (m_BatchType == eShadows)
 	{
 		context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
-		context.ClearDepthAndStencil(*m_DSV, REVERSE_Z ? 0.0f : 1.0f);
+		context.ClearDepthAndStencil(*m_DSV, 1.0f);
 		context.SetDepthStencilTarget(m_DSV->GetDSV());
 
 		if (m_Viewport.Width == 0)

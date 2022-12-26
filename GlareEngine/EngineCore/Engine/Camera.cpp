@@ -215,6 +215,11 @@ XMMATRIX Camera::GetProj()const
 	return XMLoadFloat4x4(&mProj);
 }
 
+DirectX::XMFLOAT4X4 Camera::GetViewProj() const
+{
+	return mViewProj;
+}
+
 void Camera::SetView(XMMATRIX view)
 {
 	XMStoreFloat4x4(&mView, view);
@@ -334,14 +339,17 @@ void Camera::UpdateViewMatrix()
 
 		
 		mCameraToWorld = Matrix4(XMMatrixInverse(&XMMatrixDeterminant(GetView()), GetView()));
+
+		XMStoreFloat4x4(&mViewProj, XMMatrixTranspose(GetView() * GetProj()));
+
 		//create world space frustum
 		m_FrustumWS = m_FrustumVS * mCameraToWorld;
 	}
 }
 
-const Math::Matrix4 ShadowCamera::GetView() const
+XMMATRIX ShadowCamera::GetView() const
 {
-	return (Matrix4)m_pShadowMap->GetView();
+	return  XMMatrixTranspose(XMLoadFloat4x4(&m_pShadowMap->GetView()));
 }
 
 const Frustum& ShadowCamera::GetViewSpaceFrustum()

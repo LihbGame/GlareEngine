@@ -29,7 +29,11 @@ public:
 	//Resize Viewport and Scissor
 	void ResizeViewport(uint32_t width, uint32_t height);
 	//Set Shadow
-	void SetShadowMap(ShadowMap* shadowMap) { m_pShadowMap = shadowMap; }
+	void SetShadowMap(ShadowMap* shadowMap) {
+		m_pShadowMap = shadowMap; 
+		m_pSunShadowCamera = make_unique<ShadowCamera>(m_pShadowMap);
+		m_pSunShadowCamera->SetPosition(m_pCamera->GetPosition3f());
+	}
 	//Set Camera 
 	void SetCamera(Camera* camera) { m_pCamera = camera; }
 	//Set UI
@@ -44,7 +48,7 @@ public:
 	void SetRootSignature(RootSignature* rootSignature);
 public:
 	Camera* m_pCamera = nullptr;
-	ShadowCamera* m_pSunShadowCamera = nullptr;
+	unique_ptr<ShadowCamera> m_pSunShadowCamera = nullptr;
 
 	EngineGUI* m_pGUI = nullptr;
 

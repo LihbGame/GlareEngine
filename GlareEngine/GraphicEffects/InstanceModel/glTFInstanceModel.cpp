@@ -126,6 +126,7 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 
 	// Shadow PSOs
 	DepthOnlyPSO.SetRasterizerState(RasterizerShadow);
+    DepthOnlyPSO.SetDepthStencilState(DepthStateReadWrite);
 	DepthOnlyPSO.SetRenderTargetFormats(0, nullptr, ShadowMap::mFormat);
 	DepthOnlyPSO.Finalize();
     gModelPSOs[ModelPSO::ShadowDepthOnlyPSO] = DepthOnlyPSO;

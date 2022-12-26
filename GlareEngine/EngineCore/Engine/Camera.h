@@ -48,13 +48,14 @@ public:
 	void LookAt(DirectX::FXMVECTOR pos, DirectX::FXMVECTOR target, DirectX::FXMVECTOR worldUp);
 	void LookAt(const DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT3& target, const DirectX::XMFLOAT3& up);
 
-	const Frustum& GetViewSpaceFrustum() const { return m_FrustumVS; }
-	const Frustum& GetWorldSpaceFrustum() const { return m_FrustumWS; }
+	virtual const Frustum& GetViewSpaceFrustum() const { return m_FrustumVS; }
+	virtual const Frustum& GetWorldSpaceFrustum() const { return m_FrustumWS; }
 
 
 	// Get View/Proj matrices.
-	DirectX::XMMATRIX GetView()const;
-	DirectX::XMMATRIX GetProj()const;
+	virtual DirectX::XMMATRIX GetView()const;
+	virtual DirectX::XMMATRIX GetProj()const;
+	virtual DirectX::XMFLOAT4X4 GetViewProj()const;
 
 	void SetView(XMMATRIX view);
 
@@ -73,6 +74,8 @@ public:
 	void UpdateViewMatrix();
 
 protected:
+	virtual ShadowMap* GetShadowMap() { return nullptr; }
+
 	bool mIsReverseZ;
 	bool mIsInfiniteZ;
 
@@ -95,6 +98,7 @@ protected:
 	// Cache View/Proj matrices.
 	DirectX::XMFLOAT4X4 mView = MathHelper::Identity4x4();
 	DirectX::XMFLOAT4X4 mProj = MathHelper::Identity4x4();
+	DirectX::XMFLOAT4X4 mViewProj = MathHelper::Identity4x4();
 
 	Matrix4 mCameraToWorld;
 	//Frustum
@@ -103,18 +107,19 @@ protected:
 };
 
 
-
 class ShadowCamera : public Camera
 {
 public:
 
 	ShadowCamera(ShadowMap* shadowMap) :m_pShadowMap(shadowMap) {}
 
-	const Math::Matrix4 GetView() const;
+	virtual XMMATRIX GetView() const;
 
-	const Frustum& GetViewSpaceFrustum();
+	virtual const Frustum& GetViewSpaceFrustum();
 
-	const Frustum& GetWorldSpaceFrustum() const { return m_FrustumWS; }
+	virtual const Frustum& GetWorldSpaceFrustum() const { return m_FrustumWS; }
+
+	virtual ShadowMap* GetShadowMap() { return m_pShadowMap; }
 
 private:
 	ShadowMap* m_pShadowMap = nullptr;

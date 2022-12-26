@@ -42,7 +42,7 @@ namespace GlareEngine
 
 		void Sort();
 
-		void RenderMeshes(DrawPass pass, GraphicsContext& context, MainConstants& globals);
+		void RenderMeshes(DrawPass pass, GraphicsContext& context, MainConstants globals);
 
 		void SetCamera(Camera& camera) { m_Camera = &camera; }
 		void SetViewport(const D3D12_VIEWPORT& viewport) { m_Viewport = viewport; }
@@ -88,7 +88,7 @@ namespace GlareEngine
 		DrawPass m_CurrentPass;
 		uint32_t m_CurrentDraw;
 
-		const Camera* m_Camera;
+		Camera* m_Camera;
 		D3D12_VIEWPORT m_Viewport;
 		D3D12_RECT m_Scissor;
 		uint32_t m_NumRTVs;

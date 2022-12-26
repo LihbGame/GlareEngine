@@ -46,6 +46,8 @@ public:
 
 	XMFLOAT4X4 GetProj() const { return mLightProj; }
 
+	XMFLOAT4X4 GetViewProj() const { return mConstantBuffer.gShadowViewProj; }
+
 	XMFLOAT4X4 GetShadowTransform()const { return mShadowTransform; }
 private:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetDSV()const { return mShadowBuffer.GetDSV(); }
