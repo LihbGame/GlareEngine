@@ -137,7 +137,7 @@ void ShadowMap::Draw(GraphicsContext& Context,vector<RenderObject*> RenderObject
 void ShadowMap::BuildPSO(const PSOCommonProperty CommonProperty)
 {
 	mShadowPSO.SetRootSignature(*CommonProperty.pRootSignature);
-	mShadowPSO.SetRasterizerState(RasterizerShadow);
+	mShadowPSO.SetRasterizerState(RasterizerShadowCW);
 	mShadowPSO.SetBlendState(BlendDisable);
 	mShadowPSO.SetDepthStencilState(DepthStateReadWrite);
 	mShadowPSO.SetSampleMask(0xFFFFFFFF);

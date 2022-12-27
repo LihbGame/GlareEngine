@@ -48,9 +48,9 @@ float4 main(PosNorTanTexOut pin) : SV_Target
     Material mat = { diffuseAlbedo, matData.mFresnelR0, Roughness, Metallic, AO };
 // Only the first light casts a shadow.
     float3 shadowFactor = float3(1.0f, 1.0f, 1.0f);
-    shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
+    //shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
     //shadowFactor[0] = PCF(pin.ShadowPosH);
-    //shadowFactor[0] = PCSS(gSRVMap[gShadowMapIndex], pin.ShadowPosH);
+    shadowFactor[0] = PCSS(gSRVMap[gShadowMapIndex], pin.ShadowPosH);
     float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
 	bumpedNormalW, toEyeW, shadowFactor);
 

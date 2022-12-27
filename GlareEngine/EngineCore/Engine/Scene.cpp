@@ -401,7 +401,10 @@ void Scene::ForwardPlusRendering()
 
 			for (auto& model : m_pGLTFRenderObjects)
 			{
-				dynamic_cast<glTFInstanceModel*>(model)->GetModel()->AddToRender(shadowSorter);
+				if (model->GetVisible() && model->GetShadowRenderFlag())
+				{
+					dynamic_cast<glTFInstanceModel*>(model)->GetModel()->AddToRender(shadowSorter);
+				}
 			}
 
 			shadowSorter.Sort();

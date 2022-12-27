@@ -1,4 +1,4 @@
-#include "../Misc/CommonResource.hlsli"
+#include "../Shadow/RealTimeShadowHelper.hlsli"
 
 Texture2D<float4> baseColorTexture          : register(t0);
 Texture2D<float3> metallicRoughnessTexture  : register(t1);
@@ -121,6 +121,8 @@ float4 main(VSOutput vsOutput) : SV_Target0
     float3 color = emissive;
 
     //Lighting and Shadow
+    Surface.ShadowFactor = CalcShadowFactor(float4(vsOutput.sunShadowCoord, 1.0f));
+    //Surface.ShadowFactor = PCSS(gSRVMap[gShadowMapIndex], float4(vsOutput.sunShadowCoord, 1.0f));
     color += ComputeLighting(gLights, Surface);
 
 

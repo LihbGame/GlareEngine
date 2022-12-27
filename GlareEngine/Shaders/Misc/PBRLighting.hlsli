@@ -38,6 +38,7 @@ struct SurfaceProperties
     float alpha;        // roughness squared
     float alphaSqr;     // alpha squared
     float NdotV;
+    float ShadowFactor;
 };
 
 struct LightProperties
@@ -331,7 +332,6 @@ float4 ComputeLighting(Light gLights[MaxLights], Material mat,
     float3 F0 = float3(0.04f, 0.04f, 0.04f);
     F0 = lerp(F0, mat.DiffuseAlbedo.rgb, mat.metallic);
 
-
 #if (NUM_DIR_LIGHTS > 0)
     for(i = 0; i < NUM_DIR_LIGHTS; ++i)
     {
@@ -406,10 +406,11 @@ float3 ComputeLighting(in Light lights[MaxLights], in SurfaceProperties Surface)
     float3 LightResult = float3(0, 0, 0);
 
     int i = 0;
+    
 #if (NUM_DIR_LIGHTS > 0)
     for (i = 0; i < NUM_DIR_LIGHTS; ++i)
     {
-        //gLights[i].Strength *= shadowFactor[0];
+        lights[i].Strength *= smoothstep(0.0f, 1.0f, Surface.ShadowFactor);
         LightProperties lightProperties = GetLightProperties(lights[i], Surface);
         LightResult += ComputeDirectionalLight(lightProperties, Surface);
     }

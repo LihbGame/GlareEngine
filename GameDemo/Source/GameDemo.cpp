@@ -137,7 +137,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	{
 		Light SceneLights[3];
 		SceneLights[0].Direction = mShadowMap->GetShadowedLightDir();
-		SceneLights[0].Strength = { 0.2f, 0.2f, 0.2f };
+		SceneLights[0].Strength = { 0.5f, 0.5f, 0.5f };
 		SceneLights[0].FalloffStart = 1.0f;
 		SceneLights[0].FalloffEnd = 50.0f;
 		SceneLights[0].Position = { 20,20,20 };
@@ -538,5 +538,6 @@ void App::LoadGITFModel(wstring name, float SizeScale)
 {
 	auto modelInstance = make_unique<ModelInstance>(GlareEngine::LoadModel(name), SizeScale);
 	auto GLTFModel = make_unique<glTFInstanceModel>(std::move(modelInstance));
+	GLTFModel->SetShadowFlag(true);
 	mGLTFModels.push_back(std::move(GLTFModel));
 }
