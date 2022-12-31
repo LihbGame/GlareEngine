@@ -109,6 +109,12 @@ namespace GlareEngine
 		uint32_t	m_NumAnimations;
 		uint32_t	m_NumJoints;
 
+
+		void SetModelVerticeOrder(bool IsNegetiveZForward) { m_IsNegetiveZForward = IsNegetiveZForward; }
+
+		//order of model vertices
+		bool m_IsNegetiveZForward;
+
 		std::unique_ptr<uint8_t[]>			m_MeshData;
 		std::unique_ptr<GraphNode[]>		m_SceneGraph;
 		std::vector<Texture*>				m_Textures;
@@ -130,10 +136,10 @@ namespace GlareEngine
 			m_MeshConstantsCPU.Destroy();
 			m_MeshConstantsGPU.Destroy();
 		}
-		ModelInstance(std::shared_ptr<const Model> sourceModel, float Scale = 1.0f, bool IsNegetiveZForward = true);
+		ModelInstance(std::shared_ptr<Model> sourceModel, float Scale = 1.0f, bool IsNegetiveZForward = true);
 		ModelInstance(const ModelInstance& modelInstance);
 
-		ModelInstance& operator=(std::shared_ptr<const Model> sourceModel);
+		ModelInstance& operator=(std::shared_ptr<Model> sourceModel);
 
 		bool IsNull(void) const { return m_Model == nullptr; }
 
@@ -155,7 +161,7 @@ namespace GlareEngine
 		void LoopAllAnimations(void);
 
 	private:
-		std::shared_ptr<const Model> m_Model;
+		std::shared_ptr<Model> m_Model;
 
 		UploadBuffer m_MeshConstantsCPU;
 		ByteAddressBuffer m_MeshConstantsGPU;

@@ -195,7 +195,7 @@ void EngineGUI::SetWindowStyles()
 	ImGuiStyle& style = ImGui::GetStyle();
 	ImVec4* colors = style.Colors;
 
-	colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+	colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.00f);
 	colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
 	colors[ImGuiCol_WindowBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.94f);
 	colors[ImGuiCol_ChildBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
@@ -216,10 +216,10 @@ void EngineGUI::SetWindowStyles()
 	colors[ImGuiCol_CheckMark] = ImVec4(0.05f, 0.05f, 0.05f, 1.00f);
 	colors[ImGuiCol_SliderGrab] = ImVec4(0.4f, 0.4f, 0.4f, 1.00f);
 	colors[ImGuiCol_SliderGrabActive] = ImVec4(0.05f, 0.05f, 0.05f, 1.00f);
-	colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.2f, 0.40f);
+	colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.2f, 0.80f);
 	colors[ImGuiCol_ButtonHovered] = ImVec4(0.3f, 0.3f, 0.3f, 1.00f);
 	colors[ImGuiCol_ButtonActive] = ImVec4(0.4f, 0.4f, 0.4f, 1.00f);
-	colors[ImGuiCol_Header] = ImVec4(0.3f, 0.4f, 0.4f, 0.31f);
+	colors[ImGuiCol_Header] = ImVec4(0.3f, 0.4f, 0.4f, 0.91f);
 	colors[ImGuiCol_HeaderHovered] = ImVec4(0.4f, 0.5f, 0.5f, 0.80f);
 	colors[ImGuiCol_HeaderActive] = ImVec4(0.5f, 0.6f, 0.6f, 1.00f);
 	colors[ImGuiCol_Separator] = colors[ImGuiCol_Border];
@@ -357,6 +357,7 @@ void EngineGUI::DrawStatWindow()
 	ImGui::SetNextWindowPos(ImVec2(ImVec2(g->IO.DisplaySize.x / 5.8f, MainMenuBarHeight + 5.0f)));
 	ImGui::SetNextWindowSize(ImVec2(120.0f, 200.0f));
 	bool stat = true;
+
 	ImGui::Begin("Stat Window", &stat, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 	if (ImGui::CollapsingHeader("  States"))
 	{

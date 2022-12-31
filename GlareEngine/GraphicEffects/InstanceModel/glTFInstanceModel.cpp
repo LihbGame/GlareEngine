@@ -29,12 +29,13 @@ using namespace GlareEngine::ModelPSOFlags;
 vector<GraphicsPSO> glTFInstanceModel::gModelPSOs;
 GraphicsPSO glTFInstanceModel::sm_PBRglTFPSO;
 PSOCommonProperty glTFInstanceModel::sm_PSOCommonProperty;
-uint16_t glTFInstanceModel::mPSOFlags;
+vector<uint16_t> glTFInstanceModel::mPSOFlags;
 
 D3D12_RASTERIZER_DESC  glTFInstanceModel::mMSAARasterizer;
 D3D12_RASTERIZER_DESC  glTFInstanceModel::mRasterizer;
 D3D12_BLEND_DESC  glTFInstanceModel::mCoverageBlend;
 D3D12_BLEND_DESC  glTFInstanceModel::mBlend;
+std::mutex glTFInstanceModel::m_PSOMutex;
 
 enum ModelPSO:int
 {
@@ -46,17 +47,18 @@ enum ModelPSO:int
     ShadowCutoutDepthPSO,
     ShadowSkinDepthOnlyPSO,
     ShadowSkinCutoutDepthPSO,
-    ColorPSOReadWriteDepth,
-    ColorPSOEqualDepth,
     PSOCount
 };
 
 
 void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 {
+    std::lock_guard<std::mutex> LockGuard(m_PSOMutex);
+
     sm_PSOCommonProperty = CommonProperty;
 
-    gModelPSOs.resize(ModelPSO::PSOCount);
+    if (gModelPSOs.size() == 0)
+        gModelPSOs.resize(ModelPSO::PSOCount);
 
 	// Depth Only PSOs
 	GraphicsPSO DepthOnlyPSO(L"Render: Depth Only PSO");
@@ -185,73 +187,77 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 	sm_PBRglTFPSO.SetVertexShader(g_pModelVS, sizeof(g_pModelVS));
 	sm_PBRglTFPSO.SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
 
-    if (gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].GetPipelineStateObject() != nullptr)
+
+    for (int PSOIndex = ModelPSO::PSOCount; PSOIndex < gModelPSOs.size(); PSOIndex += 2)
     {
-        gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].SetRenderTargetFormats(1, &DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
-        gModelPSOs[ModelPSO::ColorPSOEqualDepth].SetRenderTargetFormats(1, &DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
+        int PSOReadWriteDepthIndex = PSOIndex;
+        int PSOEqualDepthIndex = PSOIndex + 1;
+        int PSOFlagIndex = (PSOIndex - ModelPSO::PSOCount) / 2;
+        if (gModelPSOs.size() > ModelPSO::PSOCount && gModelPSOs[PSOReadWriteDepthIndex].GetPipelineStateObject() != nullptr)
+        {
+            gModelPSOs[PSOReadWriteDepthIndex].SetRenderTargetFormats(1, &DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
+            gModelPSOs[PSOEqualDepthIndex].SetRenderTargetFormats(1, &DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
 
-        if (CommonProperty.IsWireframe)
-        {
-            gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].SetDepthStencilState(DepthStateDisabled);
-            gModelPSOs[ModelPSO::ColorPSOEqualDepth].SetDepthStencilState(DepthStateDisabled);
-        }
-        else
-        {
-            if (REVERSE_Z)
-            {
-                gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].SetDepthStencilState(DepthStateReadOnlyReversed);
-            }
-            else
-            {
-                gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].SetDepthStencilState(DepthStateReadOnly);
-            }
-            gModelPSOs[ModelPSO::ColorPSOEqualDepth].SetDepthStencilState(DepthStateTestEqual);
-        }
-
-        if (CommonProperty.IsMSAA)
-        {
-            D3D12_RASTERIZER_DESC MSAARasterizer = mMSAARasterizer;
             if (CommonProperty.IsWireframe)
             {
-                MSAARasterizer.CullMode = D3D12_CULL_MODE_NONE;
-                MSAARasterizer.FillMode = D3D12_FILL_MODE_WIREFRAME;
+                gModelPSOs[PSOReadWriteDepthIndex].SetDepthStencilState(DepthStateDisabled);
+                gModelPSOs[PSOEqualDepthIndex].SetDepthStencilState(DepthStateDisabled);
             }
             else
             {
-                MSAARasterizer.CullMode = D3D12_CULL_MODE_BACK;
-                MSAARasterizer.FillMode = D3D12_FILL_MODE_SOLID;
+                if (REVERSE_Z)
+                {
+                    gModelPSOs[PSOReadWriteDepthIndex].SetDepthStencilState(DepthStateReadOnlyReversed);
+                }
+                else
+                {
+                    gModelPSOs[PSOReadWriteDepthIndex].SetDepthStencilState(DepthStateReadOnly);
+                }
+                gModelPSOs[PSOEqualDepthIndex].SetDepthStencilState(DepthStateTestEqual);
             }
-			gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].SetRasterizerState(MSAARasterizer);
-			gModelPSOs[ModelPSO::ColorPSOEqualDepth].SetRasterizerState(MSAARasterizer);
-        }
-        else
-        {
-            D3D12_RASTERIZER_DESC Rasterizer = mRasterizer;
-			if (CommonProperty.IsWireframe)
-			{
-                Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
-                Rasterizer.FillMode = D3D12_FILL_MODE_WIREFRAME;
-			}
-			else
-			{
-                Rasterizer.CullMode = D3D12_CULL_MODE_BACK;
-                Rasterizer.FillMode = D3D12_FILL_MODE_SOLID;
-			}
-			gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].SetRasterizerState(Rasterizer);
-			gModelPSOs[ModelPSO::ColorPSOEqualDepth].SetRasterizerState(Rasterizer);
-        }
-        gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].SetBlendState(mBlend);
-        gModelPSOs[ModelPSO::ColorPSOEqualDepth].SetBlendState(mBlend);
 
-        gModelPSOs[ModelPSO::ColorPSOReadWriteDepth].Finalize();
-        gModelPSOs[ModelPSO::ColorPSOEqualDepth].Finalize();
+            if (CommonProperty.IsWireframe)
+            {
+                gModelPSOs[PSOReadWriteDepthIndex].GetPSODesc().RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+                gModelPSOs[PSOReadWriteDepthIndex].GetPSODesc().RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
+                gModelPSOs[PSOEqualDepthIndex].GetPSODesc().RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+                gModelPSOs[PSOEqualDepthIndex].GetPSODesc().RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
+            }
+            else
+            {
+                if (mPSOFlags[PSOFlagIndex] & eTwoSided)
+                {
+                    gModelPSOs[PSOReadWriteDepthIndex].GetPSODesc().RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+                    gModelPSOs[PSOEqualDepthIndex].GetPSODesc().RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+                }
+                else
+                {
+                    gModelPSOs[PSOReadWriteDepthIndex].GetPSODesc().RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
+                    gModelPSOs[PSOEqualDepthIndex].GetPSODesc().RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
+                }
+                gModelPSOs[PSOReadWriteDepthIndex].GetPSODesc().RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
+                gModelPSOs[PSOEqualDepthIndex].GetPSODesc().RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
+            }
+
+            if (mPSOFlags[PSOFlagIndex] & eAlphaBlend)
+            {
+                gModelPSOs[PSOReadWriteDepthIndex].SetBlendState(BlendTraditional);
+                gModelPSOs[PSOEqualDepthIndex].SetBlendState(BlendTraditional);
+            }
+            else
+            {
+                gModelPSOs[PSOReadWriteDepthIndex].SetBlendState(BlendDisable);
+                gModelPSOs[PSOEqualDepthIndex].SetBlendState(BlendDisable);
+            }
+
+            gModelPSOs[PSOReadWriteDepthIndex].Finalize();
+            gModelPSOs[PSOEqualDepthIndex].Finalize();
+        }
     }
 }
 
 uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
 {
-    mPSOFlags = psoFlags;
-
     GraphicsPSO ColorPSO = sm_PBRglTFPSO;
 
     //Mesh at least have position and normal
@@ -343,10 +349,7 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
         }
     }
 
-
-	mMSAARasterizer = RasterizerDefaultMsaa;
 	mCoverageBlend = BlendDisable;
-	mRasterizer = RasterizerDefault;
 	mBlend = BlendDisable;
 
     
@@ -356,14 +359,12 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
         {
             ColorPSO.SetRasterizerState(RasterizerTwoSidedMsaa);
             ColorPSO.SetBlendState(BlendDisableAlphaToCoverage);
-            mMSAARasterizer = RasterizerTwoSidedMsaa;
             mCoverageBlend = BlendDisableAlphaToCoverage;
         }
         else
         {
             ColorPSO.SetRasterizerState(RasterizerTwoSided);
             ColorPSO.SetBlendState(BlendDisableAlphaToCoverage);
-			mRasterizer = RasterizerTwoSided;
 			mBlend = BlendDisableAlphaToCoverage;
         }
     }
@@ -382,12 +383,10 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
         if(sm_PSOCommonProperty.IsMSAA)
         { 
             ColorPSO.SetRasterizerState(RasterizerDefaultMsaa);
-            mMSAARasterizer = RasterizerDefaultMsaa;
         }
         else
         {
             ColorPSO.SetRasterizerState(RasterizerTwoSided);
-			mRasterizer = RasterizerTwoSided;
         }
         ColorPSO.SetBlendState(BlendTraditional);
         mBlend = BlendTraditional;
@@ -414,8 +413,10 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
         }
     }
 
+    mPSOFlags.push_back(psoFlags);
+
     // If not found, keep the new one, and return its index
-    gModelPSOs[ModelPSO::ColorPSOReadWriteDepth] = ColorPSO;
+    gModelPSOs.push_back(ColorPSO);
 
     // The returned PSO index has read-write depth.  The index+1 tests for equal depth.
     ColorPSO.SetDepthStencilState(DepthStateTestEqual);
@@ -425,7 +426,7 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
     for (uint32_t i = 0; i < gModelPSOs.size(); ++i)
         assert(ColorPSO.GetPipelineStateObject() != gModelPSOs[i].GetPipelineStateObject());
 #endif
-    gModelPSOs[ModelPSO::ColorPSOEqualDepth] = ColorPSO;
+    gModelPSOs.push_back(ColorPSO);
 
     assert(gModelPSOs.size() <= 256);//Out of room for unique PSOs
 

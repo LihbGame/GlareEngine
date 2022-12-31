@@ -81,6 +81,7 @@ namespace GlareEngine
 		void SetHullShader(const D3D12_SHADER_BYTECODE& Binary) { m_PSODesc.HS = Binary; }
 		void SetDomainShader(const D3D12_SHADER_BYTECODE& Binary) { m_PSODesc.DS = Binary; }
 
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC& GetPSODesc() { return m_PSODesc; }
 		//执行验证并计算一个哈希值，用于快速状态块比较。 
 		void Finalize();
 

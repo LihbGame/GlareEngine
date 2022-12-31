@@ -113,10 +113,15 @@ namespace GlareEngine
 			XMVECTOR m_vec;
 		};
 
-		INLINE Vector3::Vector3(Vector4 v)
+		INLINE Vector3::Vector3(Vector4 v):m_vec((XMVECTOR)v)
+		{
+		}
+
+		// For W != 1, divide XYZ by W.  If W == 0, do nothing
+		INLINE Vector3 MakeHomogeneous(Vector4 v)
 		{
 			Scalar W = v.GetW();
-			m_vec = XMVectorSelect(XMVectorDivide(v, W), v, XMVectorEqual(W, SplatZero()));
+			return Vector3(XMVectorSelect(XMVectorDivide(v, W), v, XMVectorEqual(W, SplatZero())));
 		}
 
 		class BoolVector

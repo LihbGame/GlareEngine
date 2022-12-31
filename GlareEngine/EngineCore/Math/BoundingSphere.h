@@ -21,6 +21,7 @@ namespace GlareEngine
             explicit operator Vector4() const { return Vector4(m_repr); }
 
             Vector3 GetCenter(void) const { return Vector3(m_repr); }
+            void SetCenter(Vector3 center) { m_repr.SetXYZ(center); }
             Scalar GetRadius(void) const { return m_repr.GetW(); }
 
             BoundingSphere Union(const BoundingSphere& rhs);

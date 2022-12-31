@@ -29,10 +29,11 @@ public:
 	static PSOCommonProperty sm_PSOCommonProperty;
 
 private:
-	static uint16_t mPSOFlags;
+	static vector<uint16_t> mPSOFlags;
 	static D3D12_RASTERIZER_DESC  mMSAARasterizer;
 	static D3D12_RASTERIZER_DESC  mRasterizer;
 	static D3D12_BLEND_DESC  mCoverageBlend;
 	static D3D12_BLEND_DESC  mBlend;
+	static std::mutex m_PSOMutex;
 };
 

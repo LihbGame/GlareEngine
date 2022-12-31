@@ -15,7 +15,16 @@ void GlareEngine::Model::AddToRender(MeshSorter& sorter, const GPUBuffer& meshCo
 
 		const ScaleAndTranslation& sphereXform = sphereTransforms[mesh.meshCBV];
 		Math::BoundingSphere sphereLS((const XMFLOAT4*)mesh.bounds);
+
+		if (m_IsNegetiveZForward)
+		{
+			Vector3 center = -sphereLS.GetCenter();
+			center = center * (Quaternion)XMMatrixRotationZ(MathHelper::Pi);
+			sphereLS.SetCenter(center);
+		}
+
 		Math::BoundingSphere sphereWS = sphereXform * sphereLS;
+
 		Math::BoundingSphere sphereVS = Math::BoundingSphere(sphereWS.GetCenter() * viewMat, sphereWS.GetRadius());
 
 		if (frustum.IntersectSphere(sphereVS))
@@ -45,14 +54,18 @@ void GlareEngine::Model::Destroy()
 	m_SceneGraph = nullptr;
 }
 
-GlareEngine::ModelInstance::ModelInstance(std::shared_ptr<const Model> sourceModel,float Scale,bool IsNegetiveZForward)
+GlareEngine::ModelInstance::ModelInstance(std::shared_ptr<Model> sourceModel,float Scale,bool IsNegetiveZForward)
 	: m_Model(sourceModel), m_Locator(eIdentity)
 {
 	static_assert((_alignof(MeshConstants) & 255) == 0, "CBVs need 256 byte alignment");
 
+	m_Model->SetModelVerticeOrder(IsNegetiveZForward);
+
 	if (IsNegetiveZForward)
 	{
-		m_Locator.SetScale(Scalar(Vector3(Scale, Scale, -Scale)));
+		//The forward of our coordinate system is +z. If it is a -z-oriented model, 
+		//use reverse coordinates to change the order of model vertices.
+		m_Locator.SetScale(Scalar(Vector3(-Scale)));
 		m_Locator.SetRotation((Quaternion)XMMatrixRotationZ(MathHelper::Pi));
 	}
 	else
@@ -95,7 +108,7 @@ GlareEngine::ModelInstance::ModelInstance(const ModelInstance& modelInstance)
 {
 }
 
-ModelInstance& GlareEngine::ModelInstance::operator=(std::shared_ptr<const Model> sourceModel)
+ModelInstance& GlareEngine::ModelInstance::operator=(std::shared_ptr<Model> sourceModel)
 {
 	m_Model = sourceModel;
 	m_Locator = UniformTransform(eIdentity);
@@ -184,6 +197,7 @@ void GlareEngine::ModelInstance::Update(GraphicsContext& gfxContext, float delta
 			Scalar scaleYSqr = LengthSquare((Vector3)xform.GetY());
 			Scalar scaleZSqr = LengthSquare((Vector3)xform.GetZ());
 			Scalar sphereScale = Sqrt(Max(Max(scaleXSqr, scaleYSqr), scaleZSqr));
+
 			boundingSphereTransforms[Node->matrixIdx] = ScaleAndTranslation((Vector3)xform.GetW(), sphereScale);
 		}
 

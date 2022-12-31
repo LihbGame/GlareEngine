@@ -193,7 +193,8 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 
 			//Instance models
 			LoadGITFModel(L"SciFiHelmet/glTF/SciFiHelmet.gltf",80);
-			LoadGITFModel(L"DamagedHelmet/glTF/DamagedHelmet.gltf",100);
+			LoadGITFModel(L"DamagedHelmet/glTF/DamagedHelmet.gltf", 100);
+			//LoadGITFModel(L"D:\\DirectX-Graphics-Samples-master\\MiniEngine\\ModelViewer\\Sponza\\pbr\\sponza2.gltf",10);
 			LoadGITFModel(L"FlightHelmet/glTF/FlightHelmet.gltf",200);
 	
 
@@ -235,6 +236,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 
 			//Copy Descriptors Texture Heap
 			Render::CopyTextureHeap();
+
 		});
 
 
