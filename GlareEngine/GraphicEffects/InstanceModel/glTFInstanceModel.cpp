@@ -134,6 +134,7 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
     gModelPSOs[ModelPSO::ShadowDepthOnlyPSO] = DepthOnlyPSO;
 
 	CutoutDepthPSO.SetRasterizerState(RasterizerShadowTwoSided);
+    CutoutDepthPSO.SetDepthStencilState(DepthStateReadWrite);
 	CutoutDepthPSO.SetRenderTargetFormats(0, nullptr, ShadowMap::mFormat);
 	CutoutDepthPSO.Finalize();
     gModelPSOs[ModelPSO::ShadowCutoutDepthPSO] = CutoutDepthPSO;
