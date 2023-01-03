@@ -61,6 +61,51 @@ struct Material
     float   AO;
 };
 
+
+
+//Constant data per frame.
+cbuffer MainPass : register(b0)
+{
+    float4x4 gView;
+    float4x4 gInvView;
+    float4x4 gProj;
+    float4x4 gInvProj;
+    float4x4 gViewProj;
+    float4x4 gInvViewProj;
+    float4x4 gShadowTransform;
+    float3 gEyePosW;
+    float cbPerObjectPad1;
+    float2 gRenderTargetSize;
+    float2 gInvRenderTargetSize;
+    float gNearZ;
+    float gFarZ;
+    float gTotalTime;
+    float gDeltaTime;
+    float4 gAmbientLight;
+
+    //索引[0，NUM_DIR_LIGHTS）是方向灯；
+    //索引[NUM_DIR_LIGHTS，NUM_DIR_LIGHTS + NUM_POINT_LIGHTS）是点光源；
+    //索引[NUM_DIR_LIGHTS + NUM_POINT_LIGHTS，NUM_DIR_LIGHTS + NUM_POINT_LIGHT + NUM_SPOT_LIGHTS）
+    //是聚光灯，每个对象最多可使用MaxLights。
+    Light gLights[MaxLights];
+
+    int gShadowMapIndex;
+    int gSkyCubeIndex;
+    int gBakingDiffuseCubeIndex;
+    int gBakingPreFilteredEnvIndex;
+    int gBakingIntegrationBRDFIndex;
+    float IBLRange;
+    float IBLBias;
+    int gPad01;
+
+    int  gDirectionalLightsCount;
+    int  gPointLightsCount;
+    int  gSpotLightsCount;
+    int  gIsIndoorScene;
+};
+
+
+
 //BRDF-F
 float3 fresnelSchlick(float cosTheta, float3 F0)
 {
@@ -407,28 +452,31 @@ float3 ComputeLighting(in Light lights[MaxLights], in SurfaceProperties Surface)
 
     int i = 0;
     
-#if (NUM_DIR_LIGHTS > 0)
-    for (i = 0; i < NUM_DIR_LIGHTS; ++i)
+    if (gDirectionalLightsCount > 0)
     {
-        lights[i].Strength *= smoothstep(0.0f, 1.0f, Surface.ShadowFactor);
-        LightProperties lightProperties = GetLightProperties(lights[i], Surface);
-        LightResult += ComputeDirectionalLight(lightProperties, Surface);
+        for (i = 0; i < gDirectionalLightsCount; ++i)
+        {
+            lights[i].Strength *= smoothstep(0.0f, 1.0f, Surface.ShadowFactor);
+            LightProperties lightProperties = GetLightProperties(lights[i], Surface);
+            LightResult += ComputeDirectionalLight(lightProperties, Surface);
+        }
     }
-#endif
 
-#if (NUM_POINT_LIGHTS > 0)
-    for (i = NUM_DIR_LIGHTS; i < NUM_DIR_LIGHTS + NUM_POINT_LIGHTS; ++i)
+    if (gPointLightsCount > 0)
     {
-        //LightResult += ComputePointLight(gLights[i], mat, pos, normal, toEye, F0);
+        for (i = gDirectionalLightsCount; i < gDirectionalLightsCount + gPointLightsCount; ++i)
+        {
+            //LightResult += ComputePointLight(gLights[i], mat, pos, normal, toEye, F0);
+        }
     }
-#endif
 
-#if (NUM_SPOT_LIGHTS > 0)
-    for (i = NUM_DIR_LIGHTS + NUM_POINT_LIGHTS; i < NUM_DIR_LIGHTS + NUM_POINT_LIGHTS + NUM_SPOT_LIGHTS; ++i)
+    if (gSpotLightsCount > 0)
     {
-        //LightResult += ComputeSpotLight(gLights[i], mat, pos, normal, toEye, F0);
+        for (i = gDirectionalLightsCount + gPointLightsCount; i < gDirectionalLightsCount + gPointLightsCount + gSpotLightsCount; ++i)
+        {
+            //LightResult += ComputeSpotLight(gLights[i], mat, pos, normal, toEye, F0);
+        }
     }
-#endif 
     return  LightResult;
 }
 

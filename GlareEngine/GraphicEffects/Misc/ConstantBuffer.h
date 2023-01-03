@@ -99,7 +99,12 @@ struct MainConstants
 	int gBakingIntegrationBRDFIndex = 0;
 	float IBLRange = 10.0f;
 	float IBLBias = 0.0f;
-	int mPad03 = 0;
+	int mPad01 = 0;
+
+	int  gDirectionalLightsCount = 0;
+	int  gPointLightsCount = 0;
+	int  gSpotLightsCount = 0;
+	int gIsIndoorScene = 0;
 };
 
 struct TerrainConstants

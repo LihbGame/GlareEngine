@@ -1,7 +1,7 @@
 #include "TextureConvert.h"
 #include "Engine/EngineUtility.h"
 #include "Engine/EngineLog.h"
-#include "I:\\GlareEngine\\packages\\directxtex_desktop_win10.2022.10.18.1\\include\\DirectXTex.h"
+#include "DirectXTex.h"
 
 #define GetFlag(f) ((Flags & f) != 0)
 
@@ -146,17 +146,17 @@ bool GlareEngine::ConvertToDDS(const std::wstring& filePath, uint32_t Flags)
 	}
 	else if (bBlockCompress)
 	{
-		tformat = bInterpretAsSRGB ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM;
+		tformat = bInterpretAsSRGB ? DXGI_FORMAT_R8G8B8A8_UNORM : DXGI_FORMAT_R8G8B8A8_UNORM;
 		if (bUseBestBC)
-			cformat = bInterpretAsSRGB ? DXGI_FORMAT_BC7_UNORM_SRGB : DXGI_FORMAT_BC7_UNORM;
+			cformat = bInterpretAsSRGB ? DXGI_FORMAT_BC7_UNORM : DXGI_FORMAT_BC7_UNORM;
 		else if (bPreserveAlpha)
-			cformat = bInterpretAsSRGB ? DXGI_FORMAT_BC3_UNORM_SRGB : DXGI_FORMAT_BC3_UNORM;
+			cformat = bInterpretAsSRGB ? DXGI_FORMAT_BC3_UNORM : DXGI_FORMAT_BC3_UNORM;
 		else
-			cformat = bInterpretAsSRGB ? DXGI_FORMAT_BC1_UNORM_SRGB : DXGI_FORMAT_BC1_UNORM;
+			cformat = bInterpretAsSRGB ? DXGI_FORMAT_BC1_UNORM : DXGI_FORMAT_BC1_UNORM;
 	}
 	else
 	{
-		cformat = tformat = bInterpretAsSRGB ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM;
+		cformat = tformat = bInterpretAsSRGB ? DXGI_FORMAT_R8G8B8A8_UNORM : DXGI_FORMAT_R8G8B8A8_UNORM;
 	}
 
 	if (bBumpMap)

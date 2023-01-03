@@ -7,6 +7,7 @@
 #include "InstanceModel/glTFInstanceModel.h"
 #include "Model/MeshSorter.h"
 #include <Engine/EngineProfiling.h>
+#include <ks.h>
 
 /// Scene/////////////////////////////////////////////
 using namespace GlareEngine::Render;
@@ -85,10 +86,23 @@ void Scene::BakingGIData(GraphicsContext& Context)
 	mIBLGI.PreBakeGIData(Context, m_pRenderObjectsType[(int)ObjectType::Sky].front());
 }
 
-void Scene::SetSceneLights(Light* light)
+void Scene::SetSceneLights(Light* light, int DirectionalLightsCount, int PointLightsCount, int SpotLightsCount)
 {
-	int CopySize = sizeof(light) * sizeof(Light);
+	mMainConstants.gDirectionalLightsCount = DirectionalLightsCount;
+	mMainConstants.gPointLightsCount = PointLightsCount;
+	mMainConstants.gSpotLightsCount = SpotLightsCount;
+	int CopySize = (DirectionalLightsCount + PointLightsCount + SpotLightsCount) * sizeof(Light);
 	memcpy_s(mSceneLights, CopySize, light, CopySize);
+
+	if (mName == "Sponza")
+	{
+		mMainConstants.gIsIndoorScene = true;
+		mSceneLights[0].Strength = { 3.0f, 3.0f, 3.0f };
+	}
+	else if (mName == "Blue Tree")
+	{
+		mSceneLights[0].Strength = { 0.5f,  0.5f,  0.5f };
+	}
 }
 
 void Scene::SetRootSignature(RootSignature* rootSignature)

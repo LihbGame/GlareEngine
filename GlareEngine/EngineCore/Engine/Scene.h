@@ -43,7 +43,7 @@ public:
 	//Baking Scene's Global illumination data
 	void BakingGIData(GraphicsContext& Context);
 	//Set Scene lights
-	void SetSceneLights(Light* light);
+	void SetSceneLights(Light* light, int DirectionalLightsCount = 1, int PointLightsCount = 0, int SpotLightsCount = 0);
 	//Set RootSignature
 	void SetRootSignature(RootSignature* rootSignature);
 public:

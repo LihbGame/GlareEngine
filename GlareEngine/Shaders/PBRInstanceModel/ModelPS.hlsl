@@ -122,16 +122,24 @@ float4 main(VSOutput vsOutput) : SV_Target0
 
     //Lighting and Shadow
     Surface.ShadowFactor = CalcShadowFactor(float4(vsOutput.sunShadowCoord, 1.0f));
-    //Surface.ShadowFactor = PCSS(gSRVMap[gShadowMapIndex], float4(vsOutput.sunShadowCoord, 1.0f));
     color += ComputeLighting(gLights, Surface);
 
 
-    //SSAO
+    //SSAO (TODO)
 
 
-    // Add IBL
-    color += IBL_Diffuse(Surface);
-    color += IBL_Specular(Surface);
+
+    if (gIsIndoorScene)
+    {
+        //Indoor environment light(local environment light)
+        color += baseColor.rgb * gAmbientLight.rgb * occlusion;
+    }
+    else
+    {
+        //Outdoor environment light (IBL)
+        color += IBL_Diffuse(Surface);
+        color += IBL_Specular(Surface);
+    }
 
     // TODO: Shade each light using Forward+ tiles
 

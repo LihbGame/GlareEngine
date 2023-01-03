@@ -339,7 +339,9 @@ void LoadMaterials(Model& model,
 
 		GraphicsContext& InitializeContext = GraphicsContext::Begin(L"Load Models Textures");
 		ID3D12GraphicsCommandList* CommandList = InitializeContext.GetCommandList();
-		model.m_Textures[ti] = TextureManager::GetInstance(CommandList)->GetModelTexture(ddsFile);
+
+		bool bSRGB = (textureOptions[ti] & eSRGB) != 0;
+		model.m_Textures[ti] = TextureManager::GetInstance(CommandList)->GetModelTexture(ddsFile, bSRGB ? true : false);
 		InitializeContext.Finish();
 	}
 

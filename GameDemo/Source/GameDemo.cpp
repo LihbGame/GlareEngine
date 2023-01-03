@@ -123,7 +123,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	//Sky Initialize
 	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
 	//Shadow map Initialize
-	mShadowMap = make_unique<ShadowMap>(XMFLOAT3(0.57735f, -0.47735f, 0.57735f), SHADOWMAPSIZE, SHADOWMAPSIZE);
+	mShadowMap = make_unique<ShadowMap>(XMFLOAT3(0.07735f, -0.97735f, 0.07735f), SHADOWMAPSIZE, SHADOWMAPSIZE);
 	//Create PBR Materials
 	SimpleModelGenerator::GetInstance(CommandList)->CreatePBRMaterials();
 
@@ -137,7 +137,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	{
 		Light SceneLights[3];
 		SceneLights[0].Direction = mShadowMap->GetShadowedLightDir();
-		SceneLights[0].Strength = { 0.5f, 0.5f, 0.5f };
+		SceneLights[0].Strength = { 1.0f, 1.0f, 1.0f };
 		SceneLights[0].FalloffStart = 1.0f;
 		SceneLights[0].FalloffEnd = 50.0f;
 		SceneLights[0].Position = { 20,20,20 };
@@ -158,6 +158,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 		gScenes.push_back(mSceneManager->CreateScene("Damaged Helmet"));
 		gScenes.push_back(mSceneManager->CreateScene("Flight Helmet"));
 		gScenes.push_back(mSceneManager->CreateScene("Blue Tree"));
+		gScenes.push_back(mSceneManager->CreateScene("Sponza"));
 
 		mEngineUI->SetScenes(gScenes);
 
@@ -173,7 +174,14 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			//set camera
 			scene->SetCamera(mCamera.get());
 			//set scene lights
-			scene->SetSceneLights(SceneLights);
+			if (scene->GetName() == "Sponza")
+			{
+				scene->SetSceneLights(SceneLights);
+			}
+			else
+			{
+				scene->SetSceneLights(SceneLights, sizeof(SceneLights) / sizeof(Light));
+			}
 			//set Shadow map 
 			scene->SetShadowMap(mShadowMap.get());
 			//add hdr Sky
@@ -191,13 +199,14 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			//Baking GI Data
 			EngineGlobal::gCurrentScene->BakingGIData(InitializeContext);
 
-			//Instance models
+			//GLTF models
 			LoadGITFModel(L"SciFiHelmet/glTF/SciFiHelmet.gltf",80);
 			LoadGITFModel(L"DamagedHelmet/glTF/DamagedHelmet.gltf", 100);
-			//LoadGITFModel(L"D:\\DirectX-Graphics-Samples-master\\MiniEngine\\ModelViewer\\Sponza\\pbr\\sponza2.gltf",10);
 			LoadGITFModel(L"FlightHelmet/glTF/FlightHelmet.gltf",200);
+			///LoadGITFModel(L"D:\\DirectX-Graphics-Samples-master\\MiniEngine\\ModelViewer\\Sponza\\pbr\\sponza2.gltf", 30);
 	
 
+			//FBX Instance Models
 			CreateSimpleModelInstance(CommandList, "Grid_01", SimpleModelType::Grid, "PBRGrass01", 1, 1);
 			CreateModelInstance(CommandList, "BlueTree/Blue_Tree_02a.FBX", 8, 8, 0);
 			CreateModelInstance(CommandList, "BlueTree/Blue_Tree_03a.FBX", 8, 8, 10.0f, true);
@@ -225,6 +234,9 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			{
 				gScenes[3]->AddObjectToScene(model.get());
 			}
+
+			// Scene 5
+			//gScenes[4]->AddGLTFModelToScene(mGLTFModels[3].get());
 
 			InitializeContext.Finish(true);
 
