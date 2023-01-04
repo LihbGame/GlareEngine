@@ -203,7 +203,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			LoadGITFModel(L"SciFiHelmet/glTF/SciFiHelmet.gltf",80);
 			LoadGITFModel(L"DamagedHelmet/glTF/DamagedHelmet.gltf", 100);
 			LoadGITFModel(L"FlightHelmet/glTF/FlightHelmet.gltf",200);
-			///LoadGITFModel(L"D:\\DirectX-Graphics-Samples-master\\MiniEngine\\ModelViewer\\Sponza\\pbr\\sponza2.gltf", 30);
+			LoadGITFModel(L"Sponza/pbr/sponza2.gltf", 30);
 	
 
 			//FBX Instance Models
@@ -236,7 +236,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			}
 
 			// Scene 5
-			//gScenes[4]->AddGLTFModelToScene(mGLTFModels[3].get());
+			gScenes[4]->AddGLTFModelToScene(mGLTFModels[3].get());
 
 			InitializeContext.Finish(true);
 
