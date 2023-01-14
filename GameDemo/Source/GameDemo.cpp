@@ -123,7 +123,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	//Sky Initialize
 	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
 	//Shadow map Initialize
-	mShadowMap = make_unique<ShadowMap>(XMFLOAT3(0.07735f, -0.97735f, 0.07735f), SHADOWMAPSIZE, SHADOWMAPSIZE);
+	mShadowMap = make_unique<ShadowMap>(XMFLOAT3(0.17735f, -0.335f, 0.07735f), SHADOWMAPSIZE, SHADOWMAPSIZE);
 	//Create PBR Materials
 	SimpleModelGenerator::GetInstance(CommandList)->CreatePBRMaterials();
 

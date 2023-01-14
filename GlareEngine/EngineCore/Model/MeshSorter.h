@@ -54,7 +54,8 @@ namespace GlareEngine
 		}
 
 		void SetDepthStencilTarget(DepthBuffer& DSV) { m_DSV = &DSV; }
-
+	public:
+		BatchType m_BatchType;
 	private:
 
 		struct SortKey
@@ -83,11 +84,10 @@ namespace GlareEngine
 
 		std::vector<SortObject> m_SortObjects;
 		std::vector<uint64_t> m_SortKeys;
-		BatchType m_BatchType;
+
 		uint32_t m_PassCounts[eNumPasses];
 		DrawPass m_CurrentPass;
 		uint32_t m_CurrentDraw;
-
 		Camera* m_Camera;
 		D3D12_VIEWPORT m_Viewport;
 		D3D12_RECT m_Scissor;

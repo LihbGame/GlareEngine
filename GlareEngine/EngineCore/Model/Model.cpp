@@ -7,7 +7,7 @@ void GlareEngine::Model::AddToRender(MeshSorter& sorter, const GPUBuffer& meshCo
 	const uint8_t* pMesh = m_MeshData.get();
 
 	const Frustum& frustum = sorter.GetViewFrustum();
-	const AffineTransform& viewMat = (const AffineTransform&)sorter.GetViewMatrix();
+	AffineTransform& viewMat = (AffineTransform&)sorter.GetViewMatrix();
 
 	for (uint32_t i = 0; i < m_NumMeshes; ++i)
 	{
@@ -24,6 +24,15 @@ void GlareEngine::Model::AddToRender(MeshSorter& sorter, const GPUBuffer& meshCo
 		}
 
 		Math::BoundingSphere sphereWS = sphereXform * sphereLS;
+
+
+		//Matrix4 view;
+		//if (sorter.m_BatchType == MeshSorter::eShadows)
+		//{
+		//	view = (Matrix4)(XMMatrixTranspose((XMMATRIX)sorter.GetViewMatrix()));
+		//	viewMat = (AffineTransform&)view;
+		//}
+
 
 		Math::BoundingSphere sphereVS = Math::BoundingSphere(sphereWS.GetCenter() * viewMat, sphereWS.GetRadius());
 

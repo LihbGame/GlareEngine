@@ -349,7 +349,7 @@ void Camera::UpdateViewMatrix()
 
 XMMATRIX ShadowCamera::GetView() const
 {
-	return  XMMatrixTranspose(XMLoadFloat4x4(&m_pShadowMap->GetView()));
+	return  XMLoadFloat4x4(&m_pShadowMap->GetView());
 }
 
 const Frustum& ShadowCamera::GetViewSpaceFrustum()

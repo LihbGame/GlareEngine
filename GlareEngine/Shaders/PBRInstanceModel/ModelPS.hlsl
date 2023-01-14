@@ -83,6 +83,7 @@ float3 GetNormal(float3 normalMapSample, float3 unitNormalW, float4 tangentW)
 
     //The forward of our coordinate system is +z. If it is a -z-oriented model, 
     //use reverse coordinates to change the order of model vertices.so mul -tangentW.w
+    //mul tangentW.w is for mirror mesh.
     float3 B = normalize(cross(N, T)) * (-tangentW.w);
 
     float3x3 TBN = float3x3(T, B, N);

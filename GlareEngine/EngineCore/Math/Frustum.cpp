@@ -50,8 +50,8 @@ void Frustum::ConstructOrthographicFrustum(float Left, float Right, float Top, f
 	m_FrustumPlanes[eFarPlane] = BoundingPlane(0.0f, 0.0f, -1.0f, Back);
 	m_FrustumPlanes[eLeftPlane] = BoundingPlane(1.0f, 0.0f, 0.0f, -Left); 
 	m_FrustumPlanes[eRightPlane] = BoundingPlane(-1.0f, 0.0f, 0.0f, Right);
-	m_FrustumPlanes[eTopPlane] = BoundingPlane(0.0f, -1.0f, 0.0f, Bottom);
-	m_FrustumPlanes[eBottomPlane] = BoundingPlane(0.0f, 1.0f, 0.0f, -Top);
+	m_FrustumPlanes[eTopPlane] = BoundingPlane(0.0f, -1.0f, 0.0f, -Bottom);
+	m_FrustumPlanes[eBottomPlane] = BoundingPlane(0.0f, 1.0f, 0.0f, Top);
 }
 
 

@@ -48,7 +48,7 @@ public:
 	void LookAt(DirectX::FXMVECTOR pos, DirectX::FXMVECTOR target, DirectX::FXMVECTOR worldUp);
 	void LookAt(const DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT3& target, const DirectX::XMFLOAT3& up);
 
-	virtual const Frustum& GetViewSpaceFrustum() const { return m_FrustumVS; }
+	virtual const Frustum& GetViewSpaceFrustum()  { return m_FrustumVS; }
 	virtual const Frustum& GetWorldSpaceFrustum() const { return m_FrustumWS; }
 
 
