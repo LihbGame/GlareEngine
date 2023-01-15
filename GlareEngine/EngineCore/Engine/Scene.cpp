@@ -7,7 +7,6 @@
 #include "InstanceModel/glTFInstanceModel.h"
 #include "Model/MeshSorter.h"
 #include <Engine/EngineProfiling.h>
-#include <ks.h>
 
 /// Scene/////////////////////////////////////////////
 using namespace GlareEngine::Render;
@@ -86,12 +85,10 @@ void Scene::BakingGIData(GraphicsContext& Context)
 	mIBLGI.PreBakeGIData(Context, m_pRenderObjectsType[(int)ObjectType::Sky].front());
 }
 
-void Scene::SetSceneLights(Light* light, int DirectionalLightsCount, int PointLightsCount, int SpotLightsCount)
+void Scene::SetSceneLights(DirectionalLight* light, int DirectionalLightsCount)
 {
 	mMainConstants.gDirectionalLightsCount = DirectionalLightsCount;
-	mMainConstants.gPointLightsCount = PointLightsCount;
-	mMainConstants.gSpotLightsCount = SpotLightsCount;
-	int CopySize = (DirectionalLightsCount + PointLightsCount + SpotLightsCount) * sizeof(Light);
+	int CopySize = DirectionalLightsCount * sizeof(DirectionalLight);
 	memcpy_s(mSceneLights, CopySize, light, CopySize);
 
 	if (mName == "Sponza")
@@ -249,21 +246,12 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 
 		mMainConstants.Lights[0].Direction = mSceneLights[0].Direction;
 		mMainConstants.Lights[0].Strength = mSceneLights[0].Strength;
-		mMainConstants.Lights[0].FalloffStart =mSceneLights[0].FalloffStart;
-		mMainConstants.Lights[0].FalloffEnd = mSceneLights[0].FalloffEnd;
-		mMainConstants.Lights[0].Position = mSceneLights[0].Position;
 
 		mMainConstants.Lights[1].Direction = mSceneLights[1].Direction;
 		mMainConstants.Lights[1].Strength = mSceneLights[1].Strength;
-		mMainConstants.Lights[1].FalloffStart = mSceneLights[1].FalloffStart;
-		mMainConstants.Lights[1].FalloffEnd = mSceneLights[1].FalloffEnd;
-		mMainConstants.Lights[1].Position = mSceneLights[1].Position;
 
 		mMainConstants.Lights[2].Direction = mSceneLights[2].Direction;
 		mMainConstants.Lights[2].Strength = mSceneLights[2].Strength;
-		mMainConstants.Lights[2].FalloffStart = mSceneLights[2].FalloffStart;
-		mMainConstants.Lights[2].FalloffEnd = mSceneLights[2].FalloffEnd;
-		mMainConstants.Lights[2].Position = mSceneLights[2].Position;
 	}
 
 }
@@ -397,9 +385,9 @@ void Scene::ForwardPlusRendering()
 
 	sorter.Sort();
 
-	///Depth Pre-Pass
+	///Depth PrePass
 	{
-		ScopedTimer _prof(L"Depth Pre-Pass", Context);
+		ScopedTimer _prof(L"Depth PrePass", Context);
 		sorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
 	}
 

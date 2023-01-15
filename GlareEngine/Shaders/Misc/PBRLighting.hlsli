@@ -1,31 +1,19 @@
-#define MaxLights 16
 
-#define EPS 1e-3
-#define PI 3.141592653589793
-#define PI2 6.283185307179586
+#define MAX_DIR_LIGHTS 16
+#define NUM_DIR_LIGHTS 3
 
-// Defaults for number of lights.
-#ifndef NUM_DIR_LIGHTS
-    #define NUM_DIR_LIGHTS 3
-#endif
+#define EPS             1e-3
+#define PI              3.141592653589793
+#define PI2             6.283185307179586
+#define FLT_MIN         1.175494351e-38F        // min positive value
+#define FLT_MAX         3.402823466e+38F        // max value
 
-#ifndef NUM_POINT_LIGHTS
-    #define NUM_POINT_LIGHTS 0
-#endif
-
-#ifndef NUM_SPOT_LIGHTS
-    #define NUM_SPOT_LIGHTS 0
-#endif
-
-
-struct Light
+struct DirectionalLight
 {
     float3 Strength;
-    float FalloffStart;     // point/spot light only
-    float3 Direction;       // directional/spot light only
-    float FalloffEnd;       // point/spot light only
-    float3 Position;        // point light only
-    float SpotPower;        // spot light only
+    int Pad1;
+    float3 Direction;
+    int Pad2;
 };
 
 struct SurfaceProperties
@@ -48,7 +36,7 @@ struct LightProperties
     float NdotL;
     float LdotH;
     float NdotH;
-    Light light;
+    DirectionalLight light;
 };
 
 
@@ -83,11 +71,7 @@ cbuffer MainPass : register(b0)
     float gDeltaTime;
     float4 gAmbientLight;
 
-    //索引[0，NUM_DIR_LIGHTS）是方向灯；
-    //索引[NUM_DIR_LIGHTS，NUM_DIR_LIGHTS + NUM_POINT_LIGHTS）是点光源；
-    //索引[NUM_DIR_LIGHTS + NUM_POINT_LIGHTS，NUM_DIR_LIGHTS + NUM_POINT_LIGHT + NUM_SPOT_LIGHTS）
-    //是聚光灯，每个对象最多可使用MaxLights。
-    Light gLights[MaxLights];
+    DirectionalLight gLights[MAX_DIR_LIGHTS];
 
     int gShadowMapIndex;
     int gSkyCubeIndex;
@@ -99,8 +83,6 @@ cbuffer MainPass : register(b0)
     int gPad01;
 
     int  gDirectionalLightsCount;
-    int  gPointLightsCount;
-    int  gSpotLightsCount;
     int  gIsIndoorScene;
 };
 
@@ -284,7 +266,7 @@ float3 CookTorranceBRDF(float3 radiance, float3 N, float3 H, float3 V, float3 L,
 //---------------------------------------------------------------------------------------
 // Evaluates the lighting equation for directional lights.
 //---------------------------------------------------------------------------------------
-float3 ComputeDirectionalLight(Light L, Material mat, float3 normal, float3 toEye, float3 F0)
+float3 ComputeDirectionalLight(DirectionalLight L, Material mat, float3 normal, float3 toEye, float3 F0)
 {
     // The light vector aims opposite the direction the light rays travel.
     float3 lightVec = -L.Direction;
@@ -296,75 +278,75 @@ float3 ComputeDirectionalLight(Light L, Material mat, float3 normal, float3 toEy
     return CookTorranceBRDF(lightStrength, normal, Half, toEye, lightVec, F0, mat);
 }
 
-//---------------------------------------------------------------------------------------
-// Evaluates the lighting equation for point lights.
-//---------------------------------------------------------------------------------------
-float3 ComputePointLight(Light L, Material mat, float3 pos, float3 normal, float3 toEye, float3 F0)
-{
-    // The vector from the surface to the light.
-    float3 lightVec = L.Position - pos;
+////---------------------------------------------------------------------------------------
+//// Evaluates the lighting equation for point lights.
+////---------------------------------------------------------------------------------------
+//float3 ComputePointLight(Light L, Material mat, float3 pos, float3 normal, float3 toEye, float3 F0)
+//{
+//    // The vector from the surface to the light.
+//    float3 lightVec = L.Position - pos;
+//
+//    // The distance from surface to light.
+//    float d = length(lightVec);
+//
+//    // Range test.
+//    if (d > L.FalloffEnd)
+//        return 0.0f;
+//
+//    // Normalize the light vector.
+//    lightVec /= d;
+//
+//    // Scale light down by Lambert's cosine law.
+//    float ndotl = max(dot(lightVec, normal), 0.0f);
+//    float3 lightStrength = L.Strength * ndotl;
+//
+//    // Attenuate light by distance.
+//    float att = CalcAttenuation(d, L.FalloffStart, L.FalloffEnd);
+//    lightStrength *= att;
+//
+//
+//    float3 Half = normalize(toEye + lightVec);
+//
+//    return CookTorranceBRDF(lightStrength, normal, Half, toEye, lightVec, F0, mat);
+//}
+//
+////---------------------------------------------------------------------------------------
+//// Evaluates the lighting equation for spot lights.
+////---------------------------------------------------------------------------------------
+//float3 ComputeSpotLight(Light L, Material mat, float3 pos, float3 normal, float3 toEye, float3 F0)
+//{
+//    // The vector from the surface to the light.
+//    float3 lightVec = L.Position - pos;
+//
+//    // The distance from surface to light.
+//    float d = length(lightVec);
+//
+//    // Range test.
+//    if (d > L.FalloffEnd)
+//        return 0.0f;
+//
+//    // Normalize the light vector.
+//    lightVec /= d;
+//
+//    // Scale light down by Lambert's cosine law.
+//    float ndotl = max(dot(lightVec, normal), 0.0f);
+//    float3 lightStrength = L.Strength * ndotl;
+//
+//    // Attenuate light by distance.
+//    float att = CalcAttenuation(d, L.FalloffStart, L.FalloffEnd);
+//    lightStrength *= att;
+//
+//    // Scale by spotlight
+//    float spotFactor = pow(max(dot(-lightVec, L.Direction), 0.0f), L.SpotPower);
+//    lightStrength *= spotFactor;
+//
+//    float3 Half = normalize(toEye + lightVec);
+//
+//    return CookTorranceBRDF(lightStrength, normal, Half, toEye, lightVec, F0, mat);
+//}
 
-    // The distance from surface to light.
-    float d = length(lightVec);
 
-    // Range test.
-    if (d > L.FalloffEnd)
-        return 0.0f;
-
-    // Normalize the light vector.
-    lightVec /= d;
-
-    // Scale light down by Lambert's cosine law.
-    float ndotl = max(dot(lightVec, normal), 0.0f);
-    float3 lightStrength = L.Strength * ndotl;
-
-    // Attenuate light by distance.
-    float att = CalcAttenuation(d, L.FalloffStart, L.FalloffEnd);
-    lightStrength *= att;
-
-
-    float3 Half = normalize(toEye + lightVec);
-
-    return CookTorranceBRDF(lightStrength, normal, Half, toEye, lightVec, F0, mat);
-}
-
-//---------------------------------------------------------------------------------------
-// Evaluates the lighting equation for spot lights.
-//---------------------------------------------------------------------------------------
-float3 ComputeSpotLight(Light L, Material mat, float3 pos, float3 normal, float3 toEye, float3 F0)
-{
-    // The vector from the surface to the light.
-    float3 lightVec = L.Position - pos;
-
-    // The distance from surface to light.
-    float d = length(lightVec);
-
-    // Range test.
-    if (d > L.FalloffEnd)
-        return 0.0f;
-
-    // Normalize the light vector.
-    lightVec /= d;
-
-    // Scale light down by Lambert's cosine law.
-    float ndotl = max(dot(lightVec, normal), 0.0f);
-    float3 lightStrength = L.Strength * ndotl;
-
-    // Attenuate light by distance.
-    float att = CalcAttenuation(d, L.FalloffStart, L.FalloffEnd);
-    lightStrength *= att;
-
-    // Scale by spotlight
-    float spotFactor = pow(max(dot(-lightVec, L.Direction), 0.0f), L.SpotPower);
-    lightStrength *= spotFactor;
-
-    float3 Half = normalize(toEye + lightVec);
-
-    return CookTorranceBRDF(lightStrength, normal, Half, toEye, lightVec, F0, mat);
-}
-
-
-float4 ComputeLighting(Light gLights[MaxLights], Material mat,
+float4 ComputeLighting(DirectionalLight gLights[MAX_DIR_LIGHTS], Material mat,
                        float3 pos, float3 normal, float3 toEye,
                        float3 shadowFactor)
 {
@@ -377,27 +359,11 @@ float4 ComputeLighting(Light gLights[MaxLights], Material mat,
     float3 F0 = float3(0.04f, 0.04f, 0.04f);
     F0 = lerp(F0, mat.DiffuseAlbedo.rgb, mat.metallic);
 
-#if (NUM_DIR_LIGHTS > 0)
     for(i = 0; i < NUM_DIR_LIGHTS; ++i)
     {
         gLights[i].Strength *= shadowFactor[0];
         result += ComputeDirectionalLight(gLights[i], mat, normal, toEye, F0);
     }
-#endif
-
-#if (NUM_POINT_LIGHTS > 0)
-    for(i = NUM_DIR_LIGHTS; i < NUM_DIR_LIGHTS+NUM_POINT_LIGHTS; ++i)
-    {
-        result += ComputePointLight(gLights[i], mat, pos, normal, toEye, F0);
-    }
-#endif
-
-#if (NUM_SPOT_LIGHTS > 0)
-    for(i = NUM_DIR_LIGHTS + NUM_POINT_LIGHTS; i < NUM_DIR_LIGHTS + NUM_POINT_LIGHTS + NUM_SPOT_LIGHTS; ++i)
-    {
-        result += ComputeSpotLight(gLights[i], mat, pos, normal, toEye, F0);
-    }
-#endif 
 
     return float4(result, 0.0f);
 }
@@ -423,7 +389,7 @@ float3 CookTorranceBRDF(in LightProperties LightProper, in SurfaceProperties Sur
 }
 
 
-LightProperties GetLightProperties(in Light light, in SurfaceProperties Surface)
+LightProperties GetLightProperties(in DirectionalLight light, in SurfaceProperties Surface)
 {
     LightProperties LightProp;
     LightProp.L = normalize(-light.Direction);
@@ -446,7 +412,7 @@ float3 ComputeDirectionalLight(in LightProperties LightProper, in SurfacePropert
 }
 
 
-float3 ComputeLighting(in Light lights[MaxLights], in SurfaceProperties Surface)
+float3 ComputeLighting(in DirectionalLight lights[MAX_DIR_LIGHTS], in SurfaceProperties Surface)
 {
     float3 LightResult = float3(0, 0, 0);
 
@@ -459,22 +425,6 @@ float3 ComputeLighting(in Light lights[MaxLights], in SurfaceProperties Surface)
             lights[i].Strength *= smoothstep(0.0f, 1.0f, Surface.ShadowFactor);
             LightProperties lightProperties = GetLightProperties(lights[i], Surface);
             LightResult += ComputeDirectionalLight(lightProperties, Surface);
-        }
-    }
-
-    if (gPointLightsCount > 0)
-    {
-        for (i = gDirectionalLightsCount; i < gDirectionalLightsCount + gPointLightsCount; ++i)
-        {
-            //LightResult += ComputePointLight(gLights[i], mat, pos, normal, toEye, F0);
-        }
-    }
-
-    if (gSpotLightsCount > 0)
-    {
-        for (i = gDirectionalLightsCount + gPointLightsCount; i < gDirectionalLightsCount + gPointLightsCount + gSpotLightsCount; ++i)
-        {
-            //LightResult += ComputeSpotLight(gLights[i], mat, pos, normal, toEye, F0);
         }
     }
     return  LightResult;

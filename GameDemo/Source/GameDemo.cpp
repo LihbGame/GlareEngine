@@ -135,24 +135,15 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	assert(mSceneManager);
 	auto InitScene = [&]()
 	{
-		Light SceneLights[3];
+		DirectionalLight SceneLights[3];
 		SceneLights[0].Direction = mShadowMap->GetShadowedLightDir();
 		SceneLights[0].Strength = { 1.0f, 1.0f, 1.0f };
-		SceneLights[0].FalloffStart = 1.0f;
-		SceneLights[0].FalloffEnd = 50.0f;
-		SceneLights[0].Position = { 20,20,20 };
 
 		SceneLights[1].Direction = XMFLOAT3(-0.57735f, -0.47735f, 0.57735f);
 		SceneLights[1].Strength = { 0.2f, 0.2f, 0.2f };
-		SceneLights[1].FalloffStart = 1.0f;
-		SceneLights[1].FalloffEnd = 50.0f;
-		SceneLights[1].Position = { 20,20,20 };
 
 		SceneLights[2].Direction = XMFLOAT3(0.57735f, -0.47735f, -0.57735f);
 		SceneLights[2].Strength = { 0.2f, 0.2f, 0.2f };
-		SceneLights[2].FalloffStart = 1.0f;
-		SceneLights[2].FalloffEnd = 50.0f;
-		SceneLights[2].Position = { 20,20,20 };
 
 		gScenes.push_back(mSceneManager->CreateScene("SciFi Helmet"));
 		gScenes.push_back(mSceneManager->CreateScene("Damaged Helmet"));
@@ -180,7 +171,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			}
 			else
 			{
-				scene->SetSceneLights(SceneLights, sizeof(SceneLights) / sizeof(Light));
+				scene->SetSceneLights(SceneLights, sizeof(SceneLights) / sizeof(DirectionalLight));
 			}
 			//set Shadow map 
 			scene->SetShadowMap(mShadowMap.get());

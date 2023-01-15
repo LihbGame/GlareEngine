@@ -85,11 +85,8 @@ struct MainConstants
 	float DeltaTime = 0.0f;
 	XMFLOAT4 gAmbientLight = { 0.0f, 0.0f, 0.0f ,0.0f };
 
-	// 索引[0，NUM_DIR_LIGHTS）是方向灯；
-	 //索引[NUM_DIR_LIGHTS，NUM_DIR_LIGHTS + NUM_POINT_LIGHTS）是点光源；
-	 //索引[NUM_DIR_LIGHTS + NUM_POINT_LIGHTS，NUM_DIR_LIGHTS + NUM_POINT_LIGHT + NUM_SPOT_LIGHTS）
 	 //是聚光灯，每个对象最多可使用MaxLights。
-	Light Lights[MaxLights];
+	DirectionalLight Lights[MAX_DIRECTIONAL_LIGHTS];
 
 	//ShadowMap Index
 	int mShadowMapIndex = 0;
@@ -99,12 +96,12 @@ struct MainConstants
 	int gBakingIntegrationBRDFIndex = 0;
 	float IBLRange = 10.0f;
 	float IBLBias = 0.0f;
-	int mPad01 = 0;
+	int Pad1 = 0;
 
-	int  gDirectionalLightsCount = 0;
-	int  gPointLightsCount = 0;
-	int  gSpotLightsCount = 0;
+	int gDirectionalLightsCount = 0;
 	int gIsIndoorScene = 0;
+	int Pad2;
+	int Pad3;
 };
 
 struct TerrainConstants
