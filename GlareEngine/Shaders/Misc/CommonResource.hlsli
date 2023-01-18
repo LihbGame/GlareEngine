@@ -147,6 +147,42 @@ struct PosNorTanTexOut
     uint MatIndex       : MATINDEX;
 };
 
+
+struct Plane
+{
+    float3 N;   // Plane normal.
+    float  d;   // Distance to origin.
+};
+
+struct Sphere
+{
+    float3 c;   // Center point.
+    float  r;   // Radius.
+};
+
+struct Cone
+{
+    float3 T;   // Cone tip.
+    float  h;   // Height of the cone.
+    float3 d;   // Direction of the cone.
+    float  r;   // bottom radius of the cone.
+};
+
+// This is for light culling
+// Four planes of a view frustum (in view space).
+// The planes are:
+//  * Left,
+//  * Right,
+//  * Top,
+//  * Bottom.
+// The back and/or front planes can be computed from depth values in the 
+// light culling compute shader.
+struct Frustum
+{
+    Plane planes[4];   // left, right, top, bottom frustum planes.
+};
+
+
 //---------------------------------------------------------------------------------------
 // Transforms a normal map sample to model space.
 //---------------------------------------------------------------------------------------

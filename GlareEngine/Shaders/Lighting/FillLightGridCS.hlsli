@@ -64,4 +64,9 @@ void main(
     }
     GroupMemoryBarrierWithGroupSync();
 
+
+
+
+
+
 }
