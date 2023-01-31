@@ -137,13 +137,13 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	{
 		DirectionalLight SceneLights[3];
 		SceneLights[0].Direction = mShadowMap->GetShadowedLightDir();
-		SceneLights[0].Strength = { 1.0f, 1.0f, 1.0f };
+		SceneLights[0].Strength = { 5.0f, 5.0f, 5.0f };
 
 		SceneLights[1].Direction = XMFLOAT3(-0.57735f, -0.47735f, 0.57735f);
-		SceneLights[1].Strength = { 0.2f, 0.2f, 0.2f };
+		SceneLights[1].Strength = { 0.5f, 0.5f, 0.5f };
 
 		SceneLights[2].Direction = XMFLOAT3(0.57735f, -0.47735f, -0.57735f);
-		SceneLights[2].Strength = { 0.2f, 0.2f, 0.2f };
+		SceneLights[2].Strength = { 0.5f, 0.5f, 0.5f };
 
 		gScenes.push_back(mSceneManager->CreateScene("SciFi Helmet"));
 		gScenes.push_back(mSceneManager->CreateScene("Damaged Helmet"));

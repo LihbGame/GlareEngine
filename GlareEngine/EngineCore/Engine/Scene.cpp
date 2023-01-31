@@ -98,7 +98,7 @@ void Scene::SetSceneLights(DirectionalLight* light, int DirectionalLightsCount)
 	}
 	else if (mName == "Blue Tree")
 	{
-		mSceneLights[0].Strength = { 0.5f,  0.5f,  0.5f };
+		mSceneLights[0].Strength = { 1.0f,  1.0f,  1.0f };
 	}
 }
 
