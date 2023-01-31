@@ -78,6 +78,31 @@ bool SphereInsidePlane(Sphere sphere, Plane plane)
 }
 
 
+// Check to see of a light is partially contained within the frustum.
+bool SphereInsideFrustum(Sphere sphere, Frustum frustum, float zNear, float zFar)
+{
+    bool result = true;
+
+    // First check depth
+    // Note: Here, the view vector points in the -Z axis so the 
+    // far depth value will be approaching -infinity.
+    if (sphere.c.z - sphere.r > zNear || sphere.c.z + sphere.r < zFar)
+    {
+        result = false;
+    }
+
+    // Then check frustum planes
+    for (int i = 0; i < 4 && result; i++)
+    {
+        if (SphereInsidePlane(sphere, frustum.planes[i]))
+        {
+            result = false;
+        }
+    }
+
+    return result;
+}
+
 
 [numthreads(8, 8, 1)]
 void main(
@@ -126,6 +151,40 @@ void main(
     float maxDepthVS = ScreenToView(float4(0, 0, fMaxDepth, 1)).z;
 
 
+    // View space eye position is always at the origin.
+    const float3 eyePos = float3(0, 0, 0);
+
+    // Compute 4 points on the far clipping plane to use as the 
+    // frustum vertices.
+    float4 screenSpace[4];
+    // Top left point
+    screenSpace[0] = float4(IN.dispatchThreadID.xy * 8, 1.0f, 1.0f);
+    // Top right point
+    screenSpace[1] = float4(float2(IN.dispatchThreadID.x + 1, IN.dispatchThreadID.y) * 8, 1.0f, 1.0f);
+    // Bottom left point
+    screenSpace[2] = float4(float2(IN.dispatchThreadID.x, IN.dispatchThreadID.y + 1) * 8, 1.0f, 1.0f);
+    // Bottom right point
+    screenSpace[3] = float4(float2(IN.dispatchThreadID.x + 1, IN.dispatchThreadID.y + 1) * 8, 1.0f, 1.0f);
+
+    float3 viewSpace[4];
+    // Now convert the screen space points to view space
+    for (int i = 0; i < 4; i++)
+    {
+        viewSpace[i] = ScreenToView(screenSpace[i]).xyz;
+    }
+
+    // Now build the frustum planes from the view space points
+    Frustum frustum;
+
+    // Left plane
+    frustum.planes[0] = ComputePlane(eyePos, viewSpace[2], viewSpace[0]);
+    // Right plane
+    frustum.planes[1] = ComputePlane(eyePos, viewSpace[1], viewSpace[3]);
+    // Top plane
+    frustum.planes[2] = ComputePlane(eyePos, viewSpace[0], viewSpace[1]);
+    // Bottom plane
+    frustum.planes[3] = ComputePlane(eyePos, viewSpace[3], viewSpace[2]);
+
 
     uint tileIndex = GetTileIndex(Gid.xy, TileCountX);
     uint tileOffset = GetTileOffset(tileIndex);
@@ -133,21 +192,11 @@ void main(
     // Find set of lights that overlap this tile
     for (uint lightIndex = GI; lightIndex < MAX_LIGHTS; lightIndex += 64)
     {
-        LightData lightData = lightBuffer[lightIndex];
-        float3 lightWorldPos = lightData.pos;
+        TileLightData lightData = lightBuffer[lightIndex];
         float lightCullRadius = sqrt(lightData.radiusSq);
 
-        bool overlapping = true;
-        for (int p = 0; p < 6; p++)
-        {
-            float d = dot(lightWorldPos, frustumPlanes[p].xyz) + frustumPlanes[p].w;
-            if (d < -lightCullRadius)
-            {
-                overlapping = false;
-            }
-        }
-
-        if (!overlapping)
+        Sphere sphere = { light.PositionVS.xyz, lightCullRadius };
+        if (!SphereInsideFrustum(sphere, frustum, minDepthVS, maxDepthVS))
             continue;
 
         uint slot;
