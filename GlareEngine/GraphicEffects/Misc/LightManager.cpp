@@ -52,7 +52,7 @@ namespace GlareEngine
 
 		LightData m_LightData[MaxLights];
 		StructuredBuffer m_LightBuffer;
-		ByteAddressBuffer m_LightGrid;
+		StructuredBuffer m_LightGrid;
 
 		uint32_t m_FirstConeLight;
 		uint32_t m_FirstConeShadowedLight;
@@ -72,7 +72,7 @@ void Lighting::InitializeResources(void)
 	m_FillLightRootSig.Reset(3, 0);
 	m_FillLightRootSig[0].InitAsConstantBuffer(0);
 	m_FillLightRootSig[1].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2);
-	m_FillLightRootSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 2);
+	m_FillLightRootSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1);
 	m_FillLightRootSig.Finalize(L"FillLightRS");
 
 	m_FillLightGridCS_8.SetRootSignature(m_FillLightRootSig);
@@ -91,16 +91,32 @@ void Lighting::InitializeResources(void)
 	m_FillLightGridCS_32.SetComputeShader(g_pFillLightGrid_32_CS, sizeof(g_pFillLightGrid_32_CS));
 	m_FillLightGridCS_32.Finalize();
 
+	// Assumes max resolution of 3840x2160
+	uint32_t lightGridCells = Math::DivideByMultiple(3840, eMinLightGridDimension) * Math::DivideByMultiple(2160, eMinLightGridDimension);
+	uint32_t lightGridSizeBytes = lightGridCells * (1 + MaxLights);
+	m_LightGrid.Create(L"m_LightGrid", lightGridSizeBytes, sizeof(UINT));
+
+	m_LightShadowArray.CreateArray(L"m_LightShadowArray", eShadowDimension, eShadowDimension, 1, MaxShadowedLights, DXGI_FORMAT_R16_UNORM);
+	m_LightShadowTempBuffer.Create(L"m_LightShadowTempBuffer", eShadowDimension, eShadowDimension);
+
+	m_LightBuffer.Create(L"m_LightBuffer", MaxLights, sizeof(LightData));
+
 }
 
 void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound)
 {
+
 }
 
 void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 {
+
 }
 
 void Lighting::Shutdown(void)
 {
+	m_LightBuffer.Destroy();
+	m_LightGrid.Destroy();
+	m_LightShadowArray.Destroy();
+	m_LightShadowTempBuffer.Destroy();
 }

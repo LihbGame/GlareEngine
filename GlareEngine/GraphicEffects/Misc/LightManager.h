@@ -26,9 +26,10 @@ namespace GlareEngine
 		extern IntVar LightGridDim;
 
 		enum { MaxLights = 1024 };
+		enum { MaxShadowedLights = 128 };
 
 		extern StructuredBuffer m_LightBuffer;
-		extern ByteAddressBuffer m_LightGrid;
+		extern StructuredBuffer m_LightGrid;
 
 		extern std::uint32_t m_FirstConeLight;
 		extern std::uint32_t m_FirstConeShadowedLight;
