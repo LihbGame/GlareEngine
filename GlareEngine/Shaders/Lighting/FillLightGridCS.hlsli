@@ -7,7 +7,7 @@ cbuffer CSConstants : register(b0)
     float InvTileDim;
     float RcpZMagic;
     uint TileCountX;
-    float4x4 ViewProjMatrix;
+    float4x4 InverseViewProj;
     float4x4 InverseProjection;
 };
 

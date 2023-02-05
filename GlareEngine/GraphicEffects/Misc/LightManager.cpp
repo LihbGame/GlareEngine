@@ -6,12 +6,14 @@
 #include "Graphics/BufferManager.h"
 #include "Math/VectorMath.h"
 #include "Engine/EngineAdjust.h"
+#include "Math/MathHelper.h"
 
 //shaders
 #include "CompiledShaders/FillLightGrid_8_CS.h"
 #include "CompiledShaders/FillLightGrid_16_CS.h"
 #include "CompiledShaders/FillLightGrid_24_CS.h"
 #include "CompiledShaders/FillLightGrid_32_CS.h"
+
 
 using namespace GlareEngine::Math;
 using namespace GlareEngine;
@@ -31,6 +33,19 @@ struct LightData
 
 	float ShadowTextureMatrix[16];
 };
+
+
+struct CSConstants
+{
+	uint32_t ViewportWidth;
+	uint32_t ViewportHeight;
+	float InvTileDim;
+	float RcpZMagic;
+	uint32_t TileCount;
+	Matrix4 InverseViewProj;
+	Matrix4 InverseProjection;
+};
+
 
 enum { eMinLightGridDimension = 8 };
 
@@ -105,6 +120,94 @@ void Lighting::InitializeResources(void)
 
 void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound)
 {
+	Vector3 BoundSize = maxBound - minBound;
+	Vector3 BoundBias = minBound;
+
+	srand((unsigned)time(NULL));
+
+	auto RandUINT = []() -> uint32_t
+	{
+		return rand(); // [0, RAND_MAX]
+	};
+
+	auto RandFloat = [RandUINT]() -> float
+	{
+		return RandUINT() * (1.0f / RAND_MAX);
+	};
+
+	auto RandVector = [RandFloat]() -> Vector3
+	{
+		return Vector3(RandFloat(), RandFloat(), RandFloat());
+	};
+
+
+	auto randGaussian = [RandFloat]() -> float
+	{
+		//box-muller
+		static bool gaussianPair = true;
+		static float y2;
+
+		if (gaussianPair)
+		{
+			gaussianPair = false;
+
+			float x1, x2, w;
+			do
+			{
+				x1 = 2 * RandFloat() - 1;
+				x2 = 2 * RandFloat() - 1;
+				w = x1 * x1 + x2 * x2;
+			} while (w >= 1);
+
+			w = sqrtf(-2 * logf(w) / w);
+			y2 = x2 * w;
+			return x1 * w;
+		}
+		else
+		{
+			gaussianPair = true;
+			return y2;
+		}
+	};
+	auto randVecGaussian = [randGaussian]() -> Vector3
+	{
+		return Normalize(Vector3(randGaussian(), randGaussian(), randGaussian()));
+	};
+
+	int pointLightCount = (MaxLights - MaxShadowedLights) / 2;
+	for (uint32_t lightIndex = 0; lightIndex < MaxLights; lightIndex++)
+	{
+		Vector3 position = RandVector() * BoundSize + BoundBias;
+		float lightRadius = RandFloat() * 100.0f;
+
+		Vector3 color = RandVector();
+		float colorScale = RandFloat() * 0.5f;
+		color = color * colorScale;
+
+		uint32_t type;
+
+		if (lightIndex < pointLightCount)
+			type = 0;//point light
+		else if (lightIndex < pointLightCount * 2)
+			type = 1;//cone light
+		else
+			type = 2;//shadowed cone light
+
+		Vector3 coneDir = randVecGaussian();
+		float coneInner = RandFloat() * 0.1f * MathHelper::Pi;
+		float coneOuter = coneInner + RandFloat() * 0.1f * MathHelper::Pi;
+
+		if (type == 1 || type == 2)
+		{
+			// emphasize cone lights
+			color = color * 5.0f;
+		}
+
+
+
+
+	}
+
 
 }
 
