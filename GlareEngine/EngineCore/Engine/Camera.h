@@ -73,6 +73,7 @@ public:
 	// After modifying camera position/orientation, call to rebuild the view matrix.
 	void UpdateViewMatrix();
 
+	bool GetViewDirty() const { return mViewDirty; }
 protected:
 	virtual ShadowMap* GetShadowMap() { return nullptr; }
 

@@ -6,7 +6,8 @@
 #include "Model/Model.h"
 #include "InstanceModel/glTFInstanceModel.h"
 #include "Model/MeshSorter.h"
-#include <Engine/EngineProfiling.h>
+#include "Engine/EngineProfiling.h"
+#include "Misc/LightManager.h"
 
 /// Scene/////////////////////////////////////////////
 using namespace GlareEngine::Render;

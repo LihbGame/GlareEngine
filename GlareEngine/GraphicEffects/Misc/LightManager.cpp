@@ -6,12 +6,16 @@
 #include "Graphics/BufferManager.h"
 #include "Math/VectorMath.h"
 #include "Engine/EngineAdjust.h"
+#include "Math/MathHelper.h"
+#include "Engine/EngineProfiling.h"
 
 //shaders
 #include "CompiledShaders/FillLightGrid_8_CS.h"
 #include "CompiledShaders/FillLightGrid_16_CS.h"
 #include "CompiledShaders/FillLightGrid_24_CS.h"
 #include "CompiledShaders/FillLightGrid_32_CS.h"
+
+
 
 using namespace GlareEngine::Math;
 using namespace GlareEngine;
@@ -31,6 +35,19 @@ struct LightData
 
 	float ShadowTextureMatrix[16];
 };
+
+
+struct CSConstants
+{
+	uint32_t ViewportWidth;
+	uint32_t ViewportHeight;
+	float InvTileDim;
+	float RcpZMagic;
+	uint32_t TileCount;
+	Matrix4 InverseViewProj;
+	Matrix4 InverseProjection;
+};
+
 
 enum { eMinLightGridDimension = 8 };
 
@@ -105,11 +122,162 @@ void Lighting::InitializeResources(void)
 
 void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound)
 {
+	Vector3 BoundSize = maxBound - minBound;
+	Vector3 BoundBias = minBound;
 
+	srand((unsigned)time(NULL));
+
+	auto RandUINT = []() -> uint32_t
+	{
+		return rand(); // [0, RAND_MAX]
+	};
+
+	auto RandFloat = [RandUINT]() -> float
+	{
+		return RandUINT() * (1.0f / RAND_MAX);
+	};
+
+	auto RandVector = [RandFloat]() -> Vector3
+	{
+		return Vector3(RandFloat(), RandFloat(), RandFloat());
+	};
+
+
+	auto randGaussian = [RandFloat]() -> float
+	{
+		//box-muller
+		static bool gaussianPair = true;
+		static float y2;
+
+		if (gaussianPair)
+		{
+			gaussianPair = false;
+
+			float x1, x2, w;
+			do
+			{
+				x1 = 2 * RandFloat() - 1;
+				x2 = 2 * RandFloat() - 1;
+				w = x1 * x1 + x2 * x2;
+			} while (w >= 1);
+
+			w = sqrtf(-2 * logf(w) / w);
+			y2 = x2 * w;
+			return x1 * w;
+		}
+		else
+		{
+			gaussianPair = true;
+			return y2;
+		}
+	};
+	auto randVecGaussian = [randGaussian]() -> Vector3
+	{
+		return Normalize(Vector3(randGaussian(), randGaussian(), randGaussian()));
+	};
+
+	int pointLightCount = (MaxLights - MaxShadowedLights) / 2;
+	for (uint32_t lightIndex = 0; lightIndex < MaxLights; lightIndex++)
+	{
+		Vector3 position = RandVector() * BoundSize + BoundBias;
+		float lightRadius = RandFloat() * 100.0f;
+
+		Vector3 color = RandVector();
+		float colorScale = RandFloat() * 0.5f;
+		color = color * colorScale;
+
+		uint32_t type;
+
+		if (lightIndex < pointLightCount)
+			type = 0;//point light
+		else if (lightIndex < pointLightCount * 2)
+			type = 1;//cone light
+		else
+			type = 2;//shadowed cone light
+
+		Vector3 coneDir = randVecGaussian();
+		float coneInner = RandFloat() * 0.1f * MathHelper::Pi;
+		float coneOuter = coneInner + RandFloat() * 0.1f * MathHelper::Pi;
+
+		if (type == 1 || type == 2)
+		{
+			// emphasize cone lights
+			color = color * 5.0f;
+		}
+
+		Camera shadowCamera;
+		shadowCamera.LookAt(position, position + coneDir, Vector3(0, 1, 0));
+		shadowCamera.SetLens(coneOuter * 2, 1.0f, lightRadius * 0.05f, lightRadius * 1.0f);
+		shadowCamera.UpdateViewMatrix();
+		m_LightShadowMatrix[lightIndex] = (Matrix4)shadowCamera.GetViewProj();
+
+		Matrix4 shadowTextureMatrix =  m_LightShadowMatrix[lightIndex]* Matrix4(AffineTransform(Matrix3::MakeScale(0.5f, -0.5f, 1.0f), Vector3(0.5f, 0.5f, 0.0f)));
+
+		m_LightData[lightIndex].PositionWS[0] = position.GetX();
+		m_LightData[lightIndex].PositionWS[1] = position.GetY();
+		m_LightData[lightIndex].PositionWS[2] = position.GetZ();
+		m_LightData[lightIndex].RadiusSquare = lightRadius * lightRadius;
+		m_LightData[lightIndex].Color[0] = color.GetX();
+		m_LightData[lightIndex].Color[1] = color.GetY();
+		m_LightData[lightIndex].Color[2] = color.GetZ();
+		m_LightData[lightIndex].Type = type;
+		m_LightData[lightIndex].ConeDir[0] = coneDir.GetX();
+		m_LightData[lightIndex].ConeDir[1] = coneDir.GetY();
+		m_LightData[lightIndex].ConeDir[2] = coneDir.GetZ();
+		m_LightData[lightIndex].ConeAngles[0] = 1.0f / (cosf(coneInner) - cosf(coneOuter));
+		m_LightData[lightIndex].ConeAngles[1] = cosf(coneOuter);
+		std::memcpy(m_LightData[lightIndex].ShadowTextureMatrix, &shadowTextureMatrix, sizeof(shadowTextureMatrix));
+	}
+
+	for (uint32_t n = 0; n < MaxLights; n++)
+	{
+		if (m_LightData[n].Type == 1)
+		{
+			m_FirstConeLight = n;
+			break;
+		}
+	}
+	for (uint32_t n = 0; n < MaxLights; n++)
+	{
+		if (m_LightData[n].Type == 2)
+		{
+			m_FirstConeShadowedLight = n;
+			break;
+		}
+	}
+
+	CommandContext::InitializeBuffer(m_LightBuffer, m_LightData, MaxLights * sizeof(LightData));
 }
 
 void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 {
+	if (camera.GetViewDirty())
+	{
+		Vector4 positionWS = Vector4(m_LightData->PositionWS[0], m_LightData->PositionWS[1], m_LightData->PositionWS[2], 1.0f);
+		Vector4 positionVS = positionWS * (Matrix4)camera.GetView();
+		m_LightData->PositionVS[0] = positionVS.GetX();
+		m_LightData->PositionVS[1] = positionVS.GetY();
+		m_LightData->PositionVS[2] = positionVS.GetZ();
+		CommandContext::InitializeBuffer(m_LightBuffer, m_LightData, MaxLights * sizeof(LightData));
+	}
+
+	ScopedTimer _prof(L"FillLightGrid", gfxContext);
+
+	ComputeContext& Context = gfxContext.GetComputeContext();
+
+	Context.SetRootSignature(m_FillLightRootSig);
+
+	switch ((int)LightGridDim)
+	{
+	case  8: Context.SetPipelineState(m_FillLightGridCS_8); break;
+	case 16: Context.SetPipelineState(m_FillLightGridCS_16); break;
+	case 24: Context.SetPipelineState(m_FillLightGridCS_24); break;
+	case 32: Context.SetPipelineState(m_FillLightGridCS_32); break;
+	default: assert(false); break;
+	}
+
+
+
 
 }
 
