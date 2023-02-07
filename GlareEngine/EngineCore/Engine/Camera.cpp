@@ -220,6 +220,11 @@ DirectX::XMFLOAT4X4 Camera::GetViewProj() const
 	return mViewProj;
 }
 
+DirectX::XMMATRIX Camera::GetViewProjection() const
+{
+	return XMLoadFloat4x4(&mViewProj);
+}
+
 void Camera::SetView(XMMATRIX view)
 {
 	XMStoreFloat4x4(&mView, view);
