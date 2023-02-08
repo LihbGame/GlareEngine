@@ -295,3 +295,8 @@ Math::OrientedBox GlareEngine::ModelInstance::GetBoundingBox() const
 
 	return m_Model->m_BoundingBox * m_Locator;
 }
+
+Math::AxisAlignedBox GlareEngine::ModelInstance::GetAxisAlignedBox() const
+{
+	return m_Model.get()->m_BoundingBox;
+}

@@ -43,6 +43,7 @@ struct CSConstants
 	uint32_t ViewportHeight;
 	float InvTileDim;
 	float RcpZMagic;
+	Vector3 EyePositionWS;
 	uint32_t TileCount;
 	Matrix4 InverseViewProj;
 	Matrix4 InverseProjection;
@@ -267,7 +268,7 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 
 	Context.SetRootSignature(m_FillLightRootSig);
 
-	switch ((int)LightGridDim)
+	switch ((int)LightGridDimension)
 	{
 	case  8: Context.SetPipelineState(m_FillLightGridCS_8); break;
 	case 16: Context.SetPipelineState(m_FillLightGridCS_16); break;
@@ -284,8 +285,8 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 	Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
 	Context.SetDynamicDescriptor(2, 0, m_LightGrid.GetUAV());
 
-	uint32_t tileCountX = (uint32_t)(Math::DivideByMultiple((float)g_SceneColorBuffer.GetWidth(), LightGridDim) + 1.0f);
-	uint32_t tileCountY = (uint32_t)(Math::DivideByMultiple((float)g_SceneColorBuffer.GetHeight(), LightGridDim) + 1.0f);
+	uint32_t tileCountX = (uint32_t)(Math::DivideByMultiple((float)g_SceneColorBuffer.GetWidth(), LightGridDimension) + 1.0f);
+	uint32_t tileCountY = (uint32_t)(Math::DivideByMultiple((float)g_SceneColorBuffer.GetHeight(), LightGridDimension) + 1.0f);
 
 	float FarClipDist = camera.GetFarZ();
 	float NearClipDist = camera.GetNearZ();
@@ -294,9 +295,10 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 	CSConstants csConstants;
 	csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
 	csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
-	csConstants.InvTileDim = 1.0f / LightGridDim;
+	csConstants.InvTileDim = 1.0f / LightGridDimension;
 	csConstants.RcpZMagic = RcpZMagic;
 	csConstants.TileCount = tileCountX;
+	csConstants.EyePositionWS = (Vector3)camera.GetPosition();
 
 	XMMATRIX Proj = camera.GetProj();
 	XMMATRIX ViewProj = camera.GetViewProjection();

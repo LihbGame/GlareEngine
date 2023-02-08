@@ -21,6 +21,7 @@
 #include "Model/Model.h"
 #include "Model/glTFModelLoader.h"
 #include "InstanceModel/glTFInstanceModel.h"
+#include "Misc/LightManager.h"
 
 //lib
 #pragma comment(lib, "dxgi.lib")
@@ -226,8 +227,10 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 				gScenes[3]->AddObjectToScene(model.get());
 			}
 
-			// Scene 5
+			// Scene 5  sponza
 			gScenes[4]->AddGLTFModelToScene(mGLTFModels[3].get());
+			//Create random lights in Sponsa
+			Lighting::CreateRandomLights(mGLTFModels[3].get()->GetModel()->GetAxisAlignedBox().GetMin(), mGLTFModels[3].get()->GetModel()->GetAxisAlignedBox().GetMax());
 
 			InitializeContext.Finish(true);
 

@@ -392,6 +392,8 @@ void Scene::ForwardPlusRendering()
 		sorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
 	}
 
+	Lighting::FillLightGrid(Context, *m_pCamera);
+
 	{
 		ScopedTimer _outerprof(L"Main Render", Context);
 

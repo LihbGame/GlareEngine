@@ -11,6 +11,7 @@
 #include "InstanceModel/InstanceModel.h"
 #include "InstanceModel/glTFInstanceModel.h"
 #include "PostProcessing/PostProcessing.h"
+#include "Misc/LightManager.h"
 
 namespace GlareEngine
 {
@@ -49,11 +50,14 @@ namespace GlareEngine
 
 		gSamplerHeap.Create(L"Scene Sampler Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 2048);
 
+		Lighting::InitializeResources();
+
 		s_Initialized = true;
 	}
 
 	void Render::ShutDown()
 	{
+		Lighting::Shutdown();
 		gTextureHeap.Destroy();
 		gSamplerHeap.Destroy();
 	}

@@ -23,7 +23,7 @@ namespace GlareEngine
 	namespace Lighting
 	{
 		using namespace GlareEngine::Math;
-		extern IntVar LightGridDim;
+		extern IntVar LightGridDimension;
 
 		enum { MaxLights = 1024 };
 		enum { MaxShadowedLights = 128 };
