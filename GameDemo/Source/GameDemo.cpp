@@ -230,7 +230,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			// Scene 5  sponza
 			gScenes[4]->AddGLTFModelToScene(mGLTFModels[3].get());
 			//Create random lights in Sponsa
-			Lighting::CreateRandomLights(mGLTFModels[3].get()->GetModel()->GetAxisAlignedBox().GetMin(), mGLTFModels[3].get()->GetModel()->GetAxisAlignedBox().GetMax());
+			Lighting::CreateRandomLights(mGLTFModels[3].get()->GetModel()->GetAxisAlignedBox().GetMin()*30, mGLTFModels[3].get()->GetModel()->GetAxisAlignedBox().GetMax()*30);
 
 			InitializeContext.Finish(true);
 

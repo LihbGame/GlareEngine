@@ -57,7 +57,7 @@ namespace GlareEngine
 	namespace Lighting
 	{
 		//light tile size
-		IntVar LightGridDimension("Rendering/Forward+/Light Grid Dimension", 16, eMinLightGridDimension, 32, 8);
+		IntVar LightGridDimension("Rendering/Forward+/Light Grid Dimension", 8, eMinLightGridDimension, 32, 8);
 
 		//Light RootSignature
 		RootSignature m_FillLightRootSig;
@@ -254,7 +254,7 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 {
 	ScopedTimer _prof(L"FillLightGrid", gfxContext);
 
-	if (camera.GetViewDirty())
+//	if (camera.GetViewDirty())
 	{
 		Vector4 positionWS = Vector4(m_LightData->PositionWS[0], m_LightData->PositionWS[1], m_LightData->PositionWS[2], 1.0f);
 		Vector4 positionVS = positionWS * (Matrix4)camera.GetView();

@@ -82,6 +82,11 @@ GlareEngine::ModelInstance::ModelInstance(std::shared_ptr<Model> sourceModel,flo
 		m_Locator.SetScale(Scalar(Vector3(Scale)));
 	}
 
+	//Update Bounding Box
+	AxisAlignedBox box(m_Model->m_BoundingBox.GetMin() * m_Locator, m_Model->m_BoundingBox.GetMin() * m_Locator);
+	m_Model->m_BoundingBox.AddBoundingBox(box);
+
+
 	if (sourceModel == nullptr)
 	{
 		m_MeshConstantsCPU.Destroy();

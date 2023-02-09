@@ -108,7 +108,8 @@ bool SphereInsideFrustum(Sphere sphere, Frustum frustum, float zNear, float zFar
 void main(
     uint2 Gid : SV_GroupID,
     uint2 GTid : SV_GroupThreadID,
-    uint GI : SV_GroupIndex)
+    uint GI : SV_GroupIndex,
+    uint2 DTI : SV_DispatchThreadID)
 {
     // initialize shared data
     if (GI == 0)
@@ -158,13 +159,13 @@ void main(
     // frustum vertices.
     float4 screenSpace[4];
     // Top left point
-    screenSpace[0] = float4(IN.dispatchThreadID.xy * 8, 1.0f, 1.0f);
+    screenSpace[0] = float4(DTI.xy * 8, 1.0f, 1.0f);
     // Top right point
-    screenSpace[1] = float4(float2(IN.dispatchThreadID.x + 1, IN.dispatchThreadID.y) * 8, 1.0f, 1.0f);
+    screenSpace[1] = float4(float2(DTI.x + 1, DTI.y) * 8, 1.0f, 1.0f);
     // Bottom left point
-    screenSpace[2] = float4(float2(IN.dispatchThreadID.x, IN.dispatchThreadID.y + 1) * 8, 1.0f, 1.0f);
+    screenSpace[2] = float4(float2(DTI.x, DTI.y + 1) * 8, 1.0f, 1.0f);
     // Bottom right point
-    screenSpace[3] = float4(float2(IN.dispatchThreadID.x + 1, IN.dispatchThreadID.y + 1) * 8, 1.0f, 1.0f);
+    screenSpace[3] = float4(float2(DTI.x + 1, DTI.y + 1) * 8, 1.0f, 1.0f);
 
     float3 viewSpace[4];
     // Now convert the screen space points to view space
@@ -193,15 +194,15 @@ void main(
     for (uint lightIndex = GI; lightIndex < MAX_LIGHTS; lightIndex += 64)
     {
         TileLightData lightData = lightBuffer[lightIndex];
-        float lightCullRadius = sqrt(lightData.radiusSq);
+        float lightCullRadius = sqrt(lightData.RadiusSq);
 
-        Sphere sphere = { light.PositionVS.xyz, lightCullRadius };
+        Sphere sphere = { lightData.PositionVS.xyz, lightCullRadius };
         if (!SphereInsideFrustum(sphere, frustum, minDepthVS, maxDepthVS))
             continue;
 
         uint slot;
 
-        switch (lightData.type)
+        switch (lightData.Type)
         {
         case 0: // sphere
             InterlockedAdd(tileLightCountSphere, 1, slot);
@@ -226,23 +227,23 @@ void main(
     {
         uint lightCount = tileLightCountSphere + tileLightCountCone + tileLightCountConeShadowed;
 
-        lightGrid.Store(tileOffset, lightCount);
+        lightGrid[tileOffset] = lightCount;
 
         uint storeOffset = tileOffset + 1;
         uint n;
         for (n = 0; n < tileLightCountSphere; n++)
         {
-            lightGrid.Store(storeOffset, tileLightIndicesSphere[n]);
+            lightGrid[storeOffset]=tileLightIndicesSphere[n];
             storeOffset += 1;
         }
         for (n = 0; n < tileLightCountCone; n++)
         {
-            lightGrid.Store(storeOffset, tileLightIndicesCone[n]);
+            lightGrid[storeOffset] = tileLightIndicesCone[n];
             storeOffset += 1;
         }
         for (n = 0; n < tileLightCountConeShadowed; n++)
         {
-            lightGrid.Store(storeOffset, tileLightIndicesConeShadowed[n]);
+            lightGrid[storeOffset] = tileLightIndicesConeShadowed[n];
             storeOffset += 1;
         }
     }

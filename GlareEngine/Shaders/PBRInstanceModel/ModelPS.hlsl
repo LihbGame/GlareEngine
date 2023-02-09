@@ -147,5 +147,5 @@ float4 main(VSOutput vsOutput) : SV_Target0
 
     // TODO: Shade each light using Forward+ tiles
 
-    return float4(color, baseColor.a);
+    return gSRVMap[57].Sample(baseColorSampler, UVSET(BASECOLOR));// float4(color, baseColor.a);
 }

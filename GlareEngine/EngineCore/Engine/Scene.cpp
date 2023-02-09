@@ -391,8 +391,11 @@ void Scene::ForwardPlusRendering()
 		ScopedTimer _prof(L"Depth PrePass", Context);
 		sorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
 	}
-
-	Lighting::FillLightGrid(Context, *m_pCamera);
+	static int ss;
+	{
+		Lighting::FillLightGrid(Context, *m_pCamera);
+		AddToGlobalTextureSRVDescriptor(Lighting::m_LightGrid.GetSRV());
+	}
 
 	{
 		ScopedTimer _outerprof(L"Main Render", Context);
