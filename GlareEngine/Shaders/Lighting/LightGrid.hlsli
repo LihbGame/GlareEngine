@@ -8,11 +8,8 @@
 struct TileLightData
 {
     float3 PositionWS;
-    float RadiusSq;
-
     float3 PositionVS;
-    uint Pad01;
-
+    float RadiusSq;
     float3 color;
     uint Type;
 

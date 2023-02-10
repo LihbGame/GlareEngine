@@ -83,7 +83,9 @@ GlareEngine::ModelInstance::ModelInstance(std::shared_ptr<Model> sourceModel,flo
 	}
 
 	//Update Bounding Box
-	AxisAlignedBox box(m_Model->m_BoundingBox.GetMin() * m_Locator, m_Model->m_BoundingBox.GetMin() * m_Locator);
+	AxisAlignedBox box;
+	box.AddPoint(m_Model->m_BoundingBox.GetMin() * m_Locator);
+	box.AddPoint(m_Model->m_BoundingBox.GetMax() * m_Locator);
 	m_Model->m_BoundingBox.AddBoundingBox(box);
 
 

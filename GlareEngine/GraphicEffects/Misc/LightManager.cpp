@@ -44,9 +44,9 @@ struct CSConstants
 	float InvTileDim;
 	float RcpZMagic;
 	Vector3 EyePositionWS;
-	uint32_t TileCount;
 	Matrix4 InverseViewProj;
 	Matrix4 InverseProjection;
+	uint32_t TileCount;
 };
 
 
@@ -252,15 +252,18 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 
 void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 {
-	ScopedTimer _prof(L"FillLightGrid", gfxContext);
+	ScopedTimer _prof(L"Fill Light Grid", gfxContext);
 
 //	if (camera.GetViewDirty())
 	{
-		Vector4 positionWS = Vector4(m_LightData->PositionWS[0], m_LightData->PositionWS[1], m_LightData->PositionWS[2], 1.0f);
-		Vector4 positionVS = positionWS * (Matrix4)camera.GetView();
-		m_LightData->PositionVS[0] = positionVS.GetX();
-		m_LightData->PositionVS[1] = positionVS.GetY();
-		m_LightData->PositionVS[2] = positionVS.GetZ();
+		for (size_t i = 0; i < MaxLights; i++)
+		{
+			Vector4 positionWS = Vector4(m_LightData[i].PositionWS[0], m_LightData[i].PositionWS[1], m_LightData[i].PositionWS[2], 1.0f);
+			Vector4 positionVS = positionWS * (Matrix4)camera.GetView();
+			m_LightData[i].PositionVS[0] = positionVS.GetX();
+			m_LightData[i].PositionVS[1] = positionVS.GetY();
+			m_LightData[i].PositionVS[2] = positionVS.GetZ();
+		}
 		CommandContext::InitializeBuffer(m_LightBuffer, m_LightData, MaxLights * sizeof(LightData));
 	}
 

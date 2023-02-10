@@ -394,7 +394,7 @@ void Scene::ForwardPlusRendering()
 	static int ss;
 	{
 		Lighting::FillLightGrid(Context, *m_pCamera);
-		AddToGlobalTextureSRVDescriptor(Lighting::m_LightGrid.GetSRV());
+		ss=AddToGlobalTextureSRVDescriptor(Lighting::m_LightGrid.GetSRV());
 	}
 
 	{

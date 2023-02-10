@@ -6,9 +6,10 @@ cbuffer CSConstants : register(b0)
     uint ViewportHeight;
     float InvTileDim;
     float RcpZMagic;
-    uint TileCountX;
+    float3 EyePositionWS;
     float4x4 InverseViewProj;
     float4x4 InverseProjection;
+    uint TileCountX;
 };
 
 
@@ -28,6 +29,8 @@ groupshared uint tileLightIndicesSphere[MAX_LIGHTS];
 groupshared uint tileLightIndicesCone[MAX_LIGHTS];
 groupshared uint tileLightIndicesConeShadowed[MAX_LIGHTS];
 
+// Now build the frustum planes from the view space points
+groupshared Frustum frustum;
 
 // Convert clip space coordinates to view space
 float4 ClipToView(float4 clip)
@@ -83,10 +86,7 @@ bool SphereInsideFrustum(Sphere sphere, Frustum frustum, float zNear, float zFar
 {
     bool result = true;
 
-    // First check depth
-    // Note: Here, the view vector points in the -Z axis so the 
-    // far depth value will be approaching -infinity.
-    if (sphere.c.z - sphere.r > zNear || sphere.c.z + sphere.r < zFar)
+    if (sphere.c.z + sphere.r < zNear || sphere.c.z - sphere.r > zFar)
     {
         result = false;
     }
@@ -141,51 +141,54 @@ void main(
     }
     GroupMemoryBarrierWithGroupSync();
 
-
-    //Frustum Calculate 
-
     float fMinDepth = asfloat(minDepthUInt);
     float fMaxDepth = asfloat(maxDepthUInt);
 
     // Convert depth values to view space.
-    float minDepthVS = ScreenToView(float4(0, 0, fMinDepth, 1)).z;
-    float maxDepthVS = ScreenToView(float4(0, 0, fMaxDepth, 1)).z;
+    float maxDepthVS = ScreenToView(float4(0, 0, fMinDepth, 1)).z;
+    float minDepthVS = ScreenToView(float4(0, 0, fMaxDepth, 1)).z;
 
+    float3 viewSpace0;
+    float3 viewSpace1;
+    float3 viewSpace2;
+    float3 viewSpace3;
 
-    // View space eye position is always at the origin.
-    const float3 eyePos = float3(0, 0, 0);
-
-    // Compute 4 points on the far clipping plane to use as the 
-    // frustum vertices.
-    float4 screenSpace[4];
-    // Top left point
-    screenSpace[0] = float4(DTI.xy * 8, 1.0f, 1.0f);
-    // Top right point
-    screenSpace[1] = float4(float2(DTI.x + 1, DTI.y) * 8, 1.0f, 1.0f);
-    // Bottom left point
-    screenSpace[2] = float4(float2(DTI.x, DTI.y + 1) * 8, 1.0f, 1.0f);
-    // Bottom right point
-    screenSpace[3] = float4(float2(DTI.x + 1, DTI.y + 1) * 8, 1.0f, 1.0f);
-
-    float3 viewSpace[4];
-    // Now convert the screen space points to view space
-    for (int i = 0; i < 4; i++)
+    if (GI == 0)
     {
-        viewSpace[i] = ScreenToView(screenSpace[i]).xyz;
+        //Frustum Calculate 
+
+        // View space eye position is always at the origin.
+        const float3 eyePos = float3(0, 0, 0);
+
+        // Compute 4 points on the far clipping plane to use as the frustum vertices.
+        float4 screenSpace[4];
+        // Top left point
+        screenSpace[0] = float4(DTI.xy, 0.0f, 1.0f);
+        // Top right point
+        screenSpace[1] = float4(float2(DTI.x + WORK_GROUP_SIZE_Y, DTI.y), 0.0f, 1.0f);
+        // Bottom left point
+        screenSpace[2] = float4(float2(DTI.x, DTI.y + WORK_GROUP_SIZE_Y), 0.0f, 1.0f);
+        // Bottom right point
+        screenSpace[3] = float4(float2(DTI.x + WORK_GROUP_SIZE_Y, DTI.y + WORK_GROUP_SIZE_Y), 0.0f, 1.0f);
+
+        float3 viewSpace[4];
+        // Now convert the screen space points to view space
+        for (int i = 0; i < 4; i++)
+        {
+            viewSpace[i] = ScreenToView(screenSpace[i]).xyz;
+        }
+
+        // Left plane
+        frustum.planes[0] = ComputePlane(eyePos, viewSpace[2], viewSpace[0]);
+        // Right plane
+        frustum.planes[1] = ComputePlane(eyePos, viewSpace[1], viewSpace[3]);
+        // Top plane
+        frustum.planes[2] = ComputePlane(eyePos, viewSpace[0], viewSpace[1]);
+        // Bottom plane
+        frustum.planes[3] = ComputePlane(eyePos, viewSpace[3], viewSpace[2]);
     }
 
-    // Now build the frustum planes from the view space points
-    Frustum frustum;
-
-    // Left plane
-    frustum.planes[0] = ComputePlane(eyePos, viewSpace[2], viewSpace[0]);
-    // Right plane
-    frustum.planes[1] = ComputePlane(eyePos, viewSpace[1], viewSpace[3]);
-    // Top plane
-    frustum.planes[2] = ComputePlane(eyePos, viewSpace[0], viewSpace[1]);
-    // Bottom plane
-    frustum.planes[3] = ComputePlane(eyePos, viewSpace[3], viewSpace[2]);
-
+    GroupMemoryBarrierWithGroupSync();
 
     uint tileIndex = GetTileIndex(Gid.xy, TileCountX);
     uint tileOffset = GetTileOffset(tileIndex);
