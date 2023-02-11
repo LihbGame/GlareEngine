@@ -3,15 +3,17 @@
 
 //Light counts sync with console code
 #define MAX_LIGHTS 1024
-#define TILE_SIZE (1 + MAX_LIGHTS)
+#define TILE_SIZE (1 /*+ MAX_LIGHTS*/)
 
 struct TileLightData
 {
     float3 PositionWS;
-    float3 PositionVS;
     float RadiusSq;
+
     float3 color;
     uint Type;
+
+    float3 PositionVS;
 
     float3 ConeDir;
     float2 ConeAngles; // x = 1.0f / (cos(coneInner) - cos(coneOuter)), y = cos(coneOuter)

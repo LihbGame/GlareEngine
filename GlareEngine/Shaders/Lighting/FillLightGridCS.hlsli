@@ -55,9 +55,7 @@ float4 ScreenToView(float4 screen)
     return ClipToView(clip);
 }
 
-// Compute a plane from 3 noncollinear points that form a triangle.
-// This equation assumes a right-handed (counter-clockwise winding order) 
-// coordinate system to determine the direction of the plane normal.
+
 Plane ComputePlane(float3 p0, float3 p1, float3 p2)
 {
     Plane plane;
@@ -148,11 +146,6 @@ void main(
     float maxDepthVS = ScreenToView(float4(0, 0, fMinDepth, 1)).z;
     float minDepthVS = ScreenToView(float4(0, 0, fMaxDepth, 1)).z;
 
-    float3 viewSpace0;
-    float3 viewSpace1;
-    float3 viewSpace2;
-    float3 viewSpace3;
-
     if (GI == 0)
     {
         //Frustum Calculate 
@@ -232,7 +225,7 @@ void main(
 
         lightGrid[tileOffset] = lightCount;
 
-        uint storeOffset = tileOffset + 1;
+       /* uint storeOffset = tileOffset + 1;
         uint n;
         for (n = 0; n < tileLightCountSphere; n++)
         {
@@ -248,6 +241,6 @@ void main(
         {
             lightGrid[storeOffset] = tileLightIndicesConeShadowed[n];
             storeOffset += 1;
-        }
+        }*/
     }
 }

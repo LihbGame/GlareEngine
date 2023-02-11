@@ -6,6 +6,8 @@ Texture2D<float1> occlusionTexture          : register(t2);
 Texture2D<float3> emissiveTexture           : register(t3);
 Texture2D<float3> normalTexture             : register(t4);
 
+StructuredBuffer<uint> gLightGridData : register(t3, space1);
+
 SamplerState baseColorSampler               : register(s0);
 SamplerState metallicRoughnessSampler       : register(s1);
 SamplerState occlusionSampler               : register(s2);
@@ -40,6 +42,7 @@ cbuffer MaterialConstants : register(b2)
 struct VSOutput
 {
     float4 position : SV_POSITION;
+    float4 positions : TEXCOORD4;
     float3 normal : NORMAL;
 #ifndef NO_TANGENT_FRAME
     float4 tangent : TANGENT;
@@ -146,6 +149,11 @@ float4 main(VSOutput vsOutput) : SV_Target0
     }
 
     // TODO: Shade each light using Forward+ tiles
-
-    return float4(color, baseColor.a);
+    float2 cvv = vsOutput.positions.xy / vsOutput.positions.w;
+    cvv.y = -cvv.y;
+    //cvv = (cvv + 1.0f) / 2.0f;
+    uint2 position = (cvv +1.0f)/2.0f * gRenderTargetSize / 8;
+    uint size = gRenderTargetSize.x / 8.0f+1.0f;
+    float data = gLightGridData[position.y*size+ position.x]/100.0f;
+    return float4(data,0, 0, 1);// float4(color, baseColor.a);
 }

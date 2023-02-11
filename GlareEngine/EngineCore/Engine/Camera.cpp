@@ -341,7 +341,7 @@ void Camera::UpdateViewMatrix()
 		mView(3, 3) = 1.0f;
 
 		mViewDirty = false;
-
+		mViewChanged = true;
 		
 		mCameraToWorld = Matrix4(XMMatrixInverse(&XMMatrixDeterminant(GetView()), GetView()));
 
@@ -349,6 +349,10 @@ void Camera::UpdateViewMatrix()
 
 		//create world space frustum
 		m_FrustumWS = m_FrustumVS * mCameraToWorld;
+	}
+	else
+	{
+		mViewChanged = false;
 	}
 }
 

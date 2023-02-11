@@ -88,6 +88,8 @@ namespace GlareEngine
 		gRootSignature[(int)RootSignatureType::eMaterialConstantData].InitAsBufferSRV(1, 1);
 		//Instance Constant Data 
 		gRootSignature[(int)RootSignatureType::eInstanceConstantData].InitAsBufferSRV(0, 1);
+		//Instance Constant Data 
+		gRootSignature[(int)RootSignatureType::eLightGridData].InitAsBufferSRV(3, 1);
 
 		//Static Samplers
 		gRootSignature.InitStaticSampler(10, SamplerLinearWrapDesc);

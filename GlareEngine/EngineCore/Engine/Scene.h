@@ -46,9 +46,13 @@ public:
 	void SetSceneLights(DirectionalLight* light, int DirectionalLightsCount = 1);
 	//Set RootSignature
 	void SetRootSignature(RootSignature* rootSignature);
+
+	void Finalize();
 public:
 	Camera* m_pCamera = nullptr;
 	unique_ptr<ShadowCamera> m_pSunShadowCamera = nullptr;
+
+	bool LoadingFinish = false;
 
 	EngineGUI* m_pGUI = nullptr;
 

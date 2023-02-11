@@ -74,7 +74,7 @@ public:
 	// After modifying camera position/orientation, call to rebuild the view matrix.
 	void UpdateViewMatrix();
 
-	bool GetViewDirty() const { return mViewDirty; }
+	bool GetViewChange() const { return mViewChanged; }
 protected:
 	virtual ShadowMap* GetShadowMap() { return nullptr; }
 
@@ -96,6 +96,7 @@ protected:
 	float mFarWindowHeight = 0.0f;
 
 	bool mViewDirty = true;
+	bool mViewChanged = true;
 
 	// Cache View/Proj matrices.
 	DirectX::XMFLOAT4X4 mView = MathHelper::Identity4x4();

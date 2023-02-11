@@ -12,6 +12,7 @@ enum class RootSignatureType :int
 	eMaterialSamplers,
 	eMaterialConstantData,
 	eInstanceConstantData,
+	eLightGridData,
 	eSkinMatrices,
 	eRootSignatureSize
 };

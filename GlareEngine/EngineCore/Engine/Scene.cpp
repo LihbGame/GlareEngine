@@ -108,6 +108,11 @@ void Scene::SetRootSignature(RootSignature* rootSignature)
 	m_pRootSignature = rootSignature;
 }
 
+void Scene::Finalize()
+{
+	LoadingFinish = true;
+}
+
 
 void Scene::AddObjectToScene(RenderObject* Object)
 {
@@ -391,10 +396,17 @@ void Scene::ForwardPlusRendering()
 		ScopedTimer _prof(L"Depth PrePass", Context);
 		sorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
 	}
-	static int ss;
+
+	if (LoadingFinish)
 	{
+		if (IsMSAA)
+		{
+			Context.TransitionResource(g_SceneMSAADepthBuffer, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
+			Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, true);
+			Context.GetCommandList()->ResolveSubresource(g_SceneDepthBuffer.GetResource(), 0, g_SceneMSAADepthBuffer.GetResource(), 0, DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS);
+		}
 		Lighting::FillLightGrid(Context, *m_pCamera);
-		ss=AddToGlobalTextureSRVDescriptor(Lighting::m_LightGrid.GetSRV());
+		Context.SetBufferSRV((int)RootSignatureType::eLightGridData, Lighting::m_LightGrid, 0);
 	}
 
 	{
@@ -458,6 +470,7 @@ void Scene::ForwardPlusRendering()
 			}
 
 			sorter.RenderMeshes(MeshSorter::eOpaque, Context, mMainConstants);
+			
 		}
 		sorter.RenderMeshes(MeshSorter::eTransparent, Context, mMainConstants);
 	}

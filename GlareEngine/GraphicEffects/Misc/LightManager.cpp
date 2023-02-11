@@ -25,11 +25,13 @@ using namespace GlareEngine;
 struct LightData
 {
 	float PositionWS[3];
-	float PositionVS[3];
 	float RadiusSquare;
-	float Color[3];
 
+	float Color[3];
 	uint32_t Type;
+
+	float PositionVS[3];
+
 	float ConeDir[3];
 	float ConeAngles[2];
 
@@ -82,6 +84,8 @@ namespace GlareEngine
 		ShadowBuffer m_LightShadowTempBuffer;
 		Matrix4 m_LightShadowMatrix[MaxLights];
 
+		bool FirstUpdateViewSpace = true;
+
 	}
 }
 
@@ -111,7 +115,7 @@ void Lighting::InitializeResources(void)
 
 	// Assumes max resolution of 3840x2160
 	uint32_t lightGridCells = Math::DivideByMultiple(3840, eMinLightGridDimension) * Math::DivideByMultiple(2160, eMinLightGridDimension);
-	uint32_t lightGridSizeBytes = lightGridCells * (1 + MaxLights);
+	uint32_t lightGridSizeBytes = lightGridCells * (1/* + MaxLights*/);
 	m_LightGrid.Create(L"m_LightGrid", lightGridSizeBytes, sizeof(UINT));
 
 	m_LightShadowArray.CreateArray(L"m_LightShadowArray", eShadowDimension, eShadowDimension, 1, MaxShadowedLights, DXGI_FORMAT_R16_UNORM);
@@ -181,7 +185,7 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 	for (uint32_t lightIndex = 0; lightIndex < MaxLights; lightIndex++)
 	{
 		Vector3 position = RandVector() * BoundSize + BoundBias;
-		float lightRadius = RandFloat() * 100.0f;
+		float lightRadius = RandFloat() * 200;
 
 		Vector3 color = RandVector();
 		float colorScale = RandFloat() * 0.5f;
@@ -254,8 +258,9 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 {
 	ScopedTimer _prof(L"Fill Light Grid", gfxContext);
 
-//	if (camera.GetViewDirty())
+	if (camera.GetViewChange()|| FirstUpdateViewSpace)
 	{
+		FirstUpdateViewSpace = false;
 		for (size_t i = 0; i < MaxLights; i++)
 		{
 			Vector4 positionWS = Vector4(m_LightData[i].PositionWS[0], m_LightData[i].PositionWS[1], m_LightData[i].PositionWS[2], 1.0f);

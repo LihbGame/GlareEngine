@@ -214,23 +214,25 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 				gScene->AddGLTFModelToScene(model.get());
 			}*/
 
-			// Scene 1
-			gScenes[0]->AddGLTFModelToScene(mGLTFModels[0].get());
-			// Scene 2
-			gScenes[1]->AddGLTFModelToScene(mGLTFModels[1].get());
-			// Scene 3
-			gScenes[2]->AddGLTFModelToScene(mGLTFModels[2].get());
-
-			//	Scene 4
-			for (auto& model : mModels)
-			{
-				gScenes[3]->AddObjectToScene(model.get());
-			}
-
 			// Scene 5  sponza
 			gScenes[4]->AddGLTFModelToScene(mGLTFModels[3].get());
 			//Create random lights in Sponsa
 			Lighting::CreateRandomLights(mGLTFModels[3].get()->GetModel()->GetAxisAlignedBox().GetMin(), mGLTFModels[3].get()->GetModel()->GetAxisAlignedBox().GetMax());
+			gScenes[4]->Finalize();
+
+			// Scene 1
+			gScenes[0]->AddGLTFModelToScene(mGLTFModels[0].get()); gScenes[0]->Finalize();
+			// Scene 2
+			gScenes[1]->AddGLTFModelToScene(mGLTFModels[1].get()); gScenes[1]->Finalize();
+			// Scene 3
+			gScenes[2]->AddGLTFModelToScene(mGLTFModels[2].get()); gScenes[2]->Finalize();
+
+			// Scene 4
+			for (auto& model : mModels)
+			{
+				gScenes[3]->AddObjectToScene(model.get());
+			}
+			gScenes[3]->Finalize();
 
 			InitializeContext.Finish(true);
 
