@@ -376,7 +376,7 @@ void LoadMaterials(Model& model,
 			AddToGlobalTextureSRVDescriptor(SourceTextures[j]);
 		}
 
-		uint32_t SRVDescriptorTable = MAXCUBESRVSIZE + g_TextureSRV.size() - eNumTextures;
+		uint32_t SRVDescriptorTable = MAXCUBESRVSIZE + COMMONSRVSIZE + g_TextureSRV.size() - eNumTextures;
 
 		// See if this combination of samplers has been used before. 
 		// If not, allocate more from the heap and copy in the descriptors.

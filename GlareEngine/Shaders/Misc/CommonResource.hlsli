@@ -3,6 +3,7 @@
 #define MAX2DSRVSIZE 1024
 #define MAXCUBESRVSIZE 32
 #define MAXPBRSRVSIZE 10
+#define COMMONSRVSIZE 10
 
 // Shadow map related variables
 #define NUM_SAMPLES 20
@@ -54,8 +55,8 @@ SamplerComparisonState gSamplerShadow   : register(s12);
 //Texture array, only supported for shader model 5.1+. Unlike Texture2DArray,
 //Textures in this array can have different sizes and formats, making it more flexible than texture arrays.
 
-TextureCube gCubeMaps[MAXCUBESRVSIZE]                   : register(t10);
-Texture2D   gSRVMap[MAX2DSRVSIZE]                       : register(t42);
+TextureCube gCubeMaps[MAXCUBESRVSIZE]                   : register(t20);
+Texture2D   gSRVMap[MAX2DSRVSIZE]                       : register(t52);
 
 
 StructuredBuffer<MaterialData> gMaterialData : register(t1, space1);

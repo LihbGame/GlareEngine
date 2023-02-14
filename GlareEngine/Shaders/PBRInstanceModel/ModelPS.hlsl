@@ -1,12 +1,12 @@
 #include "../Shadow/RealTimeShadowHelper.hlsli"
 
-Texture2D<float4> baseColorTexture          : register(t0);
-Texture2D<float3> metallicRoughnessTexture  : register(t1);
-Texture2D<float1> occlusionTexture          : register(t2);
-Texture2D<float3> emissiveTexture           : register(t3);
-Texture2D<float3> normalTexture             : register(t4);
+Texture2D<float4> baseColorTexture          : register(t10);
+Texture2D<float3> metallicRoughnessTexture  : register(t11);
+Texture2D<float1> occlusionTexture          : register(t12);
+Texture2D<float3> emissiveTexture           : register(t13);
+Texture2D<float3> normalTexture             : register(t14);
 
-StructuredBuffer<uint> gLightGridData : register(t3, space1);
+StructuredBuffer<uint> gLightGridData : register(t0);
 
 SamplerState baseColorSampler               : register(s0);
 SamplerState metallicRoughnessSampler       : register(s1);

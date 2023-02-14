@@ -74,22 +74,23 @@ namespace GlareEngine
 		gRootSignature[(int)RootSignatureType::eCommonConstantBuffer].InitAsConstantBuffer(1);
 		//Material Constants 
 		gRootSignature[(int)RootSignatureType::eMaterialConstants].InitAsConstantBuffer(2);
+		//Common SRV 
+		gRootSignature[(int)RootSignatureType::eCommonSRVs].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, COMMONSRVSIZE);
 		//PBR Material SRVs 
-		gRootSignature[(int)RootSignatureType::eMaterialSRVs].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAXPBRSRVSIZE);
+		gRootSignature[(int)RootSignatureType::eMaterialSRVs].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, COMMONSRVSIZE, MAXPBRSRVSIZE);
 		//Sky Cube Texture
-		gRootSignature[(int)RootSignatureType::eCubeTextures].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MAXPBRSRVSIZE, MAXCUBESRVSIZE);
+		gRootSignature[(int)RootSignatureType::eCubeTextures].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, COMMONSRVSIZE+MAXPBRSRVSIZE, MAXCUBESRVSIZE);
 		//Cook 2D And other PBR Textures 
-		gRootSignature[(int)RootSignatureType::ePBRTextures].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MAXCUBESRVSIZE+ MAXPBRSRVSIZE, MAX2DSRVSIZE);
+		gRootSignature[(int)RootSignatureType::ePBRTextures].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MAXCUBESRVSIZE+ MAXPBRSRVSIZE+ COMMONSRVSIZE, MAX2DSRVSIZE);
 		//Material Samplers
 		gRootSignature[(int)RootSignatureType::eMaterialSamplers].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 10, D3D12_SHADER_VISIBILITY_PIXEL);
-		//Skin Matrices 
-		gRootSignature[(int)RootSignatureType::eSkinMatrices].InitAsBufferSRV(2, 1);
-		//Material Constant Data
-		gRootSignature[(int)RootSignatureType::eMaterialConstantData].InitAsBufferSRV(1, 1);
 		//Instance Constant Data 
 		gRootSignature[(int)RootSignatureType::eInstanceConstantData].InitAsBufferSRV(0, 1);
-		//Instance Constant Data 
-		gRootSignature[(int)RootSignatureType::eLightGridData].InitAsBufferSRV(3, 1);
+		//Material Constant Data
+		gRootSignature[(int)RootSignatureType::eMaterialConstantData].InitAsBufferSRV(1, 1);
+		//Skin Matrices 
+		gRootSignature[(int)RootSignatureType::eSkinMatrices].InitAsBufferSRV(2, 1);
+
 
 		//Static Samplers
 		gRootSignature.InitStaticSampler(10, SamplerLinearWrapDesc);
@@ -142,7 +143,7 @@ namespace GlareEngine
 			CubeSRV[CubeSRVIndex] = g_CubeSRV[CubeSRVIndex];
 			CubeSrcTextureSize[CubeSRVIndex] = 1;
 		}
-		g_Device->CopyDescriptors(1, &gTextureHeap[0], &CubeTextureSize,
+		g_Device->CopyDescriptors(1, &gTextureHeap[COMMONSRVSIZE], &CubeTextureSize,
 			CubeTextureSize, CubeSRV, CubeSrcTextureSize, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 		UINT Texture2DSize = g_TextureSRV.size();
@@ -153,7 +154,7 @@ namespace GlareEngine
 			Texture2DSRV[Texture2DSRVIndex] = g_TextureSRV[Texture2DSRVIndex];
 			Texture2DSrcSize[Texture2DSRVIndex] = 1;
 		}
-		g_Device->CopyDescriptors(1, &gTextureHeap[MAXCUBESRVSIZE], &Texture2DSize,
+		g_Device->CopyDescriptors(1, &gTextureHeap[MAXCUBESRVSIZE+ COMMONSRVSIZE], &Texture2DSize,
 			Texture2DSize, Texture2DSRV, Texture2DSrcSize, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	}
 

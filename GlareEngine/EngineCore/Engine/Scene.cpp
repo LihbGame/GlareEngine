@@ -397,6 +397,7 @@ void Scene::ForwardPlusRendering()
 		sorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
 	}
 
+
 	if (LoadingFinish)
 	{
 		if (IsMSAA)
@@ -406,8 +407,16 @@ void Scene::ForwardPlusRendering()
 			Context.GetCommandList()->ResolveSubresource(g_SceneDepthBuffer.GetResource(), 0, g_SceneMSAADepthBuffer.GetResource(), 0, DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS);
 		}
 		Lighting::FillLightGrid(Context, *m_pCamera);
-		Context.SetBufferSRV((int)RootSignatureType::eLightGridData, Lighting::m_LightGrid, 0);
+
+		UINT size = 1;
+		g_Device->CopyDescriptors(1, &gTextureHeap[0], &size,
+			1, &Lighting::m_LightGrid.GetSRV(), &size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	}
+
+	//set descriptor heap 
+	Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gTextureHeap.GetHeapPointer());
+	//Set Common SRV
+	Context.SetDescriptorTable((int)RootSignatureType::eCommonSRVs, gTextureHeap[0]);
 
 	{
 		ScopedTimer _outerprof(L"Main Render", Context);
@@ -446,9 +455,9 @@ void Scene::ForwardPlusRendering()
 		{
 			ScopedTimer _prof(L"Render Color", Context);
 			//Set Cube SRV
-			Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[0]);
+			Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[COMMONSRVSIZE]);
 			//Set Textures SRV
-			Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE]);
+			Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE + COMMONSRVSIZE]);
 
 			if (IsMSAA)
 			{
