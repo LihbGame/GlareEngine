@@ -17,6 +17,14 @@ enum class RootSignatureType :int
 	eRootSignatureSize
 };
 
+enum class CommonTextureType :int
+{
+	eLightGrid,
+	eLightBuffer,
+	eSSAO,
+	eCount
+};
+
 namespace GlareEngine
 {
 	class RootParameter

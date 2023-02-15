@@ -1,5 +1,4 @@
 //Forward Plus lighting helper
-#include "../Misc/CommonResource.hlsli"
 
 //Light counts sync with console code
 #define MAX_LIGHTS 1024

@@ -1,5 +1,5 @@
 #include "LightGrid.hlsli"
-
+#include "../Misc/CommonResource.hlsli"
 cbuffer CSConstants : register(b0)
 {
     uint ViewportWidth;

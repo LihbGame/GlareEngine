@@ -1,4 +1,5 @@
 #include "../Shadow/RealTimeShadowHelper.hlsli"
+#include "../Lighting/LightGrid.hlsli"
 
 Texture2D<float4> baseColorTexture          : register(t10);
 Texture2D<float3> metallicRoughnessTexture  : register(t11);
@@ -7,6 +8,7 @@ Texture2D<float3> emissiveTexture           : register(t13);
 Texture2D<float3> normalTexture             : register(t14);
 
 StructuredBuffer<uint> gLightGridData : register(t0);
+StructuredBuffer<TileLightData> gLightBuffer : register(t1);
 
 SamplerState baseColorSampler               : register(s0);
 SamplerState metallicRoughnessSampler       : register(s1);
@@ -155,5 +157,5 @@ float4 main(VSOutput vsOutput) : SV_Target0
     uint2 position = (cvv +1.0f)/2.0f * gRenderTargetSize / 8;
     uint size = gRenderTargetSize.x / 8.0f+1.0f;
     float data = gLightGridData[position.y*size+ position.x]/100.0f;
-    return float4(data,0, 0, 1);// float4(color, baseColor.a);
+    return float4(data, gLightBuffer[0].Type, 0, 1);// float4(color, baseColor.a);
 }

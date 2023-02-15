@@ -289,9 +289,9 @@ void Scene::ForwardRendering()
 	//set main constant buffer
 	Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(mMainConstants), &mMainConstants);
 	//Set Cube SRV
-	Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[0]);
+	Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[COMMONSRVSIZE]);
 	//Set Textures SRV
-	Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE]);
+	Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE+ COMMONSRVSIZE]);
 	//Set Material Data
 	const vector<MaterialConstant>& MaterialData = MaterialManager::GetMaterialInstance()->GetMaterialsConstantBuffer();
 	Context.SetDynamicSRV((int)RootSignatureType::eMaterialConstantData, sizeof(MaterialConstant) * MaterialData.size(), MaterialData.data());
@@ -400,6 +400,7 @@ void Scene::ForwardPlusRendering()
 
 	if (LoadingFinish)
 	{
+		//Set lighting buffers in the SRV Heap
 		if (IsMSAA)
 		{
 			Context.TransitionResource(g_SceneMSAADepthBuffer, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
@@ -408,9 +409,15 @@ void Scene::ForwardPlusRendering()
 		}
 		Lighting::FillLightGrid(Context, *m_pCamera);
 
-		UINT size = 1;
-		g_Device->CopyDescriptors(1, &gTextureHeap[0], &size,
-			1, &Lighting::m_LightGrid.GetSRV(), &size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		D3D12_CPU_DESCRIPTOR_HANDLE LightSRV[] = {
+		Lighting::m_LightGrid.GetSRV(),
+		Lighting::m_LightBuffer.GetSRV()
+		};
+
+		UINT destCount = 2;
+		UINT size[2] = { 1,1 };
+		g_Device->CopyDescriptors(1, &gTextureHeap[0], &destCount,
+			destCount, LightSRV, size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	}
 
 	//set descriptor heap 
