@@ -65,7 +65,7 @@ float3 IBL_Diffuse(SurfaceProperties Surface)
    // This is nicer but more expensive
     float LdotH = saturate(dot(Surface.N, normalize(Surface.N + Surface.V)));
     float fd90 = 0.5 + 2.0 * Surface.roughness * LdotH * LdotH;
-    float3 DiffuseBurley = Surface.c_diff * Fresnel_Shlick(1, fd90, Surface.NdotV);
+    float3 DiffuseBurley = Surface.c_diff * Surface.ao * Fresnel_Shlick(1, fd90, Surface.NdotV);
     return DiffuseBurley * gCubeMaps[gBakingDiffuseCubeIndex].Sample(gSamplerLinearWrap, Surface.N).rgb;
 }
 
@@ -73,7 +73,7 @@ float3 IBL_Diffuse(SurfaceProperties Surface)
 float3 IBL_Specular(SurfaceProperties Surface)
 {
     float lod = Surface.roughness * IBLRange + IBLBias;
-    float3 F = FresnelSchlickRoughness(Surface.NdotV, Surface.c_spec, Surface.roughness);
+    float3 F = FresnelSchlickRoughness(Surface.NdotV, Surface.c_spec* Surface.ao, Surface.roughness);
     float3 PrefilteredColor = gCubeMaps[gBakingPreFilteredEnvIndex].SampleLevel(gSamplerLinearClamp, reflect(-Surface.V, Surface.N), lod).rgb;
     float2 BRDF = gSRVMap[gBakingIntegrationBRDFIndex].Sample(gSamplerLinearClamp, float2(Surface.NdotV, Surface.roughness)).xy;
     return PrefilteredColor * (F * BRDF.x + BRDF.y);
@@ -120,11 +120,12 @@ float4 main(VSOutput vsOutput) : SV_Target0
     Surface.N = normal;
     Surface.V = normalize(gEyePosW - vsOutput.worldPos);
     Surface.NdotV = saturate(dot(Surface.N, Surface.V));
-    Surface.c_diff = baseColor.rgb * (1 - DielectricSpecular) * (1 - metallicRoughness.x) * occlusion;
-    Surface.c_spec = lerp(DielectricSpecular, baseColor.rgb, metallicRoughness.x) * occlusion;
+    Surface.c_diff = baseColor.rgb * (1 - DielectricSpecular) * (1 - metallicRoughness.x);
+    Surface.c_spec = lerp(DielectricSpecular, baseColor.rgb, metallicRoughness.x);
     Surface.roughness = metallicRoughness.y;
     Surface.alpha = metallicRoughness.y * metallicRoughness.y;
     Surface.alphaSqr = Surface.alpha * Surface.alpha;
+    Surface.ao = occlusion;
 
     // Begin accumulating light starting with emissive
     float3 color = emissive;
@@ -157,5 +158,5 @@ float4 main(VSOutput vsOutput) : SV_Target0
     uint2 position = (cvv +1.0f)/2.0f * gRenderTargetSize / 8;
     uint size = gRenderTargetSize.x / 8.0f+1.0f;
     float data = gLightGridData[position.y*size+ position.x]/100.0f;
-    return float4(data, gLightBuffer[0].Type, 0, 1);// float4(color, baseColor.a);
+    return  float4(color, baseColor.a);
 }

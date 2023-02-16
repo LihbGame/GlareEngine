@@ -95,11 +95,11 @@ void Scene::SetSceneLights(DirectionalLight* light, int DirectionalLightsCount)
 	if (mName == "Sponza")
 	{
 		mMainConstants.gIsIndoorScene = true;
-		mSceneLights[0].Strength = { 5.0f, 5.0f, 5.0f };
+		mSceneLights[0].Strength = { 10.0f, 10.0f, 10.0f };
 	}
 	else if (mName == "Blue Tree")
 	{
-		mSceneLights[0].Strength = { 1.0f,  1.0f,  1.0f };
+		mSceneLights[0].Strength = { 5.0f,  5.0f,  5.0f };
 	}
 }
 

@@ -27,6 +27,7 @@ struct SurfaceProperties
     float alphaSqr;     // alpha squared
     float NdotV;
     float ShadowFactor;
+    float ao;
 };
 
 struct LightProperties
@@ -258,7 +259,7 @@ float3 CookTorranceBRDF(float3 radiance, float3 N, float3 H, float3 V, float3 L,
     float3 specular = nominator / denominator;
 
     // outgoing radiance Lo
-    return (kD * mat.DiffuseAlbedo.rgb /* PI*/ + specular) * radiance * NdotL;
+    return (kD * mat.DiffuseAlbedo.rgb / PI + specular) * radiance * NdotL;
 
 }
 
@@ -385,7 +386,7 @@ float3 CookTorranceBRDF(in LightProperties LightProper, in SurfaceProperties Sur
     float3 specular = nominator / denominator;
 
     // outgoing radiance Lo
-    return (kD * Surface.c_diff /* PI*/ + specular) * LightProper.light.Strength * LightProper.NdotL;
+    return (kD * Surface.c_diff / PI + specular) * LightProper.light.Strength * LightProper.NdotL;
 }
 
 

@@ -6,7 +6,7 @@ struct VSOutput
     float2 uv : TexCoord0;
 };
 
-Texture2D<float4> baseColorTexture          : register(t0);
+Texture2D<float4> baseColorTexture          : register(t10);
 SamplerState baseColorSampler               : register(s0);
 
 cbuffer MaterialConstants : register(b2)
