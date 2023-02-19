@@ -1,14 +1,10 @@
 #include "../Shadow/RealTimeShadowHelper.hlsli"
-#include "../Lighting/LightGrid.hlsli"
 
 Texture2D<float4> baseColorTexture          : register(t10);
 Texture2D<float3> metallicRoughnessTexture  : register(t11);
 Texture2D<float1> occlusionTexture          : register(t12);
 Texture2D<float3> emissiveTexture           : register(t13);
 Texture2D<float3> normalTexture             : register(t14);
-
-StructuredBuffer<uint> gLightGridData : register(t0);
-StructuredBuffer<TileLightData> gLightBuffer : register(t1);
 
 SamplerState baseColorSampler               : register(s0);
 SamplerState metallicRoughnessSampler       : register(s1);
@@ -44,7 +40,6 @@ cbuffer MaterialConstants : register(b2)
 struct VSOutput
 {
     float4 position : SV_POSITION;
-    float4 positions : TEXCOORD4;
     float3 normal : NORMAL;
 #ifndef NO_TANGENT_FRAME
     float4 tangent : TANGENT;
@@ -56,28 +51,6 @@ struct VSOutput
     float3 worldPos : TEXCOORD2;
     float3 sunShadowCoord : TEXCOORD3;
 };
-
-
-float3 IBL_Diffuse(SurfaceProperties Surface)
-{
-   //return Surface.c_diff * irradianceIBLTexture.Sample(defaultSampler, Surface.N);
-
-   // This is nicer but more expensive
-    float LdotH = saturate(dot(Surface.N, normalize(Surface.N + Surface.V)));
-    float fd90 = 0.5 + 2.0 * Surface.roughness * LdotH * LdotH;
-    float3 DiffuseBurley = Surface.c_diff * Surface.ao * Fresnel_Shlick(1, fd90, Surface.NdotV);
-    return DiffuseBurley * gCubeMaps[gBakingDiffuseCubeIndex].Sample(gSamplerLinearWrap, Surface.N).rgb;
-}
-
-// Approximate specular IBL by sampling lower mips according to roughness.
-float3 IBL_Specular(SurfaceProperties Surface)
-{
-    float lod = Surface.roughness * IBLRange + IBLBias;
-    float3 F = FresnelSchlickRoughness(Surface.NdotV, Surface.c_spec* Surface.ao, Surface.roughness);
-    float3 PrefilteredColor = gCubeMaps[gBakingPreFilteredEnvIndex].SampleLevel(gSamplerLinearClamp, reflect(-Surface.V, Surface.N), lod).rgb;
-    float2 BRDF = gSRVMap[gBakingIntegrationBRDFIndex].Sample(gSamplerLinearClamp, float2(Surface.NdotV, Surface.roughness)).xy;
-    return PrefilteredColor * (F * BRDF.x + BRDF.y);
-}
 
 
 float3 GetNormal(float3 normalMapSample, float3 unitNormalW, float4 tangentW)
@@ -120,7 +93,7 @@ float4 main(VSOutput vsOutput) : SV_Target0
     Surface.N = normal;
     Surface.V = normalize(gEyePosW - vsOutput.worldPos);
     Surface.NdotV = saturate(dot(Surface.N, Surface.V));
-    Surface.c_diff = baseColor.rgb * (1 - DielectricSpecular) * (1 - metallicRoughness.x);
+    Surface.c_diff = baseColor.rgb * (1 - metallicRoughness.x);
     Surface.c_spec = lerp(DielectricSpecular, baseColor.rgb, metallicRoughness.x);
     Surface.roughness = metallicRoughness.y;
     Surface.alpha = metallicRoughness.y * metallicRoughness.y;
@@ -152,11 +125,5 @@ float4 main(VSOutput vsOutput) : SV_Target0
     }
 
     // TODO: Shade each light using Forward+ tiles
-    float2 cvv = vsOutput.positions.xy / vsOutput.positions.w;
-    cvv.y = -cvv.y;
-    //cvv = (cvv + 1.0f) / 2.0f;
-    uint2 position = (cvv +1.0f)/2.0f * gRenderTargetSize / 8;
-    uint size = gRenderTargetSize.x / 8.0f+1.0f;
-    float data = gLightGridData[position.y*size+ position.x]/100.0f;
     return  float4(color, baseColor.a);
 }

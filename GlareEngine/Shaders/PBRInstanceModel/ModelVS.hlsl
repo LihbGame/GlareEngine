@@ -36,7 +36,6 @@ struct VSInput
 struct VSOutput
 {
     float4 position : SV_POSITION;
-    float4 positions : TEXCOORD4;
     float3 normal : NORMAL;
 #ifndef NO_TANGENT_FRAME
     float4 tangent : TANGENT;
@@ -87,7 +86,6 @@ VSOutput main(VSInput vsInput)
 
     vsOutput.worldPos = mul(WorldMatrix, position).xyz;
     vsOutput.position = mul(float4(vsOutput.worldPos, 1.0), gViewProj);
-    vsOutput.positions = vsOutput.position;
     vsOutput.sunShadowCoord = mul(float4(vsOutput.worldPos, 1.0), gShadowTransform).xyz;
     vsOutput.normal = mul(WorldIT, normal);
 #ifndef NO_TANGENT_FRAME

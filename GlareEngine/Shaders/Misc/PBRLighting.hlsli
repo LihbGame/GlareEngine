@@ -1,93 +1,8 @@
+#include "../Misc/CommonResource.hlsli"
+#include "../Lighting/LightGrid.hlsli"
 
-#define MAX_DIR_LIGHTS 16
-#define NUM_DIR_LIGHTS 3
-
-#define EPS             1e-3
-#define PI              3.141592653589793
-#define PI2             6.283185307179586
-#define FLT_MIN         1.175494351e-38F        // min positive value
-#define FLT_MAX         3.402823466e+38F        // max value
-
-struct DirectionalLight
-{
-    float3 Strength;
-    int Pad1;
-    float3 Direction;
-    int Pad2;
-};
-
-struct SurfaceProperties
-{
-    float3 N;           //surface normal
-    float3 V;           //normalized view vector
-    float3 c_diff;
-    float3 c_spec;      //The F0 reflectance value - 0.04 for non-metals, or RGB for metals.
-    float roughness;
-    float alpha;        // roughness squared
-    float alphaSqr;     // alpha squared
-    float NdotV;
-    float ShadowFactor;
-    float ao;
-};
-
-struct LightProperties
-{
-    float3 L;           //normalized direction to light
-    float3 H;           
-    float NdotL;
-    float LdotH;
-    float NdotH;
-    DirectionalLight light;
-};
-
-
-struct Material
-{
-    float4  DiffuseAlbedo;
-    float3  FresnelR0;
-    float   Roughness;
-    float   metallic;
-    float   AO;
-};
-
-
-
-//Constant data per frame.
-cbuffer MainPass : register(b0)
-{
-    float4x4 gView;
-    float4x4 gInvView;
-    float4x4 gProj;
-    float4x4 gInvProj;
-    float4x4 gViewProj;
-    float4x4 gInvViewProj;
-    float4x4 gShadowTransform;
-    float3 gEyePosW;
-    float cbPerObjectPad1;
-    float2 gRenderTargetSize;
-    float2 gInvRenderTargetSize;
-    float gNearZ;
-    float gFarZ;
-    float gTotalTime;
-    float gDeltaTime;
-    float4 gAmbientLight;
-
-    DirectionalLight gLights[MAX_DIR_LIGHTS];
-
-    int gShadowMapIndex;
-    int gSkyCubeIndex;
-    int gBakingDiffuseCubeIndex;
-    int gBakingPreFilteredEnvIndex;
-    int gBakingIntegrationBRDFIndex;
-    float IBLRange;
-    float IBLBias;
-    int gPad01;
-
-    int  gDirectionalLightsCount;
-    int  gIsIndoorScene;
-};
-
-
+StructuredBuffer<uint> gLightGridData : register(t0);
+StructuredBuffer<TileLightData> gLightBuffer : register(t1);
 
 //BRDF-F
 float3 fresnelSchlick(float cosTheta, float3 F0)
@@ -431,5 +346,27 @@ float3 ComputeLighting(in DirectionalLight lights[MAX_DIR_LIGHTS], in SurfacePro
     return  LightResult;
 }
 
+
+
+float3 IBL_Diffuse(SurfaceProperties Surface)
+{
+    //return Surface.c_diff * irradianceIBLTexture.Sample(defaultSampler, Surface.N);
+
+    // This is nicer but more expensive
+    float LdotH = saturate(dot(Surface.N, normalize(Surface.N + Surface.V)));
+    float fd90 = 0.5 + 2.0 * Surface.roughness * LdotH * LdotH;
+    float3 DiffuseBurley = Surface.c_diff * Surface.ao * (1 - DielectricSpecular) * Fresnel_Shlick(1, fd90, Surface.NdotV);
+    return DiffuseBurley * gCubeMaps[gBakingDiffuseCubeIndex].Sample(gSamplerLinearWrap, Surface.N).rgb;
+}
+
+// Approximate specular IBL by sampling lower mips according to roughness.
+float3 IBL_Specular(SurfaceProperties Surface)
+{
+    float lod = Surface.roughness * IBLRange + IBLBias;
+    float3 F = FresnelSchlickRoughness(Surface.NdotV, Surface.c_spec, Surface.roughness);
+    float3 PrefilteredColor = gCubeMaps[gBakingPreFilteredEnvIndex].SampleLevel(gSamplerLinearClamp, reflect(-Surface.V, Surface.N), lod).rgb;
+    float2 BRDF = gSRVMap[gBakingIntegrationBRDFIndex].Sample(gSamplerLinearClamp, float2(Surface.NdotV, Surface.roughness)).xy;
+    return PrefilteredColor * (F * BRDF.x + BRDF.y) * Surface.ao;
+}
 
 

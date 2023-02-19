@@ -1,4 +1,4 @@
-#include "../Misc/CommonResource.hlsli"
+#include "../Misc/PBRLighting.hlsli"
 
 
 
