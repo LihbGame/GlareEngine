@@ -115,7 +115,7 @@ void Lighting::InitializeResources(void)
 
 	// Assumes max resolution of 3840x2160
 	uint32_t lightGridCells = Math::DivideByMultiple(3840, eMinLightGridDimension) * Math::DivideByMultiple(2160, eMinLightGridDimension);
-	uint32_t lightGridSizeBytes = lightGridCells * (1/* + MaxLights*/);
+	uint32_t lightGridSizeBytes = lightGridCells * (1 + MaxTileLights);
 	m_LightGrid.Create(L"m_LightGrid", lightGridSizeBytes, sizeof(UINT));
 
 	m_LightShadowArray.CreateArray(L"m_LightShadowArray", eShadowDimension, eShadowDimension, 1, MaxShadowedLights, DXGI_FORMAT_R16_UNORM);
@@ -125,10 +125,10 @@ void Lighting::InitializeResources(void)
 
 }
 
-void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound)
+void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound,const Vector3 offset)
 {
-	Vector3 BoundSize = maxBound - minBound;
-	Vector3 BoundBias = minBound;
+	Vector3 BoundSize = maxBound - minBound - offset * 2.0f;
+	Vector3 BoundBias = minBound + offset;
 
 	srand((unsigned)time(NULL));
 
@@ -185,11 +185,11 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 	for (uint32_t lightIndex = 0; lightIndex < MaxLights; lightIndex++)
 	{
 		Vector3 position = RandVector() * BoundSize + BoundBias;
-		float lightRadius = RandFloat() * 200;
+		float lightRadius = 50;
 
 		Vector3 color = RandVector();
-		float colorScale = RandFloat() * 0.5f;
-		color = color * colorScale;
+		//float colorScale = RandFloat();
+		//color = color* colorScale;
 
 		uint32_t type;
 
@@ -201,13 +201,14 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 			type = 2;//shadowed cone light
 
 		Vector3 coneDir = randVecGaussian();
-		float coneInner = RandFloat() * 0.1f * MathHelper::Pi;
-		float coneOuter = coneInner + RandFloat() * 0.1f * MathHelper::Pi;
-
+		float coneInner = RandFloat() * 0.2f * MathHelper::Pi;
+		float coneOuter = coneInner + RandFloat() * 0.2f * MathHelper::Pi;
+		color = color * 5.0f;
 		if (type == 1 || type == 2)
 		{
+			//lightRadius *= RandFloat();
 			// emphasize cone lights
-			color = color * 5.0f;
+			//color = color * 5.0f;
 		}
 
 		Camera shadowCamera;

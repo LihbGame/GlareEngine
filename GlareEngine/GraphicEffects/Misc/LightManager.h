@@ -26,6 +26,7 @@ namespace GlareEngine
 		extern IntVar LightGridDimension;
 
 		enum { MaxLights = 1024 };
+		enum { MaxTileLights = 1024 };
 		enum { MaxShadowedLights = 128 };
 
 		extern StructuredBuffer m_LightBuffer;
@@ -39,7 +40,7 @@ namespace GlareEngine
 		extern Matrix4 m_LightShadowMatrix[MaxLights];
 
 		void InitializeResources(void);
-		void CreateRandomLights(const Vector3 minBound, const Vector3 maxBound);
+		void CreateRandomLights(const Vector3 minBound, const Vector3 maxBound, const Vector3 offset);
 		void FillLightGrid(GraphicsContext& gfxContext, const Camera& camera);
 		void Shutdown(void);
 	}

@@ -2,14 +2,15 @@
 
 //Light counts sync with console code
 #define MAX_LIGHTS 1024
-#define TILE_SIZE (1 + MAX_LIGHTS)
+#define MAX_TILED_LIGHT 1024
+#define TILE_SIZE (1 + MAX_TILED_LIGHT)
 
 struct TileLightData
 {
     float3 PositionWS;
     float RadiusSq;
 
-    float3 color;
+    float3 Color;
     uint Type;
 
     float3 PositionVS;
@@ -20,7 +21,7 @@ struct TileLightData
     float4x4 ShadowTextureMatrix;
 };
 
-uint2 GetTilePos(float2 pos, float2 invTileDim)
+uint2 GetTilePos(uint2 pos, float2 invTileDim)
 {
     return pos * invTileDim;
 }

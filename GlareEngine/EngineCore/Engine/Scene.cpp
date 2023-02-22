@@ -236,8 +236,8 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 	//Tiled light data
 	mMainConstants.InvTileDim[0] = 1.0f / Lighting::LightGridDimension;
 	mMainConstants.InvTileDim[1] = 1.0f / Lighting::LightGridDimension;
-	mMainConstants.TileCount[0] = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), Lighting::LightGridDimension);
-	mMainConstants.TileCount[1] = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), Lighting::LightGridDimension);
+	mMainConstants.TileCount[0] = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), Lighting::LightGridDimension) + 1.0f;
+	mMainConstants.TileCount[1] = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), Lighting::LightGridDimension) + 1.0f;
 	mMainConstants.FirstLightIndex[0] = Lighting::m_FirstConeLight;
 	mMainConstants.FirstLightIndex[1] = Lighting::m_FirstConeShadowedLight;
 
@@ -413,7 +413,7 @@ void Scene::ForwardPlusRendering()
 		{
 			Context.TransitionResource(g_SceneMSAADepthBuffer, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
 			Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, true);
-			Context.GetCommandList()->ResolveSubresource(g_SceneDepthBuffer.GetResource(), 0, g_SceneMSAADepthBuffer.GetResource(), 0, DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS);
+			Context.GetCommandList()->ResolveSubresource(g_SceneDepthBuffer.GetResource(), 0, g_SceneMSAADepthBuffer.GetResource(), 0, DXGI_FORMAT_R32_FLOAT);
 		}
 		Lighting::FillLightGrid(Context, *m_pCamera);
 

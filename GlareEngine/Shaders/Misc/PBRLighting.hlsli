@@ -329,22 +329,6 @@ float3 ComputeDirectionalLight(in LightProperties LightProper, in SurfacePropert
     return CookTorranceBRDF(LightProper, Surface);
 }
 
-//float3 ComputePointLight(in LightProperties LightProper, in SurfaceProperties Surface)
-//{
-//    float3 lightDir = LightProper.LightPosition - Surface.worldPos;
-//    float lightDistSq = dot(lightDir, lightDir);
-//    float invLightDist = rsqrt(lightDistSq);
-//
-//
-//    // modify 1/d^2 * R^2 to fall off at a fixed radius
-//    // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
-//    float distanceFalloff = lightRadiusSq * (invLightDist * invLightDist);
-//    distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
-//    return CookTorranceBRDF(LightProper, Surface);
-//}
-
-
-
 float3 ComputeLighting(in DirectionalLight lights[MAX_DIR_LIGHTS], in SurfaceProperties Surface)
 {
     float3 LightResult = float3(0, 0, 0);
@@ -363,13 +347,75 @@ float3 ComputeLighting(in DirectionalLight lights[MAX_DIR_LIGHTS], in SurfacePro
     return  LightResult;
 }
 
+float3 ComputePointLight(in TileLightData LightData, in SurfaceProperties Surface)
+{
+    LightProperties LightProp;
+    LightProp.L = normalize(LightData.PositionWS - Surface.worldPos);
+
+    // Half vector
+    LightProp.H = normalize(LightProp.L + Surface.V);
+
+    // Pre-compute dot products
+    LightProp.NdotL = saturate(dot(Surface.N, LightProp.L));
+    LightProp.LdotH = saturate(dot(LightProp.L, LightProp.H));
+    LightProp.NdotH = saturate(dot(Surface.N, LightProp.H));
+    LightProp.Strength = LightData.Color;
+
+
+    float3 lightDir = LightData.PositionWS - Surface.worldPos;
+    float lightDistSq = dot(lightDir, lightDir);
+    float invLightDist = rsqrt(lightDistSq);
+
+
+    // modify 1/d^2 * R^2 to fall off at a fixed radius
+    // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
+    float distanceFalloff = LightData.RadiusSq * (invLightDist * invLightDist);
+    distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
+
+    return distanceFalloff * CookTorranceBRDF(LightProp, Surface);
+}
+
+float3 ComputeConeLight(in TileLightData LightData, in SurfaceProperties Surface)
+{
+    LightProperties LightProp;
+    LightProp.L = normalize(LightData.PositionWS - Surface.worldPos);
+
+    // Half vector
+    LightProp.H = normalize(LightProp.L + Surface.V);
+
+    // Pre-compute dot products
+    LightProp.NdotL = saturate(dot(Surface.N, LightProp.L));
+    LightProp.LdotH = saturate(dot(LightProp.L, LightProp.H));
+    LightProp.NdotH = saturate(dot(Surface.N, LightProp.H));
+    LightProp.Strength = LightData.Color;
+
+    float3 lightDir = LightData.PositionWS - Surface.worldPos;
+    float lightDistSq = dot(lightDir, lightDir);
+    float invLightDist = rsqrt(lightDistSq);
+
+    // modify 1/d^2 * R^2 to fall off at a fixed radius
+    // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
+    float distanceFalloff = LightData.RadiusSq * (invLightDist * invLightDist);
+    distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
+
+    float coneFalloff = dot(-LightProp.L, LightData.ConeDir);
+    coneFalloff = saturate((coneFalloff - LightData.ConeAngles.y) * LightData.ConeAngles.x);
+
+    return coneFalloff * distanceFalloff * CookTorranceBRDF(LightProp, Surface);
+}
+
+float3 ComputeConeShadowLight(in TileLightData LightData, in SurfaceProperties Surface)
+{
+    return float3(0, 0, 0);
+}
+
 float3 ComputeTiledLighting(uint2 ScreenPosition, in SurfaceProperties Surface)
 {
     uint2 tilePos = GetTilePos(ScreenPosition, gInvTileDimension.xy);
     uint tileIndex = GetTileIndex(tilePos, gTileCount.x);
     uint tileOffset = GetTileOffset(tileIndex);
 
-    uint tileLightCount = gLightGridData.Load(tileOffset + 0);
+    uint tileLightCount = gLightGridData[tileOffset];
     uint tileLightLoadOffset = tileOffset + 1;
 
 
@@ -377,44 +423,30 @@ float3 ComputeTiledLighting(uint2 ScreenPosition, in SurfaceProperties Surface)
     // sphere
     for (uint Index = 0; Index < tileLightCount; Index++, tileLightLoadOffset += 1)
     {
-        uint lightIndex = gLightGridData.Load(tileLightLoadOffset);
+        uint lightIndex = gLightGridData[tileLightLoadOffset];
         TileLightData lightData = gLightBuffer[lightIndex];
 
         switch (lightData.Type)
         {
-        case 0:
-
+        case 0://Point light
+        {
+            lightColor += ComputePointLight(lightData, Surface);
             break;
-        case 1:
+        }
+        case 1://Cone Light
+        {
+            lightColor += ComputeConeLight(lightData, Surface);
             break;
-        case 2:
+        }
+        case 2://Shadowed Cone Light 
+        {
+            lightColor += ComputeConeLight(lightData, Surface);
             break;
+        }
         default:
             break;
         }
-
-
-        //lightColor += ApplyPointLight(POINT_LIGHT_ARGS);
     }
-
-    //// cone
-    //for (n = 0; n < tileLightCountCone; n++, tileLightLoadOffset += 4)
-    //{
-    //    uint lightIndex = gLightGridData.Load(tileLightLoadOffset);
-    //    LightData lightData = gLightBuffer[lightIndex];
-    //    colorSum += ApplyConeLight(CONE_LIGHT_ARGS);
-    //}
-
-    //// cone w/ shadow map
-    //for (n = 0; n < tileLightCountConeShadowed; n++, tileLightLoadOffset += 4)
-    //{
-    //    uint lightIndex = gLightGridData.Load(tileLightLoadOffset);
-    //    LightData lightData = gLightBuffer[lightIndex];
-    //    colorSum += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
-    //}
-
-
-
     return lightColor;
 }
 

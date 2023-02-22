@@ -120,7 +120,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 {
 	//Main Camera
 	mCamera = make_unique<Camera>(REVERSE_Z);
-	mCamera->LookAt(XMFLOAT3(200, 200, -200), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 1, 0));
+	mCamera->LookAt(XMFLOAT3(300, 200, -30), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 1, 0));
 	//Sky Initialize
 	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
 	//Shadow map Initialize
@@ -146,11 +146,12 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 		SceneLights[2].Direction = XMFLOAT3(0.57735f, -0.47735f, -0.57735f);
 		SceneLights[2].Strength = { 0.5f, 0.5f, 0.5f };
 
+		gScenes.push_back(mSceneManager->CreateScene("Sponza"));
 		gScenes.push_back(mSceneManager->CreateScene("SciFi Helmet"));
 		gScenes.push_back(mSceneManager->CreateScene("Damaged Helmet"));
 		gScenes.push_back(mSceneManager->CreateScene("Flight Helmet"));
 		gScenes.push_back(mSceneManager->CreateScene("Blue Tree"));
-		gScenes.push_back(mSceneManager->CreateScene("Sponza"));
+
 
 		mEngineUI->SetScenes(gScenes);
 
@@ -214,25 +215,25 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 				gScene->AddGLTFModelToScene(model.get());
 			}*/
 
-			// Scene 5  sponza
-			gScenes[4]->AddGLTFModelToScene(mGLTFModels[3].get());
+			// Scene 1  sponza
+			gScenes[0]->AddGLTFModelToScene(mGLTFModels[3].get());
 			//Create random lights in Sponsa
-			Lighting::CreateRandomLights(mGLTFModels[3].get()->GetModel()->GetAxisAlignedBox().GetMin(), mGLTFModels[3].get()->GetModel()->GetAxisAlignedBox().GetMax());
-			gScenes[4]->Finalize();
+			Lighting::CreateRandomLights(mGLTFModels[3].get()->GetModel()->GetAxisAlignedBox().GetMin(), mGLTFModels[3].get()->GetModel()->GetAxisAlignedBox().GetMax(), Vector3(150, 60, 150));
+			gScenes[0]->Finalize();
 
-			// Scene 1
-			gScenes[0]->AddGLTFModelToScene(mGLTFModels[0].get()); gScenes[0]->Finalize();
 			// Scene 2
-			gScenes[1]->AddGLTFModelToScene(mGLTFModels[1].get()); gScenes[1]->Finalize();
+			gScenes[1]->AddGLTFModelToScene(mGLTFModels[0].get()); gScenes[1]->Finalize();
 			// Scene 3
-			gScenes[2]->AddGLTFModelToScene(mGLTFModels[2].get()); gScenes[2]->Finalize();
-
+			gScenes[2]->AddGLTFModelToScene(mGLTFModels[1].get()); gScenes[2]->Finalize();
 			// Scene 4
+			gScenes[3]->AddGLTFModelToScene(mGLTFModels[2].get()); gScenes[3]->Finalize();
+
+			// Scene 5
 			for (auto& model : mModels)
 			{
-				gScenes[3]->AddObjectToScene(model.get());
+				gScenes[4]->AddObjectToScene(model.get());
 			}
-			gScenes[3]->Finalize();
+			gScenes[4]->Finalize();
 
 			InitializeContext.Finish(true);
 
