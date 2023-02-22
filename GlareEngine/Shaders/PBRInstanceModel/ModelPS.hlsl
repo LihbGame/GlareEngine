@@ -92,6 +92,7 @@ float4 main(VSOutput vsOutput) : SV_Target0
     SurfaceProperties Surface;
     Surface.N = normal;
     Surface.V = normalize(gEyePosW - vsOutput.worldPos);
+    Surface.worldPos = vsOutput.worldPos;
     Surface.NdotV = saturate(dot(Surface.N, Surface.V));
     Surface.c_diff = baseColor.rgb * (1 - metallicRoughness.x);
     Surface.c_spec = lerp(DielectricSpecular, baseColor.rgb, metallicRoughness.x);

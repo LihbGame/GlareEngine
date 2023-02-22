@@ -2,7 +2,7 @@
 
 //Light counts sync with console code
 #define MAX_LIGHTS 1024
-#define TILE_SIZE (1 /*+ MAX_LIGHTS*/)
+#define TILE_SIZE (1 + MAX_LIGHTS)
 
 struct TileLightData
 {

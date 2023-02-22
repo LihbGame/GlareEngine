@@ -225,7 +225,7 @@ void main(
 
         lightGrid[tileOffset] = lightCount;
 
-       /* uint storeOffset = tileOffset + 1;
+        uint storeOffset = tileOffset + 1;
         uint n;
         for (n = 0; n < tileLightCountSphere; n++)
         {
@@ -241,6 +241,6 @@ void main(
         {
             lightGrid[storeOffset] = tileLightIndicesConeShadowed[n];
             storeOffset += 1;
-        }*/
+        }
     }
 }

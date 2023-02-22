@@ -3,6 +3,7 @@
 
 StructuredBuffer<uint> gLightGridData : register(t0);
 StructuredBuffer<TileLightData> gLightBuffer : register(t1);
+Texture2DArray<float> gLightShadowArrayTex : register(t2);
 
 //BRDF-F
 float3 fresnelSchlick(float cosTheta, float3 F0)
@@ -301,7 +302,7 @@ float3 CookTorranceBRDF(in LightProperties LightProper, in SurfaceProperties Sur
     float3 specular = nominator / denominator;
 
     // outgoing radiance Lo
-    return (kD * Surface.c_diff / PI + specular) * LightProper.light.Strength * LightProper.NdotL;
+    return (kD * Surface.c_diff / PI + specular) * LightProper.Strength * LightProper.NdotL;
 }
 
 
@@ -317,7 +318,8 @@ LightProperties GetLightProperties(in DirectionalLight light, in SurfaceProperti
     LightProp.NdotL = saturate(dot(Surface.N, LightProp.L));
     LightProp.LdotH = saturate(dot(LightProp.L, LightProp.H));
     LightProp.NdotH = saturate(dot(Surface.N, LightProp.H));
-    LightProp.light = light;
+    LightProp.Strength = light.Strength;
+    LightProp.Direction = light.Direction;
     return LightProp;
 }
 
@@ -326,6 +328,21 @@ float3 ComputeDirectionalLight(in LightProperties LightProper, in SurfacePropert
 {
     return CookTorranceBRDF(LightProper, Surface);
 }
+
+//float3 ComputePointLight(in LightProperties LightProper, in SurfaceProperties Surface)
+//{
+//    float3 lightDir = LightProper.LightPosition - Surface.worldPos;
+//    float lightDistSq = dot(lightDir, lightDir);
+//    float invLightDist = rsqrt(lightDistSq);
+//
+//
+//    // modify 1/d^2 * R^2 to fall off at a fixed radius
+//    // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
+//    float distanceFalloff = lightRadiusSq * (invLightDist * invLightDist);
+//    distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
+//    return CookTorranceBRDF(LightProper, Surface);
+//}
+
 
 
 float3 ComputeLighting(in DirectionalLight lights[MAX_DIR_LIGHTS], in SurfaceProperties Surface)
@@ -345,6 +362,62 @@ float3 ComputeLighting(in DirectionalLight lights[MAX_DIR_LIGHTS], in SurfacePro
     }
     return  LightResult;
 }
+
+float3 ComputeTiledLighting(uint2 ScreenPosition, in SurfaceProperties Surface)
+{
+    uint2 tilePos = GetTilePos(ScreenPosition, gInvTileDimension.xy);
+    uint tileIndex = GetTileIndex(tilePos, gTileCount.x);
+    uint tileOffset = GetTileOffset(tileIndex);
+
+    uint tileLightCount = gLightGridData.Load(tileOffset + 0);
+    uint tileLightLoadOffset = tileOffset + 1;
+
+
+    float3 lightColor = float3(0, 0, 0);
+    // sphere
+    for (uint Index = 0; Index < tileLightCount; Index++, tileLightLoadOffset += 1)
+    {
+        uint lightIndex = gLightGridData.Load(tileLightLoadOffset);
+        TileLightData lightData = gLightBuffer[lightIndex];
+
+        switch (lightData.Type)
+        {
+        case 0:
+
+            break;
+        case 1:
+            break;
+        case 2:
+            break;
+        default:
+            break;
+        }
+
+
+        //lightColor += ApplyPointLight(POINT_LIGHT_ARGS);
+    }
+
+    //// cone
+    //for (n = 0; n < tileLightCountCone; n++, tileLightLoadOffset += 4)
+    //{
+    //    uint lightIndex = gLightGridData.Load(tileLightLoadOffset);
+    //    LightData lightData = gLightBuffer[lightIndex];
+    //    colorSum += ApplyConeLight(CONE_LIGHT_ARGS);
+    //}
+
+    //// cone w/ shadow map
+    //for (n = 0; n < tileLightCountConeShadowed; n++, tileLightLoadOffset += 4)
+    //{
+    //    uint lightIndex = gLightGridData.Load(tileLightLoadOffset);
+    //    LightData lightData = gLightBuffer[lightIndex];
+    //    colorSum += ApplyConeShadowedLight(SHADOWED_LIGHT_ARGS);
+    //}
+
+
+
+    return lightColor;
+}
+
 
 
 

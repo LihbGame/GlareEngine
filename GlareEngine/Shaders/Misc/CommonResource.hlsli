@@ -36,6 +36,7 @@ struct SurfaceProperties
     float3 V;           //normalized view vector
     float3 c_diff;
     float3 c_spec;      //The F0 reflectance value - 0.04 for non-metals, or RGB for metals.
+    float3 worldPos;
     float roughness;
     float alpha;        // roughness squared
     float alphaSqr;     // alpha squared
@@ -51,7 +52,10 @@ struct LightProperties
     float NdotL;
     float LdotH;
     float NdotH;
-    DirectionalLight light;
+
+    float3 Strength;
+    float3 Direction;
+    float3 LightPosition;
 };
 
 
@@ -88,6 +92,10 @@ cbuffer MainPass : register(b0)
 
     DirectionalLight gLights[MAX_DIR_LIGHTS];
 
+    float4 gInvTileDimension;
+    uint4 gTileCount;
+    uint4 gFirstLightIndex;
+
     int gShadowMapIndex;
     int gSkyCubeIndex;
     int gBakingDiffuseCubeIndex;
@@ -95,7 +103,7 @@ cbuffer MainPass : register(b0)
     int gBakingIntegrationBRDFIndex;
     float IBLRange;
     float IBLBias;
-    int gPad01;
+    int pad0;
 
     int  gDirectionalLightsCount;
     int  gIsIndoorScene;

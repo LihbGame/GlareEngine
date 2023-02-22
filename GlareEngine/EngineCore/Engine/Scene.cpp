@@ -233,6 +233,14 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 	mMainConstants.TotalTime = GameTimer::TotalTime();
 	mMainConstants.DeltaTime = DeltaTime;
 
+	//Tiled light data
+	mMainConstants.InvTileDim[0] = 1.0f / Lighting::LightGridDimension;
+	mMainConstants.InvTileDim[1] = 1.0f / Lighting::LightGridDimension;
+	mMainConstants.TileCount[0] = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), Lighting::LightGridDimension);
+	mMainConstants.TileCount[1] = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), Lighting::LightGridDimension);
+	mMainConstants.FirstLightIndex[0] = Lighting::m_FirstConeLight;
+	mMainConstants.FirstLightIndex[1] = Lighting::m_FirstConeShadowedLight;
+
 	//Shadow Map 
 	mMainConstants.mShadowMapIndex = m_pShadowMap->GetShadowMapIndex();
 

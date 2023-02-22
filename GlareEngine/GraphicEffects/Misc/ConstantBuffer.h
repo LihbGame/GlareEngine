@@ -88,6 +88,10 @@ struct MainConstants
 	 //是聚光灯，每个对象最多可使用MaxLights。
 	DirectionalLight Lights[MAX_DIRECTIONAL_LIGHTS];
 
+	float InvTileDim[4];
+	int TileCount[4];
+	int FirstLightIndex[4];
+
 	//ShadowMap Index
 	int mShadowMapIndex = 0;
 	int mSkyCubeIndex = 0;
