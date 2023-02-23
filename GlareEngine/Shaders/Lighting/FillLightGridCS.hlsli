@@ -75,7 +75,7 @@ Plane ComputePlane(float3 p0, float3 p1, float3 p2)
 // Source: Real-time collision detection, Christer Ericson (2005)
 bool SphereInsidePlane(Sphere sphere, Plane plane)
 {
-    return dot(plane.N, sphere.c) - plane.d < -sphere.r;
+    return dot(plane.N, sphere.c) - plane.d > sphere.r;
 }
 
 

@@ -26,7 +26,7 @@ namespace GlareEngine
 		extern IntVar LightGridDimension;
 
 		enum { MaxLights = 1024 };
-		enum { MaxTileLights = 1024 };
+		enum { MaxTileLights = 256 };
 		enum { MaxShadowedLights = 128 };
 
 		extern StructuredBuffer m_LightBuffer;
