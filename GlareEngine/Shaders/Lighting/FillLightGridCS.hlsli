@@ -20,6 +20,8 @@ RWStructuredBuffer<uint> lightGrid : register(u0);
 
 groupshared uint minDepthUInt;
 groupshared uint maxDepthUInt;
+groupshared float depthFloatMin[64];
+groupshared float depthFloatMax[64];
 
 groupshared uint tileLightCountSphere;
 groupshared uint tileLightCountCone;
@@ -102,7 +104,7 @@ bool SphereInsideFrustum(Sphere sphere, Frustum frustum, float zNear, float zFar
 }
 
 
-[numthreads(8, 8, 1)]
+[numThreads(8, 8, 1)]
 void main(
     uint2 Gid : SV_GroupID,
     uint2 GTid : SV_GroupThreadID,
@@ -120,6 +122,9 @@ void main(
     }
     GroupMemoryBarrierWithGroupSync();
 
+
+    float minDepth = 0;
+    float maxDepth = 0xffffffff;
     // Read all depth values for this tile and compute the tile min and max values
     for (uint dx = GTid.x; dx < WORK_GROUP_SIZE_X; dx += 8)
     {
@@ -131,12 +136,21 @@ void main(
             if (DTid.x < ViewportWidth && DTid.y < ViewportHeight)
             {
                 // Load and compare depth
-                uint depthUInt = asuint(depthTex[DTid.xy]);
-                InterlockedMin(minDepthUInt, depthUInt);
-                InterlockedMax(maxDepthUInt, depthUInt);
+                float depthfloat = depthTex[DTid.xy];
+                minDepth = min(minDepth, depthfloat);
+                maxDepth = max(maxDepth, depthfloat);
             }
         }
     }
+
+    depthFloatMin[GI] = minDepth;
+    depthFloatMax[GI] = maxDepth;
+
+    GroupMemoryBarrierWithGroupSync();
+
+    InterlockedMin(minDepthUInt, asuint(depthFloatMin[GI]));
+    InterlockedMax(maxDepthUInt, asuint(depthFloatMax[GI]));
+
     GroupMemoryBarrierWithGroupSync();
 
     float fMinDepth = asfloat(minDepthUInt);
@@ -155,14 +169,17 @@ void main(
 
         // Compute 4 points on the far clipping plane to use as the frustum vertices.
         float4 screenSpace[4];
+        uint scale = WORK_GROUP_SIZE_Y / 8;
+        uint2 DispatchThreadID = DTI.xy * scale;
+
         // Top left point
-        screenSpace[0] = float4(DTI.xy, 0.0f, 1.0f);
+        screenSpace[0] = float4(DispatchThreadID.xy, 0.0f, 1.0f);
         // Top right point
-        screenSpace[1] = float4(float2(DTI.x + WORK_GROUP_SIZE_Y, DTI.y), 0.0f, 1.0f);
+        screenSpace[1] = float4(float2(DispatchThreadID.x + WORK_GROUP_SIZE_Y, DispatchThreadID.y), 0.0f, 1.0f);
         // Bottom left point
-        screenSpace[2] = float4(float2(DTI.x, DTI.y + WORK_GROUP_SIZE_Y), 0.0f, 1.0f);
+        screenSpace[2] = float4(float2(DispatchThreadID.x, DispatchThreadID.y + WORK_GROUP_SIZE_Y), 0.0f, 1.0f);
         // Bottom right point
-        screenSpace[3] = float4(float2(DTI.x + WORK_GROUP_SIZE_Y, DTI.y + WORK_GROUP_SIZE_Y), 0.0f, 1.0f);
+        screenSpace[3] = float4(float2(DispatchThreadID.x + WORK_GROUP_SIZE_Y, DispatchThreadID.y + WORK_GROUP_SIZE_Y), 0.0f, 1.0f);
 
         float3 viewSpace[4];
         // Now convert the screen space points to view space

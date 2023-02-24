@@ -172,7 +172,6 @@ void EngineGUI::BeginDraw(ID3D12GraphicsCommandList* d3dCommandList)
 
 void EngineGUI::EndDraw(ID3D12GraphicsCommandList* d3dCommandList)
 {
-	//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	//end Control Panel window
 	ImGui::End();
 
@@ -264,7 +263,7 @@ void EngineGUI::DrawControlPanel(float IconWindowHigh)
 	ImGui::Begin("Control Panel", &isUIShow, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 
 	ImGui::Text("Camera Move Speed");
-	ImGui::SliderFloat("   ", &CameraMoveSpeed, 0.0f, 500.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+	ImGui::SliderFloat("   ", &CameraMoveSpeed, 0.0f, 10.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 
 
 	ImGui::Separator();
@@ -314,7 +313,8 @@ void EngineGUI::DrawDebugWindow()
 	if (ImGui::Button("Clear")) { EngineLog::ClearLogs(); }ImGui::SameLine();
 	if (ImGui::Button("Copy")) { ImGui::LogToClipboard(); }ImGui::SameLine();
 	ImGui::SetNextItemWidth(200);
-	ImGui::InputText("Filter", FilterString, IM_ARRAYSIZE(FilterString));
+	ImGui::InputText("Filter", FilterString, IM_ARRAYSIZE(FilterString)); ImGui::SameLine();
+	ImGui::Text("    Frame Time: %.3f ms  FPS: %.1f", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	ImGui::Separator();
 
 	const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing(); // 1 separator, 1 input text

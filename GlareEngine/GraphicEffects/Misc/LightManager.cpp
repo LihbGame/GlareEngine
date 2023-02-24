@@ -59,7 +59,7 @@ namespace GlareEngine
 	namespace Lighting
 	{
 		//light tile size
-		IntVar LightGridDimension("Rendering/Forward+/Light Grid Dimension", 8, eMinLightGridDimension, 32, 8);
+		IntVar LightGridDimension("Rendering/Forward+/Light Grid Dimension", 32, eMinLightGridDimension, 32, 8);
 
 		//Light RootSignature
 		RootSignature m_FillLightRootSig;
@@ -114,7 +114,7 @@ void Lighting::InitializeResources(void)
 	m_FillLightGridCS_32.Finalize();
 
 	// Assumes max resolution of 3840x2160
-	uint32_t lightGridCells = Math::DivideByMultiple(3840, eMinLightGridDimension) * Math::DivideByMultiple(2160, eMinLightGridDimension);
+	uint32_t lightGridCells = Math::DivideByMultiple(3840, LightGridDimension) * Math::DivideByMultiple(2160, LightGridDimension);
 	uint32_t lightGridSizeBytes = lightGridCells * (1 + MaxTileLights);
 	m_LightGrid.Create(L"m_LightGrid", lightGridSizeBytes, sizeof(UINT));
 

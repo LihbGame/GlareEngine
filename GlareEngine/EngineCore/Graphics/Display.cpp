@@ -70,7 +70,7 @@ namespace GlareEngine
 		//Use 900P
 		EnumVar TargetResolution("Graphics/Display/Native Resolution", E900p, NumPredefinedResolutions, ResolutionLabels);
 
-		BoolVar s_EnableVSync("Timing/VSync", true);
+		BoolVar s_EnableVSync("Timing/VSync", false);
 
 		bool g_bEnableHDROutput = false;
 

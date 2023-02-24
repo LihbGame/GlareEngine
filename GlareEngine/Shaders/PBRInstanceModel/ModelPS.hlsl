@@ -107,7 +107,7 @@ float4 main(VSOutput vsOutput) : SV_Target0
     //Lighting and Shadow
     Surface.ShadowFactor = CalcShadowFactor(float4(vsOutput.sunShadowCoord, 1.0f));
     color += ComputeLighting(gLights, Surface);
-
+    //tiled  lighting
     color += ComputeTiledLighting((uint2)vsOutput.position.xy, Surface);
 
     //SSAO (TODO)

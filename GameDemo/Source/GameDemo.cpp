@@ -346,28 +346,29 @@ void App::UpdateCamera(float DeltaTime)
 
 	if (EngineInput::IsPressed(GInput::kKey_W))
 	{
-		mCamera->Walk(mCameraSpeed * DeltaTime);
+		mCamera->Walk(mCameraSpeed);
 	}
 
 	if (EngineInput::IsPressed(GInput::kKey_S))
 	{
-		mCamera->Walk(-mCameraSpeed * DeltaTime);
+		mCamera->Walk(-mCameraSpeed );
 	}
 
 	if (EngineInput::IsPressed(GInput::kKey_A))
 	{
-		mCamera->Strafe(-mCameraSpeed * DeltaTime);
+		mCamera->Strafe(-mCameraSpeed);
 	}
 
 	if (EngineInput::IsPressed(GInput::kKey_D))
 	{
-		mCamera->Strafe(mCameraSpeed * DeltaTime);
+		mCamera->Strafe(mCameraSpeed);
 	}
 
 	mEngineUI->SetCameraPosition(mCamera->GetPosition3f());
 
 	//update camera matrix
 	mCamera->UpdateViewMatrix();
+
 }
 
 
