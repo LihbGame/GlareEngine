@@ -48,7 +48,7 @@ namespace GlareEngine
 	{
 		float s_FrameTime = 0.0f;
 		uint64_t s_FrameIndex = 0;
-		int64_t s_FrameStartTick = 0;
+		float s_FrameStartTick = 0;
 	}
 
 	namespace Display
@@ -417,7 +417,7 @@ namespace GlareEngine
 			s_FrameTime = CurrentTick - s_FrameStartTick;
 		}
 
-		s_FrameStartTick = (int64_t)CurrentTick;
+		s_FrameStartTick = CurrentTick;
 
 		++s_FrameIndex;
 

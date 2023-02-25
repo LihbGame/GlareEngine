@@ -74,7 +74,7 @@ private:
 	bool show_sky = true;
 	bool show_HeightMapTerrain = true;
 	bool show_Grass = false;
-	float CameraMoveSpeed = 5.0f;
+	float CameraMoveSpeed = 1.0f;
 
 	bool  FogEnabled = false;
 	float FogStart = 300.0f;

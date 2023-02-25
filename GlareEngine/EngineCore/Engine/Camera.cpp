@@ -263,6 +263,18 @@ void Camera::Walk(float d)
 	mViewDirty = true;
 }
 
+void Camera::Up(float d)
+{
+	mPosition.y += d;
+	mViewDirty = true;
+}
+
+void Camera::Down(float d)
+{
+	mPosition.y -= d;
+	mViewDirty = true;
+}
+
 void Camera::Pitch(float angle)
 {
 	// Rotate up and look vector about the right vector.
