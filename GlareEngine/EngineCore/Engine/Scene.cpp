@@ -236,8 +236,8 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 	//Tiled light data
 	mMainConstants.InvTileDim[0] = 1.0f / Lighting::LightGridDimension;
 	mMainConstants.InvTileDim[1] = 1.0f / Lighting::LightGridDimension;
-	mMainConstants.TileCount[0] = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), Lighting::LightGridDimension) + 1.0f;
-	mMainConstants.TileCount[1] = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), Lighting::LightGridDimension) + 1.0f;
+	mMainConstants.TileCount[0] = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), Lighting::LightGridDimension);
+	mMainConstants.TileCount[1] = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), Lighting::LightGridDimension);
 	mMainConstants.FirstLightIndex[0] = Lighting::m_FirstConeLight;
 	mMainConstants.FirstLightIndex[1] = Lighting::m_FirstConeShadowedLight;
 

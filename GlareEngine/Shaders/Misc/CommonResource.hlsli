@@ -243,6 +243,12 @@ struct PosNorTanTexOut
     uint MatIndex       : MATINDEX;
 };
 
+struct AABB
+{
+    float3 Center;
+    float3 Extend;
+};
+
 
 struct Plane
 {
@@ -278,6 +284,13 @@ struct Frustum
     Plane planes[4];   // left, right, top, bottom frustum planes.
 };
 
+//AABB and sphere intersection test
+bool IntersectionAABBvsSphere(Sphere sphere,AABB aabb)
+{
+    float3 delta = max(0, abs(aabb.Center - sphere.c) - aabb.Extend);
+    float distSq = dot(delta, delta);
+    return distSq <= sphere.r * sphere.r;
+}
 
 //---------------------------------------------------------------------------------------
 // Transforms a normal map sample to model space.

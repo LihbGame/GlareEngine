@@ -164,7 +164,7 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
     {
         Rasterizer.MultisampleEnable = true;
         sm_PBRglTFPSO.SetRasterizerState(Rasterizer);
-        sm_PBRglTFPSO.SetBlendState(BlendDisableAlphaToCoverage);
+        sm_PBRglTFPSO.SetBlendState(BlendDisable);
     }
     else
     {
@@ -359,14 +359,14 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
         if (sm_PSOCommonProperty.IsMSAA)
         {
             ColorPSO.SetRasterizerState(RasterizerTwoSidedMsaa);
-            ColorPSO.SetBlendState(BlendDisableAlphaToCoverage);
-            mCoverageBlend = BlendDisableAlphaToCoverage;
+            ColorPSO.SetBlendState(BlendDisable);
+            mCoverageBlend = BlendDisable;
         }
         else
         {
             ColorPSO.SetRasterizerState(RasterizerTwoSided);
-            ColorPSO.SetBlendState(BlendDisableAlphaToCoverage);
-			mBlend = BlendDisableAlphaToCoverage;
+            ColorPSO.SetBlendState(BlendDisable);
+			mBlend = BlendDisable;
         }
     }
 

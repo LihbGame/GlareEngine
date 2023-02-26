@@ -1,5 +1,10 @@
 #include "LightGrid.hlsli"
 #include "../Misc/CommonResource.hlsli"
+
+#define SM_6_0
+#define AABBCULLING
+#define ADVANCED_CULLING ///Harada Siggraph 2012 2.5D culling
+
 cbuffer CSConstants : register(b0)
 {
     uint ViewportWidth;
@@ -20,8 +25,12 @@ RWStructuredBuffer<uint> lightGrid : register(u0);
 
 groupshared uint minDepthUInt;
 groupshared uint maxDepthUInt;
-groupshared float depthFloatMin[64];
-groupshared float depthFloatMax[64];
+groupshared uint DepthMask;
+
+
+#ifdef AABBCULLING
+groupshared AABB GroupAABB;			// frustum AABB around min-max depth in View Space
+#endif
 
 groupshared uint tileLightCountSphere;
 groupshared uint tileLightCountCone;
@@ -48,6 +57,7 @@ float4 ClipToView(float4 clip)
 // Convert screen space coordinates to view space.
 float4 ScreenToView(float4 screen)
 {
+    screen.xy = min(screen.xy, uint2(ViewportWidth, ViewportHeight));// avoid loading from outside the texture, it messes up the min-max depth!
     // Convert to normalized texture coordinates
     float2 texCoord = screen.xy / float2(ViewportWidth, ViewportHeight);
 
@@ -103,8 +113,46 @@ bool SphereInsideFrustum(Sphere sphere, Frustum frustum, float zNear, float zFar
     return result;
 }
 
+inline uint ConstructEntityMask(in float depthRangeMin, in float depthRangeRecip, in Sphere bounds)
+{
+    // We create a entity mask to decide if the entity is really touching something
+    // If we do an OR operation with the depth slices mask, we instantly get if the entity is contributing or not
+    // we do this in view space
 
-[numThreads(8, 8, 1)]
+    const float fMin = bounds.c.z - bounds.r;
+    const float fMax = bounds.c.z + bounds.r;
+    const uint __entitymaskcellindexSTART = max(0, min(31, floor((fMin - depthRangeMin) * depthRangeRecip)));
+    const uint __entitymaskcellindexEND = max(0, min(31, floor((fMax - depthRangeMin) * depthRangeRecip)));
+
+    //// Unoptimized mask construction with loop:
+    //// Construct mask from START to END:
+    ////          END         START
+    ////	0000000000111111111110000000000
+    //uint uLightMask = 0;
+    //for (uint c = __entitymaskcellindexSTART; c <= __entitymaskcellindexEND; ++c)
+    //{
+    //	uLightMask |= 1u << c;
+    //}
+
+
+    // Optimized mask construction, without loop:
+    //	- First, fill full mask:
+    //	1111111111111111111111111111111
+    uint uLightMask = 0xFFFFFFFF;
+    //	- Then Shift right with spare amount to keep mask only:
+    //	0000000000000000000011111111111
+    uLightMask >>= 31u - (__entitymaskcellindexEND - __entitymaskcellindexSTART);
+    //	- Last, shift left with START amount to correct mask position:
+    //	0000000000111111111110000000000
+    uLightMask <<= __entitymaskcellindexSTART;
+
+    return uLightMask;
+}
+
+
+
+
+[numthreads(8, 8, 1)]
 void main(
     uint2 Gid : SV_GroupID,
     uint2 GTid : SV_GroupThreadID,
@@ -123,33 +171,34 @@ void main(
     GroupMemoryBarrierWithGroupSync();
 
 
-    float minDepth = 0;
-    float maxDepth = 0xffffffff;
+    float minDepth = FLT_MAX;
+    float maxDepth = 0;
     // Read all depth values for this tile and compute the tile min and max values
     for (uint dx = GTid.x; dx < WORK_GROUP_SIZE_X; dx += 8)
     {
         for (uint dy = GTid.y; dy < WORK_GROUP_SIZE_Y; dy += 8)
         {
             uint2 DTid = Gid * uint2(WORK_GROUP_SIZE_X, WORK_GROUP_SIZE_Y) + uint2(dx, dy);
-
-            // If pixel coordinates are in bounds...
-            if (DTid.x < ViewportWidth && DTid.y < ViewportHeight)
-            {
-                // Load and compare depth
-                float depthfloat = depthTex[DTid.xy];
-                minDepth = min(minDepth, depthfloat);
-                maxDepth = max(maxDepth, depthfloat);
-            }
+            DTid = min(DTid, uint2(ViewportWidth-1, ViewportHeight-1));// avoid loading from outside the texture, it messes up the min-max depth!
+            // Load and compare depth
+            float depthfloat = depthTex[DTid.xy];
+            minDepth = min(minDepth, depthfloat);
+            maxDepth = max(maxDepth, depthfloat);
         }
     }
+#ifdef SM_6_0
+    float wave_local_min = WaveActiveMin(minDepth);
+    float wave_local_max = WaveActiveMax(maxDepth);
 
-    depthFloatMin[GI] = minDepth;
-    depthFloatMax[GI] = maxDepth;
-
-    GroupMemoryBarrierWithGroupSync();
-
-    InterlockedMin(minDepthUInt, asuint(depthFloatMin[GI]));
-    InterlockedMax(maxDepthUInt, asuint(depthFloatMax[GI]));
+    if (WaveIsFirstLane())
+    {
+        InterlockedMin(minDepthUInt, asuint(wave_local_min));
+        InterlockedMax(maxDepthUInt, asuint(wave_local_max));
+    }
+#else
+    InterlockedMin(minDepthUInt, asuint(minDepth));
+    InterlockedMax(maxDepthUInt, asuint(maxDepth));
+#endif
 
     GroupMemoryBarrierWithGroupSync();
 
@@ -162,8 +211,53 @@ void main(
 
     if (GI == 0)
     {
-        //Frustum Calculate 
+#ifdef AABBCULLING
+        float4 viewSpace[8];
+        uint scale = WORK_GROUP_SIZE_Y / 8;
+        uint2 DispatchThreadID = DTI.xy * scale;
+        // Top left point -far
+        viewSpace[0] = float4(DispatchThreadID.xy, fMinDepth, 1.0f);
+        // Top right point -far
+        viewSpace[1] = float4(float2(DispatchThreadID.x + WORK_GROUP_SIZE_Y, DispatchThreadID.y), fMinDepth, 1.0f);
+        // Bottom left point -far
+        viewSpace[2] = float4(float2(DispatchThreadID.x, DispatchThreadID.y + WORK_GROUP_SIZE_Y), fMinDepth, 1.0f);
+        // Bottom right point -far
+        viewSpace[3] = float4(float2(DispatchThreadID.x + WORK_GROUP_SIZE_Y, DispatchThreadID.y + WORK_GROUP_SIZE_Y), fMinDepth, 1.0f);
 
+        // Top left point -near
+        viewSpace[4] = float4(DispatchThreadID.xy, fMaxDepth, 1.0f);
+        // Top right point -near
+        viewSpace[5] = float4(float2(DispatchThreadID.x + WORK_GROUP_SIZE_Y, DispatchThreadID.y), fMaxDepth, 1.0f);
+        // Bottom left point -near
+        viewSpace[6] = float4(float2(DispatchThreadID.x, DispatchThreadID.y + WORK_GROUP_SIZE_Y), fMaxDepth, 1.0f);
+        // Bottom right point -near
+        viewSpace[7] = float4(float2(DispatchThreadID.x + WORK_GROUP_SIZE_Y, DispatchThreadID.y + WORK_GROUP_SIZE_Y), fMaxDepth, 1.0f);
+
+        // Now convert the screen space points to view space
+        uint i = 0;
+        [unroll]
+        for (i = 0; i < 8; i++)
+        {
+            viewSpace[i].xyz = ScreenToView(viewSpace[i]).xyz;
+        }
+
+        float3 minAABB = 10000000;
+        float3 maxAABB = -10000000;
+        [unroll]
+        for (i = 0; i < 8; ++i)
+        {
+            minAABB = min(minAABB, viewSpace[i].xyz);
+            maxAABB = max(maxAABB, viewSpace[i].xyz);
+        }
+
+        GroupAABB.Center = (minAABB + maxAABB) / 2.0f;
+        GroupAABB.Extend = maxAABB - GroupAABB.Center;
+
+
+
+#else
+        //Frustum Calculate
+        
         // View space eye position is always at the origin.
         const float3 eyePos = float3(0, 0, 0);
 
@@ -183,6 +277,7 @@ void main(
 
         float3 viewSpace[4];
         // Now convert the screen space points to view space
+        [unroll]
         for (int i = 0; i < 4; i++)
         {
             viewSpace[i] = ScreenToView(screenSpace[i]).xyz;
@@ -196,9 +291,44 @@ void main(
         frustum.planes[2] = ComputePlane(eyePos, viewSpace[0], viewSpace[1]);
         // Bottom plane
         frustum.planes[3] = ComputePlane(eyePos, viewSpace[3], viewSpace[2]);
+#endif
     }
 
+#ifdef ADVANCED_CULLING
+    // We divide the minmax depth bounds to 32 equal slices
+    // then we mark the occupied depth slices with atomic or from each thread
+    // we do all this in linear (view) space
+    const float __depthRangeRecip = 31.0f / (maxDepthVS - minDepthVS);
+    uint __depthmaskUnrolled = 0;
+
+    for (uint DX = GTid.x; DX < WORK_GROUP_SIZE_X; DX += 8)
+    {
+        for (uint DY = GTid.y; DY < WORK_GROUP_SIZE_Y; DY += 8)
+        {
+            uint2 DTid = Gid * uint2(WORK_GROUP_SIZE_X, WORK_GROUP_SIZE_Y) + uint2(DX, DY);
+            DTid = min(DTid, uint2(ViewportWidth - 1, ViewportHeight - 1));// avoid loading from outside the texture, it messes up the min-max depth!
+            float realDepthVS = ScreenToView(float4(0, 0, depthTex[DTid.xy], 1)).z;
+            const uint __depthmaskcellindex = max(0, min(31, floor((realDepthVS - minDepthVS) * __depthRangeRecip)));
+            __depthmaskUnrolled |= 1u << __depthmaskcellindex;
+        }
+    }
+
+#ifdef SM_6_0
+    uint wave_depth_mask = WaveActiveBitOr(__depthmaskUnrolled);
+    if (WaveIsFirstLane())
+    {
+        InterlockedOr(DepthMask, wave_depth_mask);
+    }
+#else
+    InterlockedOr(DepthMask, __depthmaskUnrolled);
+#endif
+
+#endif
+
     GroupMemoryBarrierWithGroupSync();
+
+    const uint depth_mask = DepthMask; // take out from groupshared into register
+
 
     uint tileIndex = GetTileIndex(Gid.xy, TileCountX);
     uint tileOffset = GetTileOffset(tileIndex);
@@ -210,8 +340,21 @@ void main(
         float lightCullRadius = sqrt(lightData.RadiusSq);
 
         Sphere sphere = { lightData.PositionVS.xyz, lightCullRadius };
+
+#ifdef ADVANCED_CULLING
+        if ((depth_mask & ConstructEntityMask(minDepthVS, __depthRangeRecip, sphere)) == 0)
+            continue;
+#endif
+
+
+#ifdef AABBCULLING
+        if (!IntersectionAABBvsSphere(sphere, GroupAABB))
+            continue;
+#else
         if (!SphereInsideFrustum(sphere, frustum, minDepthVS, maxDepthVS))
             continue;
+#endif
+
 
         uint slot;
 
@@ -243,10 +386,11 @@ void main(
         lightGrid[tileOffset] = lightCount;
 
         uint storeOffset = tileOffset + 1;
+
         uint n;
         for (n = 0; n < tileLightCountSphere; n++)
         {
-            lightGrid[storeOffset]=tileLightIndicesSphere[n];
+            lightGrid[storeOffset] = tileLightIndicesSphere[n];
             storeOffset += 1;
         }
         for (n = 0; n < tileLightCountCone; n++)
@@ -259,5 +403,6 @@ void main(
             lightGrid[storeOffset] = tileLightIndicesConeShadowed[n];
             storeOffset += 1;
         }
+
     }
 }

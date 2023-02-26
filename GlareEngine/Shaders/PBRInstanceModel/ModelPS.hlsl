@@ -72,6 +72,7 @@ float3 GetNormal(float3 normalMapSample, float3 unitNormalW, float4 tangentW)
     return bumpedNormalW;
 }
 
+
 float4 main(VSOutput vsOutput) : SV_Target0
 {
     // Load and modulate textures
@@ -107,7 +108,7 @@ float4 main(VSOutput vsOutput) : SV_Target0
     //Lighting and Shadow
     Surface.ShadowFactor = CalcShadowFactor(float4(vsOutput.sunShadowCoord, 1.0f));
     color += ComputeLighting(gLights, Surface);
-    //tiled  lighting
+    //Shade each light using Forward+ tiles
     color += ComputeTiledLighting((uint2)vsOutput.position.xy, Surface);
 
     //SSAO (TODO)
@@ -126,6 +127,5 @@ float4 main(VSOutput vsOutput) : SV_Target0
         color += IBL_Specular(Surface);
     }
 
-    // TODO: Shade each light using Forward+ tiles
     return  float4(color, baseColor.a);
 }

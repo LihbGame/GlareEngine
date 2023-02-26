@@ -59,7 +59,7 @@ namespace GlareEngine
 	namespace Lighting
 	{
 		//light tile size
-		IntVar LightGridDimension("Rendering/Forward+/Light Grid Dimension", 32, eMinLightGridDimension, 32, 8);
+		IntVar LightGridDimension("Rendering/Forward+/Light Grid Dimension", 16, eMinLightGridDimension, 32, 8);
 
 		//Light RootSignature
 		RootSignature m_FillLightRootSig;
@@ -130,7 +130,7 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 	Vector3 BoundSize = maxBound - minBound - offset * 2.0f;
 	Vector3 BoundBias = minBound + offset;
 
-	srand((unsigned)time(NULL));
+	//srand((unsigned)time(NULL));
 
 	auto RandUINT = []() -> uint32_t
 	{
@@ -294,8 +294,8 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 	Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
 	Context.SetDynamicDescriptor(2, 0, m_LightGrid.GetUAV());
 
-	uint32_t tileCountX = (uint32_t)(Math::DivideByMultiple((float)g_SceneColorBuffer.GetWidth(), LightGridDimension) + 1.0f);
-	uint32_t tileCountY = (uint32_t)(Math::DivideByMultiple((float)g_SceneColorBuffer.GetHeight(), LightGridDimension) + 1.0f);
+	uint32_t tileCountX = (uint32_t)(Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightGridDimension));
+	uint32_t tileCountY = (uint32_t)(Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightGridDimension));
 
 	float FarClipDist = camera.GetFarZ();
 	float NearClipDist = camera.GetNearZ();
