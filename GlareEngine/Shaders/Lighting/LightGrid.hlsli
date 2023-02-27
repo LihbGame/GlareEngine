@@ -14,6 +14,7 @@ struct TileLightData
     uint Type;
 
     float3 PositionVS;
+    uint ShadowConeIndex;
 
     float3 ConeDir;
     float2 ConeAngles; // x = 1.0f / (cos(coneInner) - cos(coneOuter)), y = cos(coneOuter)

@@ -404,9 +404,20 @@ float3 ComputeConeLight(in TileLightData LightData, in SurfaceProperties Surface
     return coneFalloff * distanceFalloff * CookTorranceBRDF(LightProp, Surface);
 }
 
+float GetShadowConeLight(uint lightIndex, float3 shadowCoord)
+{
+    float result = gLightShadowArrayTex.SampleCmpLevelZero(
+        gSamplerShadow, float3(shadowCoord.xy, lightIndex), shadowCoord.z);
+    return result;
+}
+
 float3 ComputeConeShadowLight(in TileLightData LightData, in SurfaceProperties Surface)
 {
-    return float3(0, 0, 0);
+    float3 lightColor = ComputeConeLight(LightData, Surface);
+    float4 shadowCoord = mul(LightData.ShadowTextureMatrix, float4(Surface.worldPos, 1.0));
+    shadowCoord.xyz *= rcp(shadowCoord.w);
+    float shadowFactor = GetShadowConeLight(LightData.ShadowConeIndex, shadowCoord.xyz);
+    return lightColor* shadowFactor;
 }
 
 float3 ComputeTiledLighting(uint2 ScreenPosition, in SurfaceProperties Surface)
@@ -440,7 +451,7 @@ float3 ComputeTiledLighting(uint2 ScreenPosition, in SurfaceProperties Surface)
         }
         case 2://Shadowed Cone Light 
         {
-            lightColor += ComputeConeLight(lightData, Surface);
+            lightColor += ComputeConeShadowLight(lightData, Surface);
             break;
         }
         default:

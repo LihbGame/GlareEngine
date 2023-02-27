@@ -139,6 +139,7 @@ namespace GlareEngine
 	void ColorBuffer::CreateArray(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t MipMap, uint32_t ArrayCount, DXGI_FORMAT Format, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr)
 	{
 		D3D12_RESOURCE_FLAGS Flags = CombineResourceFlags();
+
 		D3D12_RESOURCE_DESC ResourceDesc = DescribeTex2D(Width, Height, ArrayCount, MipMap, Format, Flags);
 
 		D3D12_CLEAR_VALUE ClearValue = {};

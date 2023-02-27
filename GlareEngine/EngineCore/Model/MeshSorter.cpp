@@ -100,7 +100,14 @@ void MeshSorter::RenderMeshes(DrawPass pass, GraphicsContext& context, MainConst
 
 	if (m_BatchType == eShadows)
 	{
-		globals.ViewProj =dynamic_cast<ShadowCamera*>(m_Camera)->GetShadowMap()->GetViewProj();
+		if (dynamic_cast<ShadowCamera*>(m_Camera))
+		{
+			globals.ViewProj = dynamic_cast<ShadowCamera*>(m_Camera)->GetShadowMap()->GetViewProj();
+		}
+		else
+		{
+			globals.ViewProj = m_Camera->GetViewProj();
+		}
 	}
 
 	context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &globals);

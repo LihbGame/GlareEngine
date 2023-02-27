@@ -18,11 +18,11 @@ namespace GlareEngine
 		}
 
 		//创建一个深度缓冲区。 如果提供了一个地址，内存将不会被分配。vmem地址允许你对缓冲区进行别名。 
-		void Create(const std::wstring& Name, uint32_t Width, uint32_t Height, DXGI_FORMAT Format, bool isReverseZ = false,
+		void Create(const std::wstring& Name, uint32_t Width, uint32_t Height, DXGI_FORMAT Format, bool isReverseZ = false, uint32_t arraySize = 1,
 			D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN);
 
 
-		void Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t NumSamples, DXGI_FORMAT Format, bool isReverseZ = false,
+		void Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t NumSamples, DXGI_FORMAT Format, bool isReverseZ = false, uint32_t arraySize = 1,
 			D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN);
 
 
@@ -39,7 +39,7 @@ namespace GlareEngine
 
 	protected:
 
-		void CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format);
+		void CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format, uint32_t ArraySize = 1);
 
 		float m_ClearDepth;
 		uint8_t m_ClearStencil;

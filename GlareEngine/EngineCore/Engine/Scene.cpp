@@ -387,8 +387,6 @@ void Scene::ForwardPlusRendering()
 		sorter.AddRenderTarget(g_SceneColorBuffer);
 	}
 	
-
-
 	for (auto& model : m_pGLTFRenderObjects)
 	{
 		if (model->GetVisible())
@@ -405,7 +403,6 @@ void Scene::ForwardPlusRendering()
 		sorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
 	}
 
-
 	if (LoadingFinish)
 	{
 		//Set lighting buffers in the SRV Heap
@@ -419,11 +416,11 @@ void Scene::ForwardPlusRendering()
 
 		D3D12_CPU_DESCRIPTOR_HANDLE LightSRV[] = {
 		Lighting::m_LightGrid.GetSRV(),
-		Lighting::m_LightBuffer.GetSRV()
+		Lighting::m_LightBuffer.GetSRV(),
+		Lighting::m_LightShadowArray.GetSRV()
 		};
 
-		UINT destCount = 2;
-		UINT size[2] = { 1,1 };
+		UINT destCount = 3; UINT size[3] = { 1,1,1 };
 		g_Device->CopyDescriptors(1, &gTextureHeap[0], &destCount,
 			destCount, LightSRV, size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	}
@@ -435,6 +432,11 @@ void Scene::ForwardPlusRendering()
 
 	{
 		ScopedTimer _outerprof(L"Main Render", Context);
+
+		if (LoadingFinish)
+		{
+			CreateTileConeShadowMap(Context);
+		}
 
 		{
 			ScopedTimer _prof(L"Sun Shadow Map", Context);
@@ -450,7 +452,6 @@ void Scene::ForwardPlusRendering()
 					dynamic_cast<glTFInstanceModel*>(model)->GetModel()->AddToRender(shadowSorter);
 				}
 			}
-
 			shadowSorter.Sort();
 			shadowSorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
 		}
@@ -513,6 +514,37 @@ void Scene::ForwardPlusRendering()
 
 void Scene::DeferredRendering()
 {
+}
+
+void Scene::CreateTileConeShadowMap(GraphicsContext& Context)
+{
+	static UINT shadowIndex = 0;
+
+	if (shadowIndex >= Lighting::MaxShadowedLights)
+		return;
+
+	ScopedTimer _prof(L"Tile Cone lighting Shadow Map", Context);
+
+	MeshSorter shadowSorter(MeshSorter::eShadows);
+	shadowSorter.SetCamera(Lighting::ConeShadowCamera[shadowIndex]);
+	shadowSorter.SetDepthStencilTarget(*dynamic_cast<DepthBuffer*>(&Lighting::m_LightShadowTempBuffer));
+
+	for (auto& model : m_pGLTFRenderObjects)
+	{
+		if (model->GetVisible() && model->GetShadowRenderFlag())
+		{
+			dynamic_cast<glTFInstanceModel*>(model)->GetModel()->AddToRender(shadowSorter);
+		}
+	}
+	shadowSorter.Sort();
+	shadowSorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
+
+	Context.TransitionResource(Lighting::m_LightShadowTempBuffer, D3D12_RESOURCE_STATE_COPY_SOURCE);
+	Context.TransitionResource(Lighting::m_LightShadowArray, D3D12_RESOURCE_STATE_COPY_DEST);
+	Context.CopySubresource(Lighting::m_LightShadowArray, shadowIndex, Lighting::m_LightShadowTempBuffer, 0);
+	Context.TransitionResource(Lighting::m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+	++shadowIndex;
 }
 
 

@@ -31,6 +31,7 @@ struct LightData
 	uint32_t Type;
 
 	float PositionVS[3];
+	uint32_t ShadowConeIndex;
 
 	float ConeDir[3];
 	float ConeAngles[2];
@@ -59,7 +60,7 @@ namespace GlareEngine
 	namespace Lighting
 	{
 		//light tile size
-		IntVar LightGridDimension("Rendering/Forward+/Light Grid Dimension", 16, eMinLightGridDimension, 32, 8);
+		IntVar LightGridDimension("Rendering/Forward+/Light Grid Dimension", 32, eMinLightGridDimension, 32, 8);
 
 		//Light RootSignature
 		RootSignature m_FillLightRootSig;
@@ -80,12 +81,13 @@ namespace GlareEngine
 		//shadow map size
 		enum { eShadowDimension = 512 };
 
-		ColorBuffer m_LightShadowArray;
+		ShadowBuffer m_LightShadowArray;
 		ShadowBuffer m_LightShadowTempBuffer;
-		Matrix4 m_LightShadowMatrix[MaxLights];
+		Matrix4 m_LightShadowMatrix[MaxShadowedLights];
 
 		bool FirstUpdateViewSpace = true;
 
+		Camera ConeShadowCamera[MaxShadowedLights];
 	}
 }
 
@@ -118,8 +120,8 @@ void Lighting::InitializeResources(void)
 	uint32_t lightGridSizeBytes = lightGridCells * (1 + MaxTileLights);
 	m_LightGrid.Create(L"m_LightGrid", lightGridSizeBytes, sizeof(UINT));
 
-	m_LightShadowArray.CreateArray(L"m_LightShadowArray", eShadowDimension, eShadowDimension, 1, MaxShadowedLights, DXGI_FORMAT_R16_UNORM);
-	m_LightShadowTempBuffer.Create(L"m_LightShadowTempBuffer", eShadowDimension, eShadowDimension);
+	m_LightShadowArray.Create(L"m_LightShadowArray", eShadowDimension, eShadowDimension, DXGI_FORMAT_R32_FLOAT, MaxShadowedLights);
+	m_LightShadowTempBuffer.Create(L"m_LightShadowTempBuffer", eShadowDimension, eShadowDimension, DXGI_FORMAT_R32_FLOAT);
 
 	m_LightBuffer.Create(L"m_LightBuffer", MaxLights, sizeof(LightData));
 
@@ -130,7 +132,7 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 	Vector3 BoundSize = maxBound - minBound - offset * 2.0f;
 	Vector3 BoundBias = minBound + offset;
 
-	//srand((unsigned)time(NULL));
+	srand((unsigned)time(NULL));
 
 	auto RandUINT = []() -> uint32_t
 	{
@@ -202,22 +204,37 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 
 		Vector3 coneDir = randVecGaussian();
 		float coneInner = RandFloat() * 0.2f * MathHelper::Pi;
-		float coneOuter = coneInner + RandFloat() * 0.2f * MathHelper::Pi;
-		color = color * 5.0f;
-		if (type == 1 || type == 2)
+		float coneOuter = coneInner + RandFloat() * 0.3f * MathHelper::Pi;
+		if (type == 0)
 		{
-			//lightRadius *= RandFloat();
+			color = color * 2;
+		}
+		else if (type == 1)
+		{
 			// emphasize cone lights
-			//color = color * 5.0f;
+			color = color * 2.0f;
+		}
+		else
+		{
+			lightRadius *= 2;
+			color = color * 3.0f;
 		}
 
-		Camera shadowCamera;
-		shadowCamera.LookAt(position, position + coneDir, Vector3(0, 1, 0));
-		shadowCamera.SetLens(coneOuter * 2, 1.0f, lightRadius * 0.05f, lightRadius * 1.0f);
-		shadowCamera.UpdateViewMatrix();
-		m_LightShadowMatrix[lightIndex] = (Matrix4)shadowCamera.GetViewProj();
-
-		Matrix4 shadowTextureMatrix =  m_LightShadowMatrix[lightIndex]* Matrix4(AffineTransform(Matrix3::MakeScale(0.5f, -0.5f, 1.0f), Vector3(0.5f, 0.5f, 0.0f)));
+		Matrix4 shadowTextureMatrix;
+		if (type == 2)
+		{
+			static int shadowLightIndex = 0;
+			ConeShadowCamera[shadowLightIndex].LookAt(position, position + coneDir, Vector3(0, 1, 0));
+			ConeShadowCamera[shadowLightIndex].SetLens(coneOuter * 2, 1.0f, lightRadius * 0.01f, lightRadius * 1);
+			ConeShadowCamera[shadowLightIndex].UpdateViewMatrix();
+			XMFLOAT4X4 ViewProj;
+			XMStoreFloat4x4(&ViewProj, XMMatrixTranspose(ConeShadowCamera[shadowLightIndex].GetViewProjection()));
+			m_LightShadowMatrix[shadowLightIndex] = (Matrix4)ViewProj;
+			m_LightData[lightIndex].ShadowConeIndex = shadowLightIndex;
+			shadowTextureMatrix =  m_LightShadowMatrix[shadowLightIndex]* Matrix4(AffineTransform(Matrix3::MakeScale(0.5f, -0.5f, 1.0f), Vector3(0.5f, 0.5f, 0.0f)));
+			shadowLightIndex++;
+		}
+		
 
 		m_LightData[lightIndex].PositionWS[0] = position.GetX();
 		m_LightData[lightIndex].PositionWS[1] = position.GetY();

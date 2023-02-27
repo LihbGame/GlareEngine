@@ -64,6 +64,7 @@ private:
 	void ForwardRendering();
 	void ForwardPlusRendering();
 	void DeferredRendering();
+	void CreateTileConeShadowMap(GraphicsContext& Context);
 private:
 	ID3D12GraphicsCommandList* m_pCommandList = nullptr;
 	string mName;

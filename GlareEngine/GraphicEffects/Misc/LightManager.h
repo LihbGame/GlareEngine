@@ -27,7 +27,7 @@ namespace GlareEngine
 
 		enum { MaxLights = 1024 };
 		enum { MaxTileLights = 512 };
-		enum { MaxShadowedLights = 128 };
+		enum { MaxShadowedLights = 16 };
 
 		extern StructuredBuffer m_LightBuffer;
 		extern StructuredBuffer m_LightGrid;
@@ -35,9 +35,11 @@ namespace GlareEngine
 		extern std::uint32_t m_FirstConeLight;
 		extern std::uint32_t m_FirstConeShadowedLight;
 
-		extern ColorBuffer m_LightShadowArray;
+		extern ShadowBuffer m_LightShadowArray;
 		extern ShadowBuffer m_LightShadowTempBuffer;
-		extern Matrix4 m_LightShadowMatrix[MaxLights];
+		extern Matrix4 m_LightShadowMatrix[MaxShadowedLights];
+
+		extern Camera ConeShadowCamera[MaxShadowedLights];
 
 		void InitializeResources(void);
 		void CreateRandomLights(const Vector3 minBound, const Vector3 maxBound, const Vector3 offset);
