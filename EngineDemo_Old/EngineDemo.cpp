@@ -1481,7 +1481,7 @@ void GameApp::BuildRenderItems()
 	{
 		RenderItem TerrainRitem = {};
 		TerrainRitem.World = MathHelper::Identity4x4();
-		XMStoreFloat4x4(&TerrainRitem.World, XMMatrixTranslation(0.0f, 0.0f, 0.0f) * XMMatrixScaling(1.0, 1.0, 1.0));
+		XMStoreFloat4x4(&TerrainRitem.World, XMMatrixTranslation(0.0f, -100.0f, 0.0f) * XMMatrixScaling(1.0, 1.0, 1.0));
 		XMStoreFloat4x4(&TerrainRitem.TexTransform, XMMatrixScaling(1.0, 1.0, 1.0));
 		TerrainRitem.ObjCBIndex = ObjCBIndex++;
 		TerrainRitem.Mat = Materials::GetMaterialInstance()->GetMaterial(L"Terrain/grass");
@@ -1941,17 +1941,17 @@ void GameApp::DrawGrass(const GameTimer& gr, bool IsReflection)
 HeightmapTerrain::InitInfo GameApp::HeightmapTerrainInit()
 {
 	HeightmapTerrain::InitInfo TerrainInfo;
-	TerrainInfo.HeightMapFilename = "../Resource/Textures/Terrain/heightmap.png";
+	TerrainInfo.HeightMapFilename = "../Resource/Textures/Terrain/terrain.raw";
 	TerrainInfo.LayerMapFilename[0] = "Terrain/grass";
 	TerrainInfo.LayerMapFilename[1] = "Terrain/darkdirt";
 	TerrainInfo.LayerMapFilename[2] = "Terrain/stone";
 	TerrainInfo.LayerMapFilename[3] = "Terrain/lightdirt";
 	TerrainInfo.LayerMapFilename[4] = "Terrain/snow";
 	TerrainInfo.BlendMapFilename = "Terrain/blend";
-	TerrainInfo.HeightScale = 1000.0f;
-	TerrainInfo.HeightmapWidth = 2048;
-	TerrainInfo.HeightmapHeight = 2048;
-	TerrainInfo.CellSpacing = 10.0f;
+	TerrainInfo.HeightScale = 200.0f;
+	TerrainInfo.HeightmapWidth = 2049;
+	TerrainInfo.HeightmapHeight = 2049;
+	TerrainInfo.CellSpacing = 2.0f;
 
 	return TerrainInfo;
 }

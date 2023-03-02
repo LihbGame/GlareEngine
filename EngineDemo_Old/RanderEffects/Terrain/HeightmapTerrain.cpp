@@ -188,7 +188,7 @@ void HeightmapTerrain::LoadHeightMapFromFile(string filename)
 
 			for (UINT i = 0; i < MapSize; ++i)
 			{
-				mHeightmap[i] = MapData[i] / 255.0f * mInfo.HeightScale;
+				mHeightmap[i] = MapData[i] / 255.0f * mInfo.HeightScale-80.0f;
 			}
 		}
 	}

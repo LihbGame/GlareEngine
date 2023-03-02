@@ -207,12 +207,12 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 		float coneOuter = coneInner + RandFloat() * 0.3f * MathHelper::Pi;
 		if (type == 0)
 		{
-			color = color * 2;
+			color = color * 5;
 		}
 		else if (type == 1)
 		{
 			// emphasize cone lights
-			color = color * 2.0f;
+			color = color * 5.0f;
 		}
 		else
 		{
