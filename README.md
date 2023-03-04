@@ -9,10 +9,8 @@ TIPS:
 
 2.The HDR texture of the sky is too large to upload, please replace it yourself.
 
-Demo ScreenShot
-![demo](ScreenShot/screenshot1.png)
+Forward Plus (2.5d Tiled Base Forward)
+![demo](ScreenShot/Forward Plus.jpg)
 
-![demo](ScreenShot/screenshot8.png)
-
-Editor
-![demo](ScreenShot/screenshot7.png)
+Glass and Water
+![demo](ScreenShot/screenshot1.jpg)
