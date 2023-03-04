@@ -18,5 +18,5 @@ Glass and Water
 PBR BRDF Mode
 ![demo](ScreenShot/DamagedHelmet.jpg)
 
-Instance
+PCSS
 ![demo](ScreenShot/screenshot8.jpg)
