@@ -10,7 +10,13 @@ TIPS:
 2.The HDR texture of the sky is too large to upload, please replace it yourself.
 
 Forward Plus (2.5d Tiled Base Forward)
-![demo](ScreenShot/Forward Plus.jpg)
+![demo](ScreenShot/ForwardPlus.jpg)
 
 Glass and Water
 ![demo](ScreenShot/screenshot1.jpg)
+
+PBR BRDF Mode
+![demo](ScreenShot/DamagedHelmet.jpg)
+
+Instance
+![demo](ScreenShot/screenshot8.jpg)
