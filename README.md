@@ -20,3 +20,6 @@ PBR BRDF Mode
 
 PCSS
 ![demo](ScreenShot/screenshot8.jpg)
+
+Parallax Mapping
+![demo](ScreenShot/ParallaxMapping.jpg)
