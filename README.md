@@ -12,7 +12,7 @@ TIPS:
 Forward Plus (2.5d Tiled Base Forward)
 ![demo](ScreenShot/ForwardPlus.jpg)
 
-Glass and Water
+Grass and Water
 ![demo](ScreenShot/screenshot1.jpg)
 
 PBR BRDF Mode
