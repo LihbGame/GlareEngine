@@ -2,7 +2,7 @@
 #include "../Misc/CommonResource.hlsli"
 
 #define SM_6_0
-#define AABBCULLING
+//#define AABBCULLING
 #define ADVANCED_CULLING ///Harada Siggraph 2012 2.5D culling
 
 cbuffer CSConstants : register(b0)

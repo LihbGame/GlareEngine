@@ -12,6 +12,11 @@ namespace PostProcessing
 {
 	GraphicsPSO mPSO;
 	RootSignature PostEffectsRS;
+
+
+
+
+
 }
 
 
@@ -32,7 +37,7 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
     ObjName.SetComputeShader(ShaderByteCode, sizeof(ShaderByteCode) ); \
     ObjName.Finalize();
 
-
+	//g_bTypedUAVLoadSupport_R11G11B10_FLOAT
 
 
 
