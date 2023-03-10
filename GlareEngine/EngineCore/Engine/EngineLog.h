@@ -12,7 +12,8 @@ public:
 	static vector<wstring>& GetLogs();
 	static vector<wstring>& GetFilterLogs();
 	static void ClearLogs();
-	static void AddLog(const wchar_t* format, ...);
+	static int AddLog(const wchar_t* format, ...);
+	static void ReplaceLog(int location, wchar_t* format, ...);
 	static void Filter(wstring Filter);
 	static void SaveLog();
 private:

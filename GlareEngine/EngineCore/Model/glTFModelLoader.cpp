@@ -705,6 +705,11 @@ std::shared_ptr<Model> GlareEngine::LoadModel(const std::wstring& Path, bool for
 
 		inFile = std::ifstream(ModelFileName, std::ios::in | std::ios::binary);
 		inFile.read((char*)&header, sizeof(FileHeader));
+
+		for (Mesh* mesh: modelData.m_Meshes)
+		{
+			free(mesh);
+		}
 	}
 
 	if (!inFile)

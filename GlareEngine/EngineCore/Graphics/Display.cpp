@@ -129,7 +129,8 @@ namespace GlareEngine
 
 			if (g_NativeWidth == NativeWidth && g_NativeHeight == NativeHeight)
 				return;
-			EngineLog::AddLog(L"Changing native resolution to %ux%u", NativeWidth, NativeHeight);
+
+			//EngineLog::AddLog(L"Changing native resolution to %ux%u", NativeWidth, NativeHeight);
 
 			g_NativeWidth = NativeWidth;
 			g_NativeHeight = NativeHeight;
@@ -443,7 +444,9 @@ namespace GlareEngine
 		g_DisplayWidth = width;
 		g_DisplayHeight = height;
 
-		//EngineLog::AddLog(L"Changing display resolution to %ux%u", g_DisplayWidth, g_DisplayHeight);
+		static int logIndex = EngineLog::AddLog(L"Changing display resolution to %ux%u", g_DisplayWidth, g_DisplayHeight);
+
+		EngineLog::ReplaceLog(logIndex-1, L"Changing display resolution to %ux%u", g_DisplayWidth, g_DisplayHeight);
 
 		//g_PreDisplayBuffer.Create(L"PreDisplay Buffer", width, height, 1, g_SwapChainFormat);
 

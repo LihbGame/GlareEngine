@@ -22,6 +22,7 @@
 #include "CompiledShaders/ModelNoTangentNoUV1SkinVS.h"
 #include "CompiledShaders/ModelNoTangentNoUV1VS.h"
 #include "CompiledShaders/ModelNoTangentVS.h"
+#include "CompiledShaders/WireframePS.h"
 
 using namespace GlareEngine::Render;
 using namespace GlareEngine::ModelPSOFlags;
@@ -196,6 +197,83 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
         int PSOFlagIndex = (PSOIndex - ModelPSO::PSOCount) / 2;
         if (gModelPSOs.size() > ModelPSO::PSOCount && gModelPSOs[PSOReadWriteDepthIndex].GetPipelineStateObject() != nullptr)
         {
+            if (mPSOFlags[PSOFlagIndex] & eHasSkin)
+            {
+                if (mPSOFlags[PSOFlagIndex] & eHasTangent)
+                {
+                    if (mPSOFlags[PSOFlagIndex] & eHasUV1)
+                    {
+                        gModelPSOs[PSOEqualDepthIndex].SetVertexShader(g_pModelSkinVS, sizeof(g_pModelSkinVS));
+                        gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
+                        gModelPSOs[PSOReadWriteDepthIndex].SetVertexShader(g_pModelSkinVS, sizeof(g_pModelSkinVS));
+                        gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
+                    }
+                    else
+                    {
+                        gModelPSOs[PSOEqualDepthIndex].SetVertexShader(g_pModelNoUV1SkinVS, sizeof(g_pModelNoUV1SkinVS));
+                        gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelNoUV1PS, sizeof(g_pModelNoUV1PS));
+                        gModelPSOs[PSOReadWriteDepthIndex].SetVertexShader(g_pModelNoUV1SkinVS, sizeof(g_pModelNoUV1SkinVS));
+                        gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelNoUV1PS, sizeof(g_pModelNoUV1PS));
+                    }
+                }
+                else
+                {
+                    if (mPSOFlags[PSOFlagIndex] & eHasUV1)
+                    {
+                        gModelPSOs[PSOEqualDepthIndex].SetVertexShader(g_pModelNoTangentSkinVS, sizeof(g_pModelNoTangentSkinVS));
+                        gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelNoTangentPS, sizeof(g_pModelNoTangentPS));
+                        gModelPSOs[PSOReadWriteDepthIndex].SetVertexShader(g_pModelNoTangentSkinVS, sizeof(g_pModelNoTangentSkinVS));
+                        gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelNoTangentPS, sizeof(g_pModelNoTangentPS));
+                    }
+                    else
+                    {
+                        gModelPSOs[PSOEqualDepthIndex].SetVertexShader(g_pModelNoTangentNoUV1SkinVS, sizeof(g_pModelNoTangentNoUV1SkinVS));
+                        gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelNoTangentNoUV1PS, sizeof(g_pModelNoTangentNoUV1PS));
+                        gModelPSOs[PSOReadWriteDepthIndex].SetVertexShader(g_pModelNoTangentNoUV1SkinVS, sizeof(g_pModelNoTangentNoUV1SkinVS));
+                        gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelNoTangentNoUV1PS, sizeof(g_pModelNoTangentNoUV1PS));
+                    }
+                }
+            }
+            else
+            {
+                if (mPSOFlags[PSOFlagIndex] & eHasTangent)
+                {
+                    if (mPSOFlags[PSOFlagIndex] & eHasUV1)
+                    {
+                        gModelPSOs[PSOEqualDepthIndex].SetVertexShader(g_pModelVS, sizeof(g_pModelVS));
+                        gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
+                        gModelPSOs[PSOReadWriteDepthIndex].SetVertexShader(g_pModelVS, sizeof(g_pModelVS));
+                        gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
+                    }
+                    else
+                    {
+                        gModelPSOs[PSOEqualDepthIndex].SetVertexShader(g_pModelNoUV1VS, sizeof(g_pModelNoUV1VS));
+                        gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelNoUV1PS, sizeof(g_pModelNoUV1PS));
+                        gModelPSOs[PSOReadWriteDepthIndex].SetVertexShader(g_pModelNoUV1VS, sizeof(g_pModelNoUV1VS));
+                        gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelNoUV1PS, sizeof(g_pModelNoUV1PS));
+                    }
+                }
+                else
+                {
+                    if (mPSOFlags[PSOFlagIndex] & eHasUV1)
+                    {
+                        gModelPSOs[PSOEqualDepthIndex].SetVertexShader(g_pModelNoTangentVS, sizeof(g_pModelNoTangentVS));
+                        gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelNoTangentPS, sizeof(g_pModelNoTangentPS));
+                        gModelPSOs[PSOReadWriteDepthIndex].SetVertexShader(g_pModelNoTangentVS, sizeof(g_pModelNoTangentVS));
+                        gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelNoTangentPS, sizeof(g_pModelNoTangentPS));
+                    }
+                    else
+                    {
+                        gModelPSOs[PSOEqualDepthIndex].SetVertexShader(g_pModelNoTangentNoUV1VS, sizeof(g_pModelNoTangentNoUV1VS));
+                        gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelNoTangentNoUV1PS, sizeof(g_pModelNoTangentNoUV1PS));
+                        gModelPSOs[PSOReadWriteDepthIndex].SetVertexShader(g_pModelNoTangentNoUV1VS, sizeof(g_pModelNoTangentNoUV1VS));
+                        gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelNoTangentNoUV1PS, sizeof(g_pModelNoTangentNoUV1PS));
+                    }
+                }
+            }
+
+
+
             gModelPSOs[PSOReadWriteDepthIndex].SetRenderTargetFormats(1, &DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
             gModelPSOs[PSOEqualDepthIndex].SetRenderTargetFormats(1, &DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
 
@@ -222,7 +300,9 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                 gModelPSOs[PSOReadWriteDepthIndex].GetPSODesc().RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
                 gModelPSOs[PSOReadWriteDepthIndex].GetPSODesc().RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
                 gModelPSOs[PSOEqualDepthIndex].GetPSODesc().RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
-                gModelPSOs[PSOEqualDepthIndex].GetPSODesc().RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
+                gModelPSOs[PSOEqualDepthIndex].GetPSODesc().RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME; 
+                gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pWireframePS, sizeof(g_pWireframePS));
+                gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pWireframePS, sizeof(g_pWireframePS));
             }
             else
             {

@@ -124,7 +124,6 @@ void Lighting::InitializeResources(void)
 	m_LightShadowTempBuffer.Create(L"m_LightShadowTempBuffer", eShadowDimension, eShadowDimension, DXGI_FORMAT_R32_FLOAT);
 
 	m_LightBuffer.Create(L"m_LightBuffer", MaxLights, sizeof(LightData));
-
 }
 
 void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound,const Vector3 offset)
@@ -132,7 +131,7 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 	Vector3 BoundSize = maxBound - minBound - offset * 2.0f;
 	Vector3 BoundBias = minBound + offset;
 
-	//srand((unsigned)time(NULL));
+	srand((unsigned)time(NULL));
 
 	auto RandUINT = []() -> uint32_t
 	{

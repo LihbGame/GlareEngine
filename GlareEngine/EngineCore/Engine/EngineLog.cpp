@@ -18,7 +18,7 @@ void EngineLog::ClearLogs()
 	FilterDisplayLogs.clear();
 }
 
-void EngineLog::AddLog(const wchar_t* format, ...)
+int EngineLog::AddLog(const wchar_t* format, ...)
 {
 	wchar_t buffer[256];
 	va_list ap;
@@ -33,6 +33,27 @@ void EngineLog::AddLog(const wchar_t* format, ...)
 		*it =tolower(*it);
 	}
 	FilterLogs.push_back(log);
+	return FilterLogs.size();
+}
+
+void EngineLog::ReplaceLog(int location, wchar_t* format, ...)
+{
+	wchar_t buffer[256];
+	va_list ap;
+	va_start(ap, format);
+	vswprintf(buffer, 256, format, ap);
+	wstring log(buffer);
+
+	if (DisplayLogs.size() > location)
+	{
+		DisplayLogs[location] = log;
+		//统一改为小写字符
+		for (wstring::iterator it = log.begin(); it != log.end(); ++it)
+		{
+			*it = tolower(*it);
+		}
+		FilterLogs[location] = log;
+	}
 }
 
 void EngineLog::Filter(wstring Filter)
