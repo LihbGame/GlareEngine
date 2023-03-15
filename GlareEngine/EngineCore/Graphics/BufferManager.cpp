@@ -12,6 +12,11 @@ namespace GlareEngine
 	DepthBuffer g_SceneMSAADepthBuffer;
 	ColorBuffer g_SceneMSAAColorBuffer;
 
+	//Bloom
+	ColorBuffer g_aBloomUAV[2];	// 640x384 (1/3)
+	ColorBuffer g_LumaLR;
+
+
 	//ColorBuffer g_PostEffectsBuffer;
 	//ColorBuffer g_VelocityBuffer;
 	//ColorBuffer g_OverlayBuffer;

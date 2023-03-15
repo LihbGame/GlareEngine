@@ -7,7 +7,7 @@ namespace PostProcessing
 
     void BuildSRV(ID3D12GraphicsCommandList* CommandList);
 
-    void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr);
+    void Render(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr);
 
     void DrawBeforeToneMapping();
     void DrawAfterToneMapping();

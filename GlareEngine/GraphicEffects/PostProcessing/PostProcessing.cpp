@@ -25,7 +25,7 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	PostEffectsRS.Reset(4, 2);
 	PostEffectsRS.InitStaticSampler(0, SamplerLinearClampDesc);
 	PostEffectsRS.InitStaticSampler(1, SamplerLinearBorderDesc);
-	PostEffectsRS[0].InitAsConstants(0, 5);
+	PostEffectsRS[0].InitAsConstantBuffer(0);
 	PostEffectsRS[1].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 4);
 	PostEffectsRS[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 4);
 	PostEffectsRS[3].InitAsConstantBuffer(1);
@@ -52,7 +52,7 @@ void PostProcessing::BuildSRV(ID3D12GraphicsCommandList* CommandList)
 {
 }
 
-void PostProcessing::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
+void PostProcessing::Render(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 {
 	if (SpecificPSO)
 	{
@@ -70,7 +70,7 @@ void PostProcessing::DrawBeforeToneMapping()
 {
 	GraphicsContext& Context = GraphicsContext::Begin(L"PostProcessing");
 	Context.PIXBeginEvent(L"PostProcessing");
-	Draw(Context);
+	Render(Context);
 	Context.PIXEndEvent();
 	Context.Finish();
 }
@@ -80,7 +80,7 @@ void PostProcessing::DrawAfterToneMapping()
 	GraphicsContext& Context = GraphicsContext::Begin(L"PostProcessing");
 	Context.PIXBeginEvent(L"PostProcessing");
 	//Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(mMainConstants), &mMainConstants);
-	Draw(Context);
+	Render(Context);
 	Context.PIXEndEvent();
 	Context.Finish();
 }
