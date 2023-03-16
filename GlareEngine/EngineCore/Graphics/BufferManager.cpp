@@ -13,7 +13,11 @@ namespace GlareEngine
 	ColorBuffer g_SceneMSAAColorBuffer;
 
 	//Bloom
-	ColorBuffer g_aBloomUAV[2];	// 640x384 (1/3)
+	ColorBuffer g_aBloomUAV1[2];	// (1/3)
+	ColorBuffer g_aBloomUAV2[2];    // (1/6)  
+	ColorBuffer g_aBloomUAV3[2];    // (1/12)
+	ColorBuffer g_aBloomUAV4[2];    // (1/24)
+	ColorBuffer g_aBloomUAV5[2];    // (1/48)
 	ColorBuffer g_LumaLR;
 
 
@@ -59,12 +63,6 @@ namespace GlareEngine
 	//ColorBuffer g_MotionPrepBuffer;
 	//ColorBuffer g_LumaBuffer;
 	//ColorBuffer g_TemporalColor[2];
-	//ColorBuffer g_aBloomUAV1[2];    // 640x384 (1/3)
-	//ColorBuffer g_aBloomUAV2[2];    // 320x192 (1/6)  
-	//ColorBuffer g_aBloomUAV3[2];    // 160x96  (1/12)
-	//ColorBuffer g_aBloomUAV4[2];    // 80x48   (1/24)
-	//ColorBuffer g_aBloomUAV5[2];    // 40x24   (1/48)
-	//ColorBuffer g_LumaLR;
 	//ByteAddressBuffer g_Histogram;
 	//ByteAddressBuffer g_FXAAWorkCounters;
 	//ByteAddressBuffer g_FXAAWorkQueue;
@@ -98,11 +96,33 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 	g_SceneColorBuffer.Create(L"Main Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 	g_SceneDepthBuffer.Create(L"Scene Depth Buffer", NativeWidth, NativeHeight, DSV_FORMAT, REVERSE_Z);
 	
-	//MSAA
+	//MSAA buffer
 	//g_SceneMSAADepthBuffer
 	g_SceneMSAAColorBuffer.SetMsaaMode(MSAACOUNT, MSAACOUNT);
 	g_SceneMSAAColorBuffer.Create(L"Main MSAA Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 	g_SceneMSAADepthBuffer.Create(L"Scene MSAA Depth Buffer", NativeWidth, NativeHeight, MSAACOUNT, DSV_FORMAT, REVERSE_Z);
+
+	//Bloom buffer
+	//No need for a full-screen bloom, but the length and width are multiples of 8 and the number of cs scheduling threads match
+	uint32_t BloomWidth = NativeWidth > 2560 ? 1280 : 640;
+	uint32_t BloomHeight = NativeHeight > 1440 ? 768 : 384;
+	g_LumaLR.Create(L"Luminance Buffer", BloomWidth, BloomHeight, 1, DXGI_FORMAT_R8_UINT);
+	// 1/3 
+	g_aBloomUAV1[0].Create(L"Bloom Buffer 1a", BloomWidth, BloomHeight, 1, DefaultHDRColorFormat);
+	g_aBloomUAV1[1].Create(L"Bloom Buffer 1b", BloomWidth, BloomHeight, 1, DefaultHDRColorFormat);
+	// 1/6
+	g_aBloomUAV2[0].Create(L"Bloom Buffer 2a", BloomWidth / 2, BloomHeight / 2, 1, DefaultHDRColorFormat);
+	g_aBloomUAV2[1].Create(L"Bloom Buffer 2b", BloomWidth / 2, BloomHeight / 2, 1, DefaultHDRColorFormat);
+	// 1/12
+	g_aBloomUAV3[0].Create(L"Bloom Buffer 3a", BloomWidth / 4, BloomHeight / 4, 1, DefaultHDRColorFormat);
+	g_aBloomUAV3[1].Create(L"Bloom Buffer 3b", BloomWidth / 4, BloomHeight / 4, 1, DefaultHDRColorFormat);
+	// 1/24
+	g_aBloomUAV4[0].Create(L"Bloom Buffer 4a", BloomWidth / 8, BloomHeight / 8, 1, DefaultHDRColorFormat);
+	g_aBloomUAV4[1].Create(L"Bloom Buffer 4b", BloomWidth / 8, BloomHeight / 8, 1, DefaultHDRColorFormat);
+	// 1/48
+	g_aBloomUAV5[0].Create(L"Bloom Buffer 5a", BloomWidth / 16, BloomHeight / 16, 1, DefaultHDRColorFormat);
+	g_aBloomUAV5[1].Create(L"Bloom Buffer 5b", BloomWidth / 16, BloomHeight / 16, 1, DefaultHDRColorFormat);
+
 
 	//g_VelocityBuffer.Create(L"Motion Vectors", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT);
 	//g_PostEffectsBuffer.Create(L"Post Effects Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT);
