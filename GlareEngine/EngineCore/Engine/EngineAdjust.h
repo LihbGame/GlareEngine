@@ -68,6 +68,7 @@ namespace GlareEngine
 	{
 	public:
 		NumVar(const std::string& path, float val, float minValue = -FLT_MAX, float maxValue = FLT_MAX, float stepSize = 1.0f);
+		NumVar(float val, float minValue = -FLT_MAX, float maxValue = FLT_MAX, float stepSize = 1.0f);
 		NumVar& operator=(float val) { m_Value = Clamp(val); return *this; }
 		operator float() const { return m_Value; }
 
@@ -76,6 +77,9 @@ namespace GlareEngine
 
 		virtual std::string ToString(void) const override;
 		virtual void SetValue(FILE* file, const std::string& setting)  override;
+
+		float GetMinValue()const { return m_MinValue; }
+		float GetMaxValue()const { return m_MaxValue; }
 
 	protected:
 		float Clamp(float val) { return val > m_MaxValue ? m_MaxValue : val < m_MinValue ? m_MinValue : val; }

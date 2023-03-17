@@ -349,6 +349,16 @@ namespace GlareEngine
 		m_StepSize = stepSize;
 	}
 
+	NumVar::NumVar(float val, float minValue, float maxValue, float stepSize)
+		: EngineVar(" ")
+	{
+		assert(minValue <= maxValue);
+		m_MinValue = minValue;
+		m_MaxValue = maxValue;
+		m_Value = Clamp(val);
+		m_StepSize = stepSize;
+	}
+
 	std::string NumVar::ToString(void) const
 	{
 		char buf[128];

@@ -11,8 +11,27 @@
 
 namespace PostProcessing
 {
-	GraphicsPSO mPSO;
+
+	bool  BloomEnable = true;
+	bool  HighQualityBloom = true;					// High quality blurs 5 octaves of bloom; low quality only blurs 3.
+	NumVar BloomThreshold(4.0f, 0.0f, 8.0f);		// The threshold luminance above which a pixel will start to bloom
+	NumVar BloomStrength(0.1f, 0.0f, 2.0f);			// A modulator controlling how much bloom is added back into the image
+	NumVar BloomUpsampleFactor(0.65f, 0.0f, 1.0f);	// Controls the "focus" of the blur.  High values spread out more causing a haze.
+
+
+	bool EnableHDR = true;
+	bool EnableAdaptation = true;
+	bool DrawHistogram = true;
+	NumVar TargetLuminance(0.08f, 0.01f, 0.99f);
+	NumVar AdaptationRate(0.05f, 0.01f, 1.0f);
+	NumVar Exposure(2.0f, -8.0f, 8.0f);
+	
+
 	RootSignature PostEffectsRS;
+	GraphicsPSO mPSO(L"FBM Post PS");
+
+
+
 
 
 
