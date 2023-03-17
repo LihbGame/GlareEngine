@@ -7,6 +7,7 @@
 //shaders
 #include "CompiledShaders/ScreenQuadVS.h"
 #include "CompiledShaders/FbmPostPS.h"
+#include "Engine/EngineProfiling.h"
 
 namespace PostProcessing
 {
@@ -15,7 +16,8 @@ namespace PostProcessing
 
 
 
-
+	// Bloom effect
+	void GenerateBloom(ComputeContext& Context);
 
 }
 
@@ -113,4 +115,15 @@ void PostProcessing::BuildPSO(const PSOCommonProperty CommonProperty)
 	mPSO.SetPixelShader(g_pFbmPostPS, sizeof(g_pFbmPostPS));
 	mPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
 	mPSO.Finalize();
+}
+
+
+void PostProcessing::GenerateBloom(ComputeContext& Context)
+{
+	ScopedTimer _prof(L"Generate Bloom", Context);
+
+	// If only downsizing by 1/2 or less, a faster shader can be used which only does one bilinear sample.
+
+
+
 }

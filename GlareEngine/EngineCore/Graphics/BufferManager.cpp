@@ -229,6 +229,29 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 	//resize  MSAA buffer
 	g_SceneMSAAColorBuffer.Create(L"Main MSAA Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 	g_SceneMSAADepthBuffer.Create(L"Scene MSAA Depth Buffer", NativeWidth, NativeHeight, MSAACOUNT, DSV_FORMAT, REVERSE_Z);
+
+	//Bloom buffer
+	//No need for a full-screen bloom, but the length and width are multiples of 8 and the number of cs scheduling threads match
+	//Divisible by 128 so that after dividing by 16, we still have multiples of 8x8 tiles. Look at the CS shader to understand why it is 128
+	uint32_t BloomWidth = Math::AlignUp(NativeWidth / 2, 128);
+	uint32_t BloomHeight = Math::AlignUp(NativeHeight / 2, 128);
+	g_LumaLR.Create(L"Luminance Buffer", BloomWidth, BloomHeight, 1, DXGI_FORMAT_R8_UINT);
+	// 1/2 
+	g_aBloomUAV1[0].Create(L"Bloom Buffer 1a", BloomWidth, BloomHeight, 1, DefaultHDRColorFormat);
+	g_aBloomUAV1[1].Create(L"Bloom Buffer 1b", BloomWidth, BloomHeight, 1, DefaultHDRColorFormat);
+	// 1/4
+	g_aBloomUAV2[0].Create(L"Bloom Buffer 2a", BloomWidth / 2, BloomHeight / 2, 1, DefaultHDRColorFormat);
+	g_aBloomUAV2[1].Create(L"Bloom Buffer 2b", BloomWidth / 2, BloomHeight / 2, 1, DefaultHDRColorFormat);
+	// 1/8
+	g_aBloomUAV3[0].Create(L"Bloom Buffer 3a", BloomWidth / 4, BloomHeight / 4, 1, DefaultHDRColorFormat);
+	g_aBloomUAV3[1].Create(L"Bloom Buffer 3b", BloomWidth / 4, BloomHeight / 4, 1, DefaultHDRColorFormat);
+	// 1/16
+	g_aBloomUAV4[0].Create(L"Bloom Buffer 4a", BloomWidth / 8, BloomHeight / 8, 1, DefaultHDRColorFormat);
+	g_aBloomUAV4[1].Create(L"Bloom Buffer 4b", BloomWidth / 8, BloomHeight / 8, 1, DefaultHDRColorFormat);
+	// 1/32
+	g_aBloomUAV5[0].Create(L"Bloom Buffer 5a", BloomWidth / 16, BloomHeight / 16, 1, DefaultHDRColorFormat);
+	g_aBloomUAV5[1].Create(L"Bloom Buffer 5b", BloomWidth / 16, BloomHeight / 16, 1, DefaultHDRColorFormat);
+
 }
 
 void GlareEngine::DestroyRenderingBuffers()
