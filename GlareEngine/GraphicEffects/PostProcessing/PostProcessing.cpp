@@ -3,7 +3,7 @@
 #include "Graphics/GraphicsCommon.h"
 #include "Graphics/SamplerManager.h"
 #include "Graphics/CommandSignature.h"
-
+#include "EngineGUI.h"
 
 //shaders
 #include "CompiledShaders/ScreenQuadVS.h"
@@ -163,6 +163,16 @@ void PostProcessing::DrawAfterToneMapping()
 
 void PostProcessing::DrawUI()
 {
+	ImGuiIO& io = ImGui::GetIO();
+	if (ImGui::CollapsingHeader("Post Processing", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		if (ImGui::TreeNode("Bloom"))
+		{
+			ImGui::Checkbox("Enable Bloom", &BloomEnable);
+			ImGui::TreePop();
+		}
+
+	}
 }
 
 void PostProcessing::Update(float dt)

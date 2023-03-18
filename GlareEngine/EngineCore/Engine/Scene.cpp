@@ -8,6 +8,7 @@
 #include "Model/MeshSorter.h"
 #include "Engine/EngineProfiling.h"
 #include "Misc/LightManager.h"
+#include "PostProcessing/PostProcessing.h"
 
 /// Scene/////////////////////////////////////////////
 using namespace GlareEngine::Render;
@@ -182,6 +183,9 @@ void Scene::DrawUI()
 			RenderObject->DrawUI();
 		}
 	}
+
+	//Post Processing UI
+	PostProcessing::DrawUI();
 
 	m_pGUI->EndDraw(RenderContext.GetCommandList());
 	RenderContext.PIXEndEvent();
