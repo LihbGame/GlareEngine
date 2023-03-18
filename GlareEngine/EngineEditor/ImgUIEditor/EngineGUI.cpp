@@ -269,11 +269,15 @@ void EngineGUI::DrawControlPanel(float IconWindowHigh)
 	ImGui::Separator();
 	ImGui::Text("Choose Scene");
 	ImGui::Combo("", &mSceneIndex, mSceneName.c_str());
-	ImGui::Checkbox("Shadow", &show_shadow);
-	ImGui::Checkbox("Model", &show_model);
-	ImGui::Checkbox("Sky", &show_sky);
-	ImGui::Checkbox("MSAA", &mMSAA);
-	ImGui::Checkbox("Terrain", &show_HeightMapTerrain);
+
+	if (ImGui::CollapsingHeader("Scene Setting", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Checkbox("Shadow", &show_shadow);
+		ImGui::Checkbox("Model", &show_model);
+		ImGui::Checkbox("Sky", &show_sky);
+		ImGui::Checkbox("MSAA", &mMSAA);
+		ImGui::Checkbox("Terrain", &show_HeightMapTerrain);
+	}
 
 	//if (ImGui::CollapsingHeader("Water", ImGuiTreeNodeFlags_DefaultOpen))
 	//{
@@ -381,33 +385,34 @@ void EngineGUI::DrawMainMenuBar(bool* IsMax, bool IsFullScreenMode)
 {
 	if (ImGui::BeginMainMenuBar())
 	{
-		if (ImGui::BeginMenu("File"))
-		{
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu("Edit"))
-		{
-			if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-			if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
-			ImGui::Separator();
-			if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-			if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-			if (ImGui::MenuItem("Paste", "CTRL+V")) {}
-			ImGui::EndMenu();
-		}
+		//if (ImGui::BeginMenu("File"))
+		//{
+		//	ImGui::EndMenu();
+		//}
+		//if (ImGui::BeginMenu("Edit"))
+		//{
+		//	if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
+		//	if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
+		//	ImGui::Separator();
+		//	if (ImGui::MenuItem("Cut", "CTRL+X")) {}
+		//	if (ImGui::MenuItem("Copy", "CTRL+C")) {}
+		//	if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+		//	ImGui::EndMenu();
+		//}
 		ImGuiIO& io = ImGui::GetIO();
+		ImVec2 pos = ImGui::GetWindowSize();
 		if (!IsFullScreenMode)
 		{
 			ImGui::GetStyle().Colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.2f, 0.0f);
-			if (ImGui::ImageButton((void*)(mEngineMinTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 210.0f, 0), ImVec2(25, 25), ImVec2(0, 0), ImVec2(1, 1),5))
+			if (ImGui::ImageButton((void*)(mEngineMinTexDescriptor.ptr), ImVec2(pos.x - 170.0f, -8), ImVec2(35, 35), ImVec2(0, 0), ImVec2(1, 1),5))
 			{
 				SendMessage((HWND)io.ImeWindowHandle, WM_SYSCOMMAND, SC_MINIMIZE, NULL);
 			}
-			if (ImGui::ImageButton((void*)(mEngineMaxTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 200.0f, 0), ImVec2(25, 25), ImVec2(0, 0), ImVec2(1, 1),5))
+			if (ImGui::ImageButton((void*)(mEngineMaxTexDescriptor.ptr), ImVec2(pos.x - 160.0f, -8), ImVec2(35, 35), ImVec2(0, 0), ImVec2(1, 1),5))
 			{
 				*IsMax = !(*IsMax);
 			}
-			if (ImGui::ImageButton((void*)(mEngineCloseTexDescriptor.ptr), ImVec2(ImGui::GetWindowSize().x - 190.0f, 0), ImVec2(25, 25), ImVec2(0, 0), ImVec2(1, 1),5))
+			if (ImGui::ImageButton((void*)(mEngineCloseTexDescriptor.ptr), ImVec2(pos.x - 150.0f, -8), ImVec2(35, 35), ImVec2(0, 0), ImVec2(1, 1),5))
 			{
 				SendMessage((HWND)io.ImeWindowHandle, WM_CLOSE, NULL, NULL);
 			}

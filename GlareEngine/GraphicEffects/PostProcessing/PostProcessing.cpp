@@ -164,7 +164,7 @@ void PostProcessing::DrawAfterToneMapping()
 void PostProcessing::DrawUI()
 {
 	ImGuiIO& io = ImGui::GetIO();
-	if (ImGui::CollapsingHeader("Post Processing", ImGuiTreeNodeFlags_DefaultOpen))
+	if (ImGui::CollapsingHeader("Post Processing"))
 	{
 		if (ImGui::TreeNode("Bloom"))
 		{

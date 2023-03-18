@@ -6164,25 +6164,23 @@ bool ImGui::BeginMainMenuBar()
     g.Style.DisplaySafeAreaPadding.y = 6;
     g.NextWindowData.MenuBarOffsetMinVal = ImVec2(g.Style.DisplaySafeAreaPadding.x, ImMax(g.Style.DisplaySafeAreaPadding.y - g.Style.FramePadding.y, 0.0f));
     SetNextWindowPos(ImVec2(g.IO.DisplaySize.x * 0.16667f, 0.0f));
-    SetNextWindowSize(ImVec2(g.IO.DisplaySize.x + 1 - g.IO.DisplaySize.x * 0.16667f, 25));
+    SetNextWindowSize(ImVec2(g.IO.DisplaySize.x + 1 - g.IO.DisplaySize.x * 0.16667f, 35));
    
     PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(0, 0));
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar |ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar;
-    bool is_open = Begin("##MainMenuBar", NULL, window_flags)&& BeginMenuBar();
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar |ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
+    bool is_open = Begin("##MainMenuBar", NULL, window_flags) && BeginMenuBar();
+    ImGuiWindow* window = GetCurrentWindow();
+	window->DC.LayoutType = ImGuiLayoutType_Horizontal;
+	window->DC.MenuBarAppending = true;
     PopStyleVar(2);
     g.NextWindowData.MenuBarOffsetMinVal = ImVec2(0.0f, 0.0f);
-    if (!is_open)
-    {
-        End();
-        return false;
-    }
     return true; //-V1020
 }
 
 void ImGui::EndMainMenuBar()
 {
-    EndMenuBar();
+    //EndMenuBar();
 
     // When the user has left the menu layer (typically: closed menus through activation of an item), we restore focus to the previous window
     // FIXME: With this strategy we won't be able to restore a NULL focus.

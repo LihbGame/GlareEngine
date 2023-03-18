@@ -7,7 +7,7 @@
 #include "Engine/EngineUtility.h"
 
 
-#define MainMenuBarHeight  27.0f
+#define MainMenuBarHeight  35.0f
 #define CLIENT_FROMLEFT 0.166667f
 #define CLIENT_HEIGHT 0.75f
 
