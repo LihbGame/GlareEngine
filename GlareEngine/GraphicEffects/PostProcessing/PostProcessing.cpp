@@ -1,3 +1,4 @@
+#include "Engine/EngineProfiling.h"
 #include "PostProcessing.h"
 #include "Graphics/GraphicsCommon.h"
 #include "Graphics/SamplerManager.h"
@@ -7,7 +8,12 @@
 //shaders
 #include "CompiledShaders/ScreenQuadVS.h"
 #include "CompiledShaders/FbmPostPS.h"
-#include "Engine/EngineProfiling.h"
+#include "CompiledShaders/ApplyBloomCS.h"
+#include "CompiledShaders/ApplyBloom2CS.h"
+#include "CompiledShaders/BloomDownSampleCS.h"
+#include "CompiledShaders/BloomDownSampleAllCS.h"
+#include "CompiledShaders/BloomExtractAndDownSampleHDRCS.h"
+#include "CompiledShaders/BloomExtractAndDownSampleLDRCS.h"
 
 namespace PostProcessing
 {
@@ -30,7 +36,29 @@ namespace PostProcessing
 	RootSignature PostEffectsRS;
 	GraphicsPSO mPSO(L"FBM Post PS");
 
+	//Bloom
+	ComputePSO ApplyBloomCS(L"Apply Bloom CS");
+	ComputePSO DownsampleBloom2CS(L"DownSample Bloom 2 CS");
+	ComputePSO DownsampleBloom4CS(L"DownSample Bloom 4 CS");
+	ComputePSO BloomExtractAndDownsampleHDRCS(L"Bloom Extract and DownSample HDR CS");
+	ComputePSO BloomExtractAndDownsampleLDRCS(L"Bloom Extract and DownSample LDR CS");
 
+
+	ComputePSO ToneMapCS(L"Tone Map  CS");
+	ComputePSO ToneMapHDRCS(L"Tone Map HDR CS");
+	
+	ComputePSO DebugLuminanceHDRCS(L"Debug Luminance HDR CS");
+	ComputePSO DebugLuminanceLDRCS(L"Debug Luminance LDR CS");
+	ComputePSO GenerateHistogramCS(L"Generate Histogram CS");
+	ComputePSO DrawHistogramCS(L"Draw Histogram CS");
+	ComputePSO AdaptExposureCS(L"Adapt Exposure CS");
+
+	ComputePSO UpsampleAndBlurCS(L"UpSample and Blur CS");
+	ComputePSO BlurCS(L"Blur CS");
+
+	ComputePSO ExtractLumaCS(L"Extract Luminance CS");
+	ComputePSO AverageLumaCS(L"Average Luminance CS");
+	ComputePSO CopyBackPostBufferCS(L"Copy Back Post Buffer CS");
 
 
 
@@ -46,7 +74,7 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	PostEffectsRS.Reset(4, 2);
 	PostEffectsRS.InitStaticSampler(0, SamplerLinearClampDesc);
 	PostEffectsRS.InitStaticSampler(1, SamplerLinearBorderDesc);
-	PostEffectsRS[0].InitAsConstantBuffer(0);
+	PostEffectsRS[0].InitAsConstants(0, 5);
 	PostEffectsRS[1].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 4);
 	PostEffectsRS[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 4);
 	PostEffectsRS[3].InitAsConstantBuffer(1);
@@ -58,9 +86,36 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
     ObjName.SetComputeShader(ShaderByteCode, sizeof(ShaderByteCode) ); \
     ObjName.Finalize();
 
-	//g_bTypedUAVLoadSupport_R11G11B10_FLOAT
+	if (g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
+	{
+		CreatePSO(ApplyBloomCS, g_pApplyBloom2CS);
+		//CreatePSO(ToneMapCS, g_pToneMap2CS);
+		//CreatePSO(ToneMapHDRCS, g_pToneMapHDR2CS);
+		//CreatePSO(DebugLuminanceHdrCS, g_pDebugLuminanceHdr2CS);
+		//CreatePSO(DebugLuminanceLdrCS, g_pDebugLuminanceLdr2CS);
+	}
+	else
+	{
+		CreatePSO(ApplyBloomCS, g_pApplyBloomCS);
+		//CreatePSO(ToneMapCS, g_pToneMapCS);
+		//CreatePSO(ToneMapHDRCS, g_pToneMapHDRCS);
+		//CreatePSO(DebugLuminanceHdrCS, g_pDebugLuminanceHdrCS);
+		//CreatePSO(DebugLuminanceLdrCS, g_pDebugLuminanceLdrCS);
+	}
 
+	/*CreatePSO(UpsampleAndBlurCS, g_pUpsampleAndBlurCS);
+	CreatePSO(BlurCS, g_pBlurCS);
+	CreatePSO(GenerateHistogramCS, g_pGenerateHistogramCS);
+	CreatePSO(DrawHistogramCS, g_pDebugDrawHistogramCS);
+	CreatePSO(AdaptExposureCS, g_pAdaptExposureCS);*/
+	CreatePSO(DownsampleBloom2CS, g_pBloomDownSampleCS);
+	CreatePSO(DownsampleBloom4CS, g_pBloomDownSampleAllCS);
+	CreatePSO(BloomExtractAndDownsampleHDRCS, g_pBloomExtractAndDownSampleHDRCS);
+	CreatePSO(BloomExtractAndDownsampleLDRCS, g_pBloomExtractAndDownSampleLDRCS);
 
+	//CreatePSO(ExtractLumaCS, g_pExtractLumaCS);
+	//CreatePSO(AverageLumaCS, g_pAverageLumaCS);
+	//CreatePSO(CopyBackPostBufferCS, g_pCopyBackPostBufferCS);
 
 #undef CreatePSO
 
