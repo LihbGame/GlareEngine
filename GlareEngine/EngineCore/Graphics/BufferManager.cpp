@@ -13,12 +13,12 @@ namespace GlareEngine
 	ColorBuffer g_SceneMSAAColorBuffer;
 
 	//Bloom
-	ColorBuffer g_aBloomUAV1[2];	// (1/3)
-	ColorBuffer g_aBloomUAV2[2];    // (1/6)  
-	ColorBuffer g_aBloomUAV3[2];    // (1/12)
-	ColorBuffer g_aBloomUAV4[2];    // (1/24)
-	ColorBuffer g_aBloomUAV5[2];    // (1/48)
-	ColorBuffer g_LumaLR;
+	ColorBuffer g_aBloomUAV1[2];
+	ColorBuffer g_aBloomUAV2[2];
+	ColorBuffer g_aBloomUAV3[2];
+	ColorBuffer g_aBloomUAV4[2];
+	ColorBuffer g_aBloomUAV5[2];
+	ColorBuffer g_LumaBloom;
 
 
 	//ColorBuffer g_PostEffectsBuffer;
@@ -107,7 +107,7 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 	//Divisible by 128 so that after dividing by 16, we still have multiples of 8x8 tiles. Look at the CS shader to understand why it is 128
 	uint32_t BloomWidth = Math::AlignUp(NativeWidth / 2, 128);
 	uint32_t BloomHeight = Math::AlignUp(NativeHeight / 2, 128);
-	g_LumaLR.Create(L"Luminance Buffer", BloomWidth, BloomHeight, 1, DXGI_FORMAT_R8_UINT);
+	g_LumaBloom.Create(L"Luminance Buffer", BloomWidth, BloomHeight, 1, DXGI_FORMAT_R8_UINT);
 	// 1/2 
 	g_aBloomUAV1[0].Create(L"Bloom Buffer 1a", BloomWidth, BloomHeight, 1, DefaultHDRColorFormat);
 	g_aBloomUAV1[1].Create(L"Bloom Buffer 1b", BloomWidth, BloomHeight, 1, DefaultHDRColorFormat);
@@ -235,7 +235,7 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 	//Divisible by 128 so that after dividing by 16, we still have multiples of 8x8 tiles. Look at the CS shader to understand why it is 128
 	uint32_t BloomWidth = Math::AlignUp(NativeWidth / 2, 128);
 	uint32_t BloomHeight = Math::AlignUp(NativeHeight / 2, 128);
-	g_LumaLR.Create(L"Luminance Buffer", BloomWidth, BloomHeight, 1, DXGI_FORMAT_R8_UINT);
+	g_LumaBloom.Create(L"Luminance Buffer", BloomWidth, BloomHeight, 1, DXGI_FORMAT_R8_UINT);
 	// 1/2 
 	g_aBloomUAV1[0].Create(L"Bloom Buffer 1a", BloomWidth, BloomHeight, 1, DefaultHDRColorFormat);
 	g_aBloomUAV1[1].Create(L"Bloom Buffer 1b", BloomWidth, BloomHeight, 1, DefaultHDRColorFormat);

@@ -7,7 +7,7 @@ namespace PostProcessing
 
     void BuildSRV(ID3D12GraphicsCommandList* CommandList);
 
-    void Render(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr);
+    void RenderFBM(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr);
 
     void DrawBeforeToneMapping();
     void DrawAfterToneMapping();
@@ -18,6 +18,7 @@ namespace PostProcessing
 
     void BuildPSO(const PSOCommonProperty CommonProperty);
 
+    void ShutDown();
     //PSO
     extern GraphicsPSO mPSO;
 }

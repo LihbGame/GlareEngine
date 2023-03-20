@@ -60,7 +60,7 @@ namespace GlareEngine
 	namespace Lighting
 	{
 		//light tile size
-		IntVar LightGridDimension("Rendering/Forward+/Light Grid Dimension", 32, eMinLightGridDimension, 32, 8);
+		IntVar LightGridDimension(32, eMinLightGridDimension, 32, 8);
 
 		//Light RootSignature
 		RootSignature m_FillLightRootSig;

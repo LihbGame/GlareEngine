@@ -22,8 +22,11 @@ namespace PostProcessing
 	bool  HighQualityBloom = true;					// High quality blurs 5 octaves of bloom; low quality only blurs 3.
 	NumVar BloomThreshold(4.0f, 0.0f, 8.0f);		// The threshold luminance above which a pixel will start to bloom
 	NumVar BloomStrength(0.1f, 0.0f, 2.0f);			// A modulator controlling how much bloom is added back into the image
-	NumVar BloomUpsampleFactor(0.65f, 0.0f, 1.0f);	// Controls the "focus" of the blur.  High values spread out more causing a haze.
+	NumVar BloomUpSampleFactor(0.65f, 0.0f, 1.0f);	// Controls the "focus" of the blur.High values spread out more causing a haze.
 
+	//Exposure Log() Range
+	const float kInitialMinLog = -12.0f;
+	const float kInitialMaxLog = 4.0f;
 
 	bool EnableHDR = true;
 	bool EnableAdaptation = true;
@@ -32,6 +35,8 @@ namespace PostProcessing
 	NumVar AdaptationRate(0.05f, 0.01f, 1.0f);
 	NumVar Exposure(2.0f, -8.0f, 8.0f);
 	
+	//Exposure Data
+	StructuredBuffer g_Exposure;
 
 	RootSignature PostEffectsRS;
 	GraphicsPSO mPSO(L"FBM Post PS");
@@ -53,14 +58,13 @@ namespace PostProcessing
 	ComputePSO DrawHistogramCS(L"Draw Histogram CS");
 	ComputePSO AdaptExposureCS(L"Adapt Exposure CS");
 
+	//Blur
 	ComputePSO UpsampleAndBlurCS(L"UpSample and Blur CS");
 	ComputePSO BlurCS(L"Blur CS");
 
 	ComputePSO ExtractLumaCS(L"Extract Luminance CS");
 	ComputePSO AverageLumaCS(L"Average Luminance CS");
 	ComputePSO CopyBackPostBufferCS(L"Copy Back Post Buffer CS");
-
-
 
 
 	// Bloom effect
@@ -119,7 +123,11 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 
 #undef CreatePSO
 
-
+	__declspec(align(16)) float initExposure[] =
+	{
+		Exposure, 1.0f / Exposure,kInitialMinLog, kInitialMaxLog, kInitialMaxLog - kInitialMinLog, 1.0f / (kInitialMaxLog - kInitialMinLog)
+	};
+	g_Exposure.Create(L"Exposure", 6, 4, initExposure);
 
 	BuildSRV(CommandList);
 }
@@ -128,7 +136,7 @@ void PostProcessing::BuildSRV(ID3D12GraphicsCommandList* CommandList)
 {
 }
 
-void PostProcessing::Render(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
+void PostProcessing::RenderFBM(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 {
 	if (SpecificPSO)
 	{
@@ -144,19 +152,21 @@ void PostProcessing::Render(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 
 void PostProcessing::DrawBeforeToneMapping()
 {
-	GraphicsContext& Context = GraphicsContext::Begin(L"PostProcessing");
-	Context.PIXBeginEvent(L"PostProcessing");
-	Render(Context);
+	GraphicsContext& Context = GraphicsContext::Begin(L"Before Tone Mapping");
+	Context.PIXBeginEvent(L"Before Tone Mapping");
 	Context.PIXEndEvent();
 	Context.Finish();
 }
 
 void PostProcessing::DrawAfterToneMapping()
 {
-	GraphicsContext& Context = GraphicsContext::Begin(L"PostProcessing");
-	Context.PIXBeginEvent(L"PostProcessing");
+	GraphicsContext& Context = GraphicsContext::Begin(L"After Tone Mapping");
+	Context.PIXBeginEvent(L"After Tone Mapping");
+	//FBM
 	//Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(mMainConstants), &mMainConstants);
-	Render(Context);
+	//RenderFBM(Context);
+
+
 	Context.PIXEndEvent();
 	Context.Finish();
 }
@@ -169,6 +179,21 @@ void PostProcessing::DrawUI()
 		if (ImGui::TreeNode("Bloom"))
 		{
 			ImGui::Checkbox("Enable Bloom", &BloomEnable);
+			if (BloomEnable)
+			{
+				ImGui::Checkbox("High Quality Bloom", &HighQualityBloom);
+				ImGui::Text("Bloom Threshold:");
+				ImGui::SliderFloat(" ", &BloomThreshold.GetValue(), BloomThreshold.GetMinValue(), BloomThreshold.GetMaxValue());
+				ImGui::Text("Bloom Strength:");
+				ImGui::SliderFloat("  ", &BloomStrength.GetValue(), BloomStrength.GetMinValue(), BloomStrength.GetMaxValue());
+				ImGui::Text("Bloom UpSample Factor:");
+				ImGui::SliderFloat("   ", &BloomUpSampleFactor.GetValue(), BloomUpSampleFactor.GetMinValue(), BloomUpSampleFactor.GetMaxValue());
+			}
+			ImGui::TreePop();
+		}
+
+		if (ImGui::TreeNode("FXAA"))
+		{
 			ImGui::TreePop();
 		}
 
@@ -201,13 +226,33 @@ void PostProcessing::BuildPSO(const PSOCommonProperty CommonProperty)
 	mPSO.Finalize();
 }
 
+void PostProcessing::ShutDown()
+{
+	g_Exposure.Destroy();
+}
+
 
 void PostProcessing::GenerateBloom(ComputeContext& Context)
 {
 	ScopedTimer _prof(L"Generate Bloom", Context);
 
 	// If only downsizing by 1/2 or less, a faster shader can be used which only does one bilinear sample.
+	uint32_t BloomWidth = g_LumaBloom.GetWidth();
+	uint32_t BloomHeight = g_LumaBloom.GetHeight();
 
+	Context.SetConstants(0, 1.0f / BloomWidth, 1.0f / BloomHeight, (float)BloomThreshold);
+	Context.TransitionResource(g_LumaBloom, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.TransitionResource(g_aBloomUAV1[0], D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.TransitionResource(g_Exposure, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+	Context.SetDynamicDescriptor(1, 0, g_aBloomUAV1[0].GetUAV());
+	Context.SetDynamicDescriptor(1, 1, g_LumaBloom.GetUAV());
+	Context.SetDynamicDescriptor(2, 0, g_SceneColorBuffer.GetSRV());
+	Context.SetDynamicDescriptor(2, 1, g_Exposure.GetSRV());
+
+	Context.SetPipelineState(EnableHDR ? BloomExtractAndDownsampleHDRCS : BloomExtractAndDownsampleLDRCS);
+	Context.Dispatch2D(BloomWidth, BloomHeight);
 
 
 }

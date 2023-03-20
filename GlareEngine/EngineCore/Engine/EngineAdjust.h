@@ -80,7 +80,7 @@ namespace GlareEngine
 
 		float GetMinValue()const { return m_MinValue; }
 		float GetMaxValue()const { return m_MaxValue; }
-
+		float& GetValue() { return m_Value; }
 	protected:
 		float Clamp(float val) { return val > m_MaxValue ? m_MaxValue : val < m_MinValue ? m_MinValue : val; }
 
@@ -107,6 +107,7 @@ namespace GlareEngine
 	{
 	public:
 		IntVar(const std::string& path, int32_t val, int32_t minValue = 0, int32_t maxValue = (1 << 24) - 1, int32_t stepSize = 1);
+		IntVar(int32_t val, int32_t minValue = 0, int32_t maxValue = (1 << 24) - 1, int32_t stepSize = 1);
 		IntVar& operator=(int32_t val) { m_Value = Clamp(val); return *this; }
 		operator int32_t() const { return m_Value; }
 
@@ -130,6 +131,7 @@ namespace GlareEngine
 	{
 	public:
 		EnumVar(const std::string& path, int32_t initialVal, int32_t listLength, const char** listLabels);
+		EnumVar(int32_t initialVal, int32_t listLength, const char** listLabels);
 		EnumVar& operator=(int32_t val) { m_Value = Clamp(val); return *this; }
 		operator int32_t() const { return m_Value; }
 

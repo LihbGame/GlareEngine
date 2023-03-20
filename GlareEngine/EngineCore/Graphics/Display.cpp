@@ -42,7 +42,7 @@ namespace GlareEngine
 		extern HWND g_hWnd;
 	}
 
-	BoolVar s_LimitTo30Hz("Timing/Limit To 30Hz", false);
+	bool s_LimitTo30Hz = false;
 
 	namespace
 	{
@@ -68,18 +68,18 @@ namespace GlareEngine
 
 		const char* ResolutionLabels[] = { "1280x720", "1600x900", "1920x1080", "2560x1440", "3200x1800", "3840x2160" };
 		//Use 900P
-		EnumVar TargetResolution("Graphics/Display/Native Resolution", E900p, NumPredefinedResolutions, ResolutionLabels);
+		EnumVar TargetResolution(E900p, NumPredefinedResolutions, ResolutionLabels);
 
-		BoolVar s_EnableVSync("Timing/VSync", false);
+		bool s_EnableVSync = false;
 
 		bool g_bEnableHDROutput = false;
 
 		//Color range
-		NumVar g_HDRPaperWhite("Graphics/Display/Paper White (nits)", 200.0f, 100.0f, 500.0f, 50.0f);
-		NumVar g_MaxDisplayLuminance("Graphics/Display/Peak Brightness (nits)", 1000.0f, 500.0f, 10000.0f, 100.0f);
+		NumVar g_HDRPaperWhite(200.0f, 100.0f, 500.0f, 50.0f);
+		NumVar g_MaxDisplayLuminance(1000.0f, 500.0f, 10000.0f, 100.0f);
 
 		const char* HDRModeLabels[] = { "HDR", "SDR", "Side-by-Side" };
-		EnumVar HDRDebugMode("Graphics/Display/HDR Debug Mode", 0, 3, HDRModeLabels);
+		EnumVar HDRDebugMode(0, 3, HDRModeLabels);
 
 		uint32_t g_NativeWidth = 0;
 		uint32_t g_NativeHeight = 0;
@@ -198,6 +198,11 @@ namespace GlareEngine
 				SUCCEEDED(swapChain->SetColorSpace1(DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020)))
 			{
 				g_bEnableHDROutput = true;
+				EngineLog::AddLog(L"HDR Output is Support!");
+			}
+			else
+			{
+				EngineLog::AddLog(L"HDR Output is not Support!");
 			}
 		}
 #endif

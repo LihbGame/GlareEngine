@@ -427,6 +427,16 @@ namespace GlareEngine
 		m_StepSize = stepSize;
 	}
 
+	IntVar::IntVar(int32_t val, int32_t minValue, int32_t maxValue, int32_t stepSize)
+		: EngineVar(" ")
+	{
+		assert(minValue <= maxValue);
+		m_MinValue = minValue;
+		m_MaxValue = maxValue;
+		m_Value = Clamp(val);
+		m_StepSize = stepSize;
+	}
+
 
 	std::string IntVar::ToString(void) const
 	{
@@ -450,6 +460,15 @@ namespace GlareEngine
 
 	EnumVar::EnumVar(const std::string& path, int32_t initialVal, int32_t listLength, const char** listLabels)
 		: EngineVar(path)
+	{
+		assert(listLength > 0);
+		m_EnumLength = listLength;
+		m_EnumLabels = listLabels;
+		m_Value = Clamp(initialVal);
+	}
+
+	EnumVar::EnumVar(int32_t initialVal, int32_t listLength, const char** listLabels)
+		: EngineVar(" ")
 	{
 		assert(listLength > 0);
 		m_EnumLength = listLength;

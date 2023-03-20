@@ -404,15 +404,15 @@ void EngineGUI::DrawMainMenuBar(bool* IsMax, bool IsFullScreenMode)
 		if (!IsFullScreenMode)
 		{
 			ImGui::GetStyle().Colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.2f, 0.0f);
-			if (ImGui::ImageButton((void*)(mEngineMinTexDescriptor.ptr), ImVec2(pos.x - 170.0f, -8), ImVec2(35, 35), ImVec2(0, 0), ImVec2(1, 1),5))
+			if (ImGui::ImageButton((void*)(mEngineMinTexDescriptor.ptr), ImVec2(pos.x - 170.0f, -7), ImVec2(33, 33), ImVec2(0, 0), ImVec2(1, 1),5))
 			{
 				SendMessage((HWND)io.ImeWindowHandle, WM_SYSCOMMAND, SC_MINIMIZE, NULL);
 			}
-			if (ImGui::ImageButton((void*)(mEngineMaxTexDescriptor.ptr), ImVec2(pos.x - 160.0f, -8), ImVec2(35, 35), ImVec2(0, 0), ImVec2(1, 1),5))
+			if (ImGui::ImageButton((void*)(mEngineMaxTexDescriptor.ptr), ImVec2(pos.x - 160.0f, -7), ImVec2(33, 33), ImVec2(0, 0), ImVec2(1, 1),5))
 			{
 				*IsMax = !(*IsMax);
 			}
-			if (ImGui::ImageButton((void*)(mEngineCloseTexDescriptor.ptr), ImVec2(pos.x - 150.0f, -8), ImVec2(35, 35), ImVec2(0, 0), ImVec2(1, 1),5))
+			if (ImGui::ImageButton((void*)(mEngineCloseTexDescriptor.ptr), ImVec2(pos.x - 150.0f, -7), ImVec2(33, 33), ImVec2(0, 0), ImVec2(1, 1),5))
 			{
 				SendMessage((HWND)io.ImeWindowHandle, WM_CLOSE, NULL, NULL);
 			}

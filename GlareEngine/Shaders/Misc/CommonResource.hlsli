@@ -1,3 +1,5 @@
+#ifndef COMMON_RESOURCE
+#define COMMON_RESOURCE
 
 #define MAX2DSRVSIZE 1024
 #define MAXCUBESRVSIZE 32
@@ -781,3 +783,5 @@ float3 FBM_Liquid(in float2 FragCoord)
 
     return float3((f * f * f + .6f * f * f + .5f * f) * color);
 }
+
+#endif

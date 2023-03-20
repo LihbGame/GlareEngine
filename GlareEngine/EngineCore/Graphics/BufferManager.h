@@ -18,6 +18,14 @@ namespace GlareEngine
 	extern ColorBuffer g_SceneMSAAColorBuffer;
 	extern DepthBuffer g_SceneMSAADepthBuffer;
 
+	extern ColorBuffer g_aBloomUAV1[2];        
+	extern ColorBuffer g_aBloomUAV2[2];        
+	extern ColorBuffer g_aBloomUAV3[2];        
+	extern ColorBuffer g_aBloomUAV4[2];        
+	extern ColorBuffer g_aBloomUAV5[2];        
+	extern ColorBuffer g_LumaBloom;
+
+
 	//extern ColorBuffer g_PostEffectsBuffer;    // R32_UINT (to support Read-Modify-Write with a UAV)								   
 	//extern ColorBuffer g_OverlayBuffer;        // R8G8B8A8_UNORM
 	//extern ColorBuffer g_HorizontalBuffer;    // For separable (bicubic) upsampling
@@ -63,12 +71,6 @@ namespace GlareEngine
 	//extern ColorBuffer g_LumaBuffer;
 	//extern ColorBuffer g_TemporalColor[2];
 
-	//extern ColorBuffer g_aBloomUAV1[2];        // 640x384 (1/3)
-	//extern ColorBuffer g_aBloomUAV2[2];        // 320x192 (1/6)  
-	//extern ColorBuffer g_aBloomUAV3[2];        // 160x96  (1/12)
-	//extern ColorBuffer g_aBloomUAV4[2];        // 80x48   (1/24)
-	//extern ColorBuffer g_aBloomUAV5[2];        // 40x24   (1/48)
-	//extern ColorBuffer g_LumaLR;
 	//extern ByteAddressBuffer g_Histogram;
 	//extern ByteAddressBuffer g_FXAAWorkCounters;
 	//extern ByteAddressBuffer g_FXAAWorkQueue;
