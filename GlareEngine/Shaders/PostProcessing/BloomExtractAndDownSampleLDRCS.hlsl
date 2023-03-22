@@ -22,5 +22,8 @@ void main( uint3 DTid : SV_DispatchThreadID )
 
     float Luminance = RGBToLuminance(color);
 
+    color *= max(EPS, Luminance - g_bloomThreshold) / (Luminance + EPS);
+
+    BloomResult[DTid.xy] = color;
 
 }

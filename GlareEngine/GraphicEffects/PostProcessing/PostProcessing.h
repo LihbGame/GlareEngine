@@ -9,6 +9,8 @@ namespace PostProcessing
 
     void RenderFBM(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr);
 
+    void Render(GraphicsContext& Context);
+
     void DrawBeforeToneMapping();
     void DrawAfterToneMapping();
 

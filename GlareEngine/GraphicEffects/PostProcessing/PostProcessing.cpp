@@ -70,6 +70,9 @@ namespace PostProcessing
 	// Bloom effect
 	void GenerateBloom(ComputeContext& Context);
 
+
+	void PostProcessHDR(ComputeContext&);
+	void PostProcessLDR(ComputeContext&);
 }
 
 
@@ -148,6 +151,29 @@ void PostProcessing::RenderFBM(GraphicsContext& Context, GraphicsPSO* SpecificPS
 	}
 	Context.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	Context.Draw(3);
+}
+
+void PostProcessing::PostProcessHDR(ComputeContext& Context)
+{
+
+}
+
+void PostProcessing::PostProcessLDR(ComputeContext& Context)
+{
+
+}
+
+
+void PostProcessing::Render(GraphicsContext& graphicsContext)
+{
+	ComputeContext& Context = ComputeContext::Begin(L"Post Processing");
+
+	Context.SetRootSignature(PostEffectsRS);
+	Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	if (EnableHDR)
+		PostProcessHDR(Context);
+	else
+		PostProcessLDR(Context);
 }
 
 void PostProcessing::DrawBeforeToneMapping()
@@ -251,8 +277,37 @@ void PostProcessing::GenerateBloom(ComputeContext& Context)
 	Context.SetDynamicDescriptor(2, 0, g_SceneColorBuffer.GetSRV());
 	Context.SetDynamicDescriptor(2, 1, g_Exposure.GetSRV());
 
+	//Bloom Extract
 	Context.SetPipelineState(EnableHDR ? BloomExtractAndDownsampleHDRCS : BloomExtractAndDownsampleLDRCS);
 	Context.Dispatch2D(BloomWidth, BloomHeight);
 
+	Context.TransitionResource(g_aBloomUAV1[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	Context.SetDynamicDescriptor(2, 0, g_aBloomUAV1[0].GetSRV());
+
+
+	//High Quality:Sums 5 Octaves with a 2x frequency scale
+	//Low Quality :Sums 3 Octaves with a 4x frequency scale
+	if (HighQualityBloom)
+	{
+		Context.TransitionResource(g_aBloomUAV2[0], D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Context.TransitionResource(g_aBloomUAV3[0], D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Context.TransitionResource(g_aBloomUAV4[0], D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Context.TransitionResource(g_aBloomUAV5[0], D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+		// Set the UAVs
+		D3D12_CPU_DESCRIPTOR_HANDLE UAVs[4] = {g_aBloomUAV2[0].GetUAV(), g_aBloomUAV3[0].GetUAV(), g_aBloomUAV4[0].GetUAV(), g_aBloomUAV5[0].GetUAV() };
+		Context.SetDynamicDescriptors(1, 0, 4, UAVs);
+
+
+
+	}
+	else
+	{
+		Context.TransitionResource(g_aBloomUAV3[0], D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Context.TransitionResource(g_aBloomUAV5[0], D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		// Set the UAVs
+		D3D12_CPU_DESCRIPTOR_HANDLE UAVs[2] = { g_aBloomUAV3[0].GetUAV(), g_aBloomUAV5[0].GetUAV() };
+		Context.SetDynamicDescriptors(1, 0, 2, UAVs);
+	}
 
 }
