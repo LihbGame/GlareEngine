@@ -42,17 +42,17 @@ void StoreTwoPixels(uint index, float3 pixel1, float3 pixel2)
     CacheB[index] = f32tof16(pixel1.b) | f32tof16(pixel2.b) << 16;
 }
 
-void LoadTwoPixels(uint index, out float3 pixel1, out float3 pixel2)
+void LoadTwoPixels(uint index, out float3 Pixel1, out float3 Pixel2)
 {
-    uint rr = CacheR[index];
-    uint gg = CacheG[index];
-    uint bb = CacheB[index];
-    pixel1 = float3(f16tof32(rr), f16tof32(gg), f16tof32(bb));
-    pixel2 = float3(f16tof32(rr >> 16), f16tof32(gg >> 16), f16tof32(bb >> 16));
+    uint RR = CacheR[index];
+    uint GG = CacheG[index];
+    uint BB = CacheB[index];
+    Pixel1 = float3(f16tof32(RR), f16tof32(GG), f16tof32(BB));
+    Pixel2 = float3(f16tof32(RR >> 16), f16tof32(GG >> 16), f16tof32(BB >> 16));
 }
 
 // Blur two pixels horizontally.Reduces LDS reads and pixel unpacking.
-void BlurHorizontally(uint outIndex, uint leftMostIndex)
+void BlurHorizontally(uint OutIndex, uint leftMostIndex)
 {
     float3 s0, s1, s2, s3, s4, s5, s6, s7, s8, s9;
     LoadTwoPixels(leftMostIndex + 0, s0, s1);
@@ -61,8 +61,8 @@ void BlurHorizontally(uint outIndex, uint leftMostIndex)
     LoadTwoPixels(leftMostIndex + 3, s6, s7);
     LoadTwoPixels(leftMostIndex + 4, s8, s9);
 
-    StoreOnePixel(outIndex, BlurPixels(s0, s1, s2, s3, s4, s5, s6, s7, s8));
-    StoreOnePixel(outIndex + 1, BlurPixels(s1, s2, s3, s4, s5, s6, s7, s8, s9));
+    StoreOnePixel(OutIndex, BlurPixels(s0, s1, s2, s3, s4, s5, s6, s7, s8));
+    StoreOnePixel(OutIndex + 1, BlurPixels(s1, s2, s3, s4, s5, s6, s7, s8, s9));
 }
 
 
@@ -83,6 +83,26 @@ void BlurVertically(uint2 pixelCoord, uint topMostIndex)
 }
 
 [numthreads(8, 8, 1)]
-void main( uint3 DTid : SV_DispatchThreadID )
+void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID)
 {
+    // Load 4 pixels per thread into LDS
+    //Since the fuzzy radius is 4, subtract 4 here and take the boundary value if the subscript is negative
+    int2 GroupOffsetLocation = (Gid.xy << 3) - 4;                            // Upper left pixel coordinate of group read location
+    int2 ThreadOffsetLocation = (GTid.xy << 1) + GroupOffsetLocation;        // Upper left pixel coordinate of this thread will read
+
+    // Store 4 unblurred pixels in LDS
+    int destIdx = GTid.x + (GTid.y << 4);
+    StoreTwoPixels(destIdx + 0, InputBuffer[ThreadOffsetLocation + uint2(0, 0)], InputBuffer[ThreadOffsetLocation + uint2(1, 0)]);
+    StoreTwoPixels(destIdx + 8, InputBuffer[ThreadOffsetLocation + uint2(0, 1)], InputBuffer[ThreadOffsetLocation + uint2(1, 1)]);
+
+    GroupMemoryBarrierWithGroupSync();
+
+    // Horizontally blur the pixels in Cache
+    uint row = GTid.y << 4;
+    BlurHorizontally(row + (GTid.x << 1), row + GTid.x + (GTid.x & 4));
+
+    GroupMemoryBarrierWithGroupSync();
+
+    // Vertically blur the pixels and write the result to memory
+    BlurVertically(DTid.xy, (GTid.y << 3) + GTid.x);
 }
