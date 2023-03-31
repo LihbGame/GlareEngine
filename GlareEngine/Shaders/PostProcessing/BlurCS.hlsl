@@ -1,10 +1,11 @@
+// Description: This is a compute shader that blurs the input texture.
+
 #include "../Misc/CommonResource.hlsli"
 
-// Description: This is a compute shader that blurs the input texture.
 Texture2D<float3> InputBuffer : register(t0);
 RWTexture2D<float3> BlurResult : register(u0);
 
-cbuffer cb0 : register(b0)
+cbuffer BlurConstBuffer : register(b0)
 {
     float2 g_InverseDimensions;
 }
