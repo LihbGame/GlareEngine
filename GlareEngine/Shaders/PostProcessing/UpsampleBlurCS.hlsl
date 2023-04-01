@@ -1,5 +1,11 @@
 // Description: This is a compute shader that blurs the input texture.
 
+//The CS for combining a lower resolution bloom buffer with a higher resolution buffer
+//and then guassian blurring the resultant buffer.
+#include "../Misc/CommonResource.hlsli"
+#include "BlurCSHelper.hlsli"
+
+
 Texture2D<float3> HigherResBuffer : register(t0);
 Texture2D<float3> LowerResBuffer : register(t1);
 RWTexture2D<float3> BlurResult : register(u0);
@@ -12,30 +18,39 @@ cbuffer BlurConstBuffer : register(b0)
     float g_UpsampleBlendFactor;
 }
 
-// The guassian blur weights (derived from Pascal's triangle)
-static const float Weights5[3] = { 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
-static const float Weights7[4] = { 20.0f / 64.0f, 15.0f / 64.0f, 6.0f / 64.0f, 1.0f / 64.0f };
-static const float Weights9[5] = { 70.0f / 256.0f, 56.0f / 256.0f, 28.0f / 256.0f, 8.0f / 256.0f, 1.0f / 256.0f };
-
-float3 Blur5(float3 a, float3 b, float3 c, float3 d, float3 e, float3 f, float3 g, float3 h, float3 i)
-{
-    return Weights5[0] * e + Weights5[1] * (d + f) + Weights5[2] * (c + g);
-}
-
-float3 Blur7(float3 a, float3 b, float3 c, float3 d, float3 e, float3 f, float3 g, float3 h, float3 i)
-{
-    return Weights7[0] * e + Weights7[1] * (d + f) + Weights7[2] * (c + g) + Weights7[3] * (b + h);
-}
-
-float3 Blur9(float3 a, float3 b, float3 c, float3 d, float3 e, float3 f, float3 g, float3 h, float3 i)
-{
-    return Weights9[0] * e + Weights9[1] * (d + f) + Weights9[2] * (c + g) + Weights9[3] * (b + h) + Weights9[4] * (a + i);
-}
-
-
-
 
 [numthreads(8, 8, 1)]
-void main( uint3 DTid : SV_DispatchThreadID )
+void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID)
 {
+    // Load 4 pixels per thread into LDS
+    //Since the fuzzy radius is 4, subtract 4 here and take the boundary value if the subscript is negative
+    int2 GroupOffsetLocation = (Gid.xy << 3) - 4;                            // Upper left pixel coordinate of group read location
+    int2 ThreadOffsetLocation = (GTid.xy << 1) + GroupOffsetLocation;        // Upper left pixel coordinate of this thread will read
+
+
+    // Store 4 unblurred pixels in LDS
+    float2 UVUpLeft = (float2(ThreadOffsetLocation)+0.5f) * g_InverseDimensions;
+    float2 UVBottomRight = UVUpLeft + g_InverseDimensions;
+    float2 UVUpRight = float2(UVBottomRight.x, UVUpLeft.y);
+    float2 uvBottomLeft = float2(UVUpLeft.x, UVBottomRight.y);
+    int destIdx = GTid.x + (GTid.y << 4);
+
+    float3 pixel1a = lerp(HigherResBuffer[ThreadOffsetLocation + uint2(0, 0)], LowerResBuffer.SampleLevel(LinearBorderSampler, UVUpLeft, 0.0f), g_UpsampleBlendFactor);
+    float3 pixel1b = lerp(HigherResBuffer[ThreadOffsetLocation + uint2(1, 0)], LowerResBuffer.SampleLevel(LinearBorderSampler, UVUpRight, 0.0f), g_UpsampleBlendFactor);
+    StoreTwoPixels(destIdx + 0, pixel1a, pixel1b);
+
+    float3 pixel2a = lerp(HigherResBuffer[ThreadOffsetLocation + uint2(0, 1)], LowerResBuffer.SampleLevel(LinearBorderSampler, uvBottomLeft, 0.0f), g_UpsampleBlendFactor);
+    float3 pixel2b = lerp(HigherResBuffer[ThreadOffsetLocation + uint2(1, 1)], LowerResBuffer.SampleLevel(LinearBorderSampler, UVBottomRight, 0.0f), g_UpsampleBlendFactor);
+    StoreTwoPixels(destIdx + 8, pixel2a, pixel2b);
+
+    GroupMemoryBarrierWithGroupSync();
+
+    // Horizontally blur the pixels in Cache
+    uint row = GTid.y << 4;
+    BlurHorizontally(row + (GTid.x << 1), row + GTid.x + (GTid.x & 4));
+
+    GroupMemoryBarrierWithGroupSync();
+
+    // Vertically blur the pixels and write the result to memory
+    BlurResult[DTid.xy] = BlurVertically((GTid.y << 3) + GTid.x);
 }
