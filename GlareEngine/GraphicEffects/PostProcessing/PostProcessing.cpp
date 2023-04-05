@@ -10,8 +10,8 @@
 #include "CompiledShaders/FbmPostPS.h"
 #include "CompiledShaders/ApplyBloomCS.h"
 #include "CompiledShaders/ApplyBloom2CS.h"
-#include "CompiledShaders/BloomDownSampleCS.h"
-#include "CompiledShaders/BloomDownSampleAllCS.h"
+#include "CompiledShaders/BloomDownSample2CS.h"
+#include "CompiledShaders/BloomDownSample4CS.h"
 #include "CompiledShaders/BloomExtractAndDownSampleHDRCS.h"
 #include "CompiledShaders/BloomExtractAndDownSampleLDRCS.h"
 
@@ -115,8 +115,8 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	CreatePSO(GenerateHistogramCS, g_pGenerateHistogramCS);
 	CreatePSO(DrawHistogramCS, g_pDebugDrawHistogramCS);
 	CreatePSO(AdaptExposureCS, g_pAdaptExposureCS);*/
-	CreatePSO(DownsampleBloom2CS, g_pBloomDownSampleCS);
-	CreatePSO(DownsampleBloom4CS, g_pBloomDownSampleAllCS);
+	CreatePSO(DownsampleBloom2CS, g_pBloomDownSample2CS);
+	CreatePSO(DownsampleBloom4CS, g_pBloomDownSample4CS);
 	CreatePSO(BloomExtractAndDownsampleHDRCS, g_pBloomExtractAndDownSampleHDRCS);
 	CreatePSO(BloomExtractAndDownsampleLDRCS, g_pBloomExtractAndDownSampleLDRCS);
 
@@ -252,6 +252,49 @@ void PostProcessing::BuildPSO(const PSOCommonProperty CommonProperty)
 	mPSO.Finalize();
 }
 
+void PostProcessing::UpsampleBlurBuffer(ComputeContext& Context, ColorBuffer buffer[2], const ColorBuffer& LowerResBuffer, float UpSampleBlendFactor)
+{
+	// Set the shader constants
+	uint32_t bufferWidth = buffer[0].GetWidth();
+	uint32_t bufferHeight = buffer[0].GetHeight();
+	Context.SetConstants(0, 1.0f / bufferWidth, 1.0f / bufferHeight, UpSampleBlendFactor);
+
+	// Set the input textures and output UAV
+	Context.TransitionResource(buffer[1], D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.SetDynamicDescriptor(1, 0, buffer[1].GetUAV());
+	D3D12_CPU_DESCRIPTOR_HANDLE SRVs[2] = { buffer[0].GetSRV(), LowerResBuffer.GetSRV() };
+	Context.SetDynamicDescriptors(2, 0, 2, SRVs);
+
+	// Set the shader: Upsample and blur
+	Context.SetPipelineState(UpsampleAndBlurCS);
+
+	// Dispatch the compute shader with default 8x8 thread groups
+	Context.Dispatch2D(bufferWidth, bufferHeight);
+
+	Context.TransitionResource(buffer[1], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+}
+
+void PostProcessing::BlurBuffer(ComputeContext& Context, ColorBuffer SourceBuffer, ColorBuffer TargetBuffer)
+{
+	// Set the shader constants
+	uint32_t bufferWidth = SourceBuffer.GetWidth();
+	uint32_t bufferHeight = SourceBuffer.GetHeight();
+	Context.SetConstants(0, 1.0f / bufferWidth, 1.0f / bufferHeight);
+
+	// Set the input textures and output UAV
+	Context.TransitionResource(TargetBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.SetDynamicDescriptor(1, 0, TargetBuffer.GetUAV());
+	Context.SetDynamicDescriptor(2, 0, SourceBuffer.GetSRV());
+
+	// Set the shader
+	Context.SetPipelineState(BlurCS);
+
+	// Dispatch the compute shader with default 8x8 thread groups
+	Context.Dispatch2D(bufferWidth, bufferHeight);
+
+	Context.TransitionResource(TargetBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+}
+
 void PostProcessing::ShutDown()
 {
 	g_Exposure.Destroy();
@@ -298,7 +341,14 @@ void PostProcessing::GenerateBloom(ComputeContext& Context)
 		D3D12_CPU_DESCRIPTOR_HANDLE UAVs[4] = {g_aBloomUAV2[0].GetUAV(), g_aBloomUAV3[0].GetUAV(), g_aBloomUAV4[0].GetUAV(), g_aBloomUAV5[0].GetUAV() };
 		Context.SetDynamicDescriptors(1, 0, 4, UAVs);
 
+		// Each dispatch group is 8x8 threads,Each dispatch group is 8x8 threads, Each thread reads in 2x2 source Texels use bilinear filter.
+		Context.SetPipelineState(DownsampleBloom4CS);
+		Context.Dispatch2D(BloomWidth / 2, BloomHeight / 2);
 
+		Context.TransitionResource(g_aBloomUAV2[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		Context.TransitionResource(g_aBloomUAV3[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		Context.TransitionResource(g_aBloomUAV4[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		Context.TransitionResource(g_aBloomUAV5[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 	}
 	else
