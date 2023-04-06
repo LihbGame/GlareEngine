@@ -13,7 +13,6 @@
 #include "CompiledShaders/BloomDownSample2CS.h"
 #include "CompiledShaders/BloomDownSample4CS.h"
 #include "CompiledShaders/BloomExtractAndDownSampleHDRCS.h"
-#include "CompiledShaders/BloomExtractAndDownSampleLDRCS.h"
 
 namespace PostProcessing
 {
@@ -25,10 +24,9 @@ namespace PostProcessing
 	NumVar BloomUpSampleFactor(0.65f, 0.0f, 1.0f);	// Controls the "focus" of the blur.High values spread out more causing a haze.
 
 	//Exposure Log() Range
-	const float kInitialMinLog = -12.0f;
-	const float kInitialMaxLog = 4.0f;
+	const float InitialMinLog = -12.0f;
+	const float InitialMaxLog = 4.0f;
 
-	bool EnableHDR = true;
 	bool EnableAdaptation = true;
 	bool DrawHistogram = true;
 	NumVar TargetLuminance(0.08f, 0.01f, 0.99f);
@@ -42,11 +40,9 @@ namespace PostProcessing
 	GraphicsPSO mPSO(L"FBM Post PS");
 
 	//Bloom
-	ComputePSO ApplyBloomCS(L"Apply Bloom CS");
 	ComputePSO DownsampleBloom2CS(L"DownSample Bloom 2 CS");
 	ComputePSO DownsampleBloom4CS(L"DownSample Bloom 4 CS");
 	ComputePSO BloomExtractAndDownsampleHDRCS(L"Bloom Extract and DownSample HDR CS");
-	ComputePSO BloomExtractAndDownsampleLDRCS(L"Bloom Extract and DownSample LDR CS");
 
 
 	ComputePSO ToneMapCS(L"Tone Map  CS");
@@ -72,7 +68,6 @@ namespace PostProcessing
 
 
 	void PostProcessHDR(ComputeContext&);
-	void PostProcessLDR(ComputeContext&);
 }
 
 
@@ -95,7 +90,6 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 
 	if (g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
 	{
-		CreatePSO(ApplyBloomCS, g_pApplyBloom2CS);
 		//CreatePSO(ToneMapCS, g_pToneMap2CS);
 		//CreatePSO(ToneMapHDRCS, g_pToneMapHDR2CS);
 		//CreatePSO(DebugLuminanceHdrCS, g_pDebugLuminanceHdr2CS);
@@ -103,7 +97,6 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	}
 	else
 	{
-		CreatePSO(ApplyBloomCS, g_pApplyBloomCS);
 		//CreatePSO(ToneMapCS, g_pToneMapCS);
 		//CreatePSO(ToneMapHDRCS, g_pToneMapHDRCS);
 		//CreatePSO(DebugLuminanceHdrCS, g_pDebugLuminanceHdrCS);
@@ -118,7 +111,6 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	CreatePSO(DownsampleBloom2CS, g_pBloomDownSample2CS);
 	CreatePSO(DownsampleBloom4CS, g_pBloomDownSample4CS);
 	CreatePSO(BloomExtractAndDownsampleHDRCS, g_pBloomExtractAndDownSampleHDRCS);
-	CreatePSO(BloomExtractAndDownsampleLDRCS, g_pBloomExtractAndDownSampleLDRCS);
 
 	//CreatePSO(ExtractLumaCS, g_pExtractLumaCS);
 	//CreatePSO(AverageLumaCS, g_pAverageLumaCS);
@@ -128,7 +120,7 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 
 	__declspec(align(16)) float initExposure[] =
 	{
-		Exposure, 1.0f / Exposure,kInitialMinLog, kInitialMaxLog, kInitialMaxLog - kInitialMinLog, 1.0f / (kInitialMaxLog - kInitialMinLog)
+		Exposure, 1.0f / Exposure,InitialMinLog, InitialMaxLog, InitialMaxLog - InitialMinLog, 1.0f / (InitialMaxLog - InitialMinLog)
 	};
 	g_Exposure.Create(L"Exposure", 6, 4, initExposure);
 
@@ -155,11 +147,20 @@ void PostProcessing::RenderFBM(GraphicsContext& Context, GraphicsPSO* SpecificPS
 
 void PostProcessing::PostProcessHDR(ComputeContext& Context)
 {
+	ScopedTimer _prof(L"HDR Tone Mapping", Context);
 
-}
+	if (BloomEnable)
+	{
+		GenerateBloom(Context);
+		Context.TransitionResource(g_aBloomUAV1[1], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	}
+	else if (EnableAdaptation)
+	{
+		//ExtractLuma(Context);
+	}
 
-void PostProcessing::PostProcessLDR(ComputeContext& Context)
-{
+
+
 
 }
 
@@ -170,10 +171,8 @@ void PostProcessing::Render(GraphicsContext& graphicsContext)
 
 	Context.SetRootSignature(PostEffectsRS);
 	Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-	if (EnableHDR)
-		PostProcessHDR(Context);
-	else
-		PostProcessLDR(Context);
+	PostProcessHDR(Context);
+
 }
 
 void PostProcessing::DrawBeforeToneMapping()
@@ -321,7 +320,7 @@ void PostProcessing::GenerateBloom(ComputeContext& Context)
 	Context.SetDynamicDescriptor(2, 1, g_Exposure.GetSRV());
 
 	//Bloom Extract
-	Context.SetPipelineState(EnableHDR ? BloomExtractAndDownsampleHDRCS : BloomExtractAndDownsampleLDRCS);
+	Context.SetPipelineState(BloomExtractAndDownsampleHDRCS);
 	Context.Dispatch2D(BloomWidth, BloomHeight);
 
 	Context.TransitionResource(g_aBloomUAV1[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -350,6 +349,12 @@ void PostProcessing::GenerateBloom(ComputeContext& Context)
 		Context.TransitionResource(g_aBloomUAV4[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 		Context.TransitionResource(g_aBloomUAV5[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
+		// Blur then Up-sampling and blur four times
+		BlurBuffer(Context, g_aBloomUAV5[1], g_aBloomUAV5[0]);
+		UpsampleBlurBuffer(Context, g_aBloomUAV4, g_aBloomUAV5[1], BloomUpSampleFactor);
+		UpsampleBlurBuffer(Context, g_aBloomUAV3, g_aBloomUAV4[1], BloomUpSampleFactor);
+		UpsampleBlurBuffer(Context, g_aBloomUAV2, g_aBloomUAV3[1], BloomUpSampleFactor);
+		UpsampleBlurBuffer(Context, g_aBloomUAV1, g_aBloomUAV2[1], BloomUpSampleFactor);
 	}
 	else
 	{
@@ -358,6 +363,14 @@ void PostProcessing::GenerateBloom(ComputeContext& Context)
 		// Set the UAVs
 		D3D12_CPU_DESCRIPTOR_HANDLE UAVs[2] = { g_aBloomUAV3[0].GetUAV(), g_aBloomUAV5[0].GetUAV() };
 		Context.SetDynamicDescriptors(1, 0, 2, UAVs);
+
+		Context.TransitionResource(g_aBloomUAV3[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		Context.TransitionResource(g_aBloomUAV5[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+		// Blur then Up-sampling and blur two times
+		BlurBuffer(Context, g_aBloomUAV5[1], g_aBloomUAV5[0]);
+		UpsampleBlurBuffer(Context, g_aBloomUAV3, g_aBloomUAV5[1], BloomUpSampleFactor);
+		UpsampleBlurBuffer(Context, g_aBloomUAV1, g_aBloomUAV3[1], BloomUpSampleFactor);
 	}
 
 }
