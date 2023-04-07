@@ -512,6 +512,9 @@ void Scene::ForwardPlusRendering()
 		Context.GetCommandList()->ResolveSubresource(g_SceneColorBuffer.GetResource(), 0, g_SceneMSAAColorBuffer.GetResource(), 0, DefaultHDRColorFormat);
 	}
 
+
+
+
 	Context.Finish();
 }
 
