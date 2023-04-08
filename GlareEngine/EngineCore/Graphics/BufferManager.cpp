@@ -7,6 +7,7 @@ namespace GlareEngine
 {
 	DepthBuffer g_SceneDepthBuffer;
 	ColorBuffer g_SceneColorBuffer;
+	ColorBuffer g_PostEffectsBuffer;
 
 	//MSAA Buffer
 	DepthBuffer g_SceneMSAADepthBuffer;
@@ -20,8 +21,6 @@ namespace GlareEngine
 	ColorBuffer g_aBloomUAV5[2];
 	ColorBuffer g_LumaBloom;
 
-
-	//ColorBuffer g_PostEffectsBuffer;
 	//ColorBuffer g_VelocityBuffer;
 	//ColorBuffer g_OverlayBuffer;
 	//ColorBuffer g_HorizontalBuffer;
@@ -95,7 +94,8 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 
 	g_SceneColorBuffer.Create(L"Main Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 	g_SceneDepthBuffer.Create(L"Scene Depth Buffer", NativeWidth, NativeHeight, DSV_FORMAT, REVERSE_Z);
-	
+	g_PostEffectsBuffer.Create(L"Post Effects Buffer", NativeWidth, NativeWidth, 1, DXGI_FORMAT_R32_UINT);
+
 	//MSAA buffer
 	//g_SceneMSAADepthBuffer
 	g_SceneMSAAColorBuffer.SetMsaaMode(MSAACOUNT, MSAACOUNT);
@@ -126,7 +126,6 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 
 
 	//g_VelocityBuffer.Create(L"Motion Vectors", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT);
-	//g_PostEffectsBuffer.Create(L"Post Effects Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT);
 
 	//g_LinearDepth[0].Create(L"Linear Depth 0", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16_UNORM);
 	//g_LinearDepth[1].Create(L"Linear Depth 1", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16_UNORM);
@@ -226,6 +225,8 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 	//resize display buffer
 	g_SceneColorBuffer.Create(L"Main Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 	g_SceneDepthBuffer.Create(L"Scene Depth Buffer", NativeWidth, NativeHeight, DSV_FORMAT, REVERSE_Z);
+	g_PostEffectsBuffer.Create(L"Post Effects Buffer", NativeWidth, NativeWidth, 1, DXGI_FORMAT_R32_UINT);
+
 	//resize  MSAA buffer
 	g_SceneMSAAColorBuffer.Create(L"Main MSAA Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 	g_SceneMSAADepthBuffer.Create(L"Scene MSAA Depth Buffer", NativeWidth, NativeHeight, MSAACOUNT, DSV_FORMAT, REVERSE_Z);
@@ -251,7 +252,6 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 	// 1/32
 	g_aBloomUAV5[0].Create(L"Bloom Buffer 5a", BloomWidth / 16, BloomHeight / 16, 1, DefaultHDRColorFormat);
 	g_aBloomUAV5[1].Create(L"Bloom Buffer 5b", BloomWidth / 16, BloomHeight / 16, 1, DefaultHDRColorFormat);
-
 }
 
 void GlareEngine::DestroyRenderingBuffers()

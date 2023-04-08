@@ -14,6 +14,7 @@ namespace GlareEngine
 {
 	extern DepthBuffer g_SceneDepthBuffer;    // D32_FLOAT_S8_UINT
 	extern ColorBuffer g_SceneColorBuffer;    // R11G11B10_FLOAT
+	extern ColorBuffer g_PostEffectsBuffer;   // R32_UINT (To support Read-Modify-Write with a UAV)	
 
 	extern ColorBuffer g_SceneMSAAColorBuffer;
 	extern DepthBuffer g_SceneMSAADepthBuffer;
@@ -24,9 +25,7 @@ namespace GlareEngine
 	extern ColorBuffer g_aBloomUAV4[2];        
 	extern ColorBuffer g_aBloomUAV5[2];        
 	extern ColorBuffer g_LumaBloom;
-
-
-	//extern ColorBuffer g_PostEffectsBuffer;    // R32_UINT (to support Read-Modify-Write with a UAV)								   
+						   
 	//extern ColorBuffer g_OverlayBuffer;        // R8G8B8A8_UNORM
 	//extern ColorBuffer g_HorizontalBuffer;    // For separable (bicubic) upsampling
 
