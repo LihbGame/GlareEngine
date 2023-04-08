@@ -1,4 +1,2 @@
-[numthreads(1, 1, 1)]
-void main( uint3 DTid : SV_DispatchThreadID )
-{
-}
+#define SUPPORT_TYPED_UAV_LOADS 1
+#include "ToneMapCS.hlsl"

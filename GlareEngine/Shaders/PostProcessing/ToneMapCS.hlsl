@@ -1,12 +1,11 @@
 #include "../Misc/ToneMappingUtility.hlsli"
 
-
 StructuredBuffer<float> Exposure : register(t0);
 Texture2D<float3> Bloom : register(t1);
 
 #if SUPPORT_TYPED_UAV_LOADS
 RWTexture2D<float3> ColorRW : register(u0);
-#else
+#else //not support R11G11B10 UAV RW
 RWTexture2D<uint> DstColor : register(u0);
 Texture2D<float3> SrcColor : register(t2);
 #endif
@@ -19,8 +18,8 @@ cbuffer ConstantBuffer : register(b0)
 {
     float2 g_RcpBufferDimensions;
     float g_BloomStrength;
-    float PaperWhiteRatio; // PaperWhite / MaxBrightness
-    float MaxBrightness;
+    float g_PaperWhiteRatio; // PaperWhite / MaxBrightness
+    float g_MaxBrightness;
 };
 
 
@@ -58,5 +57,25 @@ void main( uint3 DTid : SV_DispatchThreadID )
     HDRColor += g_BloomStrength * Bloom.SampleLevel(LinearSampler, Coord, 0);
     HDRColor *= Exposure[0];
 
+#if ENABLE_HDR_DISPLAY_MAPPING
+    HDRColor = TM_Stanard(REC709toREC2020(HDRColor) * g_PaperWhiteRatio) * g_MaxBrightness;
+#if SUPPORT_TYPED_UAV_LOADS
+    ColorRW[DTid.xy] = HDRColor;
+#else
+    DstColor[DTid.xy] = Pack_R11G11B10_FLOAT(HDRColor);
+#endif
+    OutLuma[DTid.xy] = RGBToLogLuminance(HDRColor);
 
+#else //ENABLE_HDR_DISPLAY_MAPPING
+    // Tone map to SDR
+    float3 SDRColor = TM_Stanard(HDRColor);
+#if SUPPORT_TYPED_UAV_LOADS
+    ColorRW[DTid.xy] = SDRColor;
+#else
+    DstColor[DTid.xy] = Pack_R11G11B10_FLOAT(SDRColor);
+#endif
+
+    OutLuma[DTid.xy] = RGBToLogLuminance(SDRColor);
+
+#endif //ENABLE_HDR_DISPLAY_MAPPING
 }
