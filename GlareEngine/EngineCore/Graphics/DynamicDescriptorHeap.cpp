@@ -325,7 +325,18 @@ namespace GlareEngine
 		D3D12_CPU_DESCRIPTOR_HANDLE* CopyDest = TableCache.TableStart + Offset;
 		for (UINT i = 0; i < NumHandles; ++i)
 			CopyDest[i] = Handles[i];
-		TableCache.AssignedHandlesBitMap += NumHandles;//|= (((LONG64)1 << NumHandles) - 1) << Offset;
+
+		if (TableCache.AssignedHandlesBitMap <= Offset)
+		{
+			TableCache.AssignedHandlesBitMap += NumHandles;//|= (((LONG64)1 << NumHandles) - 1) << Offset;
+		}
+		else
+		{
+			int count = NumHandles + Offset;
+			int oversizeCount = TableCache.AssignedHandlesBitMap - count;
+			if (oversizeCount < 0)  oversizeCount = 0;
+			TableCache.AssignedHandlesBitMap = count + oversizeCount;
+		}
 		m_StaleRootParamsBitMap |= (1 << RootIndex);
 	}
 

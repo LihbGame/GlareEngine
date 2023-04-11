@@ -38,7 +38,7 @@ namespace GlareEngine
 
 
 
-	void Render::Initialize()
+	void Render::Initialize(ID3D12GraphicsCommandList* CommandList)
 	{
 		if (s_Initialized)
 			return;
@@ -51,6 +51,8 @@ namespace GlareEngine
 		gSamplerHeap.Create(L"Scene Sampler Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 2048);
 
 		Lighting::InitializeResources();
+
+		PostProcessing::Initialize(CommandList);
 
 		s_Initialized = true;
 	}

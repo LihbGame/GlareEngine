@@ -657,8 +657,6 @@ namespace GlareEngine
 		ComputeContext& NewContext = g_ContextManager.AllocateContext(
 			Async ? D3D12_COMMAND_LIST_TYPE_COMPUTE : D3D12_COMMAND_LIST_TYPE_DIRECT)->GetComputeContext();
 		NewContext.SetID(ID);
-		if (ID.length() > 0)
-			EngineProfiling::BeginBlock(ID, &NewContext);
 		return NewContext;
 	}
 

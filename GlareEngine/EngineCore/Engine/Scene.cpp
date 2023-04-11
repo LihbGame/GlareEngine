@@ -511,11 +511,10 @@ void Scene::ForwardPlusRendering()
 		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, true);
 		Context.GetCommandList()->ResolveSubresource(g_SceneColorBuffer.GetResource(), 0, g_SceneMSAAColorBuffer.GetResource(), 0, DefaultHDRColorFormat);
 	}
-
-
-
-
 	Context.Finish();
+
+	//Post Processing
+	PostProcessing::Render();
 }
 
 

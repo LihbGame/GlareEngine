@@ -4,6 +4,7 @@
 #include "Graphics/SamplerManager.h"
 #include "Graphics/CommandSignature.h"
 #include "EngineGUI.h"
+#include "Graphics/Display.h"
 
 //shaders
 #include "CompiledShaders/ScreenQuadVS.h"
@@ -13,6 +14,12 @@
 #include "CompiledShaders/BloomDownSample2CS.h"
 #include "CompiledShaders/BloomDownSample4CS.h"
 #include "CompiledShaders/BloomExtractAndDownSampleHDRCS.h"
+#include "CompiledShaders/UpsampleBlurCS.h"
+#include "CompiledShaders/BlurCS.h"
+#include "CompiledShaders/ToneMapCS.h"
+#include "CompiledShaders/ToneMap2CS.h"
+#include "CompiledShaders/ToneMapHDRCS.h"
+#include "CompiledShaders/ToneMapHDR2CS.h"
 
 namespace PostProcessing
 {
@@ -55,7 +62,7 @@ namespace PostProcessing
 	ComputePSO AdaptExposureCS(L"Adapt Exposure CS");
 
 	//Blur
-	ComputePSO UpsampleAndBlurCS(L"UpSample and Blur CS");
+	ComputePSO UpsampleBlurCS(L"UpSample and Blur CS");
 	ComputePSO BlurCS(L"Blur CS");
 
 	ComputePSO ExtractLumaCS(L"Extract Luminance CS");
@@ -90,27 +97,30 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 
 	if (g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
 	{
-		//CreatePSO(ToneMapCS, g_pToneMap2CS);
-		//CreatePSO(ToneMapHDRCS, g_pToneMapHDR2CS);
+		CreatePSO(ToneMapCS, g_pToneMap2CS);
+		CreatePSO(ToneMapHDRCS, g_pToneMapHDR2CS);
+
 		//CreatePSO(DebugLuminanceHdrCS, g_pDebugLuminanceHdr2CS);
 		//CreatePSO(DebugLuminanceLdrCS, g_pDebugLuminanceLdr2CS);
 	}
 	else
 	{
-		//CreatePSO(ToneMapCS, g_pToneMapCS);
-		//CreatePSO(ToneMapHDRCS, g_pToneMapHDRCS);
+		CreatePSO(ToneMapCS, g_pToneMapCS);
+		CreatePSO(ToneMapHDRCS, g_pToneMapHDRCS);
+
 		//CreatePSO(DebugLuminanceHdrCS, g_pDebugLuminanceHdrCS);
 		//CreatePSO(DebugLuminanceLdrCS, g_pDebugLuminanceLdrCS);
 	}
 
-	/*CreatePSO(UpsampleAndBlurCS, g_pUpsampleAndBlurCS);
+	CreatePSO(UpsampleBlurCS, g_pUpsampleBlurCS);
 	CreatePSO(BlurCS, g_pBlurCS);
-	CreatePSO(GenerateHistogramCS, g_pGenerateHistogramCS);
-	CreatePSO(DrawHistogramCS, g_pDebugDrawHistogramCS);
-	CreatePSO(AdaptExposureCS, g_pAdaptExposureCS);*/
 	CreatePSO(DownsampleBloom2CS, g_pBloomDownSample2CS);
 	CreatePSO(DownsampleBloom4CS, g_pBloomDownSample4CS);
 	CreatePSO(BloomExtractAndDownsampleHDRCS, g_pBloomExtractAndDownSampleHDRCS);
+
+	//CreatePSO(GenerateHistogramCS, g_pGenerateHistogramCS);
+	//CreatePSO(DrawHistogramCS, g_pDebugDrawHistogramCS);
+	//CreatePSO(AdaptExposureCS, g_pAdaptExposureCS);
 
 	//CreatePSO(ExtractLumaCS, g_pExtractLumaCS);
 	//CreatePSO(AverageLumaCS, g_pAverageLumaCS);
@@ -159,20 +169,56 @@ void PostProcessing::PostProcessHDR(ComputeContext& Context)
 		//ExtractLuma(Context);
 	}
 
+	//if (g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
+	//{
+	//	Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	//}
+	//else
+	//{
+	//	Context.TransitionResource(g_PostEffectsBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	//}
 
+	//Context.TransitionResource(g_LumaBloom, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	//Context.TransitionResource(g_Exposure, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+	//Context.SetPipelineState(Display::g_bEnableHDROutput ? ToneMapHDRCS : ToneMapCS);
+
+	//// Set constants
+	//Context.SetConstants(0, 1.0f / g_SceneColorBuffer.GetWidth(), 1.0f / g_SceneColorBuffer.GetHeight(),(float)BloomStrength);
+	//Context.SetConstant(0, (float)Display::g_HDRPaperWhite / (float)Display::g_MaxDisplayLuminance, 3);
+	//Context.SetConstant(0, (float)Display::g_MaxDisplayLuminance, 4);
+
+	//// Separate out SDR result from its perceived luminance
+	//if (g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
+	//{
+	//	Context.SetDynamicDescriptor(1, 0, g_SceneColorBuffer.GetUAV());
+	//}
+	//else
+	//{
+	//	Context.SetDynamicDescriptor(1, 0, g_PostEffectsBuffer.GetUAV());
+	//	Context.SetDynamicDescriptor(2, 2, g_SceneColorBuffer.GetSRV());
+	//}
+	//Context.SetDynamicDescriptor(1, 1, g_LumaBloom.GetUAV());
+
+	//// Read in original HDR value and blurred bloom buffer
+	//Context.SetDynamicDescriptor(2, 0, g_Exposure.GetSRV());
+	//Context.SetDynamicDescriptor(2, 1, BloomEnable ? g_aBloomUAV1[1].GetSRV() : GetDefaultTexture(eBlackOpaque2D));
+
+	//Context.Dispatch2D(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
 
 
 }
 
 
-void PostProcessing::Render(GraphicsContext& graphicsContext)
+void PostProcessing::Render()
 {
 	ComputeContext& Context = ComputeContext::Begin(L"Post Processing");
 
 	Context.SetRootSignature(PostEffectsRS);
-	Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 	PostProcessHDR(Context);
 
+	Context.Finish();
 }
 
 void PostProcessing::DrawBeforeToneMapping()
@@ -264,8 +310,8 @@ void PostProcessing::UpsampleBlurBuffer(ComputeContext& Context, ColorBuffer buf
 	D3D12_CPU_DESCRIPTOR_HANDLE SRVs[2] = { buffer[0].GetSRV(), LowerResBuffer.GetSRV() };
 	Context.SetDynamicDescriptors(2, 0, 2, SRVs);
 
-	// Set the shader: Upsample and blur
-	Context.SetPipelineState(UpsampleAndBlurCS);
+	// Set the shader: Up-Sample and blur
+	Context.SetPipelineState(UpsampleBlurCS);
 
 	// Dispatch the compute shader with default 8x8 thread groups
 	Context.Dispatch2D(bufferWidth, bufferHeight);
@@ -273,7 +319,7 @@ void PostProcessing::UpsampleBlurBuffer(ComputeContext& Context, ColorBuffer buf
 	Context.TransitionResource(buffer[1], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 }
 
-void PostProcessing::BlurBuffer(ComputeContext& Context, ColorBuffer SourceBuffer, ColorBuffer TargetBuffer)
+void PostProcessing::BlurBuffer(ComputeContext& Context, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer)
 {
 	// Set the shader constants
 	uint32_t bufferWidth = SourceBuffer.GetWidth();
@@ -350,7 +396,7 @@ void PostProcessing::GenerateBloom(ComputeContext& Context)
 		Context.TransitionResource(g_aBloomUAV5[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 		// Blur then Up-sampling and blur four times
-		BlurBuffer(Context, g_aBloomUAV5[1], g_aBloomUAV5[0]);
+		BlurBuffer(Context, g_aBloomUAV5[0], g_aBloomUAV5[1]);
 		UpsampleBlurBuffer(Context, g_aBloomUAV4, g_aBloomUAV5[1], BloomUpSampleFactor);
 		UpsampleBlurBuffer(Context, g_aBloomUAV3, g_aBloomUAV4[1], BloomUpSampleFactor);
 		UpsampleBlurBuffer(Context, g_aBloomUAV2, g_aBloomUAV3[1], BloomUpSampleFactor);

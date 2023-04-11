@@ -129,7 +129,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	SimpleModelGenerator::GetInstance(CommandList)->CreatePBRMaterials();
 
 	//Initialize Render
-	Render::Initialize();
+	Render::Initialize(CommandList);
 
 
 	//////Build Scene//////////

@@ -47,7 +47,7 @@ namespace GlareEngine
 	namespace Render
 	{
 		//Initialize Engine Render
-		void Initialize();
+		void Initialize(ID3D12GraphicsCommandList* CommandList);
 		void ShutDown();
 
 		uint8_t GetPSO(uint16_t psoFlags);

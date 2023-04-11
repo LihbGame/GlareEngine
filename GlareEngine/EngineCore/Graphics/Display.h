@@ -10,6 +10,9 @@ namespace GlareEngine
         extern uint32_t g_DisplayHeight;
         extern bool g_bEnableHDROutput;
         extern IDXGISwapChain1* s_SwapChain1;
+        extern NumVar g_HDRPaperWhite;
+        extern NumVar g_MaxDisplayLuminance;
+
 
         // Returns the number of elapsed frames since application start
         uint64_t GetFrameCount(void);

@@ -9,7 +9,7 @@ namespace PostProcessing
 
     void RenderFBM(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr);
 
-    void Render(GraphicsContext& Context);
+    void Render();
 
     void DrawBeforeToneMapping();
     void DrawAfterToneMapping();
@@ -22,7 +22,7 @@ namespace PostProcessing
 
     void UpsampleBlurBuffer(ComputeContext&, ColorBuffer buffer[2], const ColorBuffer& LowerResBuffer, float UpSampleBlendFactor = 0.0f);
 
-    void BlurBuffer(ComputeContext&, ColorBuffer SourceBuffer, ColorBuffer TargetBuffer);
+    void BlurBuffer(ComputeContext&, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer);
 
     void ShutDown();
     //PSO
