@@ -27,7 +27,7 @@ float DistributionGGX(float3 N, float3 H, float roughness)
     float NdotH2 = NdotH * NdotH;
 
     float nom = a2;
-    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0 + EPS);
     denom = PI * denom * denom;
 
     return nom / denom;
@@ -291,7 +291,7 @@ float3 CookTorranceBRDF(in LightProperties LightProper, in SurfaceProperties Sur
 {
     float NDF = DistributionGGX(Surface.N, LightProper.H, Surface.roughness);
     float G = GeometrySmith(Surface.N, Surface.V, LightProper.L, Surface.roughness);
-    float3 F = fresnelSchlick(min(max(dot(LightProper.H, Surface.V), 0.0), 1.0f), Surface.c_spec);
+    float3 F = fresnelSchlick(saturate(dot(LightProper.H, Surface.V)), Surface.c_spec);
 
     //float3 kS = F;
     //float3 kD = float3(1.0f, 1.0f, 1.0f) - kS;
