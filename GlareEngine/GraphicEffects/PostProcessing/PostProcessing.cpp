@@ -169,42 +169,42 @@ void PostProcessing::PostProcessHDR(ComputeContext& Context)
 		//ExtractLuma(Context);
 	}
 
-	//if (g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
-	//{
-	//	Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	//}
-	//else
-	//{
-	//	Context.TransitionResource(g_PostEffectsBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	//}
+	if (g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
+	{
+		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	}
+	else
+	{
+		Context.TransitionResource(g_PostEffectsBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	}
 
-	//Context.TransitionResource(g_LumaBloom, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	//Context.TransitionResource(g_Exposure, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	Context.TransitionResource(g_LumaBloom, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.TransitionResource(g_Exposure, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
-	//Context.SetPipelineState(Display::g_bEnableHDROutput ? ToneMapHDRCS : ToneMapCS);
+	Context.SetPipelineState(Display::g_bEnableHDROutput ? ToneMapHDRCS : ToneMapCS);
 
-	//// Set constants
-	//Context.SetConstants(0, 1.0f / g_SceneColorBuffer.GetWidth(), 1.0f / g_SceneColorBuffer.GetHeight(),(float)BloomStrength);
-	//Context.SetConstant(0, (float)Display::g_HDRPaperWhite / (float)Display::g_MaxDisplayLuminance, 3);
-	//Context.SetConstant(0, (float)Display::g_MaxDisplayLuminance, 4);
+	// Set constants
+	Context.SetConstants(0, 1.0f / g_SceneColorBuffer.GetWidth(), 1.0f / g_SceneColorBuffer.GetHeight(),(float)BloomStrength);
+	Context.SetConstant(0, (float)Display::g_HDRPaperWhite / (float)Display::g_MaxDisplayLuminance, 3);
+	Context.SetConstant(0, (float)Display::g_MaxDisplayLuminance, 4);
 
-	//// Separate out SDR result from its perceived luminance
-	//if (g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
-	//{
-	//	Context.SetDynamicDescriptor(1, 0, g_SceneColorBuffer.GetUAV());
-	//}
-	//else
-	//{
-	//	Context.SetDynamicDescriptor(1, 0, g_PostEffectsBuffer.GetUAV());
-	//	Context.SetDynamicDescriptor(2, 2, g_SceneColorBuffer.GetSRV());
-	//}
-	//Context.SetDynamicDescriptor(1, 1, g_LumaBloom.GetUAV());
+	// Separate out SDR result from its perceived luminance
+	if (g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
+	{
+		Context.SetDynamicDescriptor(1, 0, g_SceneColorBuffer.GetUAV());
+	}
+	else
+	{
+		Context.SetDynamicDescriptor(1, 0, g_PostEffectsBuffer.GetUAV());
+		Context.SetDynamicDescriptor(2, 2, g_SceneColorBuffer.GetSRV());
+	}
+	Context.SetDynamicDescriptor(1, 1, g_LumaBloom.GetUAV());
 
-	//// Read in original HDR value and blurred bloom buffer
-	//Context.SetDynamicDescriptor(2, 0, g_Exposure.GetSRV());
-	//Context.SetDynamicDescriptor(2, 1, BloomEnable ? g_aBloomUAV1[1].GetSRV() : GetDefaultTexture(eBlackOpaque2D));
+	// Read in original HDR value and blurred bloom buffer
+	Context.SetDynamicDescriptor(2, 0, g_Exposure.GetSRV());
+	Context.SetDynamicDescriptor(2, 1, BloomEnable ? g_aBloomUAV1[1].GetSRV() : GetDefaultTexture(eBlackOpaque2D));
 
-	//Context.Dispatch2D(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
+	Context.Dispatch2D(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
 
 
 }
@@ -414,7 +414,7 @@ void PostProcessing::GenerateBloom(ComputeContext& Context)
 		Context.TransitionResource(g_aBloomUAV5[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 		// Blur then Up-sampling and blur two times
-		BlurBuffer(Context, g_aBloomUAV5[1], g_aBloomUAV5[0]);
+		BlurBuffer(Context, g_aBloomUAV5[0], g_aBloomUAV5[1]);
 		UpsampleBlurBuffer(Context, g_aBloomUAV3, g_aBloomUAV5[1], BloomUpSampleFactor);
 		UpsampleBlurBuffer(Context, g_aBloomUAV1, g_aBloomUAV3[1], BloomUpSampleFactor);
 	}
