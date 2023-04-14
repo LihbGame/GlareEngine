@@ -165,6 +165,9 @@ void Scene::RenderScene(RenderPipelineType Type)
 		break;
 	}
 	
+
+	//Post Processing
+	PostProcessing::Render();
 }
 
 void Scene::DrawUI()
@@ -512,9 +515,6 @@ void Scene::ForwardPlusRendering()
 		Context.GetCommandList()->ResolveSubresource(g_SceneColorBuffer.GetResource(), 0, g_SceneMSAAColorBuffer.GetResource(), 0, DefaultHDRColorFormat);
 	}
 	Context.Finish();
-
-	//Post Processing
-	PostProcessing::Render();
 }
 
 

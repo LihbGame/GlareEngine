@@ -654,10 +654,11 @@ namespace GlareEngine
 
 	ComputeContext& ComputeContext::Begin(const std::wstring& ID, bool Async)
 	{
-		ComputeContext& NewContext = g_ContextManager.AllocateContext(
+		ComputeContext& Context = g_ContextManager.AllocateContext(
 			Async ? D3D12_COMMAND_LIST_TYPE_COMPUTE : D3D12_COMMAND_LIST_TYPE_DIRECT)->GetComputeContext();
-		NewContext.SetID(ID);
-		return NewContext;
+		Context.SetID(ID);
+		Context.PIXBeginEvent(ID.c_str());
+		return Context;
 	}
 
 	void ComputeContext::ClearUAV(GPUBuffer& Target)

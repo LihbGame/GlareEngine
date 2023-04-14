@@ -166,7 +166,7 @@ void PostProcessing::PostProcessHDR(ComputeContext& Context)
 	}
 	else if (EnableAdaptation)
 	{
-		//ExtractLuma(Context);
+		//ExtractLuminance(Context);
 	}
 
 	if (g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
