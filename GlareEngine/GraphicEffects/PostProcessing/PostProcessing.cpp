@@ -245,9 +245,9 @@ void PostProcessing::DrawAfterToneMapping()
 void PostProcessing::DrawUI()
 {
 	ImGuiIO& io = ImGui::GetIO();
-	if (ImGui::CollapsingHeader("Post Processing"))
+	if (ImGui::CollapsingHeader("Post Processing", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		if (ImGui::TreeNode("Bloom"))
+		if (ImGui::TreeNodeEx("Bloom", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Checkbox("Enable Bloom", &BloomEnable);
 			if (BloomEnable)
@@ -263,7 +263,7 @@ void PostProcessing::DrawUI()
 			ImGui::TreePop();
 		}
 
-		if (ImGui::TreeNode("FXAA"))
+		if (ImGui::TreeNodeEx("FXAA"))
 		{
 			ImGui::TreePop();
 		}
@@ -409,6 +409,9 @@ void PostProcessing::GenerateBloom(ComputeContext& Context)
 		// Set the UAVs
 		D3D12_CPU_DESCRIPTOR_HANDLE UAVs[2] = { g_aBloomUAV3[0].GetUAV(), g_aBloomUAV5[0].GetUAV() };
 		Context.SetDynamicDescriptors(1, 0, 2, UAVs);
+
+		Context.SetPipelineState(DownsampleBloom2CS);
+		Context.Dispatch2D(BloomWidth / 2, BloomHeight / 2);
 
 		Context.TransitionResource(g_aBloomUAV3[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 		Context.TransitionResource(g_aBloomUAV5[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);

@@ -1,8 +1,8 @@
 // The CS for downsampling 16x16 blocks of pixels down to 4x4 and 1x1 blocks.
 
 Texture2D<float3> BloomBuffer : register(t0);
-RWTexture2D<float3> DownSampleResult4x4 : register(u1);
-RWTexture2D<float3> DownSampleResult1x1 : register(u3);
+RWTexture2D<float3> DownSampleResult4x4 : register(u0);
+RWTexture2D<float3> DownSampleResult1x1 : register(u1);
 
 SamplerState BiLinearClampSampler: register(s0);
 

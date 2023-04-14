@@ -108,17 +108,15 @@ float4 main(VSOutput vsOutput) : SV_Target0
     //Lighting and Shadow
     Surface.ShadowFactor = CalcShadowFactor(float4(vsOutput.sunShadowCoord, 1.0f));
     color += ComputeLighting(gLights, Surface);
-    //Shade each light using Forward+ tiles
-    color += ComputeTiledLighting((uint2)vsOutput.position.xy, Surface);
-
+   
     //SSAO (TODO)
-
-
 
     if (gIsIndoorScene)
     {
+        //Shade each light using Forward+ tiles
+        color += ComputeTiledLighting((uint2)vsOutput.position.xy, Surface);
         //Indoor environment light(local environment light)
-        color += baseColor.rgb * gAmbientLight.rgb * occlusion;
+        color += baseColor.rgb *gAmbientLight.rgb* occlusion;
     }
     else
     {
