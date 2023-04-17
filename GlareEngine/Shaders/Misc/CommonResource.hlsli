@@ -18,7 +18,7 @@ static const float3 DielectricSpecular = float3(0.04, 0.04, 0.04);
 #define MAX_DIR_LIGHTS 16
 #define NUM_DIR_LIGHTS 3
 
-#define EPS             1e-4
+#define EPS             1e-5
 #define PI              3.141592653589793
 #define PI2             6.283185307179586
 #define FLT_MIN         1.175494351e-38F        // min positive value

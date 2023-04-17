@@ -20,6 +20,7 @@
 #include "CompiledShaders/ToneMap2CS.h"
 #include "CompiledShaders/ToneMapHDRCS.h"
 #include "CompiledShaders/ToneMapHDR2CS.h"
+#include "CompiledShaders/ExtractLuminanceCS.h"
 
 namespace PostProcessing
 {
@@ -65,16 +66,16 @@ namespace PostProcessing
 	ComputePSO UpsampleBlurCS(L"UpSample and Blur CS");
 	ComputePSO BlurCS(L"Blur CS");
 
-	ComputePSO ExtractLumaCS(L"Extract Luminance CS");
+	ComputePSO ExtractLuminanceCS(L"Extract Luminance CS");
 	ComputePSO AverageLumaCS(L"Average Luminance CS");
 	ComputePSO CopyBackPostBufferCS(L"Copy Back Post Buffer CS");
 
 
 	// Bloom effect
 	void GenerateBloom(ComputeContext& Context);
+	void ExtractLuminance(ComputeContext& Context);
 
-
-	void PostProcessHDR(ComputeContext&);
+	void PostProcessHDR(ComputeContext& Context);
 }
 
 
@@ -117,12 +118,13 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	CreatePSO(DownsampleBloom2CS, g_pBloomDownSample2CS);
 	CreatePSO(DownsampleBloom4CS, g_pBloomDownSample4CS);
 	CreatePSO(BloomExtractAndDownsampleHDRCS, g_pBloomExtractAndDownSampleHDRCS);
+	CreatePSO(ExtractLuminanceCS, g_pExtractLuminanceCS);
 
 	//CreatePSO(GenerateHistogramCS, g_pGenerateHistogramCS);
 	//CreatePSO(DrawHistogramCS, g_pDebugDrawHistogramCS);
 	//CreatePSO(AdaptExposureCS, g_pAdaptExposureCS);
 
-	//CreatePSO(ExtractLumaCS, g_pExtractLumaCS);
+
 	//CreatePSO(AverageLumaCS, g_pAverageLumaCS);
 	//CreatePSO(CopyBackPostBufferCS, g_pCopyBackPostBufferCS);
 
@@ -157,7 +159,7 @@ void PostProcessing::RenderFBM(GraphicsContext& Context, GraphicsPSO* SpecificPS
 
 void PostProcessing::PostProcessHDR(ComputeContext& Context)
 {
-	ScopedTimer _prof(L"HDR Tone Mapping", Context);
+	ScopedTimer Scope(L"HDR Tone Mapping", Context);
 
 	if (BloomEnable)
 	{
@@ -166,7 +168,7 @@ void PostProcessing::PostProcessHDR(ComputeContext& Context)
 	}
 	else if (EnableAdaptation)
 	{
-		//ExtractLuminance(Context);
+		ExtractLuminance(Context);
 	}
 
 	if (g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
@@ -348,7 +350,7 @@ void PostProcessing::ShutDown()
 
 void PostProcessing::GenerateBloom(ComputeContext& Context)
 {
-	ScopedTimer _prof(L"Generate Bloom", Context);
+	ScopedTimer Scope(L"Generate Bloom", Context);
 
 	// If only downsizing by 1/2 or less, a faster shader can be used which only does one bilinear sample.
 	uint32_t BloomWidth = g_LumaBloom.GetWidth();
@@ -422,4 +424,18 @@ void PostProcessing::GenerateBloom(ComputeContext& Context)
 		UpsampleBlurBuffer(Context, g_aBloomUAV1, g_aBloomUAV3[1], BloomUpSampleFactor);
 	}
 
+}
+
+void PostProcessing::ExtractLuminance(ComputeContext& Context)
+{
+	ScopedTimer Scope(L"Extract Luminance", Context);
+
+	Context.TransitionResource(g_LumaBloom, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.TransitionResource(g_Exposure, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	Context.SetConstants(0, 1.0f / g_LumaBloom.GetWidth(), 1.0f / g_LumaBloom.GetHeight());
+	Context.SetDynamicDescriptor(1, 0, g_LumaBloom.GetUAV());
+	Context.SetDynamicDescriptor(2, 0, g_SceneColorBuffer.GetSRV());
+	Context.SetDynamicDescriptor(2, 1, g_Exposure.GetSRV());
+	Context.SetPipelineState(ExtractLuminanceCS);
+	Context.Dispatch2D(g_LumaBloom.GetWidth(), g_LumaBloom.GetHeight());
 }
