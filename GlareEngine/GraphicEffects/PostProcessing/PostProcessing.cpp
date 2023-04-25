@@ -22,6 +22,7 @@
 #include "CompiledShaders/ToneMapHDR2CS.h"
 #include "CompiledShaders/ExtractLuminanceCS.h"
 #include "CompiledShaders/CopyPostBufferHDRCS.h"
+#include "CompiledShaders/GenerateLuminanceHistogramCS.h"
 
 namespace PostProcessing
 {
@@ -59,7 +60,7 @@ namespace PostProcessing
 	
 	ComputePSO DebugLuminanceHDRCS(L"Debug Luminance HDR CS");
 	ComputePSO DebugLuminanceLDRCS(L"Debug Luminance LDR CS");
-	ComputePSO GenerateHistogramCS(L"Generate Histogram CS");
+	ComputePSO GenerateLuminanceHistogramCS(L"Generate Luminance Histogram CS");
 	ComputePSO DrawHistogramCS(L"Draw Histogram CS");
 	ComputePSO AdaptExposureCS(L"Adapt Exposure CS");
 
@@ -72,11 +73,12 @@ namespace PostProcessing
 	ComputePSO CopyBackBufferForNotHDRUAVSupportCS(L"Copy Back Post Buffer CS For Not HDR UAV Support");
 
 
-	// Bloom effect
 	void GenerateBloom(ComputeContext& Context);
 	void ExtractLuminance(ComputeContext& Context);
 	void CopyBackBufferForNotHDRUAVSupport(ComputeContext& Context);
 	void PostProcessHDR(ComputeContext& Context);
+
+	void Adaptation(ComputeContext& Context);
 }
 
 
@@ -114,6 +116,7 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 		//CreatePSO(DebugLuminanceLdrCS, g_pDebugLuminanceLdrCS);
 	}
 
+	CreatePSO(GenerateLuminanceHistogramCS, g_pGenerateLuminanceHistogramCS);
 	CreatePSO(UpsampleBlurCS, g_pUpsampleBlurCS);
 	CreatePSO(BlurCS, g_pBlurCS);
 	CreatePSO(DownsampleBloom2CS, g_pBloomDownSample2CS);
@@ -122,10 +125,9 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	CreatePSO(ExtractLuminanceCS, g_pExtractLuminanceCS);
 	CreatePSO(CopyBackBufferForNotHDRUAVSupportCS, g_pCopyPostBufferHDRCS);
 
-	//CreatePSO(GenerateHistogramCS, g_pGenerateHistogramCS);
+
 	//CreatePSO(DrawHistogramCS, g_pDebugDrawHistogramCS);
 	//CreatePSO(AdaptExposureCS, g_pAdaptExposureCS);
-
 	//CreatePSO(AverageLumaCS, g_pAverageLumaCS);
 
 
@@ -209,7 +211,22 @@ void PostProcessing::PostProcessHDR(ComputeContext& Context)
 
 	Context.Dispatch2D(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
 
+	//Luminance Adaptation
+	Adaptation(Context);
+}
 
+void PostProcessing::Adaptation(ComputeContext& Context)
+{
+	ScopedTimer Scope(L"Update Exposure", Context);
+
+	// Generate an HDR Histogram
+	Context.TransitionResource(g_Histogram, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, true);
+	Context.ClearUAV(g_Histogram);
+	Context.TransitionResource(g_LumaBloom, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	Context.SetDynamicDescriptor(1, 0, g_Histogram.GetUAV());
+	Context.SetDynamicDescriptor(2, 0, g_LumaBloom.GetSRV());
+	Context.SetPipelineState(GenerateLuminanceHistogramCS);
+	Context.Dispatch2D(g_LumaBloom.GetWidth(), g_LumaBloom.GetHeight(), 16, 16);
 }
 
 
@@ -219,8 +236,8 @@ void PostProcessing::Render()
 
 	Context.SetRootSignature(PostEffectsRS);
 	Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-	PostProcessHDR(Context);
 
+	PostProcessHDR(Context);
 
 	if (!g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
 	{

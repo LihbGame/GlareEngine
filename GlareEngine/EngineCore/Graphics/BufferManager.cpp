@@ -21,6 +21,9 @@ namespace GlareEngine
 	ColorBuffer g_aBloomUAV5[2];
 	ColorBuffer g_LumaBloom;
 
+	//HDR
+	ByteAddressBuffer g_Histogram;
+
 	//ColorBuffer g_VelocityBuffer;
 	//ColorBuffer g_OverlayBuffer;
 	//ColorBuffer g_HorizontalBuffer;
@@ -62,7 +65,6 @@ namespace GlareEngine
 	//ColorBuffer g_MotionPrepBuffer;
 	//ColorBuffer g_LumaBuffer;
 	//ColorBuffer g_TemporalColor[2];
-	//ByteAddressBuffer g_Histogram;
 	//ByteAddressBuffer g_FXAAWorkCounters;
 	//ByteAddressBuffer g_FXAAWorkQueue;
 	//TypedBuffer g_FXAAColorQueue(DXGI_FORMAT_R11G11B10_FLOAT);
@@ -124,6 +126,12 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 	g_aBloomUAV5[0].Create(L"Bloom Buffer 5a", BloomWidth / 16, BloomHeight / 16, 1, DefaultHDRColorFormat);
 	g_aBloomUAV5[1].Create(L"Bloom Buffer 5b", BloomWidth / 16, BloomHeight / 16, 1, DefaultHDRColorFormat);
 
+	//Luminance Histogram
+	g_Histogram.Create(L"Histogram", 256, 4);
+
+
+
+
 
 	//g_VelocityBuffer.Create(L"Motion Vectors", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT);
 
@@ -182,7 +190,6 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 
 	// This is useful for storing per-pixel weights such as motion strength or pixel luminance
 	//g_LumaBuffer.Create(L"Luminance", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R8_UNORM, esram);
-	//g_Histogram.Create(L"Histogram", 256, 4, esram);
 
 	// Divisible by 128 so that after dividing by 16, we still have multiples of 8x8 tiles.  The bloom
 	// dimensions must be at least 1/4 native resolution to avoid undersampling.
