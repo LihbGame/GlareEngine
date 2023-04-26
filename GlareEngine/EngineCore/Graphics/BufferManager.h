@@ -27,7 +27,7 @@ namespace GlareEngine
 	extern ColorBuffer g_LumaBloom;
 					
 	extern ByteAddressBuffer g_Histogram;
-
+	extern ColorBuffer g_LumaBuffer;
 
 	//extern ColorBuffer g_OverlayBuffer;        // R8G8B8A8_UNORM
 	//extern ColorBuffer g_HorizontalBuffer;    // For separable (bicubic) upsampling
@@ -70,7 +70,6 @@ namespace GlareEngine
 	//extern StructuredBuffer g_DoFFixupQueue;
 
 	//extern ColorBuffer g_MotionPrepBuffer;        // R10G10B10A2
-	//extern ColorBuffer g_LumaBuffer;
 	//extern ColorBuffer g_TemporalColor[2];
 
 	//extern ByteAddressBuffer g_FXAAWorkCounters;

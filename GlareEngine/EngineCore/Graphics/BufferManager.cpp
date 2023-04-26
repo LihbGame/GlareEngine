@@ -23,7 +23,9 @@ namespace GlareEngine
 
 	//HDR
 	ByteAddressBuffer g_Histogram;
-
+	ColorBuffer g_LumaBuffer;
+	
+	
 	//ColorBuffer g_VelocityBuffer;
 	//ColorBuffer g_OverlayBuffer;
 	//ColorBuffer g_HorizontalBuffer;
@@ -63,7 +65,6 @@ namespace GlareEngine
 	//StructuredBuffer g_DoFFixupQueue;
 
 	//ColorBuffer g_MotionPrepBuffer;
-	//ColorBuffer g_LumaBuffer;
 	//ColorBuffer g_TemporalColor[2];
 	//ByteAddressBuffer g_FXAAWorkCounters;
 	//ByteAddressBuffer g_FXAAWorkQueue;
@@ -128,7 +129,7 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 
 	//Luminance Histogram
 	g_Histogram.Create(L"Histogram", 256, 4);
-
+	g_LumaBuffer.Create(L"Luminance", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8_UNORM);
 
 
 
@@ -259,6 +260,8 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 	// 1/32
 	g_aBloomUAV5[0].Create(L"Bloom Buffer 5a", BloomWidth / 16, BloomHeight / 16, 1, DefaultHDRColorFormat);
 	g_aBloomUAV5[1].Create(L"Bloom Buffer 5b", BloomWidth / 16, BloomHeight / 16, 1, DefaultHDRColorFormat);
+
+	g_LumaBuffer.Create(L"Luminance", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8_UNORM);
 }
 
 void GlareEngine::DestroyRenderingBuffers()

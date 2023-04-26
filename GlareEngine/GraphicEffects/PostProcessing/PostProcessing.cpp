@@ -23,9 +23,20 @@
 #include "CompiledShaders/ExtractLuminanceCS.h"
 #include "CompiledShaders/CopyPostBufferHDRCS.h"
 #include "CompiledShaders/GenerateLuminanceHistogramCS.h"
+#include "CompiledShaders/AdaptExposureCS.h"
 
 namespace PostProcessing
 {
+
+	__declspec(align(16)) struct AdaptationConstants
+	{
+		float TargetLuminance;
+		float AdaptationRate;
+		float MinExposure;
+		float MaxExposure;
+		uint32_t PixelCount;
+	};
+
 
 	bool  BloomEnable = true;
 	bool  HighQualityBloom = true;					// High quality blurs 5 octaves of bloom; low quality only blurs 3.
@@ -39,10 +50,13 @@ namespace PostProcessing
 
 	bool EnableAdaptation = true;
 	bool DrawHistogram = true;
-	NumVar TargetLuminance(0.08f, 0.01f, 0.99f);
-	NumVar AdaptationRate(0.05f, 0.01f, 1.0f);
-	NumVar Exposure(2.0f, -8.0f, 8.0f);
+	NumVar TargetLuminance(0.05f, 0.01f, 0.99f);
+	NumVar AdaptationTranform(0.05f, 0.01f, 1.0f);
+	NumVar Exposure(4.0f, -8.0f, 8.0f);
 	
+	float MinExposure = 1.0f / 64.0f;
+	float MaxExposure = 64.0f;
+
 	//Exposure Data
 	StructuredBuffer g_Exposure;
 
@@ -61,6 +75,8 @@ namespace PostProcessing
 	ComputePSO DebugLuminanceHDRCS(L"Debug Luminance HDR CS");
 	ComputePSO DebugLuminanceLDRCS(L"Debug Luminance LDR CS");
 	ComputePSO GenerateLuminanceHistogramCS(L"Generate Luminance Histogram CS");
+
+
 	ComputePSO DrawHistogramCS(L"Draw Histogram CS");
 	ComputePSO AdaptExposureCS(L"Adapt Exposure CS");
 
@@ -124,10 +140,10 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	CreatePSO(BloomExtractAndDownsampleHDRCS, g_pBloomExtractAndDownSampleHDRCS);
 	CreatePSO(ExtractLuminanceCS, g_pExtractLuminanceCS);
 	CreatePSO(CopyBackBufferForNotHDRUAVSupportCS, g_pCopyPostBufferHDRCS);
-
+	CreatePSO(AdaptExposureCS, g_pAdaptExposureCS);
 
 	//CreatePSO(DrawHistogramCS, g_pDebugDrawHistogramCS);
-	//CreatePSO(AdaptExposureCS, g_pAdaptExposureCS);
+
 	//CreatePSO(AverageLumaCS, g_pAverageLumaCS);
 
 
@@ -135,9 +151,9 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 
 	__declspec(align(16)) float initExposure[] =
 	{
-		Exposure, 1.0f / Exposure,InitialMinLog, InitialMaxLog, InitialMaxLog - InitialMinLog, 1.0f / (InitialMaxLog - InitialMinLog)
+		Exposure, 1.0f / Exposure,InitialMinLog, InitialMaxLog, InitialMaxLog - InitialMinLog, 1.0f / (InitialMaxLog - InitialMinLog),0.0f
 	};
-	g_Exposure.Create(L"Exposure", 6, 4, initExposure);
+	g_Exposure.Create(L"Exposure", 7, 4, initExposure);
 
 	BuildSRV(CommandList);
 }
@@ -183,7 +199,7 @@ void PostProcessing::PostProcessHDR(ComputeContext& Context)
 		Context.TransitionResource(g_PostEffectsBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	}
 
-	Context.TransitionResource(g_LumaBloom, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.TransitionResource(g_LumaBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	Context.TransitionResource(g_Exposure, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 	Context.SetPipelineState(Display::g_bEnableHDROutput ? ToneMapHDRCS : ToneMapCS);
@@ -203,7 +219,7 @@ void PostProcessing::PostProcessHDR(ComputeContext& Context)
 		Context.SetDynamicDescriptor(1, 0, g_PostEffectsBuffer.GetUAV());
 		Context.SetDynamicDescriptor(2, 2, g_SceneColorBuffer.GetSRV());
 	}
-	Context.SetDynamicDescriptor(1, 1, g_LumaBloom.GetUAV());
+	Context.SetDynamicDescriptor(1, 1, g_LumaBuffer.GetUAV());
 
 	// Read in original HDR value and blurred bloom buffer
 	Context.SetDynamicDescriptor(2, 0, g_Exposure.GetSRV());
@@ -227,6 +243,20 @@ void PostProcessing::Adaptation(ComputeContext& Context)
 	Context.SetDynamicDescriptor(2, 0, g_LumaBloom.GetSRV());
 	Context.SetPipelineState(GenerateLuminanceHistogramCS);
 	Context.Dispatch2D(g_LumaBloom.GetWidth(), g_LumaBloom.GetHeight(), 16, 16);
+	
+	AdaptationConstants AdaptationData = {
+		TargetLuminance, AdaptationTranform, MinExposure, MaxExposure,
+		g_LumaBloom.GetWidth() * g_LumaBloom.GetHeight()
+	};
+
+	Context.TransitionResource(g_Histogram, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	Context.TransitionResource(g_Exposure, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.SetDynamicDescriptor(1, 0, g_Exposure.GetUAV());
+	Context.SetDynamicDescriptor(2, 0, g_Histogram.GetSRV());
+	Context.SetDynamicConstantBufferView(3, sizeof(AdaptationConstants), &AdaptationData);
+	Context.SetPipelineState(AdaptExposureCS);
+	Context.Dispatch();
+	Context.TransitionResource(g_Exposure, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 }
 
 
