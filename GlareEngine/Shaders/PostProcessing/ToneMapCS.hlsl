@@ -49,7 +49,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 
 #else 
     // Tone map to SDR
-    float3 SDRColor = HDRColor;// TM_Stanard(HDRColor);
+    float3 SDRColor = TM_Stanard(HDRColor);
 #if SUPPORT_TYPED_UAV_LOADS
     ColorRW[DTid.xy] = SDRColor;
 #else

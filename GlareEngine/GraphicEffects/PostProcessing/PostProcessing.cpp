@@ -50,9 +50,9 @@ namespace PostProcessing
 
 	bool EnableAdaptation = true;
 	bool DrawHistogram = true;
-	NumVar TargetLuminance(0.05f, 0.01f, 0.99f);
+	NumVar TargetLuminance(0.1f, 0.01f, 0.99f);
 	NumVar AdaptationTranform(0.05f, 0.01f, 1.0f);
-	NumVar Exposure(4.0f, -8.0f, 8.0f);
+	NumVar Exposure(2.0f, -8.0f, 8.0f);
 	
 	float MinExposure = 1.0f / 64.0f;
 	float MaxExposure = 64.0f;
