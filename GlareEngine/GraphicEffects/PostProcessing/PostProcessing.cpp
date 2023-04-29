@@ -24,6 +24,7 @@
 #include "CompiledShaders/CopyPostBufferHDRCS.h"
 #include "CompiledShaders/GenerateLuminanceHistogramCS.h"
 #include "CompiledShaders/AdaptExposureCS.h"
+#include "CompiledShaders/DrawHistogramCS.h"
 
 namespace PostProcessing
 {
@@ -51,7 +52,7 @@ namespace PostProcessing
 	bool EnableAdaptation = true;
 	bool DrawHistogram = true;
 	NumVar TargetLuminance(0.1f, 0.01f, 0.99f);
-	NumVar AdaptationTranform(0.05f, 0.01f, 1.0f);
+	NumVar AdaptationTranform(0.02f, 0.01f, 1.0f);
 	NumVar Exposure(2.0f, -8.0f, 8.0f);
 	
 	float MinExposure = 1.0f / 64.0f;
@@ -142,7 +143,7 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	CreatePSO(CopyBackBufferForNotHDRUAVSupportCS, g_pCopyPostBufferHDRCS);
 	CreatePSO(AdaptExposureCS, g_pAdaptExposureCS);
 
-	//CreatePSO(DrawHistogramCS, g_pDebugDrawHistogramCS);
+	CreatePSO(DrawHistogramCS, g_pDrawHistogramCS);
 
 	//CreatePSO(AverageLumaCS, g_pAverageLumaCS);
 
@@ -274,6 +275,21 @@ void PostProcessing::Render()
 		CopyBackBufferForNotHDRUAVSupport(Context);
 	}
 
+	if (DrawHistogram)
+	{
+		ScopedTimer Scope(L"Draw Debug Histogram", Context);
+		Context.SetRootSignature(PostEffectsRS);
+		Context.SetPipelineState(DrawHistogramCS);
+		Context.InsertUAVBarrier(g_SceneColorBuffer);
+		Context.TransitionResource(g_Histogram, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		Context.TransitionResource(g_Exposure, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		Context.SetDynamicDescriptor(1, 0, g_SceneColorBuffer.GetUAV());
+		D3D12_CPU_DESCRIPTOR_HANDLE SRVs[2] = { g_Histogram.GetSRV(), g_Exposure.GetSRV() };
+		Context.SetDynamicDescriptors(2, 0, 2, SRVs);
+		Context.Dispatch(1, 32);
+		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	}
+
 	Context.Finish();
 }
 
@@ -323,6 +339,8 @@ void PostProcessing::DrawUI()
 		{
 			ImGui::TreePop();
 		}
+
+		ImGui::Checkbox("Draw Luminance Histogram", &DrawHistogram);
 
 	}
 }
