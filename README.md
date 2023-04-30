@@ -9,6 +9,9 @@ TIPS:
 
 2.The HDR texture of the sky is too large to upload, please replace it yourself.
 
+Editor
+![demo](ScreenShot/Editor.jpg)
+
 Forward Plus (2.5d Tiled Base Forward)
 ![demo](ScreenShot/ForwardPlus.jpg)
 

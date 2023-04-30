@@ -290,7 +290,7 @@ void PostProcessing::Render()
 	//For Debug
 	EngineGUI::ClearRenderPassVisualizeTexture();
 	EngineGUI::AddRenderPassVisualizeTexture(WStringToString(g_SceneColorBuffer.GetName()), g_SceneColorBuffer.GetHeight(), g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetSRV());
-	EngineGUI::AddRenderPassVisualizeTexture(WStringToString(g_LumaBuffer.GetName()), g_LumaBuffer.GetHeight(), g_LumaBuffer.GetWidth(), g_LumaBuffer.GetSRV(),Vector4(1,0,0,1));
+	EngineGUI::AddRenderPassVisualizeTexture(WStringToString(g_LumaBuffer.GetName()), g_LumaBuffer.GetHeight(), g_LumaBuffer.GetWidth(), g_LumaBuffer.GetSRV());
 	EngineGUI::AddRenderPassVisualizeTexture(WStringToString(g_aBloomUAV1[0].GetName()), g_aBloomUAV1[0].GetHeight() , g_aBloomUAV1[0].GetWidth(), g_aBloomUAV1[0].GetSRV());
 	EngineGUI::AddRenderPassVisualizeTexture(WStringToString(g_aBloomUAV2[0].GetName()), g_aBloomUAV2[0].GetHeight(), g_aBloomUAV2[0].GetWidth(), g_aBloomUAV2[0].GetSRV());
 	EngineGUI::AddRenderPassVisualizeTexture(WStringToString(g_aBloomUAV3[0].GetName()), g_aBloomUAV3[0].GetHeight(), g_aBloomUAV3[0].GetWidth(), g_aBloomUAV3[0].GetSRV());
