@@ -7,8 +7,6 @@ TIPS:
 
 1.If the scene becomes dark, there may be a problem with the shader compilation. It is recommended to change the shader model in CMakeLists(GlareEngine->CMakeLists) from 6.0 to 5.1.
 
-2.The HDR texture of the sky is too large to upload, please replace it yourself.
-
 Editor
 ![demo](ScreenShot/Editor.jpg)
 
