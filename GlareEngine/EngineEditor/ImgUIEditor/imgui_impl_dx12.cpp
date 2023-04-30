@@ -510,7 +510,6 @@ bool    ImGui_ImplDX12_CreateDeviceObjects()
               PS_INPUT output;\
               output.pos = mul( ProjectionMatrix, float4(input.pos.xy, 0.f, 1.f));\
               output.col = input.col;\
-              output.col.rgb= (output.col.rgb+.1f)/(output.col.rgb+1.0f);\
               output.uv  = input.uv;\
               return output;\
             }";

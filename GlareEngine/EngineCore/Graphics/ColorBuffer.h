@@ -53,6 +53,7 @@ namespace GlareEngine
 		//ArrayCount传0，以便在创建时为mips保留空间。 
 		void GenerateMipMaps(CommandContext& Context);
 
+		wstring GetName() const { return mName; }
 	protected:
 
 		D3D12_RESOURCE_FLAGS CombineResourceFlags() const
@@ -84,6 +85,7 @@ namespace GlareEngine
 		uint32_t m_NumMipMaps; // number of texture sub levels
 		uint32_t m_FragmentCount;
 		uint32_t m_SampleCount;
+		wstring mName;
 	};
 }
 

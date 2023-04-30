@@ -9,6 +9,7 @@ void DepthBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Heig
 
 void DepthBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t NumSamples, DXGI_FORMAT Format, bool isReverseZ, uint32_t arraySize, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr)
 {
+	mName = Name;
 	D3D12_RESOURCE_DESC ResourceDesc = DescribeTex2D(Width, Height, arraySize, 1, Format, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 	ResourceDesc.SampleDesc.Count = NumSamples;
 

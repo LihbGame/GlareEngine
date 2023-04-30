@@ -344,8 +344,6 @@ namespace GlareEngine
 
 		//TemporalEffects::Initialize();
 		
-		//PostEffects::Initialize();
-		
 		//SSAO::Initialize();
 		//ParticleEffectManager::Initialize(3840, 2160);
 	}

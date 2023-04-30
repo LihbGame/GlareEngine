@@ -5,13 +5,25 @@
 #include "imgui_impl_dx12.h"
 #include <imgui_internal.h>
 #include "Engine/EngineUtility.h"
-
+#include "Graphics/DescriptorHeap.h"
 
 #define MainMenuBarHeight  35.0f
 #define CLIENT_FROMLEFT 0.166667f
 #define CLIENT_HEIGHT 0.75f
+#define UI_DESCRIPTOR_HEAP_SIZE 32
 
 extern bool gFullSreenMode;
+
+struct RenderPassDebugInfo 
+{
+	string TextureName;
+	float	Rate;
+	float TextureWidth;
+	float TextureHeight;
+	Vector4 TextureColorScale;
+	CD3DX12_GPU_DESCRIPTOR_HANDLE TexDescriptor;
+};
+
 class EngineGUI
 {
 public:
@@ -53,6 +65,13 @@ public:
 	bool IsMSAA()const { return mMSAA; }
 
 	static bool mWindowMaxSize;
+
+	static void AddRenderPassVisualizeTexture(string TextureName, float TextureHeight,float TextureWidth, D3D12_CPU_DESCRIPTOR_HANDLE TexDescriptor,Vector4 ColorScale= Vector4(1.0f,1.0f,1.0f,1.0f));
+	static void ClearRenderPassVisualizeTexture() 
+	{ 
+		mCurrentDescriptorOffset -= mRenderPassDebugInfo.size(); 
+		mRenderPassDebugInfo.clear(); 
+	}
 private:
 	void InitGUI();
 	void CreateUIDescriptorHeap(ID3D12GraphicsCommandList* d3dCommandList);
@@ -61,6 +80,7 @@ private:
 	void DrawControlPanel(float IconWindowHigh);
 	void DrawDebugWindow();
 	void DrawStatWindow();
+	void DrawRenderDebugWindow();
 	void DrawMainMenuBar(bool* IsMax, bool IsFullScreenMode);
 private:
 
@@ -102,11 +122,16 @@ private:
 	char InputBuffer[256] = {};
 	int mLogSize = 0;
 private:
-	ID3D12DescriptorHeap* mGUISrvDescriptorHeap = nullptr;
+	static DescriptorHeap mGUISrvDescriptorHeap;
+	static UINT mCurrentDescriptorOffset;
+
 	CD3DX12_GPU_DESCRIPTOR_HANDLE mEngineIconTexDescriptor;
 	CD3DX12_GPU_DESCRIPTOR_HANDLE mEngineMaxTexDescriptor;
 	CD3DX12_GPU_DESCRIPTOR_HANDLE mEngineMinTexDescriptor;
 	CD3DX12_GPU_DESCRIPTOR_HANDLE mEngineCloseTexDescriptor;
+
+	static vector<RenderPassDebugInfo> mRenderPassDebugInfo;
+
 	ImGuiContext *g=nullptr;
 	bool isUIShow = true;
 };

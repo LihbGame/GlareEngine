@@ -13,6 +13,11 @@ using Microsoft::WRL::ComPtr;
 using namespace GlareEngine::GameCore;
 bool gFullSreenMode = false;
 bool EngineGUI::mWindowMaxSize = false;
+vector<RenderPassDebugInfo> EngineGUI::mRenderPassDebugInfo;
+
+DescriptorHeap EngineGUI::mGUISrvDescriptorHeap;
+UINT EngineGUI::mCurrentDescriptorOffset = 0;
+
 
 EngineGUI::EngineGUI(ID3D12GraphicsCommandList* d3dCommandList)
 {
@@ -22,7 +27,7 @@ EngineGUI::EngineGUI(ID3D12GraphicsCommandList* d3dCommandList)
 
 EngineGUI::~EngineGUI()
 {
-
+	mGUISrvDescriptorHeap.Destroy();
 }
 
 XMFLOAT2 EngineGUI::GetEngineLogoSize()
@@ -39,6 +44,17 @@ void EngineGUI::SetScenes(vector<Scene*> scenes)
 	}
 }
 
+void EngineGUI::AddRenderPassVisualizeTexture(string TextureName, float TextureHeight, float TextureWidth, D3D12_CPU_DESCRIPTOR_HANDLE TexDescriptor, Vector4 ColorScale)
+{
+	float Rate = TextureHeight / TextureWidth;
+
+	UINT destCount = 1;
+	g_Device->CopyDescriptors(1, &mGUISrvDescriptorHeap[mCurrentDescriptorOffset], &destCount,
+		destCount, &TexDescriptor, &destCount, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	mRenderPassDebugInfo.push_back(RenderPassDebugInfo{ TextureName, Rate,TextureWidth,TextureHeight,ColorScale,CD3DX12_GPU_DESCRIPTOR_HANDLE(D3D12_GPU_DESCRIPTOR_HANDLE(mGUISrvDescriptorHeap[mCurrentDescriptorOffset])) });
+	mCurrentDescriptorOffset++;
+}
+
 void EngineGUI::InitGUI()
 {
 	// Setup Dear ImGui context
@@ -53,11 +69,14 @@ void EngineGUI::InitGUI()
 	//ImGui::StyleColorsDark();
 	//ImGui::StyleColorsClassic();
 	 // Setup Platform/Renderer bindings
+
+	ID3D12DescriptorHeap* descriptorHeap = mGUISrvDescriptorHeap.GetHeapPointer();
+
 	ImGui_ImplWin32_Init(g_hWnd);
 	ImGui_ImplDX12_Init(g_Device, Render::gNumFrameResources,
-		DXGI_FORMAT_R10G10B10A2_UNORM, mGUISrvDescriptorHeap,
-		mGUISrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-		mGUISrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+		DXGI_FORMAT_R10G10B10A2_UNORM, descriptorHeap,
+		descriptorHeap->GetCPUDescriptorHandleForHeapStart(),
+		descriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 
 
@@ -85,14 +104,12 @@ void EngineGUI::InitGUI()
 
 void EngineGUI::CreateUIDescriptorHeap(ID3D12GraphicsCommandList* d3dCommandList)
 {
-	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	desc.NumDescriptors = 5;
-	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	ThrowIfFailed(g_Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&mGUISrvDescriptorHeap)));
+	mGUISrvDescriptorHeap.Create(L"UI Texture Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, UI_DESCRIPTOR_HEAP_SIZE);
+	ID3D12DescriptorHeap* descriptorHeap = mGUISrvDescriptorHeap.GetHeapPointer();
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(mGUISrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(descriptorHeap->GetCPUDescriptorHandleForHeapStart());
 	UINT SRVDescriptorHandleIncrementSize=g_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	//the first descriptor is for the font texture
 	hDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
 	
 	auto Tex = TextureManager::GetInstance(d3dCommandList)->GetTexture(L"ICONS\\gamecontrolle", false)->Resource;
@@ -123,7 +140,7 @@ void EngineGUI::CreateUIDescriptorHeap(ID3D12GraphicsCommandList* d3dCommandList
 	SrvDesc.Format = Tex->GetDesc().Format;
 	g_Device->CreateShaderResourceView(Tex.Get(), &SrvDesc, hDescriptor);
 
-	mEngineIconTexDescriptor = mGUISrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+	mEngineIconTexDescriptor = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
 	mEngineIconTexDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
 	mEngineMaxTexDescriptor = mEngineIconTexDescriptor;
 	mEngineMaxTexDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
@@ -131,12 +148,14 @@ void EngineGUI::CreateUIDescriptorHeap(ID3D12GraphicsCommandList* d3dCommandList
 	mEngineMinTexDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
 	mEngineCloseTexDescriptor = mEngineMinTexDescriptor;
 	mEngineCloseTexDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
+
+	mCurrentDescriptorOffset += 5;
 }
 
 
 void EngineGUI::BeginDraw(ID3D12GraphicsCommandList* d3dCommandList)
 {
-	ID3D12DescriptorHeap* descriptorHeaps[] = { mGUISrvDescriptorHeap };
+	ID3D12DescriptorHeap* descriptorHeaps[] = { mGUISrvDescriptorHeap.GetHeapPointer()};
 	d3dCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 	// Our state
 
@@ -151,8 +170,10 @@ void EngineGUI::BeginDraw(ID3D12GraphicsCommandList* d3dCommandList)
 	if (mShowControlPanel)
 	{
 		DrawMainMenuBar(&mWindowMaxSize, gFullSreenMode);
-		ImGui::ShowDemoWindow(&mShowControlPanel, &mWindowMaxSize);
+		//ImGui::ShowDemoWindow(&mShowControlPanel, &mWindowMaxSize);
 	}
+
+	DrawRenderDebugWindow();
 
 	//2.Engine Logo
     DrawEngineIcon(LogoSize.x, LogoSize.y);
@@ -185,8 +206,12 @@ void EngineGUI::ShutDown()
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 
-	if(mGUISrvDescriptorHeap)
-	mGUISrvDescriptorHeap->Release();
+	ID3D12DescriptorHeap* descriptorHeap = mGUISrvDescriptorHeap.GetHeapPointer();
+
+	if (descriptorHeap)
+	{
+		descriptorHeap->Release();
+	}
 }
 
 void EngineGUI::SetWindowStyles()
@@ -194,9 +219,9 @@ void EngineGUI::SetWindowStyles()
 	ImGuiStyle& style = ImGui::GetStyle();
 	ImVec4* colors = style.Colors;
 
-	colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.00f);
+	colors[ImGuiCol_Text] = ImVec4(0.6f, 0.6f, 0.6f, 1.00f);
 	colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
-	colors[ImGuiCol_WindowBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.94f);
+	colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.1f, 0.94f);
 	colors[ImGuiCol_ChildBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
 	colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
 	colors[ImGuiCol_Border] = ImVec4(0.0f, 0.0f, 0.0f, 0.50f);
@@ -379,6 +404,69 @@ void EngineGUI::DrawStatWindow()
 
 	}
 	ImGui::End();
+}
+
+void EngineGUI::DrawRenderDebugWindow()
+{
+	//Frame Rounding
+	{
+		ImGuiStyle& style = ImGui::GetStyle();
+		style.FrameRounding = 7;
+		style.GrabRounding = 7;
+		//style.WindowRounding = 7;
+		//style.WindowBorderSize = 1.5f;
+	}
+
+	// Demonstrate the various window flags. Typically you would just use the default!
+	static bool no_titlebar = true;
+	static bool no_scrollbar = false;
+	static bool no_menu = true;
+	static bool no_move = true;
+	static bool no_resize = true;
+	static bool no_collapse = false;
+	static bool no_close = false;
+	static bool no_nav = false;
+	static bool no_background = false;
+	static bool no_bring_to_front = false;
+
+	ImGuiWindowFlags window_flags = 0;
+	if (no_titlebar)        window_flags |= ImGuiWindowFlags_NoTitleBar;
+	if (no_scrollbar)       window_flags |= ImGuiWindowFlags_NoScrollbar;
+	if (!no_menu)           window_flags |= ImGuiWindowFlags_MenuBar;
+	if (no_move)            window_flags |= ImGuiWindowFlags_NoMove;
+	if (no_resize)          window_flags |= ImGuiWindowFlags_NoResize;
+	if (no_collapse)        window_flags |= ImGuiWindowFlags_NoCollapse;
+	if (no_nav)             window_flags |= ImGuiWindowFlags_NoNav;
+	if (no_background)      window_flags |= ImGuiWindowFlags_NoBackground;
+	if (no_bring_to_front)  window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+
+	ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x * 5.0f / 6.0f, MainMenuBarHeight));
+	ImVec2 windowSize = ImVec2(ImGui::GetIO().DisplaySize.x * CLIENT_FROMLEFT + 1.0f, ImGui::GetIO().DisplaySize.y * CLIENT_HEIGHT - MainMenuBarHeight);
+	ImGui::SetNextWindowSize(windowSize);
+	ImGui::SetNextWindowBgAlpha(1);
+
+	if (!ImGui::Begin("Render Debug Window", NULL, window_flags))
+	{
+		// Early out if the window is collapsed, as an optimization.
+		ImGui::End();
+		return;
+	}
+
+	int textureWidth = windowSize.x - 20;
+	g = ImGui::GetCurrentContext();
+	g->Style.Alpha = 1.0f;
+	for (size_t i = 0; i < mRenderPassDebugInfo.size(); i++)
+	{
+		ImGui::Text(mRenderPassDebugInfo[i].TextureName.c_str()); ImGui::SameLine();
+		ImGui::Text("%0.0f X %0.0f", mRenderPassDebugInfo[i].TextureWidth, mRenderPassDebugInfo[i].TextureHeight);
+		int textureHeight = textureWidth * mRenderPassDebugInfo[i].Rate;
+		ImVec4 ColorScale = ImVec4(mRenderPassDebugInfo[i].TextureColorScale.GetX(), mRenderPassDebugInfo[i].TextureColorScale.GetY(),
+			mRenderPassDebugInfo[i].TextureColorScale.GetZ(), mRenderPassDebugInfo[i].TextureColorScale.GetW());
+		ImGui::Image((void*)(mRenderPassDebugInfo[i].TexDescriptor.ptr), ImVec2(0, 0), ImVec2(textureWidth, textureHeight), ImVec2(0, 0), ImVec2(1, 1), ColorScale);
+		ImGui::Separator();
+	}
+	ImGui::End();
+	return;
 }
 
 void EngineGUI::DrawMainMenuBar(bool* IsMax, bool IsFullScreenMode)
