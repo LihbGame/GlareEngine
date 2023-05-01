@@ -1,23 +1,24 @@
 #pragma once
 #include <cstdint>
 #include <string>
+#include "Engine/EngineConfig.h"
 
 namespace GlareEngine
 {
     enum TextureConversionFlags
     {
-        eSRGB = 1,          // Texture contains sRGB colors
-        ePreserveAlpha = 2, // Keep four channels
-        eNormalMap = 4,     // Texture contains normals
-        eBumpToNormal = 8,  // Generate a normal map from a bump map
-        eDefaultBC = 16,    // Apply standard block compression (BC1-5)
-        eQualityBC = 32,    // Apply quality block compression (BC6H/7)
-        eFlipVertical = 64,
+        eSRGB               = 1,    // Texture contains sRGB colors
+        ePreserveAlpha      = 2,    // Keep four channels
+        eNormalMap          = 4,    // Texture contains normals
+        eBumpToNormal       = 8,    // Generate a normal map from a bump map
+        eDefaultBC          = 16,   // Apply standard block compression (BC1-5)
+        eQualityBC          = 32,   // Apply quality block compression (BC6H/7)
+        eFlipVertical       = 64,
     };
 
     inline uint8_t TextureOptions(bool sRGB, bool hasAlpha = false, bool invertY = false)
     {
-        return (sRGB ? eSRGB : 0) | (hasAlpha ? ePreserveAlpha : 0) | (invertY ? eFlipVertical : 0) | eDefaultBC;
+        return (sRGB ? eSRGB : 0) | (hasAlpha ? ePreserveAlpha : 0) | (invertY ? eFlipVertical : 0) | (BC_COMPRESS ? eDefaultBC : 0);
     }
 
     // If the DDS version of the texture specified does not exist or is older than the source texture, reconvert it.

@@ -21,7 +21,7 @@ void GlareEngine::CompileDDSTexture(const std::wstring& originalFile, uint32_t f
 	}
 
 	// If we can find the source texture and the DDS file is older, reconvert.
-	if (ddsFileMissing || !srcFileMissing && ddsFileStat.st_mtime < srcFileStat.st_mtime)
+	if (ddsFileMissing /*|| !srcFileMissing && ddsFileStat.st_mtime < srcFileStat.st_mtime*/)
 	{
 		EngineLog::AddLog(L"DDS texture %ws missing or older than source.  Rebuilding.\n", RemoveBasePath(originalFile).c_str());
 		ConvertToDDS(originalFile, flags);

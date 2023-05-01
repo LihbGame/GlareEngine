@@ -197,7 +197,6 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			LoadGITFModel(L"DamagedHelmet/glTF/DamagedHelmet.gltf", 100);
 			LoadGITFModel(L"FlightHelmet/glTF/FlightHelmet.gltf",200);
 			LoadGITFModel(L"Sponza/pbr/sponza2.gltf", 30);
-	
 
 			//FBX Instance Models
 			CreateSimpleModelInstance(CommandList, "Grid_01", SimpleModelType::Grid, "PBRGrass01", 1, 1);
