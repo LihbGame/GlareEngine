@@ -261,6 +261,7 @@ void BuildMaterials(glTFModelData& model, const glTF::Asset& asset)
 		material.normalTextureScale = srcMat.normalTextureScale;
 		material.metallicFactor = srcMat.metallicFactor;
 		material.roughnessFactor = srcMat.roughnessFactor;
+		material.clearCoatFactor = srcMat.clearcoatFactor;
 		material.flags = srcMat.flags;
 
 		MaterialTextureData& dstMat = model.m_MaterialTextures[i];
@@ -298,6 +299,7 @@ void BuildMaterials(glTFModelData& model, const glTF::Asset& asset)
 		SetTextureOptions(textureOptions, srcMat.textures[eOcclusion], TextureOptions(false));
 		SetTextureOptions(textureOptions, srcMat.textures[eEmissive], TextureOptions(true));
 		SetTextureOptions(textureOptions, srcMat.textures[eNormal], TextureOptions(false));
+		SetTextureOptions(textureOptions, srcMat.textures[eClearCoat], TextureOptions(false));
 	}
 
 	model.m_TextureOptions.clear();
@@ -354,7 +356,7 @@ void LoadMaterials(Model& model,
 		const MaterialTextureData& srcMat = materialTextures[matIdx];
 
 		uint32_t DestCount = eNumTextures;
-		uint32_t SourceCounts[eNumTextures] = { 1, 1, 1, 1, 1};
+		uint32_t SourceCounts[eNumTextures] = { 1, 1, 1, 1, 1,1 };
 
 		D3D12_CPU_DESCRIPTOR_HANDLE DefaultTextures[eNumTextures] =
 		{
@@ -363,6 +365,7 @@ void LoadMaterials(Model& model,
 			GetDefaultTexture(eWhiteOpaque2D),
 			GetDefaultTexture(eBlackTransparent2D),
 			GetDefaultTexture(eDefaultNormalMap),
+			GetDefaultTexture(eBlackOpaque2D),
 		};
 
 		D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[eNumTextures];

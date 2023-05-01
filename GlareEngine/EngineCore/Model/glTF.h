@@ -116,16 +116,19 @@ namespace glTF
                 uint32_t occlusionUV : 1;
                 uint32_t emissiveUV : 1;
                 uint32_t normalUV : 1;
+                uint32_t clearCoatUV : 1;
+
                 uint32_t twoSided : 1;
                 uint32_t alphaTest : 1;
                 uint32_t alphaBlend : 1;
-                uint32_t _pad : 8;
+                uint32_t _pad : 7;
                 uint32_t alphaCutoff : 16; // FP16
             };
         };
-        float emissiveFactor[3]; // default=[0,0,0]
-        float normalTextureScale; // default=1
-        enum { eBaseColor, eMetallicRoughness, eOcclusion, eEmissive, eNormal, eNumTextures };
+        float emissiveFactor[3];    // default=[0,0,0]
+        float normalTextureScale;   // default=1
+        float clearcoatFactor;      // default=1
+        enum { eBaseColor, eMetallicRoughness, eOcclusion, eEmissive, eNormal, eClearCoat, eNumTextures };
         Texture* textures[eNumTextures];
         uint32_t index;
 

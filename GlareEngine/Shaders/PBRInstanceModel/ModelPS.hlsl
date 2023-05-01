@@ -5,6 +5,7 @@ Texture2D<float3> metallicRoughnessTexture  : register(t11);
 Texture2D<float1> occlusionTexture          : register(t12);
 Texture2D<float3> emissiveTexture           : register(t13);
 Texture2D<float3> normalTexture             : register(t14);
+Texture2D<float3> clearCoatTexture          : register(t15);
 
 SamplerState baseColorSampler               : register(s0);
 SamplerState metallicRoughnessSampler       : register(s1);
@@ -18,7 +19,7 @@ static const uint METALLICROUGHNESS     = 1;
 static const uint OCCLUSION             = 2;
 static const uint EMISSIVE              = 3;
 static const uint NORMAL                = 4;
-
+static const uint CLEARCOAT             = 5;
 //Whether to use second UV
 #ifdef NO_SECOND_UV
 #define UVSET( offset ) vsOutput.uv0
@@ -33,6 +34,7 @@ cbuffer MaterialConstants : register(b2)
     float3 emissiveFactor;
     float normalTextureScale;
     float2 metallicRoughnessFactor;
+    float clearCoatFactor;
     uint flags;
 }
 

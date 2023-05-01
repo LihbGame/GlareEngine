@@ -13,6 +13,7 @@ enum
 	eOcclusion, 
 	eEmissive, 
 	eNormal, 
+	eClearCoat,
 	eNumTextures 
 };
 
@@ -30,6 +31,7 @@ __declspec(align(256)) struct MaterialConstants
 	float normalTextureScale;			// default=1
 	float metallicFactor;				// default=1
 	float roughnessFactor;				// default=1
+	float clearCoatFactor;				// default=1
 	union
 	{
 		uint32_t flags;
@@ -41,13 +43,14 @@ __declspec(align(256)) struct MaterialConstants
 			uint32_t occlusionUV : 1;
 			uint32_t emissiveUV : 1;
 			uint32_t normalUV : 1;
+			uint32_t clearCoatUV : 1;
 
 			// Three special modes
 			uint32_t twoSided : 1;
 			uint32_t alphaTest : 1;
 			uint32_t alphaBlend : 1;
 
-			uint32_t _pad : 8;
+			uint32_t _pad : 7;
 
 			uint32_t alphaRef : 16; // half float
 		};

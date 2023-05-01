@@ -25,8 +25,10 @@ namespace GlareEngine
         float normalTextureScale;       // default=1
         float metallicFactor;           // default=1
         float roughnessFactor;          // default=1
-        float heightFactor;             // default=0.001
+        float clearCoatFactor;			// default=1
         uint32_t flags;
+
+        //float heightFactor;             // default=0.001
     };
 
     // Used at load time to construct descriptor tables
