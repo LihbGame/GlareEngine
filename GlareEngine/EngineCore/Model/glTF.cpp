@@ -362,7 +362,7 @@ void glTF::Asset::ProcessMaterials( json& materials )
         material.flags = 0;
         material.alphaCutoff = floatToHalf(0.5f);
         material.normalTextureScale = 1.0f;
-        material.clearcoatFactor = 1.0f;
+        material.clearCoatFactor = 1.0f;
 
         if (thisMaterial.find("alphaMode") != thisMaterial.end())
         {
@@ -440,11 +440,16 @@ void glTF::Asset::ProcessMaterials( json& materials )
                 json& clearcoat = extensions.at("KHR_materials_clearcoat");
 
                 if (clearcoat.find("clearcoatFactor") != clearcoat.end())
-                    material.clearcoatFactor = clearcoat.at("clearcoatFactor");
+                    material.clearCoatFactor = clearcoat.at("clearcoatFactor");
 
                 if (clearcoat.find("clearcoatTexture") != clearcoat.end())
+                {
                     material.clearCoatUV = ReadTextureInfo(clearcoat.at("clearcoatTexture"),
                         material.textures[Material::eClearCoat]);
+
+                    material.clearCoat = true;
+                }
+
             }
         }
         m_materials.push_back(material);

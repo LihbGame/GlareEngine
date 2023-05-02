@@ -20,6 +20,7 @@ static const uint OCCLUSION             = 2;
 static const uint EMISSIVE              = 3;
 static const uint NORMAL                = 4;
 static const uint CLEARCOAT             = 5;
+
 //Whether to use second UV
 #ifdef NO_SECOND_UV
 #define UVSET( offset ) vsOutput.uv0
@@ -36,6 +37,7 @@ cbuffer MaterialConstants : register(b2)
     float2 metallicRoughnessFactor;
     float clearCoatFactor;
     uint flags;
+    uint specialflags;
 }
 
 

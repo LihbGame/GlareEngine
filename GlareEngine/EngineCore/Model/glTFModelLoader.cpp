@@ -261,8 +261,9 @@ void BuildMaterials(glTFModelData& model, const glTF::Asset& asset)
 		material.normalTextureScale = srcMat.normalTextureScale;
 		material.metallicFactor = srcMat.metallicFactor;
 		material.roughnessFactor = srcMat.roughnessFactor;
-		material.clearCoatFactor = srcMat.clearcoatFactor;
+		material.clearCoatFactor = srcMat.clearCoatFactor;
 		material.flags = srcMat.flags;
+		material.specialFlags = srcMat.specialFlags;
 
 		MaterialTextureData& dstMat = model.m_MaterialTextures[i];
 		dstMat.addressModes = 0;

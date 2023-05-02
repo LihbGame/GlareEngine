@@ -27,6 +27,7 @@ namespace GlareEngine
         float roughnessFactor;          // default=1
         float clearCoatFactor;			// default=1
         uint32_t flags;
+        uint32_t specialFlags;
 
         //float heightFactor;             // default=0.001
     };

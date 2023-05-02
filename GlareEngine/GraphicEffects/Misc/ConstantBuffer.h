@@ -43,16 +43,30 @@ __declspec(align(256)) struct MaterialConstants
 			uint32_t occlusionUV : 1;
 			uint32_t emissiveUV : 1;
 			uint32_t normalUV : 1;
-			uint32_t clearCoatUV : 1;
 
-			// Three special modes
+			//Special modes
 			uint32_t twoSided : 1;
 			uint32_t alphaTest : 1;
 			uint32_t alphaBlend : 1;
 
-			uint32_t _pad : 7;
+			uint32_t _pad : 8; // unused
 
 			uint32_t alphaRef : 16; // half float
+		};
+	};
+
+	union
+	{
+		uint32_t Specialflags;
+		struct
+		{
+			// UV0 or UV1 for each texture
+			uint32_t clearCoatUV : 1;
+
+			//Special modes
+			uint32_t clearCoat : 1;
+
+			uint32_t _pad : 30; // unused
 		};
 	};
 };
