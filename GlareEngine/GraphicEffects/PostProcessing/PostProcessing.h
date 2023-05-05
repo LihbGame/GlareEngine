@@ -25,6 +25,7 @@ namespace PostProcessing
     void BlurBuffer(ComputeContext&, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer);
 
     void ShutDown();
+
     //PSO
     extern GraphicsPSO mPSO;
 }
