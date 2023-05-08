@@ -25,13 +25,13 @@ namespace GlareEngine
 	ByteAddressBuffer g_Histogram;
 	ColorBuffer g_LumaBuffer;
 	
-	
+	ColorBuffer g_LinearDepth[2];
+
 	//ColorBuffer g_VelocityBuffer;
 	//ColorBuffer g_OverlayBuffer;
 	//ColorBuffer g_HorizontalBuffer;
 
 	//ColorBuffer g_SSAOFullScreen(Color(1.0f, 1.0f, 1.0f));
-	//ColorBuffer g_LinearDepth[2];
 	//ColorBuffer g_MinMaxDepth8;
 	//ColorBuffer g_MinMaxDepth16;
 	//ColorBuffer g_MinMaxDepth32;
@@ -131,22 +131,19 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 	g_Histogram.Create(L"Histogram", 256, 4);
 	g_LumaBuffer.Create(L"Luminance", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8_UNORM);
 
-
+	//Linear Depth
+	g_LinearDepth[0].Create(L"Linear Depth 0", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
+	g_LinearDepth[1].Create(L"Linear Depth 1", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
 
 
 	//g_VelocityBuffer.Create(L"Motion Vectors", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT);
 
-	//g_LinearDepth[0].Create(L"Linear Depth 0", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16_UNORM);
-	//g_LinearDepth[1].Create(L"Linear Depth 1", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16_UNORM);
 	//g_MinMaxDepth8.Create(L"MinMaxDepth 8x8", bufferWidth3, bufferHeight3, 1, DXGI_FORMAT_R32_UINT, esram);
 	//g_MinMaxDepth16.Create(L"MinMaxDepth 16x16", bufferWidth4, bufferHeight4, 1, DXGI_FORMAT_R32_UINT, esram);
 	//g_MinMaxDepth32.Create(L"MinMaxDepth 32x32", bufferWidth5, bufferHeight5, 1, DXGI_FORMAT_R32_UINT, esram);
 
-	
-
 	//g_SSAOFullScreen.Create(L"SSAO Full Res", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R8_UNORM);
 
-	
 	//g_DepthDownsize1.Create(L"Depth Down-Sized 1", bufferWidth1, bufferHeight1, 1, DXGI_FORMAT_R32_FLOAT, esram);
 	//g_DepthDownsize2.Create(L"Depth Down-Sized 2", bufferWidth2, bufferHeight2, 1, DXGI_FORMAT_R32_FLOAT, esram);
 	//g_DepthDownsize3.Create(L"Depth Down-Sized 3", bufferWidth3, bufferHeight3, 1, DXGI_FORMAT_R32_FLOAT, esram);
@@ -268,16 +265,38 @@ void GlareEngine::DestroyRenderingBuffers()
 {
 	g_SceneDepthBuffer.Destroy();
 	g_SceneColorBuffer.Destroy();
+
+	g_LinearDepth[0].Destroy();
+	g_LinearDepth[1].Destroy();
+
+	g_PostEffectsBuffer.Destroy();
+
+	g_SceneMSAAColorBuffer.Destroy();
+	g_SceneMSAADepthBuffer.Destroy();
+
+	g_aBloomUAV1[0].Destroy();
+	g_aBloomUAV2[0].Destroy();
+	g_aBloomUAV3[0].Destroy();
+	g_aBloomUAV4[0].Destroy();
+	g_aBloomUAV5[0].Destroy();
+
+	g_aBloomUAV1[1].Destroy();
+	g_aBloomUAV2[1].Destroy();
+	g_aBloomUAV3[1].Destroy();
+	g_aBloomUAV4[1].Destroy();
+	g_aBloomUAV5[1].Destroy();
+
+	g_LumaBloom.Destroy();
+
+	g_Histogram.Destroy();
+	g_LumaBuffer.Destroy();
+
 	/*g_VelocityBuffer.Destroy();
-	g_OverlayBuffer.Destroy();
-	g_HorizontalBuffer.Destroy();
-	g_PostEffectsBuffer.Destroy();*/
+	g_HorizontalBuffer.Destroy();*/
 
 	//g_ShadowBuffer.Destroy();
 
 	//g_SSAOFullScreen.Destroy();
-	//g_LinearDepth[0].Destroy();
-	//g_LinearDepth[1].Destroy();
 	//g_MinMaxDepth8.Destroy();
 	//g_MinMaxDepth16.Destroy();
 	//g_MinMaxDepth32.Destroy();
@@ -314,21 +333,9 @@ void GlareEngine::DestroyRenderingBuffers()
 	//g_DoFFixupQueue.Destroy();
 
 	//g_MotionPrepBuffer.Destroy();
-	//g_LumaBuffer.Destroy();
 	//g_TemporalColor[0].Destroy();
 	//g_TemporalColor[1].Destroy();
-	//g_aBloomUAV1[0].Destroy();
-	//g_aBloomUAV1[1].Destroy();
-	//g_aBloomUAV2[0].Destroy();
-	//g_aBloomUAV2[1].Destroy();
-	//g_aBloomUAV3[0].Destroy();
-	//g_aBloomUAV3[1].Destroy();
-	//g_aBloomUAV4[0].Destroy();
-	//g_aBloomUAV4[1].Destroy();
-	//g_aBloomUAV5[0].Destroy();
-	//g_aBloomUAV5[1].Destroy();
-	//g_LumaLR.Destroy();
-	//g_Histogram.Destroy();
+
 	//g_FXAAWorkCounters.Destroy();
 	//g_FXAAWorkQueue.Destroy();
 	//g_FXAAColorQueue.Destroy();

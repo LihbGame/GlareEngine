@@ -25,6 +25,7 @@
 #include "CompiledShaders/GenerateLuminanceHistogramCS.h"
 #include "CompiledShaders/AdaptExposureCS.h"
 #include "CompiledShaders/DrawHistogramCS.h"
+#include "CompiledShaders/LinearizeDepthCS.h"
 
 namespace PostProcessing
 {
@@ -89,6 +90,7 @@ namespace PostProcessing
 	ComputePSO AverageLumaCS(L"Average Luminance CS");
 	ComputePSO CopyBackBufferForNotHDRUAVSupportCS(L"Copy Back Post Buffer CS For Not HDR UAV Support");
 
+	ComputePSO LinearizeDepthCS(L"Linearize Depth CS");
 
 	void GenerateBloom(ComputeContext& Context);
 	void ExtractLuminance(ComputeContext& Context);
@@ -120,18 +122,14 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	{
 		CreatePSO(ToneMapCS, g_pToneMap2CS);
 		CreatePSO(ToneMapHDRCS, g_pToneMapHDR2CS);
-
-		//CreatePSO(DebugLuminanceHdrCS, g_pDebugLuminanceHdr2CS);
-		//CreatePSO(DebugLuminanceLdrCS, g_pDebugLuminanceLdr2CS);
 	}
 	else
 	{
 		CreatePSO(ToneMapCS, g_pToneMapCS);
 		CreatePSO(ToneMapHDRCS, g_pToneMapHDRCS);
-
-		//CreatePSO(DebugLuminanceHdrCS, g_pDebugLuminanceHdrCS);
-		//CreatePSO(DebugLuminanceLdrCS, g_pDebugLuminanceLdrCS);
 	}
+
+	CreatePSO(LinearizeDepthCS, g_pLinearizeDepthCS);
 
 	CreatePSO(GenerateLuminanceHistogramCS, g_pGenerateLuminanceHistogramCS);
 	CreatePSO(UpsampleBlurCS, g_pUpsampleBlurCS);
@@ -418,6 +416,30 @@ void PostProcessing::BlurBuffer(ComputeContext& Context, ColorBuffer& SourceBuff
 	Context.Dispatch2D(bufferWidth, bufferHeight);
 
 	Context.TransitionResource(TargetBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+}
+
+void PostProcessing::LinearizeZ(ComputeContext& Context, Camera& camera, uint32_t FrameIndex)
+{
+	DepthBuffer& Depth = g_SceneDepthBuffer;
+	ColorBuffer& LinearDepth = g_LinearDepth[FrameIndex];
+	const float NearClipDist = camera.GetNearZ();
+	const float FarClipDist = camera.GetFarZ();
+	const float zMagic = (FarClipDist - NearClipDist) / NearClipDist;
+
+	LinearizeZ(Context, Depth, LinearDepth, zMagic);
+}
+
+void PostProcessing::LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, ColorBuffer& LinearDepth, float zMagic)
+{
+	// zMagic= (zFar - zNear) / zNear
+	Context.SetRootSignature(PostEffectsRS);
+	Context.TransitionResource(Depth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	Context.SetConstants(0, zMagic);
+	Context.SetDynamicDescriptor(3, 0, Depth.GetDepthSRV());
+	Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.SetDynamicDescriptors(2, 0, 1, &LinearDepth.GetUAV());
+	Context.SetPipelineState(LinearizeDepthCS);
+	Context.Dispatch2D(LinearDepth.GetWidth(), LinearDepth.GetHeight(), 16, 16);
 }
 
 void PostProcessing::ShutDown()

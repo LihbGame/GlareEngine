@@ -38,7 +38,4 @@ void SSAO::Render(GraphicsContext& Context, Camera& camera)
 {
 }
 
-void SSAO::LinearizeZ(ComputeContext& Context, Camera& camera, uint32_t FrameIndex)
-{
-}
 

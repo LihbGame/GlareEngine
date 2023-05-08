@@ -29,6 +29,9 @@ namespace GlareEngine
 	extern ByteAddressBuffer g_Histogram;
 	extern ColorBuffer g_LumaBuffer;
 
+	extern ColorBuffer g_LinearDepth[2];    // Normalized planar distance [0 at eye, 1 at far plane] computed from the Scene Depth Buffer
+
+
 	//extern ColorBuffer g_OverlayBuffer;        // R8G8B8A8_UNORM
 	//extern ColorBuffer g_HorizontalBuffer;    // For separable (bicubic) upsampling
 
@@ -36,7 +39,6 @@ namespace GlareEngine
 	//extern ShadowBuffer g_ShadowBuffer;
 
 	//extern ColorBuffer g_SSAOFullScreen;    // R8_UNORM
-	//extern ColorBuffer g_LinearDepth[2];    // Normalized planar distance (0 at eye, 1 at far plane) computed from the SceneDepthBuffer
 	//extern ColorBuffer g_MinMaxDepth8;        // Min and max depth values of 8x8 tiles
 	//extern ColorBuffer g_MinMaxDepth16;        // Min and max depth values of 16x16 tiles
 	//extern ColorBuffer g_MinMaxDepth32;        // Min and max depth values of 16x16 tiles

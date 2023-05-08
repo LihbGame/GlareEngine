@@ -165,7 +165,6 @@ void Scene::RenderScene(RenderPipelineType Type)
 		break;
 	}
 	
-
 	//Post Processing
 	PostProcessing::Render();
 }
@@ -494,7 +493,7 @@ void Scene::ForwardPlusRendering()
 			}
 			Context.SetViewportAndScissor(m_MainViewport, m_MainScissor);
 
-			//sky
+			//Sky
 			if (m_pRenderObjectsType[(int)ObjectType::Sky].front()->GetVisible())
 			{
 				Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &mMainConstants);

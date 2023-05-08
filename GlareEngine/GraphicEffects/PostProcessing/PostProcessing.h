@@ -24,6 +24,10 @@ namespace PostProcessing
 
     void BlurBuffer(ComputeContext&, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer);
 
+    void LinearizeZ(ComputeContext& Context, Camera& camera, uint32_t FrameIndex);
+
+    void LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, ColorBuffer& LinearDepth, float zMagic);
+
     void ShutDown();
 
     //PSO
