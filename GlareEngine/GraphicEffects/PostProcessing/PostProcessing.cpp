@@ -52,7 +52,8 @@ namespace PostProcessing
 
 	bool EnableAdaptation = true;
 	bool DrawHistogram = false;
-	NumVar TargetLuminance(0.1f, 0.01f, 0.99f);
+
+	NumVar TargetLuminance(0.05f, 0.01f, 0.99f);
 	NumVar AdaptationTranform(0.02f, 0.01f, 1.0f);
 	NumVar Exposure(2.0f, -8.0f, 8.0f);
 	
@@ -329,13 +330,17 @@ void PostProcessing::DrawUI()
 			if (BloomEnable)
 			{
 				ImGui::Checkbox("High Quality Bloom", &HighQualityBloom);
-				ImGui::Text("Bloom Threshold:");
-				ImGui::SliderFloat(" ", &BloomThreshold.GetValue(), BloomThreshold.GetMinValue(), BloomThreshold.GetMaxValue());
-				ImGui::Text("Bloom Strength:");
-				ImGui::SliderFloat("  ", &BloomStrength.GetValue(), BloomStrength.GetMinValue(), BloomStrength.GetMaxValue());
-				ImGui::Text("Bloom UpSample Factor:");
-				ImGui::SliderFloat("   ", &BloomUpSampleFactor.GetValue(), BloomUpSampleFactor.GetMinValue(), BloomUpSampleFactor.GetMaxValue());
+				ImGui::SliderVerticalFloat("Bloom Threshold:", &BloomThreshold.GetValue(), BloomThreshold.GetMinValue(), BloomThreshold.GetMaxValue());
+				ImGui::SliderVerticalFloat("Bloom Strength:", &BloomStrength.GetValue(), BloomStrength.GetMinValue(), BloomStrength.GetMaxValue());
+				ImGui::SliderVerticalFloat("Bloom UpSample Factor:", &BloomUpSampleFactor.GetValue(), BloomUpSampleFactor.GetMinValue(), BloomUpSampleFactor.GetMaxValue());
 			}
+			ImGui::TreePop();
+		}
+
+		if (ImGui::TreeNodeEx("Luminance", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::SliderVerticalFloat("Target Luminance:", &TargetLuminance.GetValue(), TargetLuminance.GetMinValue(), TargetLuminance.GetMaxValue());
+			ImGui::Checkbox("Draw Luminance Histogram", &DrawHistogram);
 			ImGui::TreePop();
 		}
 
@@ -344,7 +349,7 @@ void PostProcessing::DrawUI()
 			ImGui::TreePop();
 		}
 
-		ImGui::Checkbox("Draw Luminance Histogram", &DrawHistogram);
+		
 
 	}
 }
