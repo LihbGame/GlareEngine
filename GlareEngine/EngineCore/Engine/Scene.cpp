@@ -365,7 +365,6 @@ void Scene::ForwardPlusRendering()
 {
 	GraphicsContext& Context = GraphicsContext::Begin(L"Scene Render");
 
-	// Begin rendering depth
 	//MSAA
 	if (IsMSAA)
 	{
@@ -377,6 +376,7 @@ void Scene::ForwardPlusRendering()
 		Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
 		Context.ClearDepthAndStencil(g_SceneDepthBuffer, REVERSE_Z ? 0.0f : 1.0f);
 	}
+
 	//default batch
 	MeshSorter sorter(MeshSorter::eDefault);
 	sorter.SetCamera(*m_pCamera);
@@ -394,6 +394,7 @@ void Scene::ForwardPlusRendering()
 		sorter.AddRenderTarget(g_SceneColorBuffer);
 	}
 	
+	//Culling and add Objects Render
 	for (auto& model : m_pGLTFRenderObjects)
 	{
 		if (model->GetVisible())
@@ -402,14 +403,26 @@ void Scene::ForwardPlusRendering()
 		}
 	}
 
+	//Sort Visible objects
 	sorter.Sort();
 
-	///Depth PrePass
+	//Depth PrePass
 	{
-		ScopedTimer _prof(L"Depth PrePass", Context);
+		ScopedTimer PrePassScope(L"Depth PrePass", Context);
 		sorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
 	}
 
+	//TODO: Linear Z
+	{
+
+	}
+
+	//TODO: SSAO
+	{
+
+	}
+
+	//Light Culling
 	if (LoadingFinish)
 	{
 		//Set lighting buffers in the SRV Heap
@@ -419,9 +432,11 @@ void Scene::ForwardPlusRendering()
 			Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, true);
 			Context.GetCommandList()->ResolveSubresource(g_SceneDepthBuffer.GetResource(), 0, g_SceneMSAADepthBuffer.GetResource(), 0, DXGI_FORMAT_R32_FLOAT);
 		}
+
 		Lighting::FillLightGrid(Context, *m_pCamera);
 
-		D3D12_CPU_DESCRIPTOR_HANDLE LightSRV[] = {
+		D3D12_CPU_DESCRIPTOR_HANDLE LightSRV[] = 
+		{
 		Lighting::m_LightGrid.GetSRV(),
 		Lighting::m_LightBuffer.GetSRV(),
 		Lighting::m_LightShadowArray.GetSRV()
@@ -438,15 +453,17 @@ void Scene::ForwardPlusRendering()
 	Context.SetDescriptorTable((int)RootSignatureType::eCommonSRVs, gTextureHeap[0]);
 
 	{
-		ScopedTimer _outerprof(L"Main Render", Context);
+		ScopedTimer MainRenderScope(L"Main Render", Context);
 
 		if (LoadingFinish)
 		{
 			CreateTileConeShadowMap(Context);
 		}
 
+
+		//Sun Shadow Map
 		{
-			ScopedTimer _prof(L"Sun Shadow Map", Context);
+			ScopedTimer SunShadowScope(L"Sun Shadow Map", Context);
 
 			MeshSorter shadowSorter(MeshSorter::eShadows);
 			shadowSorter.SetCamera(*m_pSunShadowCamera.get());
@@ -474,9 +491,9 @@ void Scene::ForwardPlusRendering()
 			Context.ClearRenderTarget(g_SceneColorBuffer);
 		}
 		
-
+		//Base Pass
 		{
-			ScopedTimer _prof(L"Render Color", Context);
+			ScopedTimer RenderColorScope(L"Render Color", Context);
 			//Set Cube SRV
 			Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[COMMONSRVSIZE]);
 			//Set Textures SRV
@@ -504,10 +521,12 @@ void Scene::ForwardPlusRendering()
 			sorter.RenderMeshes(MeshSorter::eOpaque, Context, mMainConstants);
 			
 		}
+
+		//Transparent Pass
 		sorter.RenderMeshes(MeshSorter::eTransparent, Context, mMainConstants);
 	}
 
-	//MSAA
+	//Resolve MSAA
 	if (IsMSAA)
 	{
 		Context.TransitionResource(g_SceneMSAAColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
