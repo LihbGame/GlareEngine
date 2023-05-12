@@ -66,10 +66,10 @@ public:
 
 	static bool mWindowMaxSize;
 
-	static void AddRenderPassVisualizeTexture(string TextureName, float TextureHeight,float TextureWidth, D3D12_CPU_DESCRIPTOR_HANDLE TexDescriptor,Vector4 ColorScale= Vector4(1.0f,1.0f,1.0f,1.0f));
+	static void AddRenderPassVisualizeTexture(string FeatureGroup, string TextureName, float TextureHeight, float TextureWidth, D3D12_CPU_DESCRIPTOR_HANDLE TexDescriptor, Vector4 ColorScale = Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 	static void ClearRenderPassVisualizeTexture() 
 	{ 
-		mCurrentDescriptorOffset -= mRenderPassDebugInfo.size(); 
+		mCurrentDescriptorOffset = mUISystemDescriptorOffset;
 		mRenderPassDebugInfo.clear(); 
 	}
 private:
@@ -124,13 +124,14 @@ private:
 private:
 	static DescriptorHeap mGUISrvDescriptorHeap;
 	static UINT mCurrentDescriptorOffset;
+	static UINT mUISystemDescriptorOffset;
 
 	CD3DX12_GPU_DESCRIPTOR_HANDLE mEngineIconTexDescriptor;
 	CD3DX12_GPU_DESCRIPTOR_HANDLE mEngineMaxTexDescriptor;
 	CD3DX12_GPU_DESCRIPTOR_HANDLE mEngineMinTexDescriptor;
 	CD3DX12_GPU_DESCRIPTOR_HANDLE mEngineCloseTexDescriptor;
 
-	static vector<RenderPassDebugInfo> mRenderPassDebugInfo;
+	static unordered_map<string, vector<RenderPassDebugInfo>> mRenderPassDebugInfo;
 
 	ImGuiContext *g=nullptr;
 	bool isUIShow = true;

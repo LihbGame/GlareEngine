@@ -13,11 +13,11 @@ using Microsoft::WRL::ComPtr;
 using namespace GlareEngine::GameCore;
 bool gFullSreenMode = false;
 bool EngineGUI::mWindowMaxSize = false;
-vector<RenderPassDebugInfo> EngineGUI::mRenderPassDebugInfo;
+unordered_map<string,vector<RenderPassDebugInfo>> EngineGUI::mRenderPassDebugInfo;
 
 DescriptorHeap EngineGUI::mGUISrvDescriptorHeap;
 UINT EngineGUI::mCurrentDescriptorOffset = 0;
-
+UINT EngineGUI::mUISystemDescriptorOffset;
 
 EngineGUI::EngineGUI(ID3D12GraphicsCommandList* d3dCommandList)
 {
@@ -44,14 +44,15 @@ void EngineGUI::SetScenes(vector<Scene*> scenes)
 	}
 }
 
-void EngineGUI::AddRenderPassVisualizeTexture(string TextureName, float TextureHeight, float TextureWidth, D3D12_CPU_DESCRIPTOR_HANDLE TexDescriptor, Vector4 ColorScale)
+void EngineGUI::AddRenderPassVisualizeTexture(string FeatureGroup, string TextureName, float TextureHeight, float TextureWidth, D3D12_CPU_DESCRIPTOR_HANDLE TexDescriptor, Vector4 ColorScale)
 {
 	float Rate = TextureHeight / TextureWidth;
 
 	UINT destCount = 1;
 	g_Device->CopyDescriptors(1, &mGUISrvDescriptorHeap[mCurrentDescriptorOffset], &destCount,
 		destCount, &TexDescriptor, &destCount, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	mRenderPassDebugInfo.push_back(RenderPassDebugInfo{ TextureName, Rate,TextureWidth,TextureHeight,ColorScale,CD3DX12_GPU_DESCRIPTOR_HANDLE(D3D12_GPU_DESCRIPTOR_HANDLE(mGUISrvDescriptorHeap[mCurrentDescriptorOffset])) });
+	RenderPassDebugInfo renderInfo = RenderPassDebugInfo{ TextureName, Rate,TextureWidth,TextureHeight,ColorScale,CD3DX12_GPU_DESCRIPTOR_HANDLE(D3D12_GPU_DESCRIPTOR_HANDLE(mGUISrvDescriptorHeap[mCurrentDescriptorOffset])) };
+	mRenderPassDebugInfo[FeatureGroup].push_back(renderInfo);
 	mCurrentDescriptorOffset++;
 }
 
@@ -150,6 +151,7 @@ void EngineGUI::CreateUIDescriptorHeap(ID3D12GraphicsCommandList* d3dCommandList
 	mEngineCloseTexDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
 
 	mCurrentDescriptorOffset += 5;
+	mUISystemDescriptorOffset = 5;
 }
 
 
@@ -452,18 +454,24 @@ void EngineGUI::DrawRenderDebugWindow()
 		return;
 	}
 
-	int textureWidth = windowSize.x - 20;
+	int textureWidth = windowSize.x - 30;
 	g = ImGui::GetCurrentContext();
 	g->Style.Alpha = 1.0f;
-	for (size_t i = 0; i < mRenderPassDebugInfo.size(); i++)
+	for (auto& Feature : mRenderPassDebugInfo)
 	{
-		ImGui::Text(mRenderPassDebugInfo[i].TextureName.c_str()); ImGui::SameLine();
-		ImGui::Text("%0.0f X %0.0f", mRenderPassDebugInfo[i].TextureWidth, mRenderPassDebugInfo[i].TextureHeight);
-		int textureHeight = textureWidth * mRenderPassDebugInfo[i].Rate;
-		ImVec4 ColorScale = ImVec4(mRenderPassDebugInfo[i].TextureColorScale.GetX(), mRenderPassDebugInfo[i].TextureColorScale.GetY(),
-			mRenderPassDebugInfo[i].TextureColorScale.GetZ(), mRenderPassDebugInfo[i].TextureColorScale.GetW());
-		ImGui::Image((void*)(mRenderPassDebugInfo[i].TexDescriptor.ptr), ImVec2(0, 0), ImVec2(textureWidth, textureHeight), ImVec2(0, 0), ImVec2(1, 1), ColorScale);
-		ImGui::Separator();
+		if (ImGui::CollapsingHeader(Feature.first.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			for (auto& FeatureTexture : Feature.second)
+			{
+				ImGui::Text(FeatureTexture.TextureName.c_str()); ImGui::SameLine();
+				ImGui::Text("%0.0f X %0.0f", FeatureTexture.TextureWidth, FeatureTexture.TextureHeight);
+				int textureHeight = textureWidth * FeatureTexture.Rate;
+				ImVec4 ColorScale = ImVec4(FeatureTexture.TextureColorScale.GetX(), FeatureTexture.TextureColorScale.GetY(),
+					FeatureTexture.TextureColorScale.GetZ(), FeatureTexture.TextureColorScale.GetW());
+				ImGui::Image((void*)(FeatureTexture.TexDescriptor.ptr), ImVec2(0, 0), ImVec2(textureWidth, textureHeight), ImVec2(0, 0), ImVec2(1, 1), ColorScale);
+				ImGui::Separator();
+			}
+		}
 	}
 	ImGui::End();
 	return;
