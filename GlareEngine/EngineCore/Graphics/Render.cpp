@@ -12,6 +12,7 @@
 #include "InstanceModel/glTFInstanceModel.h"
 #include "PostProcessing/PostProcessing.h"
 #include "Misc/LightManager.h"
+#include "PostProcessing/SSAO.h"
 
 namespace GlareEngine
 {
@@ -52,7 +53,9 @@ namespace GlareEngine
 
 		Lighting::InitializeResources();
 
-		PostProcessing::Initialize(CommandList);
+		SSAO::Initialize();
+
+		ScreenProcessing::Initialize(CommandList);
 
 		s_Initialized = true;
 	}
@@ -170,7 +173,7 @@ namespace GlareEngine
 		ShadowMap::BuildPSO(gCommonProperty);
 		IBL::BuildPSOs(gCommonProperty);
 		Terrain::BuildPSO(gCommonProperty);
-		PostProcessing::BuildPSO(gCommonProperty);
+		ScreenProcessing::BuildPSO(gCommonProperty);
 	}
 
 }

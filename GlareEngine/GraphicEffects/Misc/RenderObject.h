@@ -20,7 +20,7 @@ enum class ObjectType :int
 	Model,
 	Shadow,
 	Terrain,
-	PostProcessing,
+	ScreenProcessing,
 	Count
 };
 

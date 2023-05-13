@@ -1,5 +1,9 @@
 #include "SSAO.h"
 #include "Graphics/SamplerManager.h"
+#include "EngineGUI.h"
+
+//shader
+#include "CompiledShaders/LinearizeDepthCS.h"
 
 namespace SSAO
 {
@@ -8,6 +12,9 @@ namespace SSAO
 	bool ComputeLinearZ = true;
 
 	RootSignature s_RootSignature;
+
+	ComputePSO LinearizeDepthCS(L"Linearize Depth CS");
+
 }
 
 
@@ -23,10 +30,47 @@ void SSAO::Initialize(void)
 	s_RootSignature[4].InitAsBufferSRV(5);
 	s_RootSignature.Finalize(L"SSAO");
 
+	//Create Compute PSO Macro
+#define CreatePSO( ObjName, ShaderByteCode ) \
+    ObjName.SetRootSignature(s_RootSignature); \
+    ObjName.SetComputeShader(ShaderByteCode, sizeof(ShaderByteCode) ); \
+    ObjName.Finalize();
+
+	CreatePSO(LinearizeDepthCS, g_pLinearizeDepthCS);
+
+#undef CreatePSO
 }
 
 void SSAO::Shutdown(void)
 {
+}
+
+void SSAO::LinearizeZ(ComputeContext& Context, Camera& camera, uint32_t FrameIndex)
+{
+	DepthBuffer& Depth = g_SceneDepthBuffer;
+	ColorBuffer& LinearDepth = g_LinearDepth[FrameIndex];
+	const float NearClipDist = camera.GetNearZ();
+	const float FarClipDist = camera.GetFarZ();
+	const float zMagic = (FarClipDist - NearClipDist) / NearClipDist;
+
+	LinearizeZ(Context, Depth, LinearDepth, zMagic);
+}
+
+void SSAO::LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, ColorBuffer& LinearDepth, float zMagic)
+{
+	// zMagic= (zFar - zNear) / zNear
+	Context.SetRootSignature(s_RootSignature);
+	Context.TransitionResource(Depth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	Context.SetConstants(0, zMagic);
+	Context.SetDynamicDescriptor(3, 0, Depth.GetDepthSRV());
+	Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.SetDynamicDescriptors(2, 0, 1, &LinearDepth.GetUAV());
+	Context.SetPipelineState(LinearizeDepthCS);
+	Context.Dispatch2D(LinearDepth.GetWidth(), LinearDepth.GetHeight(), 16, 16);
+
+#ifdef DEBUG
+	EngineGUI::AddRenderPassVisualizeTexture("Linear Z", WStringToString(LinearDepth.GetName()), LinearDepth.GetHeight(), LinearDepth.GetWidth(), LinearDepth.GetSRV()); 
+#endif // DEBUG
 }
 
 void SSAO::Render(GraphicsContext& Context, const float* ProjMat, float NearClip, float FarClip)

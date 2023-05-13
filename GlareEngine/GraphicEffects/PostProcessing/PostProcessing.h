@@ -1,7 +1,7 @@
 #pragma once
 #include "Misc/RenderObject.h"
 
-namespace PostProcessing 
+namespace ScreenProcessing 
 {
     void Initialize(ID3D12GraphicsCommandList * CommandList);
 
@@ -23,10 +23,6 @@ namespace PostProcessing
     void UpsampleBlurBuffer(ComputeContext&, ColorBuffer buffer[2], const ColorBuffer& LowerResBuffer, float UpSampleBlendFactor = 0.0f);
 
     void BlurBuffer(ComputeContext&, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer);
-
-    void LinearizeZ(ComputeContext& Context, Camera& camera, uint32_t FrameIndex);
-
-    void LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, ColorBuffer& LinearDepth, float zMagic);
 
     void ShutDown();
 

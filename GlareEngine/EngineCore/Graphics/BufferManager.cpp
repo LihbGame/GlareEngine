@@ -259,6 +259,10 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 	g_aBloomUAV5[1].Create(L"Bloom Buffer 5b", BloomWidth / 16, BloomHeight / 16, 1, DefaultHDRColorFormat);
 
 	g_LumaBuffer.Create(L"Luminance", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8_UNORM);
+
+	//Linear Depth
+	g_LinearDepth[0].Create(L"Linear Depth 0", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
+	g_LinearDepth[1].Create(L"Linear Depth 1", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
 }
 
 void GlareEngine::DestroyRenderingBuffers()

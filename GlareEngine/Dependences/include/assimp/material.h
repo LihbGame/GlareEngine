@@ -278,7 +278,7 @@ enum aiTextureType
      *
      *  A texture reference that does not match any of the definitions
      *  above is considered to be 'unknown'. It is still imported,
-     *  but is excluded from any further postprocessing.
+     *  but is excluded from any further ScreenProcessing.
     */
     aiTextureType_UNKNOWN = 0xC,
 

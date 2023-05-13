@@ -25,9 +25,8 @@
 #include "CompiledShaders/GenerateLuminanceHistogramCS.h"
 #include "CompiledShaders/AdaptExposureCS.h"
 #include "CompiledShaders/DrawHistogramCS.h"
-#include "CompiledShaders/LinearizeDepthCS.h"
 
-namespace PostProcessing
+namespace ScreenProcessing
 {
 
 	__declspec(align(16)) struct AdaptationConstants
@@ -91,8 +90,6 @@ namespace PostProcessing
 	ComputePSO AverageLumaCS(L"Average Luminance CS");
 	ComputePSO CopyBackBufferForNotHDRUAVSupportCS(L"Copy Back Post Buffer CS For Not HDR UAV Support");
 
-	ComputePSO LinearizeDepthCS(L"Linearize Depth CS");
-
 	void GenerateBloom(ComputeContext& Context);
 	void ExtractLuminance(ComputeContext& Context);
 	void CopyBackBufferForNotHDRUAVSupport(ComputeContext& Context);
@@ -102,7 +99,7 @@ namespace PostProcessing
 }
 
 
-void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
+void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 {
 	PostEffectsRS.Reset(4, 2);
 	PostEffectsRS.InitStaticSampler(0, SamplerLinearClampDesc);
@@ -130,8 +127,6 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 		CreatePSO(ToneMapHDRCS, g_pToneMapHDRCS);
 	}
 
-	CreatePSO(LinearizeDepthCS, g_pLinearizeDepthCS);
-
 	CreatePSO(GenerateLuminanceHistogramCS, g_pGenerateLuminanceHistogramCS);
 	CreatePSO(UpsampleBlurCS, g_pUpsampleBlurCS);
 	CreatePSO(BlurCS, g_pBlurCS);
@@ -155,11 +150,11 @@ void PostProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	BuildSRV(CommandList);
 }
 
-void PostProcessing::BuildSRV(ID3D12GraphicsCommandList* CommandList)
+void ScreenProcessing::BuildSRV(ID3D12GraphicsCommandList* CommandList)
 {
 }
 
-void PostProcessing::RenderFBM(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
+void ScreenProcessing::RenderFBM(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 {
 	if (SpecificPSO)
 	{
@@ -173,7 +168,7 @@ void PostProcessing::RenderFBM(GraphicsContext& Context, GraphicsPSO* SpecificPS
 	Context.Draw(3);
 }
 
-void PostProcessing::PostProcessHDR(ComputeContext& Context)
+void ScreenProcessing::PostProcessHDR(ComputeContext& Context)
 {
 	ScopedTimer Scope(L"HDR Tone Mapping", Context);
 
@@ -228,7 +223,7 @@ void PostProcessing::PostProcessHDR(ComputeContext& Context)
 	Adaptation(Context);
 }
 
-void PostProcessing::Adaptation(ComputeContext& Context)
+void ScreenProcessing::Adaptation(ComputeContext& Context)
 {
 	ScopedTimer Scope(L"Update Exposure", Context);
 
@@ -257,7 +252,7 @@ void PostProcessing::Adaptation(ComputeContext& Context)
 }
 
 
-void PostProcessing::Render()
+void ScreenProcessing::Render()
 {
 	ComputeContext& Context = ComputeContext::Begin(L"Post Processing");
 
@@ -286,19 +281,19 @@ void PostProcessing::Render()
 		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	}
 
-	//For Debug
-	EngineGUI::ClearRenderPassVisualizeTexture();
+#ifdef DEBUG
 	EngineGUI::AddRenderPassVisualizeTexture("Scene Color", WStringToString(g_SceneColorBuffer.GetName()), g_SceneColorBuffer.GetHeight(), g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetSRV());
 	EngineGUI::AddRenderPassVisualizeTexture("Scene Color", WStringToString(g_LumaBuffer.GetName()), g_LumaBuffer.GetHeight(), g_LumaBuffer.GetWidth(), g_LumaBuffer.GetSRV());
 	EngineGUI::AddRenderPassVisualizeTexture("Bloom", WStringToString(g_aBloomUAV1[0].GetName()), g_aBloomUAV1[0].GetHeight(), g_aBloomUAV1[0].GetWidth(), g_aBloomUAV1[0].GetSRV());
 	EngineGUI::AddRenderPassVisualizeTexture("Bloom", WStringToString(g_aBloomUAV2[0].GetName()), g_aBloomUAV2[0].GetHeight(), g_aBloomUAV2[0].GetWidth(), g_aBloomUAV2[0].GetSRV());
 	EngineGUI::AddRenderPassVisualizeTexture("Bloom", WStringToString(g_aBloomUAV3[0].GetName()), g_aBloomUAV3[0].GetHeight(), g_aBloomUAV3[0].GetWidth(), g_aBloomUAV3[0].GetSRV());
 	EngineGUI::AddRenderPassVisualizeTexture("Bloom", WStringToString(g_aBloomUAV4[0].GetName()), g_aBloomUAV4[0].GetHeight(), g_aBloomUAV4[0].GetWidth(), g_aBloomUAV4[0].GetSRV());
+#endif
 
 	Context.Finish();
 }
 
-void PostProcessing::DrawBeforeToneMapping()
+void ScreenProcessing::DrawBeforeToneMapping()
 {
 	GraphicsContext& Context = GraphicsContext::Begin(L"Before Tone Mapping");
 	Context.PIXBeginEvent(L"Before Tone Mapping");
@@ -306,7 +301,7 @@ void PostProcessing::DrawBeforeToneMapping()
 	Context.Finish();
 }
 
-void PostProcessing::DrawAfterToneMapping()
+void ScreenProcessing::DrawAfterToneMapping()
 {
 	GraphicsContext& Context = GraphicsContext::Begin(L"After Tone Mapping");
 	Context.PIXBeginEvent(L"After Tone Mapping");
@@ -319,7 +314,7 @@ void PostProcessing::DrawAfterToneMapping()
 	Context.Finish();
 }
 
-void PostProcessing::DrawUI()
+void ScreenProcessing::DrawUI()
 {
 	ImGuiIO& io = ImGui::GetIO();
 	if (ImGui::CollapsingHeader("Post Processing", ImGuiTreeNodeFlags_DefaultOpen))
@@ -354,11 +349,11 @@ void PostProcessing::DrawUI()
 	}
 }
 
-void PostProcessing::Update(float dt)
+void ScreenProcessing::Update(float dt)
 {
 }
 
-void PostProcessing::BuildPSO(const PSOCommonProperty CommonProperty)
+void ScreenProcessing::BuildPSO(const PSOCommonProperty CommonProperty)
 {
 	D3D12_RASTERIZER_DESC Rasterizer = RasterizerDefault;
 	if (CommonProperty.IsWireframe)
@@ -380,7 +375,7 @@ void PostProcessing::BuildPSO(const PSOCommonProperty CommonProperty)
 	mPSO.Finalize();
 }
 
-void PostProcessing::UpsampleBlurBuffer(ComputeContext& Context, ColorBuffer buffer[2], const ColorBuffer& LowerResBuffer, float UpSampleBlendFactor)
+void ScreenProcessing::UpsampleBlurBuffer(ComputeContext& Context, ColorBuffer buffer[2], const ColorBuffer& LowerResBuffer, float UpSampleBlendFactor)
 {
 	// Set the shader constants
 	uint32_t bufferWidth = buffer[0].GetWidth();
@@ -402,7 +397,7 @@ void PostProcessing::UpsampleBlurBuffer(ComputeContext& Context, ColorBuffer buf
 	Context.TransitionResource(buffer[1], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 }
 
-void PostProcessing::BlurBuffer(ComputeContext& Context, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer)
+void ScreenProcessing::BlurBuffer(ComputeContext& Context, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer)
 {
 	// Set the shader constants
 	uint32_t bufferWidth = SourceBuffer.GetWidth();
@@ -423,37 +418,14 @@ void PostProcessing::BlurBuffer(ComputeContext& Context, ColorBuffer& SourceBuff
 	Context.TransitionResource(TargetBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 }
 
-void PostProcessing::LinearizeZ(ComputeContext& Context, Camera& camera, uint32_t FrameIndex)
-{
-	DepthBuffer& Depth = g_SceneDepthBuffer;
-	ColorBuffer& LinearDepth = g_LinearDepth[FrameIndex];
-	const float NearClipDist = camera.GetNearZ();
-	const float FarClipDist = camera.GetFarZ();
-	const float zMagic = (FarClipDist - NearClipDist) / NearClipDist;
 
-	LinearizeZ(Context, Depth, LinearDepth, zMagic);
-}
-
-void PostProcessing::LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, ColorBuffer& LinearDepth, float zMagic)
-{
-	// zMagic= (zFar - zNear) / zNear
-	Context.SetRootSignature(PostEffectsRS);
-	Context.TransitionResource(Depth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-	Context.SetConstants(0, zMagic);
-	Context.SetDynamicDescriptor(3, 0, Depth.GetDepthSRV());
-	Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	Context.SetDynamicDescriptors(2, 0, 1, &LinearDepth.GetUAV());
-	Context.SetPipelineState(LinearizeDepthCS);
-	Context.Dispatch2D(LinearDepth.GetWidth(), LinearDepth.GetHeight(), 16, 16);
-}
-
-void PostProcessing::ShutDown()
+void ScreenProcessing::ShutDown()
 {
 	g_Exposure.Destroy();
 }
 
 
-void PostProcessing::GenerateBloom(ComputeContext& Context)
+void ScreenProcessing::GenerateBloom(ComputeContext& Context)
 {
 	ScopedTimer Scope(L"Generate Bloom", Context);
 
@@ -531,7 +503,7 @@ void PostProcessing::GenerateBloom(ComputeContext& Context)
 
 }
 
-void PostProcessing::ExtractLuminance(ComputeContext& Context)
+void ScreenProcessing::ExtractLuminance(ComputeContext& Context)
 {
 	ScopedTimer Scope(L"Extract Luminance", Context);
 	Context.TransitionResource(g_LumaBloom, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
@@ -545,7 +517,7 @@ void PostProcessing::ExtractLuminance(ComputeContext& Context)
 }
 
 
-void PostProcessing::CopyBackBufferForNotHDRUAVSupport(ComputeContext& Context)
+void ScreenProcessing::CopyBackBufferForNotHDRUAVSupport(ComputeContext& Context)
 {
 	ScopedTimer Scope(L"Copy Post back to Scene For Not HDR UAV Support", Context);
 	Context.SetRootSignature(PostEffectsRS);

@@ -9,6 +9,7 @@
 #include "Engine/EngineProfiling.h"
 #include "Misc/LightManager.h"
 #include "PostProcessing/PostProcessing.h"
+#include "PostProcessing/SSAO.h"
 
 /// Scene/////////////////////////////////////////////
 using namespace GlareEngine::Render;
@@ -22,11 +23,15 @@ Scene::Scene(string name, ID3D12GraphicsCommandList* pCommandList)
 
 void Scene::Update(float DeltaTime)
 {
+	//Clear visiable buffer for debug
+	EngineGUI::ClearRenderPassVisualizeTexture();
 
 	//Update shadow map
 	m_pShadowMap->Update(DeltaTime);
+
 	//Update Main Constant Buffer
 	UpdateMainConstantBuffer(DeltaTime);
+
 	//Update Objects
 	for (auto& object : m_pRenderObjects)
 	{
@@ -34,11 +39,13 @@ void Scene::Update(float DeltaTime)
 	}
 
 	GraphicsContext& Context = GraphicsContext::Begin(L"Scene Update");
+
 	//Update GLTF Objects
 	for (auto& object : m_pGLTFRenderObjects)
 	{
 		object->Update(DeltaTime, &Context);
 	}
+
 	Context.Finish();
 
 }
@@ -65,7 +72,6 @@ void Scene::VisibleUpdateForType()
 			object->SetVisible(TypeVisible[object->mObjectType]);
 		}
 	}
-
 
 	for (auto& object : m_pGLTFRenderObjects)
 	{
@@ -166,7 +172,7 @@ void Scene::RenderScene(RenderPipelineType Type)
 	}
 	
 	//Post Processing
-	PostProcessing::Render();
+	ScreenProcessing::Render();
 }
 
 void Scene::DrawUI()
@@ -188,7 +194,7 @@ void Scene::DrawUI()
 
 
 	//Post Processing UI
-	PostProcessing::DrawUI();
+	ScreenProcessing::DrawUI();
 
 	m_pGUI->EndDraw(RenderContext.GetCommandList());
 	RenderContext.PIXEndEvent();
@@ -365,18 +371,6 @@ void Scene::ForwardPlusRendering()
 {
 	GraphicsContext& Context = GraphicsContext::Begin(L"Scene Render");
 
-	//MSAA
-	if (IsMSAA)
-	{
-		Context.TransitionResource(g_SceneMSAADepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
-		Context.ClearDepthAndStencil(g_SceneMSAADepthBuffer, REVERSE_Z ? 0.0f : 1.0f);
-	}
-	else
-	{
-		Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
-		Context.ClearDepthAndStencil(g_SceneDepthBuffer, REVERSE_Z ? 0.0f : 1.0f);
-	}
-
 	//default batch
 	MeshSorter sorter(MeshSorter::eDefault);
 	sorter.SetCamera(*m_pCamera);
@@ -394,7 +388,7 @@ void Scene::ForwardPlusRendering()
 		sorter.AddRenderTarget(g_SceneColorBuffer);
 	}
 	
-	//Culling and add Objects Render
+	//Culling and add  Render Objects
 	for (auto& model : m_pGLTFRenderObjects)
 	{
 		if (model->GetVisible())
@@ -409,12 +403,40 @@ void Scene::ForwardPlusRendering()
 	//Depth PrePass
 	{
 		ScopedTimer PrePassScope(L"Depth PrePass", Context);
+
+		//Clear Depth And Stencil
+		if (IsMSAA)
+		{
+			Context.TransitionResource(g_SceneMSAADepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+			Context.ClearDepthAndStencil(g_SceneMSAADepthBuffer, REVERSE_Z ? 0.0f : 1.0f);
+		}
+		else
+		{
+			Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+			Context.ClearDepthAndStencil(g_SceneDepthBuffer, REVERSE_Z ? 0.0f : 1.0f);
+		}
+
 		sorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
+
+		//Resolve Depth Buffer if MSAA
+		if (IsMSAA)
+		{
+			Context.TransitionResource(g_SceneMSAADepthBuffer, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
+			Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, true);
+			Context.GetCommandList()->ResolveSubresource(g_SceneDepthBuffer.GetResource(), 0, g_SceneMSAADepthBuffer.GetResource(), 0, DXGI_FORMAT_R32_FLOAT);
+		}
 	}
 
-	//TODO: Linear Z
+	//Linear Z
 	{
+		ScopedTimer LinearZScope(L"Linear Z", Context);
 
+		ComputeContext& computeContext = Context.GetComputeContext();
+
+		uint32_t frameIndex = 0; //change it when add TAA
+
+		//LinearizeZ code in SSAO so them can use the same RS 
+		SSAO::LinearizeZ(computeContext, *m_pCamera, frameIndex);
 	}
 
 	//TODO: SSAO
@@ -425,14 +447,6 @@ void Scene::ForwardPlusRendering()
 	//Light Culling
 	if (LoadingFinish)
 	{
-		//Set lighting buffers in the SRV Heap
-		if (IsMSAA)
-		{
-			Context.TransitionResource(g_SceneMSAADepthBuffer, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
-			Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, true);
-			Context.GetCommandList()->ResolveSubresource(g_SceneDepthBuffer.GetResource(), 0, g_SceneMSAADepthBuffer.GetResource(), 0, DXGI_FORMAT_R32_FLOAT);
-		}
-
 		Lighting::FillLightGrid(Context, *m_pCamera);
 
 		D3D12_CPU_DESCRIPTOR_HANDLE LightSRV[] = 
@@ -480,20 +494,22 @@ void Scene::ForwardPlusRendering()
 			shadowSorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
 		}
 
-		if (IsMSAA)
-		{
-			Context.TransitionResource(g_SceneMSAAColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-			Context.ClearRenderTarget(g_SceneMSAAColorBuffer);
-		}
-		else
-		{
-			Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-			Context.ClearRenderTarget(g_SceneColorBuffer);
-		}
-		
 		//Base Pass
 		{
 			ScopedTimer RenderColorScope(L"Render Color", Context);
+
+			//Clear Render Target
+			if (IsMSAA)
+			{
+				Context.TransitionResource(g_SceneMSAAColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+				Context.ClearRenderTarget(g_SceneMSAAColorBuffer);
+			}
+			else
+			{
+				Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+				Context.ClearRenderTarget(g_SceneColorBuffer);
+			}
+
 			//Set Cube SRV
 			Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[COMMONSRVSIZE]);
 			//Set Textures SRV
@@ -524,15 +540,16 @@ void Scene::ForwardPlusRendering()
 
 		//Transparent Pass
 		sorter.RenderMeshes(MeshSorter::eTransparent, Context, mMainConstants);
+
+		//Resolve MSAA
+		if (IsMSAA)
+		{
+			Context.TransitionResource(g_SceneMSAAColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
+			Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, true);
+			Context.GetCommandList()->ResolveSubresource(g_SceneColorBuffer.GetResource(), 0, g_SceneMSAAColorBuffer.GetResource(), 0, DefaultHDRColorFormat);
+		}
 	}
 
-	//Resolve MSAA
-	if (IsMSAA)
-	{
-		Context.TransitionResource(g_SceneMSAAColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
-		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, true);
-		Context.GetCommandList()->ResolveSubresource(g_SceneColorBuffer.GetResource(), 0, g_SceneMSAAColorBuffer.GetResource(), 0, DefaultHDRColorFormat);
-	}
 	Context.Finish();
 }
 

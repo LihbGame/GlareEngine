@@ -135,7 +135,7 @@ namespace GlareEngine
 			//RenderScene
 			Game.RenderScene();
 
-			//PostProcessing::DrawBeforeToneMapping();
+			//ScreenProcessing::DrawBeforeToneMapping();
 
 			//Tone Mapping hdr or ldr
 			Display::PreparePresent();

@@ -225,7 +225,7 @@ struct ASSIMP_API aiNode
  * Specifies that the scene data can be shared between structures. For example:
  * one vertex in few faces. \ref AI_SCENE_FLAGS_NON_VERBOSE_FORMAT can not be
  * used for this because \ref AI_SCENE_FLAGS_NON_VERBOSE_FORMAT has internal
- * meaning about postprocessing steps.
+ * meaning about ScreenProcessing steps.
  */
 #define AI_SCENE_FLAGS_ALLOW_SHARED			0x20
 

@@ -70,7 +70,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** @brief Enables time measurements.
  *
  *  If enabled, measures the time needed for each part of the loading
- *  process (i.e. IO time, importing, postprocessing, ..) and dumps
+ *  process (i.e. IO time, importing, ScreenProcessing, ..) and dumps
  *  these timings to the DefaultLogger. See the @link perf Performance
  *  Page@endlink for more information on this topic.
  *
@@ -197,7 +197,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * quotation marks. For example:<tt>
  * "keep-me and_me_to anotherMaterialToBeKept \'name with whitespace\'"</tt>.
  * If a material matches on of these names, it will not be modified or
- * removed by the postprocessing step nor will other materials be replaced
+ * removed by the ScreenProcessing step nor will other materials be replaced
  * by a reference to it. <br>
  * This option might be useful if you are using some magic material names
  * to pass additional semantics through the content pipeline. This ensures
@@ -285,7 +285,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * quotation marks. For example:<tt>
  * "keep-me and_me_to anotherNodeToBeKept \'name with whitespace\'"</tt>.
  * If a node matches on of these names, it will not be modified or
- * removed by the postprocessing step.<br>
+ * removed by the ScreenProcessing step.<br>
  * This option might be useful if you are using some magic node names
  * to pass additional semantics through the content pipeline. This ensures
  * they won't be optimized away, but a general optimization is still

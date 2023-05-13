@@ -177,7 +177,7 @@ ASSIMP_API const C_STRUCT aiScene* aiImportFileExWithProperties(
  *   a successful import. Provide a bitwise combination of the
  *   #aiPostProcessSteps flags. If you wish to inspect the imported
  *   scene first in order to fine-tune your post-processing setup,
- *   consider to use #aiApplyPostProcessing().
+ *   consider to use #aiApplyScreenProcessing().
  * @param pHint An additional hint to the library. If this is a non empty string,
  *   the library looks for a loader to support the file extension specified by pHint
  *   and passes the file to the first matching loader. If this loader is unable to
@@ -209,7 +209,7 @@ ASSIMP_API const C_STRUCT aiScene* aiImportFileFromMemory(
  *   a successful import. Provide a bitwise combination of the
  *   #aiPostProcessSteps flags. If you wish to inspect the imported
  *   scene first in order to fine-tune your post-processing setup,
- *   consider to use #aiApplyPostProcessing().
+ *   consider to use #aiApplyScreenProcessing().
  * @param pHint An additional hint to the library. If this is a non empty string,
  *   the library looks for a loader to support the file extension specified by pHint
  *   and passes the file to the first matching loader. If this loader is unable to
@@ -250,7 +250,7 @@ ASSIMP_API const C_STRUCT aiScene* aiImportFileFromMemoryWithProperties(
  *   the #aiProcess_ValidateDataStructure flag is currently the only post processing step
  *   which can actually cause the scene to be reset to NULL.
  */
-ASSIMP_API const C_STRUCT aiScene* aiApplyPostProcessing(
+ASSIMP_API const C_STRUCT aiScene* aiApplyScreenProcessing(
     const C_STRUCT aiScene* pScene,
     unsigned int pFlags);
 
@@ -336,7 +336,7 @@ ASSIMP_API void aiReleaseImport(
  *
  * @return A textual description of the error that occurred at the last
  * import process. NULL if there was no error. There can't be an error if you
- * got a non-NULL #aiScene from #aiImportFile/#aiImportFileEx/#aiApplyPostProcessing.
+ * got a non-NULL #aiScene from #aiImportFile/#aiImportFileEx/#aiApplyScreenProcessing.
  */
 ASSIMP_API const char* aiGetErrorString(void);
 

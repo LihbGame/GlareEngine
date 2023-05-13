@@ -251,11 +251,11 @@ enum aiPostProcessSteps
      * validation failures:
      * <ul>
      * <li>Error: There's something wrong with the imported data. Further
-     *   postprocessing is not possible and the data is not usable at all.
+     *   ScreenProcessing is not possible and the data is not usable at all.
      *   The import fails. #Importer::GetErrorString() or #aiGetErrorString()
      *   carry the error message around.</li>
      * <li>Warning: There are some minor issues (e.g. 1000000 animation
-     *   keyframes with the same time), but further postprocessing and use
+     *   keyframes with the same time), but further ScreenProcessing and use
      *   of the data structure is still safe. Warning details are written
      *   to the log file, <tt>#AI_SCENE_FLAGS_VALIDATION_WARNING</tt> is set
      *   in #aiScene::mFlags</li>
@@ -438,7 +438,7 @@ enum aiPostProcessSteps
     aiProcess_FindInstances = 0x100000,
 
     // -------------------------------------------------------------------------
-    /** <hr>A postprocessing step to reduce the number of meshes.
+    /** <hr>A ScreenProcessing step to reduce the number of meshes.
      *
      *  This will, in fact, reduce the number of draw calls.
      *
@@ -450,7 +450,7 @@ enum aiPostProcessSteps
 
 
     // -------------------------------------------------------------------------
-    /** <hr>A postprocessing step to optimize the scene hierarchy.
+    /** <hr>A ScreenProcessing step to optimize the scene hierarchy.
      *
      *  Nodes without animations, bones, lights or cameras assigned are
      *  collapsed and joined.
@@ -546,7 +546,7 @@ enum aiPostProcessSteps
     aiProcess_GlobalScale = 0x8000000,
 
     // -------------------------------------------------------------------------
-    /** <hr>A postprocessing step to embed of textures.
+    /** <hr>A ScreenProcessing step to embed of textures.
      *
      *  This will remove external data dependencies for textures.
      *  If a texture's file does not exist at the specified path

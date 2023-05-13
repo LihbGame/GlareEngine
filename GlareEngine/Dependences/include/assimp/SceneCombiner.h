@@ -195,7 +195,7 @@ struct SceneHelper
  *    scenes. It is intended as internal utility and NOT for use by
  *    applications.
  *
- * The class is currently being used by various postprocessing steps
+ * The class is currently being used by various ScreenProcessing steps
  * and loaders (ie. LWS).
  */
 class ASSIMP_API SceneCombiner {
