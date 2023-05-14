@@ -257,6 +257,7 @@ void ScreenProcessing::Render()
 	ComputeContext& Context = ComputeContext::Begin(L"Post Processing");
 
 	Context.SetRootSignature(PostEffectsRS);
+
 	Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 
 	PostProcessHDR(Context);

@@ -23,7 +23,7 @@ Scene::Scene(string name, ID3D12GraphicsCommandList* pCommandList)
 
 void Scene::Update(float DeltaTime)
 {
-	//Clear visiable buffer for debug
+	//Clear visible buffer for debug
 	EngineGUI::ClearRenderPassVisualizeTexture();
 
 	//Update shadow map
@@ -53,9 +53,9 @@ void Scene::Update(float DeltaTime)
 void Scene::VisibleUpdateForType()
 {
 	unordered_map<ObjectType, bool> TypeVisible;
-	TypeVisible[ObjectType::Sky] = m_pGUI->IsShowSky();
-	TypeVisible[ObjectType::Model] = m_pGUI->IsShowModel();
-	TypeVisible[ObjectType::Shadow] = m_pGUI->IsShowShadow();
+	TypeVisible[ObjectType::Sky]		= m_pGUI->IsShowSky();
+	TypeVisible[ObjectType::Model]		= m_pGUI->IsShowModel();
+	TypeVisible[ObjectType::Shadow]		= m_pGUI->IsShowShadow();
 
 	bool ShadowVisible = TypeVisible[ObjectType::Shadow];
 

@@ -3,35 +3,47 @@
 #include "CommandContext.h"
 #include "Render.h"
 //#include "TemporalEffects.h"
+
+
 namespace GlareEngine
 {
-	DepthBuffer g_SceneDepthBuffer;
-	ColorBuffer g_SceneColorBuffer;
-	ColorBuffer g_PostEffectsBuffer;
+	DepthBuffer				g_SceneDepthBuffer;
+
+	ColorBuffer				g_SceneColorBuffer;
+
+	ColorBuffer				g_PostEffectsBuffer;
 
 	//MSAA Buffer
-	DepthBuffer g_SceneMSAADepthBuffer;
-	ColorBuffer g_SceneMSAAColorBuffer;
+	DepthBuffer				g_SceneMSAADepthBuffer;
+
+	ColorBuffer				g_SceneMSAAColorBuffer;
 
 	//Bloom
-	ColorBuffer g_aBloomUAV1[2];
-	ColorBuffer g_aBloomUAV2[2];
-	ColorBuffer g_aBloomUAV3[2];
-	ColorBuffer g_aBloomUAV4[2];
-	ColorBuffer g_aBloomUAV5[2];
-	ColorBuffer g_LumaBloom;
+	ColorBuffer				g_aBloomUAV1[2];
+
+	ColorBuffer				g_aBloomUAV2[2];
+
+	ColorBuffer				g_aBloomUAV3[2];
+
+	ColorBuffer				g_aBloomUAV4[2];
+
+	ColorBuffer				g_aBloomUAV5[2];
+
+	ColorBuffer				g_LumaBloom;
 
 	//HDR
-	ByteAddressBuffer g_Histogram;
-	ColorBuffer g_LumaBuffer;
+	ByteAddressBuffer		g_Histogram;
+
+	ColorBuffer				g_LumaBuffer;
 	
-	ColorBuffer g_LinearDepth[2];
+	ColorBuffer				g_LinearDepth[2];
+
+	ColorBuffer				g_SSAOFullScreen(Color(1.0f, 1.0f, 1.0f));		//Clear Color(1.0f, 1.0f, 1.0f)
 
 	//ColorBuffer g_VelocityBuffer;
 	//ColorBuffer g_OverlayBuffer;
 	//ColorBuffer g_HorizontalBuffer;
 
-	//ColorBuffer g_SSAOFullScreen(Color(1.0f, 1.0f, 1.0f));
 	//ColorBuffer g_MinMaxDepth8;
 	//ColorBuffer g_MinMaxDepth16;
 	//ColorBuffer g_MinMaxDepth32;
@@ -135,14 +147,15 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 	g_LinearDepth[0].Create(L"Linear Depth 0", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
 	g_LinearDepth[1].Create(L"Linear Depth 1", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
 
+	g_SSAOFullScreen.Create(L"SSAO Full Resolution", NativeWidth, NativeWidth, 1, DXGI_FORMAT_R8_UNORM);
+
+
 
 	//g_VelocityBuffer.Create(L"Motion Vectors", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT);
 
 	//g_MinMaxDepth8.Create(L"MinMaxDepth 8x8", bufferWidth3, bufferHeight3, 1, DXGI_FORMAT_R32_UINT, esram);
 	//g_MinMaxDepth16.Create(L"MinMaxDepth 16x16", bufferWidth4, bufferHeight4, 1, DXGI_FORMAT_R32_UINT, esram);
 	//g_MinMaxDepth32.Create(L"MinMaxDepth 32x32", bufferWidth5, bufferHeight5, 1, DXGI_FORMAT_R32_UINT, esram);
-
-	//g_SSAOFullScreen.Create(L"SSAO Full Res", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R8_UNORM);
 
 	//g_DepthDownsize1.Create(L"Depth Down-Sized 1", bufferWidth1, bufferHeight1, 1, DXGI_FORMAT_R32_FLOAT, esram);
 	//g_DepthDownsize2.Create(L"Depth Down-Sized 2", bufferWidth2, bufferHeight2, 1, DXGI_FORMAT_R32_FLOAT, esram);
@@ -184,30 +197,6 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 
 	
 	//g_MotionPrepBuffer.Create(L"Motion Blur Prep", bufferWidth1, bufferHeight1, 1, HDR_MOTION_FORMAT, esram);
-	
-
-	// This is useful for storing per-pixel weights such as motion strength or pixel luminance
-	//g_LumaBuffer.Create(L"Luminance", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R8_UNORM, esram);
-
-	// Divisible by 128 so that after dividing by 16, we still have multiples of 8x8 tiles.  The bloom
-	// dimensions must be at least 1/4 native resolution to avoid undersampling.
-	//uint32_t kBloomWidth = bufferWidth > 2560 ? Math::AlignUp(bufferWidth / 4, 128) : 640;
-	//uint32_t kBloomHeight = bufferHeight > 1440 ? Math::AlignUp(bufferHeight / 4, 128) : 384;
-	//uint32_t kBloomWidth = bufferWidth > 2560 ? 1280 : 640;
-	//uint32_t kBloomHeight = bufferHeight > 1440 ? 768 : 384;
-
-	
-	//g_LumaLR.Create(L"Luma Buffer", kBloomWidth, kBloomHeight, 1, DXGI_FORMAT_R8_UINT, esram);
-	//g_aBloomUAV1[0].Create(L"Bloom Buffer 1a", kBloomWidth, kBloomHeight, 1, DefaultHdrColorFormat, esram);
-	//g_aBloomUAV1[1].Create(L"Bloom Buffer 1b", kBloomWidth, kBloomHeight, 1, DefaultHdrColorFormat, esram);
-	//g_aBloomUAV2[0].Create(L"Bloom Buffer 2a", kBloomWidth / 2, kBloomHeight / 2, 1, DefaultHdrColorFormat, esram);
-	//g_aBloomUAV2[1].Create(L"Bloom Buffer 2b", kBloomWidth / 2, kBloomHeight / 2, 1, DefaultHdrColorFormat, esram);
-	//g_aBloomUAV3[0].Create(L"Bloom Buffer 3a", kBloomWidth / 4, kBloomHeight / 4, 1, DefaultHdrColorFormat, esram);
-	//g_aBloomUAV3[1].Create(L"Bloom Buffer 3b", kBloomWidth / 4, kBloomHeight / 4, 1, DefaultHdrColorFormat, esram);
-	//g_aBloomUAV4[0].Create(L"Bloom Buffer 4a", kBloomWidth / 8, kBloomHeight / 8, 1, DefaultHdrColorFormat, esram);
-	//g_aBloomUAV4[1].Create(L"Bloom Buffer 4b", kBloomWidth / 8, kBloomHeight / 8, 1, DefaultHdrColorFormat, esram);
-	//g_aBloomUAV5[0].Create(L"Bloom Buffer 5a", kBloomWidth / 16, kBloomHeight / 16, 1, DefaultHdrColorFormat, esram);
-	//g_aBloomUAV5[1].Create(L"Bloom Buffer 5b", kBloomWidth / 16, kBloomHeight / 16, 1, DefaultHdrColorFormat, esram);
 	
 
 	//const uint32_t kFXAAWorkSize = bufferWidth * bufferHeight / 4 + 128;
@@ -268,39 +257,53 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 void GlareEngine::DestroyRenderingBuffers()
 {
 	g_SceneDepthBuffer.Destroy();
+
 	g_SceneColorBuffer.Destroy();
 
 	g_LinearDepth[0].Destroy();
+
 	g_LinearDepth[1].Destroy();
 
 	g_PostEffectsBuffer.Destroy();
 
 	g_SceneMSAAColorBuffer.Destroy();
+
 	g_SceneMSAADepthBuffer.Destroy();
 
 	g_aBloomUAV1[0].Destroy();
+
 	g_aBloomUAV2[0].Destroy();
+
 	g_aBloomUAV3[0].Destroy();
+
 	g_aBloomUAV4[0].Destroy();
+
 	g_aBloomUAV5[0].Destroy();
 
 	g_aBloomUAV1[1].Destroy();
+
 	g_aBloomUAV2[1].Destroy();
+
 	g_aBloomUAV3[1].Destroy();
+
 	g_aBloomUAV4[1].Destroy();
+
 	g_aBloomUAV5[1].Destroy();
 
 	g_LumaBloom.Destroy();
 
 	g_Histogram.Destroy();
+
 	g_LumaBuffer.Destroy();
+
+	g_SSAOFullScreen.Destroy();
+
 
 	/*g_VelocityBuffer.Destroy();
 	g_HorizontalBuffer.Destroy();*/
 
 	//g_ShadowBuffer.Destroy();
 
-	//g_SSAOFullScreen.Destroy();
 	//g_MinMaxDepth8.Destroy();
 	//g_MinMaxDepth16.Destroy();
 	//g_MinMaxDepth32.Destroy();

@@ -73,13 +73,24 @@ void SSAO::LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, ColorBuffer& 
 #endif // DEBUG
 }
 
-void SSAO::Render(GraphicsContext& Context, const float* ProjMat, float NearClip, float FarClip)
+void SSAO::Render(GraphicsContext& Context, const Matrix4& ProjMat)
 {
+	const float* pProjMat = reinterpret_cast<const float*>(&ProjMat);
 
-}
+	const float FovTangent = 1.0f / pProjMat[0];
 
-void SSAO::Render(GraphicsContext& Context, Camera& camera)
-{
+	// Flush the PrePass and wait for it on the compute queue
+	g_CommandManager.GetComputeQueue().StallForFence(Context.Flush());
+
+	Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+	Context.TransitionResource(g_SSAOFullScreen, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+	ComputeContext& computeContext = ComputeContext::Begin(L"Async SSAO", true);
+
+	computeContext.SetRootSignature(s_RootSignature);
+
+
 }
 
 
