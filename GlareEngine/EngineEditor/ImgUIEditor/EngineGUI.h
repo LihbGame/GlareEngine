@@ -7,10 +7,13 @@
 #include "Engine/EngineUtility.h"
 #include "Graphics/DescriptorHeap.h"
 
-#define MainMenuBarHeight  35.0f
-#define CLIENT_FROMLEFT 0.166667f
-#define CLIENT_HEIGHT 0.75f
-#define UI_DESCRIPTOR_HEAP_SIZE 32
+#define MainMenuBarHeight				35.0f
+
+#define CLIENT_FROMLEFT					0.166667f
+
+#define CLIENT_HEIGHT					0.75f
+
+#define UI_DESCRIPTOR_HEAP_SIZE			64
 
 extern bool gFullSreenMode;
 
