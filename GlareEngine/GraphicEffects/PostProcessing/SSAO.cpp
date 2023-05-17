@@ -1,5 +1,6 @@
 #include "SSAO.h"
 #include "Graphics/SamplerManager.h"
+#include "PostProcessing/PostProcessing.h"
 #include "EngineGUI.h"
 
 //shader
@@ -8,31 +9,16 @@
 namespace SSAO
 {
 	bool Enable = true;
-	bool AsyncCompute = false;
-	bool ComputeLinearZ = true;
-
-	RootSignature s_RootSignature;
 
 	ComputePSO LinearizeDepthCS(L"Linearize Depth CS");
-
 }
 
 
 void SSAO::Initialize(void)
 {
-	s_RootSignature.Reset(5, 2);
-	s_RootSignature.InitStaticSampler(0, SamplerLinearClampDesc);
-	s_RootSignature.InitStaticSampler(1, SamplerLinearBorderDesc);
-	s_RootSignature[0].InitAsConstants(0, 4);
-	s_RootSignature[1].InitAsConstantBuffer(1);
-	s_RootSignature[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 5);
-	s_RootSignature[3].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 5);
-	s_RootSignature[4].InitAsBufferSRV(5);
-	s_RootSignature.Finalize(L"SSAO");
-
 	//Create Compute PSO Macro
 #define CreatePSO( ObjName, ShaderByteCode ) \
-    ObjName.SetRootSignature(s_RootSignature); \
+    ObjName.SetRootSignature(ScreenProcessing::GetRootSignature()); \
     ObjName.SetComputeShader(ShaderByteCode, sizeof(ShaderByteCode) ); \
     ObjName.Finalize();
 
@@ -59,12 +45,12 @@ void SSAO::LinearizeZ(ComputeContext& Context, Camera& camera, uint32_t FrameInd
 void SSAO::LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, ColorBuffer& LinearDepth, float zMagic)
 {
 	// zMagic= (zFar - zNear) / zNear
-	Context.SetRootSignature(s_RootSignature);
+	Context.SetRootSignature(ScreenProcessing::GetRootSignature());
 	Context.TransitionResource(Depth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	Context.SetConstants(0, zMagic);
-	Context.SetDynamicDescriptor(3, 0, Depth.GetDepthSRV());
+	Context.SetDynamicDescriptor(2, 0, Depth.GetDepthSRV());
 	Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	Context.SetDynamicDescriptors(2, 0, 1, &LinearDepth.GetUAV());
+	Context.SetDynamicDescriptors(1, 0, 1, &LinearDepth.GetUAV());
 	Context.SetPipelineState(LinearizeDepthCS);
 	Context.Dispatch2D(LinearDepth.GetWidth(), LinearDepth.GetHeight(), 16, 16);
 
@@ -86,9 +72,9 @@ void SSAO::Render(GraphicsContext& Context, const Matrix4& ProjMat)
 
 	Context.TransitionResource(g_SSAOFullScreen, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-	ComputeContext& computeContext = ComputeContext::Begin(L"Async SSAO", true);
+	ComputeContext& computeContext = ComputeContext::Begin(L"SSAO", true);
 
-	computeContext.SetRootSignature(s_RootSignature);
+	computeContext.SetRootSignature(ScreenProcessing::GetRootSignature());
 
 
 }

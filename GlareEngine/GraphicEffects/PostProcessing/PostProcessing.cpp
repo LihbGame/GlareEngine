@@ -425,6 +425,10 @@ void ScreenProcessing::ShutDown()
 	g_Exposure.Destroy();
 }
 
+const RootSignature& ScreenProcessing::GetRootSignature()
+{
+	return PostEffectsRS;
+}
 
 void ScreenProcessing::GenerateBloom(ComputeContext& Context)
 {

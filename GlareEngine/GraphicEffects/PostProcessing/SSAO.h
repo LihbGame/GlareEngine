@@ -13,8 +13,4 @@ namespace SSAO
 	void LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, ColorBuffer& LinearDepth, float zMagic);
 
 	extern bool Enable;
-
-	extern bool AsyncCompute;
-
-	extern bool ComputeLinearZ;
 }

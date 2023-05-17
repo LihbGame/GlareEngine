@@ -26,7 +26,7 @@ namespace ScreenProcessing
 
     void ShutDown();
 
-    //PSO
-    extern GraphicsPSO mPSO;
+    const RootSignature& GetRootSignature();
+    
 }
 

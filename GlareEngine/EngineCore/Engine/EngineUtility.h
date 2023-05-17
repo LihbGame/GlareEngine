@@ -12,7 +12,6 @@
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
-#include <atldef.h>
 
 #include <windows.h>
 #include <wrl.h>

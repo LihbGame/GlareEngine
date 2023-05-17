@@ -15,7 +15,7 @@ set(CMAKE_INSTALL_PREFIX "${GLAREENGINE_ROOT_DIR}/bin")
 set(BINARY_ROOT_DIR "${CMAKE_INSTALL_PREFIX}/")
 set(ENGINE_ROOT_DIR "${GLAREENGINE_ROOT_DIR}/GlareEngine")
 
-add_definitions(-DUNICODE -D_UNICODE -D_DEBUG)
+add_definitions(-DUNICODE -D_UNICODE -D_DEBUG -DDEBUG)
 
 add_subdirectory(GlareEngine)
 add_subdirectory(GameDemo)

@@ -37,8 +37,6 @@ namespace GlareEngine
 		DescriptorHeap gSamplerHeap;
 	}
 
-
-
 	void Render::Initialize(ID3D12GraphicsCommandList* CommandList)
 	{
 		if (s_Initialized)
@@ -53,9 +51,9 @@ namespace GlareEngine
 
 		Lighting::InitializeResources();
 
-		SSAO::Initialize();
-
 		ScreenProcessing::Initialize(CommandList);
+
+		SSAO::Initialize();
 
 		s_Initialized = true;
 	}
