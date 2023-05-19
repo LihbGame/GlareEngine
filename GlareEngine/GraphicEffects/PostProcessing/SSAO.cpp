@@ -5,12 +5,22 @@
 
 //shader
 #include "CompiledShaders/LinearizeDepthCS.h"
+#include "CompiledShaders/SsaoCS.h"
 
 namespace SSAO
 {
 	bool Enable = true;
 
 	ComputePSO LinearizeDepthCS(L"Linearize Depth CS");
+	ComputePSO SsaoCS(L"SSAO CS");
+
+	struct SSAORenderData
+	{
+		Matrix4 Proj;
+		Matrix4 InvProj;
+		float Far;
+		float Near;
+	};
 }
 
 
@@ -23,6 +33,8 @@ void SSAO::Initialize(void)
     ObjName.Finalize();
 
 	CreatePSO(LinearizeDepthCS, g_pLinearizeDepthCS);
+
+	CreatePSO(SsaoCS, g_pSsaoCS);
 
 #undef CreatePSO
 }
@@ -70,7 +82,7 @@ void SSAO::LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, ColorBuffer& 
 #endif // DEBUG
 }
 
-void SSAO::Render(GraphicsContext& Context)
+void SSAO::Render(GraphicsContext& Context, MainConstants& RenderData)
 {
 	// Flush the PrePass and wait for it on the compute queue
 	g_CommandManager.GetComputeQueue().StallForFence(Context.Flush());
@@ -83,7 +95,17 @@ void SSAO::Render(GraphicsContext& Context)
 
 	computeContext.SetRootSignature(ScreenProcessing::GetRootSignature());
 
+	SSAORenderData renderData{ Matrix4(RenderData.Proj),Matrix4(RenderData.InvProj), RenderData.FarZ,RenderData.NearZ };
 
+	computeContext.SetDynamicConstantBufferView(3, sizeof(SSAORenderData), &renderData);
+
+	computeContext.SetDynamicDescriptor(1, 0, g_SSAOFullScreen.GetUAV());
+
+	computeContext.SetDynamicDescriptor(2, 0, g_SceneDepthBuffer.GetDepthSRV());
+
+	computeContext.SetPipelineState(SsaoCS);
+
+	computeContext.Dispatch2D(g_SSAOFullScreen.GetWidth(), g_SSAOFullScreen.GetHeight());
 }
 
 

@@ -6,7 +6,7 @@ namespace SSAO
 
 	void Shutdown(void);
 
-	void Render(GraphicsContext& Context);
+	void Render(GraphicsContext& Context, MainConstants& RenderData);
 
 	void LinearizeZ(ComputeContext& Context, Camera& camera, uint32_t FrameIndex);
 
