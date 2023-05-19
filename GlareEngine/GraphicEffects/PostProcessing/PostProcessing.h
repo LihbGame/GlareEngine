@@ -12,6 +12,7 @@ namespace ScreenProcessing
     void Render();
 
     void DrawBeforeToneMapping();
+
     void DrawAfterToneMapping();
 
     void DrawUI();

@@ -114,6 +114,10 @@ namespace GlareEngine
 		virtual void Increment(void) override { m_Value = Clamp(m_Value + m_StepSize); }
 		virtual void Decrement(void) override { m_Value = Clamp(m_Value - m_StepSize); }
 
+		int32_t GetMinValue()const { return m_MinValue; }
+		int32_t GetMaxValue()const { return m_MaxValue; }
+		int32_t& GetValue() { return m_Value; }
+
 		virtual std::string ToString(void) const override;
 		virtual void SetValue(FILE* file, const std::string& setting) override;
 

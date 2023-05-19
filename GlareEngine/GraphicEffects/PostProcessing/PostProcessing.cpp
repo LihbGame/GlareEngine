@@ -25,6 +25,7 @@
 #include "CompiledShaders/GenerateLuminanceHistogramCS.h"
 #include "CompiledShaders/AdaptExposureCS.h"
 #include "CompiledShaders/DrawHistogramCS.h"
+#include "SSAO.h"
 
 namespace ScreenProcessing
 {
@@ -320,6 +321,12 @@ void ScreenProcessing::DrawUI()
 	ImGuiIO& io = ImGui::GetIO();
 	if (ImGui::CollapsingHeader("Post Processing", ImGuiTreeNodeFlags_DefaultOpen))
 	{
+		if (ImGui::TreeNodeEx("SSAO"))
+		{
+			SSAO::DrawUI();
+			ImGui::TreePop();
+		}
+
 		if (ImGui::TreeNodeEx("Bloom", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Checkbox("Enable Bloom", &BloomEnable);
@@ -344,8 +351,6 @@ void ScreenProcessing::DrawUI()
 		{
 			ImGui::TreePop();
 		}
-
-		
 
 	}
 }
