@@ -23,13 +23,14 @@ namespace SSAO
 
 	struct SSAORenderData
 	{
-		Matrix4 Proj;
-		Matrix4 InvProj;
-		float Far;
-		float Near;
-		float SSAORange;
-		float SSAOPower;
-		float SSAOSampleCount;
+		Matrix4			Proj;
+		Matrix4			InvProj;
+		float			Far;
+		float			Near;
+		float			Range;
+		float			Power;
+		XMFLOAT2		InverseDimensions;
+		int				SampleCount;
 	};
 }
 
@@ -105,7 +106,11 @@ void SSAO::Render(GraphicsContext& Context, MainConstants& RenderData)
 
 	computeContext.SetRootSignature(ScreenProcessing::GetRootSignature());
 
-	SSAORenderData renderData{ Matrix4(RenderData.Proj),Matrix4(RenderData.InvProj), RenderData.FarZ,RenderData.NearZ };
+	SSAORenderData renderData{
+		Matrix4(RenderData.Proj),
+		Matrix4(RenderData.InvProj),
+		RenderData.FarZ,RenderData.NearZ,
+		SsaoRange,SsaoPower,XMFLOAT2(1.0f / g_SSAOFullScreen.GetWidth(),1.0f / g_SSAOFullScreen.GetHeight()),SsaoSampleCount };
 
 	computeContext.SetDynamicConstantBufferView(3, sizeof(SSAORenderData), &renderData);
 

@@ -784,4 +784,45 @@ float3 FBM_Liquid(in float2 FragCoord)
     return float3((f * f * f + .6f * f * f + .5f * f) * color);
 }
 
+
+// 2D array index to flattened 1D array index
+inline uint flatten2D(uint2 coord, uint2 dim)
+{
+    return coord.x + coord.y * dim.x;
+}
+// flattened array index to 2D array index
+inline uint2 unflatten2D(uint idx, uint2 dim)
+{
+    return uint2(idx % dim.x, idx / dim.x);
+}
+
+// 3D array index to flattened 1D array index
+inline uint flatten3D(uint3 coord, uint3 dim)
+{
+    return (coord.z * dim.x * dim.y) + (coord.y * dim.x) + coord.x;
+}
+// flattened array index to 3D array index
+inline uint3 unflatten3D(uint idx, uint3 dim)
+{
+    const uint z = idx / (dim.x * dim.y);
+    idx -= (z * dim.x * dim.y);
+    const uint y = idx / dim.x;
+    const uint x = idx % dim.x;
+    return  uint3(x, y, z);
+}
+
+// Reconstructs world-space position from depth buffer
+//	uv		: screen space coordinate in [0, 1] range
+//	z		: depth value at current pixel
+//	InvVP	: Inverse of the View-Projection matrix that was used to generate the depth value
+inline float3 Reconstruct_Position(in float2 uv, in float z, in float4x4 inverse_view_projection)
+{
+    float x = uv.x * 2 - 1;
+    float y = (1 - uv.y) * 2 - 1;
+    float4 position_cvv = float4(x, y, z, 1);
+    float4 position = mul(position_cvv, inverse_view_projection);
+    return position.xyz / position.w;
+}
+
+
 #endif
