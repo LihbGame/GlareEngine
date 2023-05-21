@@ -6,16 +6,16 @@
 #include "BlurCSHelper.hlsli"
 
 
-Texture2D<float3> HigherResBuffer : register(t0);
-Texture2D<float3> LowerResBuffer : register(t1);
-RWTexture2D<float3> BlurResult : register(u0);
+Texture2D<float3> HigherResBuffer   : register(t0);
+Texture2D<float3> LowerResBuffer    : register(t1);
+RWTexture2D<float3> BlurResult      : register(u0);
 
-SamplerState LinearBorderSampler : register(s1);
+SamplerState LinearBorderSampler    : register(s1);
 
-cbuffer BlurConstBuffer : register(b0)
+cbuffer BlurConstBuffer             : register(b0)
 {
-    float2 g_InverseDimensions;
-    float g_UpsampleBlendFactor;
+    float2      g_InverseDimensions;
+    float       g_UpsampleBlendFactor;
 }
 
 

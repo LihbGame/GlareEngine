@@ -85,26 +85,26 @@ protected:
 	bool mIsInfiniteZ;
 
 	// Camera coordinate system with coordinates relative to world space.
-	DirectX::XMFLOAT3 mPosition = { 0.0f, 0.0f, 0.0f };
-	DirectX::XMFLOAT3 mRight = { 1.0f, 0.0f, 0.0f };
-	DirectX::XMFLOAT3 mUp = { 0.0f, 1.0f, 0.0f };
-	DirectX::XMFLOAT3 mLook = { 0.0f, 0.0f, 1.0f };
+	DirectX::XMFLOAT3 mPosition			= { 0.0f, 0.0f, 0.0f };
+	DirectX::XMFLOAT3 mRight			= { 1.0f, 0.0f, 0.0f };
+	DirectX::XMFLOAT3 mUp				= { 0.0f, 1.0f, 0.0f };
+	DirectX::XMFLOAT3 mLook				= { 0.0f, 0.0f, 1.0f };
 
 	// Cache frustum properties.
-	float mNearZ = 0.0f;
-	float mFarZ = 0.0f;
-	float mAspect = 0.0f;
-	float mFovY = 0.0f;
-	float mNearWindowHeight = 0.0f;
-	float mFarWindowHeight = 0.0f;
+	float mNearZ						= 0.0f;
+	float mFarZ							= 0.0f;
+	float mAspect						= 0.0f;
+	float mFovY							= 0.0f;
+	float mNearWindowHeight				= 0.0f;
+	float mFarWindowHeight				= 0.0f;
 
-	bool mViewDirty = true;
-	bool mViewChanged = true;
+	bool mViewDirty						= true;
+	bool mViewChanged					= true;
 
 	// Cache View/Proj matrices.
-	DirectX::XMFLOAT4X4 mView = MathHelper::Identity4x4();
-	DirectX::XMFLOAT4X4 mProj = MathHelper::Identity4x4();
-	DirectX::XMFLOAT4X4 mViewProj = MathHelper::Identity4x4();
+	DirectX::XMFLOAT4X4 mView			= MathHelper::Identity4x4();
+	DirectX::XMFLOAT4X4 mProj			= MathHelper::Identity4x4();
+	DirectX::XMFLOAT4X4 mViewProj		= MathHelper::Identity4x4();
 
 	Matrix4 mCameraToWorld;
 	//Frustum

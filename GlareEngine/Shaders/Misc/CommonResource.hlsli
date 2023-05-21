@@ -1,10 +1,10 @@
 #ifndef COMMON_RESOURCE
 #define COMMON_RESOURCE
 
-#define MAX2DSRVSIZE 1024
-#define MAXCUBESRVSIZE 32
-#define MAXPBRSRVSIZE 10
-#define COMMONSRVSIZE 10
+#define MAX2DSRVSIZE        1024
+#define MAXCUBESRVSIZE      32
+#define MAXPBRSRVSIZE       10
+#define COMMONSRVSIZE       10
 
 // Shadow map related variables
 #define NUM_SAMPLES 20
@@ -26,38 +26,38 @@ static const float3 DielectricSpecular = float3(0.04, 0.04, 0.04);
 
 struct DirectionalLight
 {
-    float3 Strength;
-    int Pad1;
-    float3 Direction;
-    int Pad2;
+    float3      Strength;
+    int         Pad1;
+    float3      Direction;
+    int         Pad2;
 };
 
 struct SurfaceProperties
 {
-    float3 N;           //surface normal
-    float3 V;           //normalized view vector
-    float3 c_diff;
-    float3 c_spec;      //The F0 reflectance value - 0.04 for non-metals, or RGB for metals.
-    float3 worldPos;
-    float roughness;
-    float alpha;        // roughness squared
-    float alphaSqr;     // alpha squared
-    float NdotV;
-    float ShadowFactor;
-    float ao;
+    float3  N;           //surface normal
+    float3  V;           //normalized view vector
+    float3  c_diff;
+    float3  c_spec;      //The F0 reflectance value - 0.04 for non-metals, or RGB for metals.
+    float3  worldPos;
+    float   roughness;
+    float   alpha;        // roughness squared
+    float   alphaSqr;     // alpha squared
+    float   NdotV;
+    float   ShadowFactor;
+    float   ao;
 };
 
 struct LightProperties
 {
-    float3 L;           //normalized direction to light
-    float3 H;
-    float NdotL;
-    float LdotH;
-    float NdotH;
+    float3  L;           //normalized direction to light
+    float3  H;
+    float   NdotL;
+    float   LdotH;
+    float   NdotH;
 
-    float3 Strength;
-    float3 Direction;
-    float3 LightPosition;
+    float3  Strength;
+    float3  Direction;
+    float3  LightPosition;
 };
 
 
@@ -75,69 +75,69 @@ struct Material
 //Constant data per frame.
 cbuffer MainPass : register(b0)
 {
-    float4x4 gView;
-    float4x4 gInvView;
-    float4x4 gProj;
-    float4x4 gInvProj;
-    float4x4 gViewProj;
-    float4x4 gInvViewProj;
-    float4x4 gShadowTransform;
-    float3 gEyePosW;
-    float cbPerObjectPad1;
-    float2 gRenderTargetSize;
-    float2 gInvRenderTargetSize;
-    float gNearZ;
-    float gFarZ;
-    float gTotalTime;
-    float gDeltaTime;
-    float4 gAmbientLight;
+    float4x4    gView;
+    float4x4    gInvView;
+    float4x4    gProj;
+    float4x4    gInvProj;
+    float4x4    gViewProj;
+    float4x4    gInvViewProj;
+    float4x4    gShadowTransform;
+    float3      gEyePosW;
+    float       cbPerObjectPad1;
+    float2      gRenderTargetSize;
+    float2      gInvRenderTargetSize;
+    float       gNearZ;
+    float       gFarZ;
+    float       gTotalTime;
+    float       gDeltaTime;
+    float4      gAmbientLight;
 
     DirectionalLight gLights[MAX_DIR_LIGHTS];
 
-    float4 gInvTileDimension;
-    uint4 gTileCount;
-    uint4 gFirstLightIndex;
+    float4      gInvTileDimension;
+    uint4       gTileCount;
+    uint4       gFirstLightIndex;
 
-    int gShadowMapIndex;
-    int gSkyCubeIndex;
-    int gBakingDiffuseCubeIndex;
-    int gBakingPreFilteredEnvIndex;
-    int gBakingIntegrationBRDFIndex;
-    float IBLRange;
-    float IBLBias;
-    int pad0;
+    int         gShadowMapIndex;
+    int         gSkyCubeIndex;
+    int         gBakingDiffuseCubeIndex;
+    int         gBakingPreFilteredEnvIndex;
+    int         gBakingIntegrationBRDFIndex;
+    float       IBLRange;
+    float       IBLBias;
+    int         pad0;
 
-    int  gDirectionalLightsCount;
-    int  gIsIndoorScene;
+    int         gDirectionalLightsCount;
+    int         gIsIndoorScene;
 };
 
 
 struct InstanceData
 {
-    float4x4 World;
-    float4x4 TexTransform;
-    uint MaterialIndex;
-    uint mPAD1;
-    uint mPAD2;
-    uint mPAD3;
+    float4x4        World;
+    float4x4        TexTransform;
+    uint            MaterialIndex;
+    uint            mPAD1;
+    uint            mPAD2;
+    uint            mPAD3;
 };
 
 
 struct MaterialData
 {
-    float4 mDiffuseAlbedo;
-    float3 mFresnelR0;
-    float mHeightScale;
-    float4x4 mMatTransform;
-    uint mRoughnessMapIndex;
-    uint mDiffuseMapIndex;
-    uint mNormalMapIndex;
-    uint mMetallicMapIndex;
-    uint mAOMapIndex;
-    uint mHeightMapIndex;
+    float4          mDiffuseAlbedo;
+    float3          mFresnelR0;
+    float           mHeightScale;
+    float4x4        mMatTransform;
+    uint            mRoughnessMapIndex;
+    uint            mDiffuseMapIndex;
+    uint            mNormalMapIndex;
+    uint            mMetallicMapIndex;
+    uint            mAOMapIndex;
+    uint            mHeightMapIndex;
 };
 
-SamplerState gMaterialSampler[10]         : register(s0);
+SamplerState gMaterialSampler[10]       : register(s0);
 
 //static sampler
 SamplerState gSamplerLinearWrap         : register(s10);
@@ -152,8 +152,8 @@ SamplerComparisonState gSamplerShadow   : register(s12);
 //Texture array, only supported for shader model 5.1+. Unlike Texture2DArray,
 //Textures in this array can have different sizes and formats, making it more flexible than texture arrays.
 
-TextureCube gCubeMaps[MAXCUBESRVSIZE]                   : register(t20);
-Texture2D   gSRVMap[MAX2DSRVSIZE]                       : register(t52);
+TextureCube gCubeMaps[MAXCUBESRVSIZE]    : register(t20);
+Texture2D   gSRVMap[MAX2DSRVSIZE]        : register(t52);
 
 
 StructuredBuffer<MaterialData> gMaterialData : register(t1, space1);
@@ -192,20 +192,20 @@ struct HullOut
 
 cbuffer TerrainCBPass : register(b1)
 {
-    float4 gWorldFrustumPlanes[6];
+    float4      gWorldFrustumPlanes[6];
 
-    float gTessellationScale;
-    float gTexelCellSpaceU;
-    float gTexelCellSpaceV;
-    float gWorldCellSpace;
+    float       gTessellationScale;
+    float       gTexelCellSpaceU;
+    float       gTexelCellSpaceV;
+    float       gWorldCellSpace;
 
-    int gHeightMapIndex;
-    int gBlendMapIndex;
+    int         gHeightMapIndex;
+    int         gBlendMapIndex;
 
-    float gMinDist;
-    float gMaxDist;
-    float gMinTess;
-    float gMaxTess;
+    float       gMinDist;
+    float       gMaxDist;
+    float       gMinTess;
+    float       gMaxTess;
 };
 #endif
 
@@ -824,5 +824,23 @@ inline float3 Reconstruct_Position(in float2 uv, in float z, in float4x4 inverse
     return position.xyz / position.w;
 }
 
+
+float RadicalInverse_VdC(uint bits)
+{
+    bits = (bits << 16u) | (bits >> 16u);
+    bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
+    bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
+    bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
+    bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
+    return float(bits) * 2.3283064365386963e-10; // / 0x100000000
+}
+
+// A uniform 2D random generator for hemisphere sampling: http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
+//	i	: iteration index
+//	N	: number of iterations in total
+float2 Hammersley(uint i, uint N)
+{
+    return float2(float(i) / float(N), RadicalInverse_VdC(i));
+}
 
 #endif
