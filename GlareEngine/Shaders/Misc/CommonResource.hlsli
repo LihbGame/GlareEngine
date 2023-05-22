@@ -272,6 +272,13 @@ struct Cone
     float  r;   // bottom radius of the cone.
 };
 
+
+inline bool Is_Saturated(float a) { return a == saturate(a); }
+inline bool Is_Saturated(float2 a) { return all(a == saturate(a)); }
+inline bool Is_Saturated(float3 a) { return all(a == saturate(a)); }
+inline bool Is_Saturated(float4 a) { return all(a == saturate(a)); }
+
+
 // This is for light culling
 // Four planes of a view frustum (in view space).
 // The planes are:
@@ -842,5 +849,87 @@ float2 Hammersley(uint i, uint N)
 {
     return float2(float(i) / float(N), RadicalInverse_VdC(i));
 }
+
+// Point on hemisphere with uniform distribution
+//	u, v : in range [0, 1]
+float3 HemispherePoint_Uniform(float u, float v) 
+{
+    float phi = v * 2 * PI;
+    float cosTheta = 1 - u;
+    float sinTheta = sqrt(1 - cosTheta * cosTheta);
+    return float3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+}
+
+// Point on hemisphere with cosine-weighted distribution
+//	u, v : in range [0, 1]
+float3 HemispherePoint_Cos(float u, float v) 
+{
+    float phi = v * 2 * PI;
+    float cosTheta = sqrt(1 - u);
+    float sinTheta = sqrt(1 - cosTheta * cosTheta);
+    return float3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+}
+
+// Random number generator based on: https://github.com/diharaw/helios/blob/master/src/engine/shader/random.glsl
+struct RandomNumberGenerator
+{
+    uint2 s; // state
+
+    // xoroshiro64* random number generator.
+    // http://prng.di.unimi.it/xoroshiro64star.c
+    uint rotl(uint x, uint k)
+    {
+        return (x << k) | (x >> (32 - k));
+    }
+    // Xoroshiro64* RNG
+    uint next()
+    {
+        uint result = s.x * 0x9e3779bb;
+
+        s.y ^= s.x;
+        s.x = rotl(s.x, 26) ^ s.y ^ (s.y << 9);
+        s.y = rotl(s.y, 13);
+
+        return result;
+    }
+    // Thomas Wang 32-bit hash.
+    // http://www.reedbeta.com/blog/quick-and-easy-gpu-random-numbers-in-d3d11/
+    uint hash(uint seed)
+    {
+        seed = (seed ^ 61) ^ (seed >> 16);
+        seed *= 9;
+        seed = seed ^ (seed >> 4);
+        seed *= 0x27d4eb2d;
+        seed = seed ^ (seed >> 15);
+        return seed;
+    }
+
+    void init(uint2 id, uint frameIndex)
+    {
+        uint s0 = (id.x << 16) | id.y;
+        uint s1 = frameIndex;
+        s.x = hash(s0);
+        s.y = hash(s1);
+        next();
+    }
+    float next_float()
+    {
+        uint u = 0x3f800000 | (next() >> 9);
+        return asfloat(u) - 1.0;
+    }
+    uint next_uint(uint nmax)
+    {
+        float f = next_float();
+        return uint(floor(f * nmax));
+    }
+    float2 next_float2()
+    {
+        return float2(next_float(), next_float());
+    }
+    float3 next_float3()
+    {
+        return float3(next_float(), next_float(), next_float());
+    }
+};
 
 #endif

@@ -439,9 +439,9 @@ void Scene::ForwardPlusRendering()
 		SSAO::LinearizeZ(computeContext, *m_pCamera, frameIndex);
 	}
 
-	//TODO: SSAO
+	//SSAO
 	{
-
+		SSAO::Render(Context, mMainConstants);
 	}
 
 	//Light Culling

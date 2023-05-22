@@ -2,11 +2,13 @@
 
 Texture2D<float> DepthBuffer			: register(t0);
 
-RWTexture2D<float> SsaoResult			: register(u0);
+Texture2D<float> LinearDepthBuffer		: register(t1);
+
+RWTexture2D<unorm float> SsaoResult		: register(u0);
 
 SamplerState BiLinearClampSampler		: register(s0);
 
-cbuffer SSAOConstBuffer					: register(b0)
+cbuffer SSAOConstBuffer					: register(b1)
 {
 	float4x4			Proj;
 	float4x4			InvProj;
@@ -62,7 +64,11 @@ void main(uint3 DTid : SV_DispatchThreadID, uint3 Gid : SV_GroupID, uint3 GTid :
 	const float CenterZ = TileZ[CrossDepthIndex[0]];
 
 	[branch]
-	if (CenterZ >= Far) return;
+	if (CenterZ >= Far)
+	{
+		SsaoResult[DTid.xy] = 1.0f;
+		return;
+	}
 
 	const uint Best_Z_Horizontal	= abs(TileZ[CrossDepthIndex[1]] - CenterZ) < abs(TileZ[CrossDepthIndex[2]] - CenterZ) ? 1 : 2;
 	const uint Best_Z_Vertical		= abs(TileZ[CrossDepthIndex[3]] - CenterZ) < abs(TileZ[CrossDepthIndex[4]] - CenterZ) ? 3 : 4;
@@ -93,11 +99,40 @@ void main(uint3 DTid : SV_DispatchThreadID, uint3 Gid : SV_GroupID, uint3 GTid :
 	const float3 normal		= normalize(cross(P2 - P0, P1 - P0));
 
 	//Compute a Random Tangent 
-	const float3 noise			= random32(float2(DTid.xy)) * 2 - 1;
+	const float3 noise			= random32(DTid.xy) * 2 - 1;
 	const float3 tangent		= normalize(noise - normal * dot(noise, normal));
 	const float3 bitangent		= cross(normal, tangent);
 	//Tangent Space (TBN)
 	const float3x3 tangentSpace = float3x3(tangent, bitangent, normal);
 
+	float AO = 0;
+	for (uint i = 0; i < SampleCount; ++i)
+	{
+		const float2 hammersley		= Hammersley(i, SampleCount);
+		const float3 hemisphere		= HemispherePoint_Uniform(hammersley.x, hammersley.y);
+		const float3 cone			= mul(hemisphere, tangentSpace);
+		const float ray_range		= Range*lerp(0.2f, 1.0f, random11(i)); // avoid uniform look
+		const float3 samplePoint	= P0 + cone * ray_range;
 
+		float4 ProjectedCoord		= mul(float4(samplePoint, 1.0f), Proj);
+		ProjectedCoord.xyz			/= ProjectedCoord.w;
+		ProjectedCoord.xy			= ProjectedCoord.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+
+		[branch]
+		if (Is_Saturated(ProjectedCoord.xy))
+		{
+			const float Ray_Depth_Real		= ProjectedCoord.w; // .w is also linear depth
+			const float Ray_Depth_Sample	= LinearDepthBuffer.SampleLevel(BiLinearClampSampler, ProjectedCoord.xy, 0) * Far;
+			const float Depth_Range			= abs(Ray_Depth_Real - Ray_Depth_Sample);
+			const float Depth_fix			= 1 - saturate(Depth_Range *0.2); // too much depth difference cancels the effect
+			
+			if (Depth_Range > 0.04f)// avoid self occlusion
+			{
+				AO += (Ray_Depth_Sample < Ray_Depth_Real) * Depth_fix;
+			}
+		}
+	}
+	AO /= SampleCount;
+
+	SsaoResult[DTid.xy] = pow(saturate(1 - AO), Power);
 }

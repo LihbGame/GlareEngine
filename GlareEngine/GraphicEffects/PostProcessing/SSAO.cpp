@@ -21,6 +21,8 @@ namespace SSAO
 
 	IntVar SsaoSampleCount(16, 1, 16);
 
+	ColorBuffer* CurrentLinearDepth = nullptr;
+
 	struct SSAORenderData
 	{
 		Matrix4			Proj;
@@ -58,7 +60,7 @@ void SSAO::LinearizeZ(ComputeContext& Context, Camera& camera, uint32_t FrameInd
 {
 	DepthBuffer& Depth = g_SceneDepthBuffer;
 
-	ColorBuffer& LinearDepth = g_LinearDepth[FrameIndex];
+	CurrentLinearDepth = &g_LinearDepth[FrameIndex];
 
 	const float NearClipDist = camera.GetNearZ();
 
@@ -66,11 +68,15 @@ void SSAO::LinearizeZ(ComputeContext& Context, Camera& camera, uint32_t FrameInd
 
 	const float zMagic = (FarClipDist - NearClipDist) / NearClipDist;
 
-	LinearizeZ(Context, Depth, LinearDepth, zMagic);
+	LinearizeZ(Context, Depth, CurrentLinearDepth, zMagic);
 }
 
-void SSAO::LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, ColorBuffer& LinearDepth, float zMagic)
+void SSAO::LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, ColorBuffer* linearDepth, float zMagic)
 {
+	assert(linearDepth);
+
+	ColorBuffer& LinearDepth = *linearDepth;
+
 	// zMagic= (zFar - zNear) / zNear
 	Context.SetRootSignature(ScreenProcessing::GetRootSignature());
 
@@ -95,8 +101,12 @@ void SSAO::LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, ColorBuffer& 
 
 void SSAO::Render(GraphicsContext& Context, MainConstants& RenderData)
 {
+	assert(CurrentLinearDepth);
+
 	// Flush the PrePass and wait for it on the compute queue
 	g_CommandManager.GetComputeQueue().StallForFence(Context.Flush());
+
+	Context.TransitionResource(*CurrentLinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 	Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
@@ -116,11 +126,19 @@ void SSAO::Render(GraphicsContext& Context, MainConstants& RenderData)
 
 	computeContext.SetDynamicDescriptor(1, 0, g_SSAOFullScreen.GetUAV());
 
-	computeContext.SetDynamicDescriptor(2, 0, g_SceneDepthBuffer.GetDepthSRV());
+	D3D12_CPU_DESCRIPTOR_HANDLE Depth[2] = { g_SceneDepthBuffer.GetDepthSRV(),CurrentLinearDepth->GetSRV() };
+
+	computeContext.SetDynamicDescriptors(2, 0, 2, Depth);
 
 	computeContext.SetPipelineState(SsaoCS);
 
 	computeContext.Dispatch2D(g_SSAOFullScreen.GetWidth(), g_SSAOFullScreen.GetHeight());
+
+	computeContext.Finish();
+
+#ifdef DEBUG
+	EngineGUI::AddRenderPassVisualizeTexture("SSAO", WStringToString(g_SSAOFullScreen.GetName()), g_SSAOFullScreen.GetHeight(), g_SSAOFullScreen.GetWidth(), g_SSAOFullScreen.GetSRV());
+#endif
 }
 
 void SSAO::DrawUI()
