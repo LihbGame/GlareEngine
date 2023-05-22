@@ -4,11 +4,11 @@ RWStructuredBuffer<float> Exposure : register(u0);
 
 cbuffer AdaptationConstant : register(b1)
 {
-    float TargetLuminance;
-    float AdaptationTranform;
-    float MinExposure;
-    float MaxExposure;
-    uint PixelCount;
+    float   TargetLuminance;
+    float   AdaptationTranform;
+    float   MinExposure;
+    float   MaxExposure;
+    uint    PixelCount;
 }
 
 groupshared float gs_Accum[256];

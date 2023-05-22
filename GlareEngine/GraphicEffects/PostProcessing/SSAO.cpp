@@ -15,9 +15,9 @@ namespace SSAO
 
 	ComputePSO SsaoCS(L"SSAO CS");
 
-	NumVar SsaoRange(1, 1, 20);
+	NumVar SsaoRange(2, 1, 20);
 
-	NumVar SsaoPower(2, 0.25f, 10);
+	NumVar SsaoPower(6, 0.25f, 10);
 
 	IntVar SsaoSampleCount(16, 1, 16);
 
@@ -137,6 +137,9 @@ void SSAO::Render(GraphicsContext& Context, MainConstants& RenderData)
 		computeContext.Dispatch2D(g_SSAOFullScreen.GetWidth(), g_SSAOFullScreen.GetHeight());
 
 		computeContext.Finish();
+
+
+
 	}
 	else
 	{

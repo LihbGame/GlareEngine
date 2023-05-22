@@ -31,13 +31,13 @@ static const uint CLEARCOAT             = 5;
 
 cbuffer MaterialConstants : register(b2)
 {
-    float4 baseColorFactor;
-    float3 emissiveFactor;
-    float normalTextureScale;
-    float2 metallicRoughnessFactor;
-    float clearCoatFactor;
-    uint flags;
-    uint specialflags;
+    float4  baseColorFactor;
+    float3  emissiveFactor;
+    float   normalTextureScale;
+    float2  metallicRoughnessFactor;
+    float   clearCoatFactor;
+    uint    flags;
+    uint    specialflags;
 }
 
 
@@ -82,31 +82,31 @@ float4 main(VSOutput vsOutput) : SV_Target0
      uint2 pixelPos = uint2(vsOutput.position.xy);
 
     // Load and modulate textures
-    float4 baseColor = baseColorFactor * baseColorTexture.Sample(baseColorSampler, UVSET(BASECOLOR));
-    float2 metallicRoughness = metallicRoughnessFactor * metallicRoughnessTexture.Sample(metallicRoughnessSampler, UVSET(METALLICROUGHNESS)).bg;
-    float  occlusion = occlusionTexture.Sample(occlusionSampler, UVSET(OCCLUSION));
-    float3 emissive = emissiveFactor * emissiveTexture.Sample(emissiveSampler, UVSET(EMISSIVE));
+    float4 baseColor            = baseColorFactor * baseColorTexture.Sample(baseColorSampler, UVSET(BASECOLOR));
+    float2 metallicRoughness    = metallicRoughnessFactor * metallicRoughnessTexture.Sample(metallicRoughnessSampler, UVSET(METALLICROUGHNESS)).bg;
+    float  occlusion            = occlusionTexture.Sample(occlusionSampler, UVSET(OCCLUSION));
+    float3 emissive             = emissiveFactor * emissiveTexture.Sample(emissiveSampler, UVSET(EMISSIVE));
 
     float3 normal = normalize(vsOutput.normal);
 #ifndef NO_TANGENT_FRAME
     // Read normal map and convert to SNORM
-    float3 normalMap = normalTexture.Sample(normalSampler, UVSET(NORMAL)) * 2.0 - 1.0;
+    float3 normalMap    = normalTexture.Sample(normalSampler, UVSET(NORMAL)) * 2.0 - 1.0;
     // glTF spec says to normalize N before and after scaling, but that's excessive
-    normalMap = normalize(normalMap * float3(normalTextureScale, normalTextureScale, 1));
-    normal = GetNormal(normalMap, normal, vsOutput.tangent);
+    normalMap           = normalize(normalMap * float3(normalTextureScale, normalTextureScale, 1));
+    normal              = GetNormal(normalMap, normal, vsOutput.tangent);
 #endif
 
     SurfaceProperties Surface;
-    Surface.N = normal;
-    Surface.V = normalize(gEyePosW - vsOutput.worldPos);
-    Surface.worldPos = vsOutput.worldPos;
-    Surface.NdotV = saturate(dot(Surface.N, Surface.V));
-    Surface.c_diff = baseColor.rgb * (1 - metallicRoughness.x);
-    Surface.c_spec = lerp(DielectricSpecular, baseColor.rgb, metallicRoughness.x);
-    Surface.roughness = metallicRoughness.y;
-    Surface.alpha = metallicRoughness.y * metallicRoughness.y;
-    Surface.alphaSqr = Surface.alpha * Surface.alpha;
-    Surface.ao = occlusion;
+    Surface.N           = normal;
+    Surface.V           = normalize(gEyePosW - vsOutput.worldPos);
+    Surface.worldPos    = vsOutput.worldPos;
+    Surface.NdotV       = saturate(dot(Surface.N, Surface.V));
+    Surface.c_diff      = baseColor.rgb * (1 - metallicRoughness.x);
+    Surface.c_spec      = lerp(DielectricSpecular, baseColor.rgb, metallicRoughness.x);
+    Surface.roughness   = metallicRoughness.y;
+    Surface.alpha       = metallicRoughness.y * metallicRoughness.y;
+    Surface.alphaSqr    = Surface.alpha * Surface.alpha;
+    Surface.ao          = occlusion;
 
     // Begin accumulating light starting with emissive
     float3 color = emissive;
