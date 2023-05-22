@@ -101,40 +101,47 @@ void SSAO::LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, ColorBuffer* 
 
 void SSAO::Render(GraphicsContext& Context, MainConstants& RenderData)
 {
-	assert(CurrentLinearDepth);
+	if (Enable)
+	{
+		assert(CurrentLinearDepth);
 
-	// Flush the PrePass and wait for it on the compute queue
-	g_CommandManager.GetComputeQueue().StallForFence(Context.Flush());
+		// Flush the PrePass and wait for it on the compute queue
+		g_CommandManager.GetComputeQueue().StallForFence(Context.Flush());
 
-	Context.TransitionResource(*CurrentLinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		Context.TransitionResource(*CurrentLinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
-	Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
-	Context.TransitionResource(g_SSAOFullScreen, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Context.TransitionResource(g_SSAOFullScreen, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-	ComputeContext& computeContext = ComputeContext::Begin(L"SSAO", true);
+		ComputeContext& computeContext = ComputeContext::Begin(L"SSAO", true);
 
-	computeContext.SetRootSignature(ScreenProcessing::GetRootSignature());
+		computeContext.SetRootSignature(ScreenProcessing::GetRootSignature());
 
-	SSAORenderData renderData{
-		Matrix4(RenderData.Proj),
-		Matrix4(RenderData.InvProj),
-		RenderData.FarZ,RenderData.NearZ,
-		SsaoRange,SsaoPower,XMFLOAT2(1.0f / g_SSAOFullScreen.GetWidth(),1.0f / g_SSAOFullScreen.GetHeight()),SsaoSampleCount };
+		SSAORenderData renderData{
+			Matrix4(RenderData.Proj),
+			Matrix4(RenderData.InvProj),
+			RenderData.FarZ,RenderData.NearZ,
+			SsaoRange,SsaoPower,XMFLOAT2(1.0f / g_SSAOFullScreen.GetWidth(),1.0f / g_SSAOFullScreen.GetHeight()),SsaoSampleCount };
 
-	computeContext.SetDynamicConstantBufferView(3, sizeof(SSAORenderData), &renderData);
+		computeContext.SetDynamicConstantBufferView(3, sizeof(SSAORenderData), &renderData);
 
-	computeContext.SetDynamicDescriptor(1, 0, g_SSAOFullScreen.GetUAV());
+		computeContext.SetDynamicDescriptor(1, 0, g_SSAOFullScreen.GetUAV());
 
-	D3D12_CPU_DESCRIPTOR_HANDLE Depth[2] = { g_SceneDepthBuffer.GetDepthSRV(),CurrentLinearDepth->GetSRV() };
+		D3D12_CPU_DESCRIPTOR_HANDLE Depth[2] = { g_SceneDepthBuffer.GetDepthSRV(),CurrentLinearDepth->GetSRV() };
 
-	computeContext.SetDynamicDescriptors(2, 0, 2, Depth);
+		computeContext.SetDynamicDescriptors(2, 0, 2, Depth);
 
-	computeContext.SetPipelineState(SsaoCS);
+		computeContext.SetPipelineState(SsaoCS);
 
-	computeContext.Dispatch2D(g_SSAOFullScreen.GetWidth(), g_SSAOFullScreen.GetHeight());
+		computeContext.Dispatch2D(g_SSAOFullScreen.GetWidth(), g_SSAOFullScreen.GetHeight());
 
-	computeContext.Finish();
+		computeContext.Finish();
+	}
+	else
+	{
+		Context.ClearColor(g_SSAOFullScreen);
+	}
 
 #ifdef DEBUG
 	EngineGUI::AddRenderPassVisualizeTexture("SSAO", WStringToString(g_SSAOFullScreen.GetName()), g_SSAOFullScreen.GetHeight(), g_SSAOFullScreen.GetWidth(), g_SSAOFullScreen.GetSRV());

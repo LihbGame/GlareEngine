@@ -444,21 +444,24 @@ void Scene::ForwardPlusRendering()
 		SSAO::Render(Context, mMainConstants);
 	}
 
-	//Light Culling
+
 	if (LoadingFinish)
 	{
+		//Light Culling
 		Lighting::FillLightGrid(Context, *m_pCamera);
 
-		D3D12_CPU_DESCRIPTOR_HANDLE LightSRV[] = 
+		//Copy PBR SRV
+		D3D12_CPU_DESCRIPTOR_HANDLE PBR_SRV[] = 
 		{
 		Lighting::m_LightGrid.GetSRV(),
 		Lighting::m_LightBuffer.GetSRV(),
-		Lighting::m_LightShadowArray.GetSRV()
+		Lighting::m_LightShadowArray.GetSRV(),
+		g_SSAOFullScreen.GetSRV()
 		};
 
-		UINT destCount = 3; UINT size[3] = { 1,1,1 };
+		UINT destCount = 4; UINT size[4] = { 1,1,1,1 };
 		g_Device->CopyDescriptors(1, &gTextureHeap[0], &destCount,
-			destCount, LightSRV, size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			destCount, PBR_SRV, size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	}
 
 	//set descriptor heap 

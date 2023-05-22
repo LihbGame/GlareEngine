@@ -252,6 +252,8 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 	//Linear Depth
 	g_LinearDepth[0].Create(L"Linear Depth 0", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
 	g_LinearDepth[1].Create(L"Linear Depth 1", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
+
+	g_SSAOFullScreen.Create(L"SSAO Full Resolution", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8_UNORM);
 }
 
 void GlareEngine::DestroyRenderingBuffers()

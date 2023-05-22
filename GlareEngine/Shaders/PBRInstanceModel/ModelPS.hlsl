@@ -79,6 +79,8 @@ float3 GetNormal(float3 normalMapSample, float3 unitNormalW, float4 tangentW)
 
 float4 main(VSOutput vsOutput) : SV_Target0
 {
+     uint2 pixelPos = uint2(vsOutput.position.xy);
+
     // Load and modulate textures
     float4 baseColor = baseColorFactor * baseColorTexture.Sample(baseColorSampler, UVSET(BASECOLOR));
     float2 metallicRoughness = metallicRoughnessFactor * metallicRoughnessTexture.Sample(metallicRoughnessSampler, UVSET(METALLICROUGHNESS)).bg;
@@ -113,17 +115,20 @@ float4 main(VSOutput vsOutput) : SV_Target0
     Surface.ShadowFactor = CalcShadowFactor(float4(vsOutput.sunShadowCoord, 1.0f));
     color += ComputeLighting(gLights, Surface);
    
-    //SSAO (TODO)
+    //SSAO
+    float ssao = gSsaoTex[pixelPos];
 
     if (gIsIndoorScene)
     {
         //Shade each light using Forward+ tiles
-        color += ComputeTiledLighting((uint2)vsOutput.position.xy, Surface);
+        color += ComputeTiledLighting(pixelPos, Surface);
         //Indoor environment light(local environment light)
-        color += baseColor.rgb *gAmbientLight.rgb* occlusion;
+        color += baseColor.rgb * gAmbientLight.rgb * ssao;
     }
     else
     {
+        Surface.c_diff *= ssao;
+        Surface.c_spec *= ssao;
         //Outdoor environment light (IBL)
         color += IBL_Diffuse(Surface);
         color += IBL_Specular(Surface);
