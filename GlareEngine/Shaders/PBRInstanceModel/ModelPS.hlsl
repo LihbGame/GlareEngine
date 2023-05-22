@@ -123,7 +123,7 @@ float4 main(VSOutput vsOutput) : SV_Target0
         //Shade each light using Forward+ tiles
         color += ComputeTiledLighting(pixelPos, Surface);
         //Indoor environment light(local environment light)
-        color += baseColor.rgb * gAmbientLight.rgb * ssao;
+        color += baseColor.rgb * gAmbientLight.rgb * ssao* occlusion;
     }
     else
     {
