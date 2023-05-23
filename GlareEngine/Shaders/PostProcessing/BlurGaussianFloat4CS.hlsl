@@ -12,7 +12,18 @@
 
 Texture2D<BLUR_FORMAT> Input		: register(t0);
 
+Texture2D<float> LinearDepth		: register(t1);
+
 RWTexture2D<BLUR_FORMAT> Output		: register(u0);
+
+SamplerState BiLinearClampSampler	: register(s0);
+
+cbuffer BlurConstant				: register(b1)
+{
+	float2		InverseDimensions;
+	int2		Dimensions;
+	int			IsHorizontalBlur;
+}
 
 
 // Calculate gaussian weights: http://dev.theomader.com/gaussian-kernel-calculator/
@@ -54,11 +65,41 @@ groupshared float DepthCache[CACHE_SIZE];
 #endif // BILATERAL
 
 [numthreads(BLUR_GAUSSIAN_THREADCOUNT, 1, 1)]
-void main(uint3 DTid : SV_DispatchThreadID)
+void main(uint3 Gid : SV_GroupID, uint GI : SV_GroupIndex)
 {
+	uint2 TileStart		= Gid.xy;
+	float2 Direction	= float2(0, 0);
 
+	[flatten]
+	if (IsHorizontalBlur)
+	{
+		TileStart.x *= BLUR_GAUSSIAN_THREADCOUNT;
+		Direction = float2(1, 0);
+	}
+	else
+	{
+		TileStart.y *= BLUR_GAUSSIAN_THREADCOUNT;
+		Direction = float2(0, 1);
+	}
 
+	int i;
+	for (i = GI; i < CACHE_SIZE; i += BLUR_GAUSSIAN_THREADCOUNT)
+	{
+		const float2 uv		= (TileStart + 0.5f + Direction * (i - TILE_BORDER)) * InverseDimensions;
+		ColorCache[i]		= Input.SampleLevel(BiLinearClampSampler, uv, 0);
 
+#ifdef BILATERAL
+		DepthCache[i]		= LinearDepth.SampleLevel(BiLinearClampSampler, uv, 0);
+#endif // BILATERAL
+	}
+
+	GroupMemoryBarrierWithGroupSync();
+
+	const uint2 PixelPos = TileStart + GI * Direction;
+	if (PixelPos.x >= Dimensions.x || PixelPos.y >= Dimensions.y)
+	{
+		return;
+	}
 
 
 }
