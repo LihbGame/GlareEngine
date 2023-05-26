@@ -125,6 +125,6 @@ void main(uint3 Gid : SV_GroupID, uint GI : SV_GroupIndex)
 #endif // BILATERAL
 	}
 
-	Output[PixelPos] = BlurOutputColor;
+	Output[PixelPos]		= BlurOutputColor;
 
 }
