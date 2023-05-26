@@ -23,8 +23,10 @@ cbuffer BlurConstant				: register(b1)
 	float2		InverseDimensions;
 	int2		Dimensions;
 	int			IsHorizontalBlur;
+	float		CameraFar;
 }
 
+static const float DepthThreshold = 1.0f;
 
 // Calculate gaussian weights: http://dev.theomader.com/gaussian-kernel-calculator/
 #ifdef BLUR_WIDE
@@ -95,11 +97,34 @@ void main(uint3 Gid : SV_GroupID, uint GI : SV_GroupIndex)
 
 	GroupMemoryBarrierWithGroupSync();
 
+	//Skip excess pixels
 	const uint2 PixelPos = TileStart + GI * Direction;
 	if (PixelPos.x >= Dimensions.x || PixelPos.y >= Dimensions.y)
 	{
 		return;
 	}
 
+	const uint BlurCenter = GI + TILE_BORDER;
+
+#ifdef BILATERAL
+	const float BlurCenterDepth			= DepthCache[BlurCenter];
+	const BLUR_FORMAT BlurCenterColor	= ColorCache[BlurCenter];
+#endif // BILATERAL
+
+	BLUR_FORMAT BlurOutputColor = 0;
+	for (i = 0; i < GAUSS_KERNEL; ++i)
+	{
+		const uint		  Offset		= BlurCenter + GaussianOffsets[i];
+		const BLUR_FORMAT OffsetColor	= ColorCache[Offset];
+#ifdef BILATERAL
+		const float depth	= DepthCache[Offset];
+		const float weight	= saturate(abs(depth - BlurCenterDepth) * CameraFar * DepthThreshold);
+		BlurOutputColor		+= lerp(OffsetColor, BlurCenterColor, weight) * GaussianWeightsNormalized[i];
+#else
+		BlurOutputColor		+= OffsetColor * GaussianWeightsNormalized[i];
+#endif // BILATERAL
+	}
+
+	Output[PixelPos] = BlurOutputColor;
 
 }
