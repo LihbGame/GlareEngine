@@ -23,7 +23,7 @@ namespace SSAO
 
 	ColorBuffer* CurrentLinearDepth = nullptr;
 
-	struct SSAORenderData
+	__declspec(align(16)) struct SSAORenderData
 	{
 		Matrix4			Proj;
 		Matrix4			InvProj;
@@ -136,9 +136,9 @@ void SSAO::Render(GraphicsContext& Context, MainConstants& RenderData)
 
 		computeContext.Dispatch2D(g_SSAOFullScreen.GetWidth(), g_SSAOFullScreen.GetHeight());
 
+
+
 		computeContext.Finish();
-
-
 
 	}
 	else

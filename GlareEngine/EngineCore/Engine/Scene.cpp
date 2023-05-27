@@ -172,7 +172,7 @@ void Scene::RenderScene(RenderPipelineType Type)
 	}
 	
 	//Post Processing
-	ScreenProcessing::Render();
+	ScreenProcessing::Render(mMainConstants);
 }
 
 void Scene::DrawUI()

@@ -5,6 +5,7 @@
 #include "Graphics/CommandSignature.h"
 #include "EngineGUI.h"
 #include "Graphics/Display.h"
+#include "SSAO.h"
 
 //shaders
 #include "CompiledShaders/ScreenQuadVS.h"
@@ -25,7 +26,7 @@
 #include "CompiledShaders/GenerateLuminanceHistogramCS.h"
 #include "CompiledShaders/AdaptExposureCS.h"
 #include "CompiledShaders/DrawHistogramCS.h"
-#include "SSAO.h"
+
 
 namespace ScreenProcessing
 {
@@ -39,19 +40,27 @@ namespace ScreenProcessing
 		uint32_t PixelCount;
 	};
 
+	__declspec(align(16)) struct BlurConstants
+	{
+		XMFLOAT2	InverseDimensions;
+		XMINT2		Dimensions;
+		int			IsHorizontalBlur;
+		float		CameraFar;
+	};
 
-	bool  BloomEnable = true;
-	bool  HighQualityBloom = true;					// High quality blurs 5 octaves of bloom; low quality only blurs 3.
+
+	bool  BloomEnable				= true;
+	bool  HighQualityBloom			= true;			// High quality blurs 5 octaves of bloom; low quality only blurs 3.
 	NumVar BloomThreshold(4.0f, 0.0f, 8.0f);		// The threshold luminance above which a pixel will start to bloom
 	NumVar BloomStrength(0.1f, 0.0f, 2.0f);			// A modulator controlling how much bloom is added back into the image
 	NumVar BloomUpSampleFactor(0.65f, 0.0f, 1.0f);	// Controls the "focus" of the blur.High values spread out more causing a haze.
 
 	//Exposure Log() Range
-	const float InitialMinLog = -12.0f;
-	const float InitialMaxLog = 4.0f;
+	const float InitialMinLog		= -12.0f;
+	const float InitialMaxLog		= 4.0f;
 
-	bool EnableAdaptation = true;
-	bool DrawHistogram = false;
+	bool EnableAdaptation			= true;
+	bool DrawHistogram				= false;
 
 	NumVar TargetLuminance(0.05f, 0.01f, 0.99f);
 	NumVar AdaptationTranform(0.02f, 0.01f, 1.0f);
@@ -65,6 +74,8 @@ namespace ScreenProcessing
 
 	RootSignature PostEffectsRS;
 	GraphicsPSO mPSO(L"FBM Post PS");
+
+	MainConstants* gMainConstants = nullptr;
 
 	//Bloom
 	ComputePSO DownsampleBloom2CS(L"DownSample Bloom 2 CS");
@@ -253,8 +264,10 @@ void ScreenProcessing::Adaptation(ComputeContext& Context)
 }
 
 
-void ScreenProcessing::Render()
+void ScreenProcessing::Render(MainConstants& RenderData)
 {
+	gMainConstants = &RenderData;
+
 	ComputeContext& Context = ComputeContext::Begin(L"Post Processing");
 
 	Context.SetRootSignature(PostEffectsRS);
@@ -422,6 +435,29 @@ void ScreenProcessing::BlurBuffer(ComputeContext& Context, ColorBuffer& SourceBu
 	Context.Dispatch2D(bufferWidth, bufferHeight);
 
 	Context.TransitionResource(TargetBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+}
+
+void ScreenProcessing::GaussianBlur(ComputeContext&, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer, bool IsWideBlur)
+{
+	assert(gMainConstants);
+
+	BlurConstants ConstantData =
+	{
+		XMFLOAT2(1.0f / SourceBuffer.GetWidth(),1.0f / SourceBuffer.GetHeight()),
+		XMINT2(SourceBuffer.GetWidth(),SourceBuffer.GetHeight()),
+		true,
+		gMainConstants->FarZ
+	};
+
+
+
+
+
+}
+
+void ScreenProcessing::BilateralBlur(ComputeContext&, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer, bool IsWideBlur)
+{
+
 }
 
 

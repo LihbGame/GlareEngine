@@ -343,14 +343,14 @@ namespace GlareEngine
 			{
 				OnMouseDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				SystemParametersInfo(SPI_SETDRAGFULLWINDOWS, true, NULL, 0);
-				//在客户区域实现拖动窗口
+				//Drag-and-drop window implementation in the client area
 				if (GET_Y_LPARAM(lParam) < 35 && GET_X_LPARAM(lParam) < (int)mClientWidth - 170)
 				{
 					ReleaseCapture();
 					SendMessage(g_hWnd, WM_NCLBUTTONDOWN, HTCAPTION, NULL);
 					SendMessage(g_hWnd, WM_LBUTTONUP, NULL, NULL);
 				}
-				//拖动改变窗口大小
+				//Drag to change window size
 				if (!mMaximized)
 				{
 					if (mCursorType != CursorType::Count)
@@ -398,7 +398,7 @@ namespace GlareEngine
 					mIsHideUI = !mIsHideUI;
 				}
 				break;
-			// 抓住此消息以防止窗口变得太小。
+			// Catch this message to prevent the window from becoming too small.
 			case WM_GETMINMAXINFO:
 				((MINMAXINFO*)lParam)->ptMinTrackSize.x = 800;
 				((MINMAXINFO*)lParam)->ptMinTrackSize.y = 450;

@@ -9,7 +9,7 @@ namespace ScreenProcessing
 
     void RenderFBM(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr);
 
-    void Render();
+    void Render(MainConstants& RenderData);
 
     void DrawBeforeToneMapping();
 
@@ -24,6 +24,10 @@ namespace ScreenProcessing
     void UpsampleBlurBuffer(ComputeContext&, ColorBuffer buffer[2], const ColorBuffer& LowerResBuffer, float UpSampleBlendFactor = 0.0f);
 
     void BlurBuffer(ComputeContext&, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer);
+
+    void GaussianBlur(ComputeContext&, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer, bool IsWideBlur = false);
+
+    void BilateralBlur(ComputeContext&, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer, bool IsWideBlur = false);
 
     void ShutDown();
 

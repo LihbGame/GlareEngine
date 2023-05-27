@@ -1,4 +1,4 @@
-#include "../Misc/CommonResource.hlsli"
+#include "../../Misc/CommonResource.hlsli"
 
 //Using a one-dimensional thread group, this blur requires horizontal and vertical scheduling twice, 
 //but this uses less shared space, or using a two-dimensional thread group, 
