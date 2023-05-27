@@ -25,9 +25,9 @@ namespace ScreenProcessing
 
     void BlurBuffer(ComputeContext&, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer);
 
-    void GaussianBlur(ComputeContext&, ColorBuffer& SourceBuffer, bool IsWideBlur = false);
+    void GaussianBlur(ComputeContext&, ColorBuffer& SourceBuffer, ColorBuffer& TempBuffer, bool IsWideBlur = false);
 
-    void BilateralBlur(ComputeContext&, ColorBuffer& SourceBuffer, bool IsWideBlur = false);
+    void BilateralBlur(ComputeContext&, ColorBuffer& SourceBuffer, ColorBuffer& TempBuffer, bool IsWideBlur = false);
 
 	void LinearizeZ(ComputeContext& Context, Camera& camera, uint32_t FrameIndex);
 

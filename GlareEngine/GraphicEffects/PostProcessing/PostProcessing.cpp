@@ -52,6 +52,31 @@
 
 namespace ScreenProcessing
 {
+	enum ShaderType	:int
+	{
+		BilateralBlurFloat1,
+		BilateralBlurFloat3,
+		BilateralBlurFloat4,
+		BilateralBlurUnorm1,
+		BilateralBlurUnorm4,
+		BilateralBlurWideFloat1,
+		BilateralBlurWideFloat3,
+		BilateralBlurWideFloat4,
+		BilateralBlurWideUnorm1,
+		BilateralBlurWideUnorm4,
+		GaussianBlurFloat1,
+		GaussianBlurFloat3,
+		GaussianBlurFloat4,
+		GaussianBlurUnorm1,
+		GaussianBlurUnorm4,
+		GaussianBlurWideFloat1,
+		GaussianBlurWideFloat3,
+		GaussianBlurWideFloat4,
+		GaussianBlurWideUnorm1,
+		GaussianBlurWideUnorm4,
+		Count
+	};
+
 
 	__declspec(align(16)) struct AdaptationConstants
 	{
@@ -100,6 +125,8 @@ namespace ScreenProcessing
 	MainConstants* gMainConstants = nullptr;
 
 	ColorBuffer* CurrentLinearDepth = nullptr;
+
+	ComputePSO* Shaders[ShaderType::Count];
 
 	//Bloom
 	ComputePSO DownsampleBloom2CS(L"DownSample Bloom 2 CS");
@@ -223,6 +250,30 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	CreatePSO(GaussianBlurWideUnorm4CS, g_pGaussianBlurWideUnorm4CS);
 
 #undef CreatePSO
+
+	Shaders[BilateralBlurFloat1] = &BilateralBlurFloat1CS;
+	Shaders[BilateralBlurFloat3] = &BilateralBlurFloat3CS;
+	Shaders[BilateralBlurFloat4] = &BilateralBlurFloat4CS;
+	Shaders[BilateralBlurUnorm1] = &BilateralBlurUnorm1CS;
+	Shaders[BilateralBlurUnorm4] = &BilateralBlurUnorm4CS;
+
+	Shaders[BilateralBlurWideFloat1] = &BilateralBlurWideFloat1CS;
+	Shaders[BilateralBlurWideFloat3] = &BilateralBlurWideFloat3CS;
+	Shaders[BilateralBlurWideFloat4] = &BilateralBlurWideFloat4CS;
+	Shaders[BilateralBlurWideUnorm1] = &BilateralBlurWideUnorm1CS;
+	Shaders[BilateralBlurWideUnorm4] = &BilateralBlurWideUnorm4CS;
+
+	Shaders[GaussianBlurFloat1] = &GaussianBlurFloat1CS;
+	Shaders[GaussianBlurFloat3] = &GaussianBlurFloat3CS;
+	Shaders[GaussianBlurFloat4] = &GaussianBlurFloat4CS;
+	Shaders[GaussianBlurUnorm1] = &GaussianBlurUnorm1CS;
+	Shaders[GaussianBlurUnorm4] = &GaussianBlurUnorm4CS;
+
+	Shaders[GaussianBlurWideFloat1] = &GaussianBlurWideFloat1CS;
+	Shaders[GaussianBlurWideFloat3] = &GaussianBlurWideFloat3CS;
+	Shaders[GaussianBlurWideFloat4] = &GaussianBlurWideFloat4CS;
+	Shaders[GaussianBlurWideUnorm1] = &GaussianBlurWideUnorm1CS;
+	Shaders[GaussianBlurWideUnorm4] = &GaussianBlurWideUnorm4CS;
 
 	__declspec(align(16)) float initExposure[] =
 	{
@@ -403,7 +454,7 @@ void ScreenProcessing::DrawUI()
 	ImGuiIO& io = ImGui::GetIO();
 	if (ImGui::CollapsingHeader("Post Processing", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		if (ImGui::TreeNodeEx("SSAO"))
+		if (ImGui::TreeNodeEx("SSAO", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			SSAO::DrawUI();
 			ImGui::TreePop();
@@ -507,7 +558,7 @@ void ScreenProcessing::BlurBuffer(ComputeContext& Context, ColorBuffer& SourceBu
 	Context.TransitionResource(TargetBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 }
 
-void ScreenProcessing::GaussianBlur(ComputeContext& Context, ColorBuffer& SourceBuffer,bool IsWideBlur)
+void ScreenProcessing::GaussianBlur(ComputeContext& Context, ColorBuffer& SourceBuffer, ColorBuffer& TempBuffer, bool IsWideBlur)
 {
 	assert(gMainConstants);
 
@@ -519,8 +570,8 @@ void ScreenProcessing::GaussianBlur(ComputeContext& Context, ColorBuffer& Source
 		gMainConstants->FarZ
 	};
 
-	Context.TransitionResource(g_BlurTemp_HalfBuffer_R8, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	Context.SetDynamicDescriptor(1, 0, g_BlurTemp_HalfBuffer_R8.GetUAV());
+	Context.TransitionResource(TempBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.SetDynamicDescriptor(1, 0, TempBuffer.GetUAV());
 	Context.SetDynamicDescriptor(2, 0, SourceBuffer.GetSRV());
 
 	D3D12_CPU_DESCRIPTOR_HANDLE HorizontalSRVs[2] = { SourceBuffer.GetSRV(),CurrentLinearDepth->GetSRV() };
@@ -528,14 +579,37 @@ void ScreenProcessing::GaussianBlur(ComputeContext& Context, ColorBuffer& Source
 
 	Context.SetDynamicConstantBufferView(3, sizeof(BlurConstants), &ConstantData);
 
-	if (IsWideBlur)
+	ShaderType GaussianBlurShaderIndex;
+	switch (SourceBuffer.GetFormat())
 	{
-		Context.SetPipelineState(GaussianBlurWideUnorm1CS);
+	case DXGI_FORMAT_R16_UNORM:
+	case DXGI_FORMAT_R8_UNORM:
+		GaussianBlurShaderIndex = IsWideBlur ? GaussianBlurWideUnorm1 : GaussianBlurUnorm1;
+		break;
+	case DXGI_FORMAT_R16_FLOAT:
+	case DXGI_FORMAT_R32_FLOAT:
+		GaussianBlurShaderIndex = IsWideBlur ? GaussianBlurWideFloat1 : GaussianBlurFloat1;
+		break;
+	case DXGI_FORMAT_R16G16B16A16_UNORM:
+	case DXGI_FORMAT_R8G8B8A8_UNORM:
+	case DXGI_FORMAT_B8G8R8A8_UNORM:
+	case DXGI_FORMAT_R10G10B10A2_UNORM:
+		GaussianBlurShaderIndex = IsWideBlur ? GaussianBlurWideUnorm4 : GaussianBlurUnorm4;
+		break;
+	case DXGI_FORMAT_R11G11B10_FLOAT:
+	case DXGI_FORMAT_R32G32B32_FLOAT:
+		GaussianBlurShaderIndex = IsWideBlur ? GaussianBlurWideFloat3 : GaussianBlurFloat3;
+		break;
+	case DXGI_FORMAT_R16G16B16A16_FLOAT:
+	case DXGI_FORMAT_R32G32B32A32_FLOAT:
+		GaussianBlurShaderIndex = IsWideBlur ? GaussianBlurWideFloat4 : GaussianBlurFloat4;
+		break;
+	default:
+		assert(0); // implement format!
+		break;
 	}
-	else
-	{
-		Context.SetPipelineState(GaussianBlurUnorm1CS);
-	}
+
+	Context.SetPipelineState(*Shaders[GaussianBlurShaderIndex]);
 
 	//Horizontal Blur
 	Context.Dispatch2D(ConstantData.Dimensions.x, ConstantData.Dimensions.y, 256, 1);
@@ -545,9 +619,9 @@ void ScreenProcessing::GaussianBlur(ComputeContext& Context, ColorBuffer& Source
 	Context.SetDynamicConstantBufferView(3, sizeof(BlurConstants), &ConstantData);
 
 	Context.SetDynamicDescriptor(1, 0, SourceBuffer.GetUAV());
-	Context.SetDynamicDescriptor(2, 0, g_BlurTemp_HalfBuffer_R8.GetSRV());
+	Context.SetDynamicDescriptor(2, 0, TempBuffer.GetSRV());
 
-	D3D12_CPU_DESCRIPTOR_HANDLE VerticalSRVs[2] = { g_BlurTemp_HalfBuffer_R8.GetSRV(),CurrentLinearDepth->GetSRV() };
+	D3D12_CPU_DESCRIPTOR_HANDLE VerticalSRVs[2] = { TempBuffer.GetSRV(),CurrentLinearDepth->GetSRV() };
 	Context.SetDynamicDescriptors(2, 0, 2, VerticalSRVs);
 
 	//Vertical Blur
@@ -555,7 +629,7 @@ void ScreenProcessing::GaussianBlur(ComputeContext& Context, ColorBuffer& Source
 
 }
 
-void ScreenProcessing::BilateralBlur(ComputeContext& Context, ColorBuffer& SourceBuffer, bool IsWideBlur)
+void ScreenProcessing::BilateralBlur(ComputeContext& Context, ColorBuffer& SourceBuffer, ColorBuffer& TempBuffer, bool IsWideBlur)
 {
 	assert(gMainConstants);
 
@@ -567,8 +641,8 @@ void ScreenProcessing::BilateralBlur(ComputeContext& Context, ColorBuffer& Sourc
 		gMainConstants->FarZ
 	};
 
-	Context.TransitionResource(g_BlurTemp_HalfBuffer_R8, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	Context.SetDynamicDescriptor(1, 0, g_BlurTemp_HalfBuffer_R8.GetUAV());
+	Context.TransitionResource(TempBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.SetDynamicDescriptor(1, 0, TempBuffer.GetUAV());
 	Context.SetDynamicDescriptor(2, 0, SourceBuffer.GetSRV());
 
 	D3D12_CPU_DESCRIPTOR_HANDLE HorizontalSRVs[2] = { SourceBuffer.GetSRV(),CurrentLinearDepth->GetSRV() };
@@ -576,14 +650,37 @@ void ScreenProcessing::BilateralBlur(ComputeContext& Context, ColorBuffer& Sourc
 
 	Context.SetDynamicConstantBufferView(3, sizeof(BlurConstants), &ConstantData);
 
-	if (IsWideBlur)
+	ShaderType BilateralBlurShaderIndex;
+	switch (SourceBuffer.GetFormat())
 	{
-		Context.SetPipelineState(BilateralBlurWideUnorm1CS);
+	case DXGI_FORMAT_R16_UNORM:
+	case DXGI_FORMAT_R8_UNORM:
+		BilateralBlurShaderIndex = IsWideBlur ? BilateralBlurWideUnorm1 : BilateralBlurUnorm1;
+		break;
+	case DXGI_FORMAT_R16_FLOAT:
+	case DXGI_FORMAT_R32_FLOAT:
+		BilateralBlurShaderIndex = IsWideBlur ? BilateralBlurWideFloat1 : BilateralBlurFloat1;
+		break;
+	case DXGI_FORMAT_R16G16B16A16_UNORM:
+	case DXGI_FORMAT_R8G8B8A8_UNORM:
+	case DXGI_FORMAT_B8G8R8A8_UNORM:
+	case DXGI_FORMAT_R10G10B10A2_UNORM:
+		BilateralBlurShaderIndex = IsWideBlur ? BilateralBlurWideUnorm4 : BilateralBlurUnorm4;
+		break;
+	case DXGI_FORMAT_R11G11B10_FLOAT:
+	case DXGI_FORMAT_R32G32B32_FLOAT:
+		BilateralBlurShaderIndex = IsWideBlur ? BilateralBlurWideFloat3 : BilateralBlurFloat3;
+		break;
+	case DXGI_FORMAT_R16G16B16A16_FLOAT:
+	case DXGI_FORMAT_R32G32B32A32_FLOAT:
+		BilateralBlurShaderIndex = IsWideBlur ? BilateralBlurWideFloat4 : BilateralBlurFloat4;
+		break;
+	default:
+		assert(0); // implement format!
+		break;
 	}
-	else
-	{
-		Context.SetPipelineState(BilateralBlurUnorm1CS);
-	}
+
+	Context.SetPipelineState(*Shaders[BilateralBlurShaderIndex]);
 
 	//Horizontal Blur
 	Context.Dispatch2D(ConstantData.Dimensions.x, ConstantData.Dimensions.y, 256, 1);
@@ -593,9 +690,9 @@ void ScreenProcessing::BilateralBlur(ComputeContext& Context, ColorBuffer& Sourc
 	Context.SetDynamicConstantBufferView(3, sizeof(BlurConstants), &ConstantData);
 
 	Context.SetDynamicDescriptor(1, 0, SourceBuffer.GetUAV());
-	Context.SetDynamicDescriptor(2, 0, g_BlurTemp_HalfBuffer_R8.GetSRV());
+	Context.SetDynamicDescriptor(2, 0, TempBuffer.GetSRV());
 
-	D3D12_CPU_DESCRIPTOR_HANDLE VerticalSRVs[2] = { g_BlurTemp_HalfBuffer_R8.GetSRV(),CurrentLinearDepth->GetSRV() };
+	D3D12_CPU_DESCRIPTOR_HANDLE VerticalSRVs[2] = { TempBuffer.GetSRV(),CurrentLinearDepth->GetSRV() };
 	Context.SetDynamicDescriptors(2, 0, 2, VerticalSRVs);
 
 	//Vertical Blur
