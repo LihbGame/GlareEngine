@@ -18,23 +18,26 @@ namespace GlareEngine
 
 	void ColorBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t NumMips, DXGI_FORMAT Format, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr)
 	{
-		mName = Name;
-		NumMips = (NumMips == 0 ? ComputeNumMips(Width, Height) : NumMips);
-		D3D12_RESOURCE_FLAGS Flags = CombineResourceFlags();
-		D3D12_RESOURCE_DESC ResourceDesc = DescribeTex2D(Width, Height, 1, NumMips, Format, Flags);
+		if (Width != m_Width || Height != m_Height)
+		{
+			mName = Name;
+			NumMips = (NumMips == 0 ? ComputeNumMips(Width, Height) : NumMips);
+			D3D12_RESOURCE_FLAGS Flags = CombineResourceFlags();
+			D3D12_RESOURCE_DESC ResourceDesc = DescribeTex2D(Width, Height, 1, NumMips, Format, Flags);
 
-		ResourceDesc.SampleDesc.Count = m_FragmentCount;
-		ResourceDesc.SampleDesc.Quality = 0;
+			ResourceDesc.SampleDesc.Count = m_FragmentCount;
+			ResourceDesc.SampleDesc.Quality = 0;
 
-		D3D12_CLEAR_VALUE ClearValue = {};
-		ClearValue.Format = Format;
-		ClearValue.Color[0] = m_ClearColor.R();
-		ClearValue.Color[1] = m_ClearColor.G();
-		ClearValue.Color[2] = m_ClearColor.B();
-		ClearValue.Color[3] = m_ClearColor.A();
+			D3D12_CLEAR_VALUE ClearValue = {};
+			ClearValue.Format = Format;
+			ClearValue.Color[0] = m_ClearColor.R();
+			ClearValue.Color[1] = m_ClearColor.G();
+			ClearValue.Color[2] = m_ClearColor.B();
+			ClearValue.Color[3] = m_ClearColor.A();
 
-		CreateTextureResource(g_Device, Name, ResourceDesc, ClearValue, VidMemPtr);
-		CreateDerivedViews(g_Device, Format, 1, NumMips);
+			CreateTextureResource(g_Device, Name, ResourceDesc, ClearValue, VidMemPtr);
+			CreateDerivedViews(g_Device, Format, 1, NumMips);
+		}
 	}
 
 

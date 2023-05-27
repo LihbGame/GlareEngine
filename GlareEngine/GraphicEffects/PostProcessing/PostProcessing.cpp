@@ -26,7 +26,29 @@
 #include "CompiledShaders/GenerateLuminanceHistogramCS.h"
 #include "CompiledShaders/AdaptExposureCS.h"
 #include "CompiledShaders/DrawHistogramCS.h"
+#include "CompiledShaders/LinearizeDepthCS.h"
 
+#include "CompiledShaders/BilateralBlurFloat1CS.h"
+#include "CompiledShaders/BilateralBlurFloat3CS.h"
+#include "CompiledShaders/BilateralBlurFloat4CS.h"
+#include "CompiledShaders/BilateralBlurUnorm1CS.h"
+#include "CompiledShaders/BilateralBlurUnorm4CS.h"
+#include "CompiledShaders/BilateralBlurWideFloat1CS.h"
+#include "CompiledShaders/BilateralBlurWideFloat3CS.h"
+#include "CompiledShaders/BilateralBlurWideFloat4CS.h"
+#include "CompiledShaders/BilateralBlurWideUnorm1CS.h"
+#include "CompiledShaders/BilateralBlurWideUnorm4CS.h"
+
+#include "CompiledShaders/GaussianBlurFloat1CS.h"
+#include "CompiledShaders/GaussianBlurFloat3CS.h"
+#include "CompiledShaders/GaussianBlurFloat4CS.h"
+#include "CompiledShaders/GaussianBlurUnorm1CS.h"
+#include "CompiledShaders/GaussianBlurUnorm4CS.h"
+#include "CompiledShaders/GaussianBlurWideFloat1CS.h"
+#include "CompiledShaders/GaussianBlurWideFloat3CS.h"
+#include "CompiledShaders/GaussianBlurWideFloat4CS.h"
+#include "CompiledShaders/GaussianBlurWideUnorm1CS.h"
+#include "CompiledShaders/GaussianBlurWideUnorm4CS.h"
 
 namespace ScreenProcessing
 {
@@ -77,6 +99,8 @@ namespace ScreenProcessing
 
 	MainConstants* gMainConstants = nullptr;
 
+	ColorBuffer* CurrentLinearDepth = nullptr;
+
 	//Bloom
 	ComputePSO DownsampleBloom2CS(L"DownSample Bloom 2 CS");
 	ComputePSO DownsampleBloom4CS(L"DownSample Bloom 4 CS");
@@ -101,6 +125,32 @@ namespace ScreenProcessing
 	ComputePSO ExtractLuminanceCS(L"Extract Luminance CS");
 	ComputePSO AverageLumaCS(L"Average Luminance CS");
 	ComputePSO CopyBackBufferForNotHDRUAVSupportCS(L"Copy Back Post Buffer CS For Not HDR UAV Support");
+
+	//Linear Depth PSO
+	ComputePSO LinearizeDepthCS(L"Linearize Depth CS");
+
+
+	//Blur PSO
+	ComputePSO BilateralBlurFloat1CS(L"Bilateral Blur Float1 CS");
+	ComputePSO BilateralBlurFloat3CS(L"Bilateral Blur Float3 CS");
+	ComputePSO BilateralBlurFloat4CS(L"Bilateral Blur Float4 CS");
+	ComputePSO BilateralBlurUnorm1CS(L"Bilateral Blur Unorm1 CS");
+	ComputePSO BilateralBlurUnorm4CS(L"Bilateral Blur Unorm4 CS");
+	ComputePSO BilateralBlurWideFloat1CS(L"Bilateral Blur Wide Float1 CS");
+	ComputePSO BilateralBlurWideFloat3CS(L"Bilateral Blur Wide Float3 CS");
+	ComputePSO BilateralBlurWideFloat4CS(L"Bilateral Blur Wide Float4 CS");
+	ComputePSO BilateralBlurWideUnorm1CS(L"Bilateral Blur Wide Unorm1 CS");
+	ComputePSO BilateralBlurWideUnorm4CS(L"Bilateral Blur Wide Unorm4 CS");
+	ComputePSO GaussianBlurFloat1CS(L"Gaussian Blur Float1 CS");
+	ComputePSO GaussianBlurFloat3CS(L"Gaussian Blur Float3 CS");
+	ComputePSO GaussianBlurFloat4CS(L"Gaussian Blur Float4 CS");
+	ComputePSO GaussianBlurUnorm1CS(L"Gaussian Blur Unorm1 CS");
+	ComputePSO GaussianBlurUnorm4CS(L"Gaussian Blur Unorm4 CS");
+	ComputePSO GaussianBlurWideFloat1CS(L"Gaussian Blur Wide Float1 CS");
+	ComputePSO GaussianBlurWideFloat3CS(L"Gaussian Blur Wide Float3 CS");
+	ComputePSO GaussianBlurWideFloat4CS(L"Gaussian Blur Wide Float4 CS");
+	ComputePSO GaussianBlurWideUnorm1CS(L"Gaussian Blur Wide Unorm1 CS");
+	ComputePSO GaussianBlurWideUnorm4CS(L"Gaussian Blur Wide Unorm4 CS");
 
 	void GenerateBloom(ComputeContext& Context);
 	void ExtractLuminance(ComputeContext& Context);
@@ -148,8 +198,29 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	CreatePSO(ExtractLuminanceCS, g_pExtractLuminanceCS);
 	CreatePSO(CopyBackBufferForNotHDRUAVSupportCS, g_pCopyPostBufferHDRCS);
 	CreatePSO(AdaptExposureCS, g_pAdaptExposureCS);
-
 	CreatePSO(DrawHistogramCS, g_pDrawHistogramCS);
+	CreatePSO(LinearizeDepthCS, g_pLinearizeDepthCS);
+
+	CreatePSO(BilateralBlurFloat1CS, g_pBilateralBlurFloat1CS);
+	CreatePSO(BilateralBlurFloat3CS, g_pBilateralBlurFloat3CS);
+	CreatePSO(BilateralBlurFloat4CS, g_pBilateralBlurFloat4CS);
+	CreatePSO(BilateralBlurUnorm1CS, g_pBilateralBlurUnorm1CS);
+	CreatePSO(BilateralBlurUnorm4CS, g_pBilateralBlurUnorm4CS);
+	CreatePSO(BilateralBlurWideFloat1CS, g_pBilateralBlurWideFloat1CS);
+	CreatePSO(BilateralBlurWideFloat3CS, g_pBilateralBlurWideFloat3CS);
+	CreatePSO(BilateralBlurWideFloat4CS, g_pBilateralBlurWideFloat4CS);
+	CreatePSO(BilateralBlurWideUnorm1CS, g_pBilateralBlurWideUnorm1CS);
+	CreatePSO(BilateralBlurWideUnorm4CS, g_pBilateralBlurWideUnorm4CS);
+	CreatePSO(GaussianBlurFloat1CS, g_pGaussianBlurFloat1CS);
+	CreatePSO(GaussianBlurFloat3CS, g_pGaussianBlurFloat3CS);
+	CreatePSO(GaussianBlurFloat4CS, g_pGaussianBlurFloat4CS);
+	CreatePSO(GaussianBlurUnorm1CS, g_pGaussianBlurUnorm1CS);
+	CreatePSO(GaussianBlurUnorm4CS, g_pGaussianBlurUnorm4CS);
+	CreatePSO(GaussianBlurWideFloat1CS, g_pGaussianBlurWideFloat1CS);
+	CreatePSO(GaussianBlurWideFloat3CS, g_pGaussianBlurWideFloat3CS);
+	CreatePSO(GaussianBlurWideFloat4CS, g_pGaussianBlurWideFloat4CS);
+	CreatePSO(GaussianBlurWideUnorm1CS, g_pGaussianBlurWideUnorm1CS);
+	CreatePSO(GaussianBlurWideUnorm4CS, g_pGaussianBlurWideUnorm4CS);
 
 #undef CreatePSO
 
@@ -264,10 +335,8 @@ void ScreenProcessing::Adaptation(ComputeContext& Context)
 }
 
 
-void ScreenProcessing::Render(MainConstants& RenderData)
+void ScreenProcessing::Render()
 {
-	gMainConstants = &RenderData;
-
 	ComputeContext& Context = ComputeContext::Begin(L"Post Processing");
 
 	Context.SetRootSignature(PostEffectsRS);
@@ -368,8 +437,9 @@ void ScreenProcessing::DrawUI()
 	}
 }
 
-void ScreenProcessing::Update(float dt)
+void ScreenProcessing::Update(float dt, MainConstants& RenderData)
 {
+	gMainConstants = &RenderData;
 }
 
 void ScreenProcessing::BuildPSO(const PSOCommonProperty CommonProperty)
@@ -437,7 +507,7 @@ void ScreenProcessing::BlurBuffer(ComputeContext& Context, ColorBuffer& SourceBu
 	Context.TransitionResource(TargetBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 }
 
-void ScreenProcessing::GaussianBlur(ComputeContext&, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer, bool IsWideBlur)
+void ScreenProcessing::GaussianBlur(ComputeContext& Context, ColorBuffer& SourceBuffer,bool IsWideBlur)
 {
 	assert(gMainConstants);
 
@@ -449,15 +519,94 @@ void ScreenProcessing::GaussianBlur(ComputeContext&, ColorBuffer& SourceBuffer, 
 		gMainConstants->FarZ
 	};
 
+	Context.TransitionResource(g_BlurTemp_HalfBuffer_R8, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.SetDynamicDescriptor(1, 0, g_BlurTemp_HalfBuffer_R8.GetUAV());
+	Context.SetDynamicDescriptor(2, 0, SourceBuffer.GetSRV());
 
+	D3D12_CPU_DESCRIPTOR_HANDLE HorizontalSRVs[2] = { SourceBuffer.GetSRV(),CurrentLinearDepth->GetSRV() };
+	Context.SetDynamicDescriptors(2, 0, 2, HorizontalSRVs);
 
+	Context.SetDynamicConstantBufferView(3, sizeof(BlurConstants), &ConstantData);
 
+	if (IsWideBlur)
+	{
+		Context.SetPipelineState(GaussianBlurWideFloat1CS);
+	}
+	else
+	{
+		Context.SetPipelineState(GaussianBlurUnorm1CS);
+	}
+
+	//Horizontal Blur
+	Context.Dispatch2D(ConstantData.Dimensions.x, ConstantData.Dimensions.y, 256, 1);
+
+	ConstantData.IsHorizontalBlur = false;
+
+	Context.SetDynamicConstantBufferView(3, sizeof(BlurConstants), &ConstantData);
+
+	Context.SetDynamicDescriptor(1, 0, SourceBuffer.GetUAV());
+	Context.SetDynamicDescriptor(2, 0, g_BlurTemp_HalfBuffer_R8.GetSRV());
+
+	D3D12_CPU_DESCRIPTOR_HANDLE VerticalSRVs[2] = { g_BlurTemp_HalfBuffer_R8.GetSRV(),CurrentLinearDepth->GetSRV() };
+	Context.SetDynamicDescriptors(2, 0, 2, VerticalSRVs);
+
+	//Vertical Blur
+	Context.Dispatch2D(ConstantData.Dimensions.x, ConstantData.Dimensions.y, 1, 256);
 
 }
 
-void ScreenProcessing::BilateralBlur(ComputeContext&, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer, bool IsWideBlur)
+void ScreenProcessing::BilateralBlur(ComputeContext&, ColorBuffer& SourceBuffer, bool IsWideBlur)
 {
 
+}
+
+void ScreenProcessing::LinearizeZ(ComputeContext& Context, Camera& camera, uint32_t FrameIndex)
+{
+	DepthBuffer& Depth = g_SceneDepthBuffer;
+
+	CurrentLinearDepth = &g_LinearDepth[FrameIndex];
+
+	const float NearClipDist = camera.GetNearZ();
+
+	const float FarClipDist = camera.GetFarZ();
+
+	const float zMagic = (FarClipDist - NearClipDist) / NearClipDist;
+
+	LinearizeZ(Context, Depth, CurrentLinearDepth, zMagic);
+}
+
+void ScreenProcessing::LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, ColorBuffer* linearDepth, float zMagic)
+{
+	assert(linearDepth);
+
+	ColorBuffer& LinearDepth = *linearDepth;
+
+	// zMagic= (zFar - zNear) / zNear
+	Context.SetRootSignature(ScreenProcessing::GetRootSignature());
+
+	Context.TransitionResource(Depth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+	Context.SetConstants(0, zMagic);
+
+	Context.SetDynamicDescriptor(2, 0, Depth.GetDepthSRV());
+
+	Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+	Context.SetDynamicDescriptors(1, 0, 1, &LinearDepth.GetUAV());
+
+	Context.SetPipelineState(LinearizeDepthCS);
+
+	Context.Dispatch2D(LinearDepth.GetWidth(), LinearDepth.GetHeight(), 16, 16);
+
+#ifdef DEBUG
+	EngineGUI::AddRenderPassVisualizeTexture("Linear Z", WStringToString(LinearDepth.GetName()), LinearDepth.GetHeight(), LinearDepth.GetWidth(), LinearDepth.GetSRV());
+#endif // DEBUG
+}
+
+ColorBuffer* ScreenProcessing::GetLinearDepthBuffer()
+{
+	assert(CurrentLinearDepth);
+	return CurrentLinearDepth;
 }
 
 

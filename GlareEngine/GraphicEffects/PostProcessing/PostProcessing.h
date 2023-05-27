@@ -9,7 +9,7 @@ namespace ScreenProcessing
 
     void RenderFBM(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr);
 
-    void Render(MainConstants& RenderData);
+    void Render();
 
     void DrawBeforeToneMapping();
 
@@ -17,7 +17,7 @@ namespace ScreenProcessing
 
     void DrawUI();
 
-    void Update(float dt);
+    void Update(float dt, MainConstants& RenderData);
 
     void BuildPSO(const PSOCommonProperty CommonProperty);
 
@@ -25,9 +25,15 @@ namespace ScreenProcessing
 
     void BlurBuffer(ComputeContext&, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer);
 
-    void GaussianBlur(ComputeContext&, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer, bool IsWideBlur = false);
+    void GaussianBlur(ComputeContext&, ColorBuffer& SourceBuffer, bool IsWideBlur = false);
 
-    void BilateralBlur(ComputeContext&, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer, bool IsWideBlur = false);
+    void BilateralBlur(ComputeContext&, ColorBuffer& SourceBuffer, bool IsWideBlur = false);
+
+	void LinearizeZ(ComputeContext& Context, Camera& camera, uint32_t FrameIndex);
+
+	void LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, ColorBuffer* LinearDepth, float zMagic);
+
+    ColorBuffer* GetLinearDepthBuffer();
 
     void ShutDown();
 

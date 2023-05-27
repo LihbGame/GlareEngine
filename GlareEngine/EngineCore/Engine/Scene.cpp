@@ -46,6 +46,9 @@ void Scene::Update(float DeltaTime)
 		object->Update(DeltaTime, &Context);
 	}
 
+	//Update Screen Processing
+	ScreenProcessing::Update(DeltaTime, mMainConstants);
+
 	Context.Finish();
 
 }
@@ -172,7 +175,7 @@ void Scene::RenderScene(RenderPipelineType Type)
 	}
 	
 	//Post Processing
-	ScreenProcessing::Render(mMainConstants);
+	ScreenProcessing::Render();
 }
 
 void Scene::DrawUI()
@@ -435,8 +438,7 @@ void Scene::ForwardPlusRendering()
 
 		uint32_t frameIndex = 0; //change it when add TAA
 
-		//LinearizeZ code in SSAO so them can use the same RS 
-		SSAO::LinearizeZ(computeContext, *m_pCamera, frameIndex);
+		ScreenProcessing::LinearizeZ(computeContext, *m_pCamera, frameIndex);
 	}
 
 	//SSAO

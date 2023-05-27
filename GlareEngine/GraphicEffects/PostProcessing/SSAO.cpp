@@ -1,17 +1,16 @@
 #include "SSAO.h"
 #include "Graphics/SamplerManager.h"
 #include "PostProcessing/PostProcessing.h"
+#include "Engine/EngineProfiling.h"
 #include "EngineGUI.h"
 
 //shader
-#include "CompiledShaders/LinearizeDepthCS.h"
 #include "CompiledShaders/SsaoCS.h"
+
 
 namespace SSAO
 {
 	bool Enable = true;
-
-	ComputePSO LinearizeDepthCS(L"Linearize Depth CS");
 
 	ComputePSO SsaoCS(L"SSAO CS");
 
@@ -20,8 +19,6 @@ namespace SSAO
 	NumVar SsaoPower(6, 0.25f, 10);
 
 	IntVar SsaoSampleCount(16, 1, 16);
-
-	ColorBuffer* CurrentLinearDepth = nullptr;
 
 	__declspec(align(16)) struct SSAORenderData
 	{
@@ -45,8 +42,6 @@ void SSAO::Initialize(void)
     ObjName.SetComputeShader(ShaderByteCode, sizeof(ShaderByteCode) ); \
     ObjName.Finalize();
 
-	CreatePSO(LinearizeDepthCS, g_pLinearizeDepthCS);
-
 	CreatePSO(SsaoCS, g_pSsaoCS);
 
 #undef CreatePSO
@@ -56,65 +51,24 @@ void SSAO::Shutdown(void)
 {
 }
 
-void SSAO::LinearizeZ(ComputeContext& Context, Camera& camera, uint32_t FrameIndex)
-{
-	DepthBuffer& Depth = g_SceneDepthBuffer;
-
-	CurrentLinearDepth = &g_LinearDepth[FrameIndex];
-
-	const float NearClipDist = camera.GetNearZ();
-
-	const float FarClipDist = camera.GetFarZ();
-
-	const float zMagic = (FarClipDist - NearClipDist) / NearClipDist;
-
-	LinearizeZ(Context, Depth, CurrentLinearDepth, zMagic);
-}
-
-void SSAO::LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, ColorBuffer* linearDepth, float zMagic)
-{
-	assert(linearDepth);
-
-	ColorBuffer& LinearDepth = *linearDepth;
-
-	// zMagic= (zFar - zNear) / zNear
-	Context.SetRootSignature(ScreenProcessing::GetRootSignature());
-
-	Context.TransitionResource(Depth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-
-	Context.SetConstants(0, zMagic);
-
-	Context.SetDynamicDescriptor(2, 0, Depth.GetDepthSRV());
-
-	Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-
-	Context.SetDynamicDescriptors(1, 0, 1, &LinearDepth.GetUAV());
-
-	Context.SetPipelineState(LinearizeDepthCS);
-
-	Context.Dispatch2D(LinearDepth.GetWidth(), LinearDepth.GetHeight(), 16, 16);
-
-#ifdef DEBUG
-	EngineGUI::AddRenderPassVisualizeTexture("Linear Z", WStringToString(LinearDepth.GetName()), LinearDepth.GetHeight(), LinearDepth.GetWidth(), LinearDepth.GetSRV()); 
-#endif // DEBUG
-}
-
 void SSAO::Render(GraphicsContext& Context, MainConstants& RenderData)
 {
 	if (Enable)
 	{
-		assert(CurrentLinearDepth);
-
 		// Flush the PrePass and wait for it on the compute queue
-		g_CommandManager.GetComputeQueue().StallForFence(Context.Flush());
+		//g_CommandManager.GetComputeQueue().StallForFence(Context.Flush());
 
-		Context.TransitionResource(*CurrentLinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		Context.TransitionResource(*ScreenProcessing::GetLinearDepthBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 		Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 		Context.TransitionResource(g_SSAOFullScreen, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-		ComputeContext& computeContext = ComputeContext::Begin(L"SSAO", true);
+		//ComputeContext& computeContext = ComputeContext::Begin(L"SSAO", true);
+
+		ComputeContext& computeContext = Context.GetComputeContext();
+
+		ScopedTimer SSAOScope(L"SSAO", Context);
 
 		computeContext.SetRootSignature(ScreenProcessing::GetRootSignature());
 
@@ -128,7 +82,7 @@ void SSAO::Render(GraphicsContext& Context, MainConstants& RenderData)
 
 		computeContext.SetDynamicDescriptor(1, 0, g_SSAOFullScreen.GetUAV());
 
-		D3D12_CPU_DESCRIPTOR_HANDLE Depth[2] = { g_SceneDepthBuffer.GetDepthSRV(),CurrentLinearDepth->GetSRV() };
+		D3D12_CPU_DESCRIPTOR_HANDLE Depth[2] = { g_SceneDepthBuffer.GetDepthSRV(),ScreenProcessing::GetLinearDepthBuffer()->GetSRV() };
 
 		computeContext.SetDynamicDescriptors(2, 0, 2, Depth);
 
@@ -136,10 +90,7 @@ void SSAO::Render(GraphicsContext& Context, MainConstants& RenderData)
 
 		computeContext.Dispatch2D(g_SSAOFullScreen.GetWidth(), g_SSAOFullScreen.GetHeight());
 
-
-
-		computeContext.Finish();
-
+		ScreenProcessing::GaussianBlur(computeContext, g_SSAOFullScreen);
 	}
 	else
 	{

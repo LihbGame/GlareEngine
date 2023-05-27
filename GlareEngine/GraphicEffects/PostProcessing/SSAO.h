@@ -10,9 +10,5 @@ namespace SSAO
 
 	void DrawUI();
 
-	void LinearizeZ(ComputeContext& Context, Camera& camera, uint32_t FrameIndex);
-
-	void LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, ColorBuffer* LinearDepth, float zMagic);
-
 	extern bool Enable;
 }

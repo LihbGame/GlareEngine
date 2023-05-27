@@ -9,16 +9,19 @@ void DepthBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Heig
 
 void DepthBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t NumSamples, DXGI_FORMAT Format, bool isReverseZ, uint32_t arraySize, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr)
 {
-	mName = Name;
-	D3D12_RESOURCE_DESC ResourceDesc = DescribeTex2D(Width, Height, arraySize, 1, Format, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
-	ResourceDesc.SampleDesc.Count = NumSamples;
+	if (Width != m_Width || Height != m_Height)
+	{
+		mName = Name;
+		D3D12_RESOURCE_DESC ResourceDesc = DescribeTex2D(Width, Height, arraySize, 1, Format, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
+		ResourceDesc.SampleDesc.Count = NumSamples;
 
-	D3D12_CLEAR_VALUE ClearValue = {};
-	ClearValue.DepthStencil.Depth = isReverseZ ? 0.0f : 1.0f;
-	ClearValue.DepthStencil.Stencil = 0;
-	ClearValue.Format = GetDSVFormat(Format);
-	CreateTextureResource(g_Device, Name, ResourceDesc, ClearValue, VidMemPtr);
-	CreateDerivedViews(g_Device, Format, arraySize);
+		D3D12_CLEAR_VALUE ClearValue = {};
+		ClearValue.DepthStencil.Depth = isReverseZ ? 0.0f : 1.0f;
+		ClearValue.DepthStencil.Stencil = 0;
+		ClearValue.Format = GetDSVFormat(Format);
+		CreateTextureResource(g_Device, Name, ResourceDesc, ClearValue, VidMemPtr);
+		CreateDerivedViews(g_Device, Format, arraySize);
+	}
 }
 
 void DepthBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format,uint32_t ArraySize)

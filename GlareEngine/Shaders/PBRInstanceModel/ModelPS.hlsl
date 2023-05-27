@@ -116,7 +116,7 @@ float4 main(VSOutput vsOutput) : SV_Target0
     color += ComputeLighting(gLights, Surface);
    
     //SSAO
-    float ssao = gSsaoTex[pixelPos];
+    float ssao = gSsaoTex.SampleLevel(baseColorSampler, gInvRenderTargetSize * pixelPos, 0);
 
     if (gIsIndoorScene)
     {
