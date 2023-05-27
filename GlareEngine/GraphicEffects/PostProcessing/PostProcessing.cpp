@@ -403,7 +403,7 @@ void ScreenProcessing::DrawUI()
 	ImGuiIO& io = ImGui::GetIO();
 	if (ImGui::CollapsingHeader("Post Processing", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		if (ImGui::TreeNodeEx("SSAO"))
+		if (ImGui::TreeNodeEx("SSAO", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			SSAO::DrawUI();
 			ImGui::TreePop();

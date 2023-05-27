@@ -20,6 +20,8 @@ namespace SSAO
 
 	IntVar SsaoSampleCount(16, 1, 16);
 
+	bool IsWideBlur = false;
+
 	__declspec(align(16)) struct SSAORenderData
 	{
 		Matrix4			Proj;
@@ -90,7 +92,7 @@ void SSAO::Render(GraphicsContext& Context, MainConstants& RenderData)
 
 		computeContext.Dispatch2D(g_SSAOFullScreen.GetWidth(), g_SSAOFullScreen.GetHeight());
 
-		ScreenProcessing::BilateralBlur(computeContext, g_SSAOFullScreen);
+		ScreenProcessing::BilateralBlur(computeContext, g_SSAOFullScreen, IsWideBlur);
 	}
 	else
 	{
@@ -107,6 +109,7 @@ void SSAO::DrawUI()
 	ImGui::Checkbox("Enable SSAO", &Enable);
 	if (Enable)
 	{
+		ImGui::Checkbox("Wide Blur", &IsWideBlur);
 		ImGui::SliderVerticalFloat("Range", &SsaoRange.GetValue(), SsaoRange.GetMinValue(), SsaoRange.GetMaxValue());
 		ImGui::SliderVerticalFloat("Power", &SsaoPower.GetValue(), SsaoPower.GetMinValue(), SsaoPower.GetMaxValue());
 		ImGui::SliderVerticalInt("Sample Count", &SsaoSampleCount.GetValue(), SsaoSampleCount.GetMinValue(), SsaoSampleCount.GetMaxValue());
