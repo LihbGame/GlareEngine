@@ -530,7 +530,7 @@ void ScreenProcessing::GaussianBlur(ComputeContext& Context, ColorBuffer& Source
 
 	if (IsWideBlur)
 	{
-		Context.SetPipelineState(GaussianBlurWideFloat1CS);
+		Context.SetPipelineState(GaussianBlurWideUnorm1CS);
 	}
 	else
 	{
@@ -555,9 +555,51 @@ void ScreenProcessing::GaussianBlur(ComputeContext& Context, ColorBuffer& Source
 
 }
 
-void ScreenProcessing::BilateralBlur(ComputeContext&, ColorBuffer& SourceBuffer, bool IsWideBlur)
+void ScreenProcessing::BilateralBlur(ComputeContext& Context, ColorBuffer& SourceBuffer, bool IsWideBlur)
 {
+	assert(gMainConstants);
 
+	BlurConstants ConstantData =
+	{
+		XMFLOAT2(1.0f / SourceBuffer.GetWidth(),1.0f / SourceBuffer.GetHeight()),
+		XMINT2(SourceBuffer.GetWidth(),SourceBuffer.GetHeight()),
+		true,
+		gMainConstants->FarZ
+	};
+
+	Context.TransitionResource(g_BlurTemp_HalfBuffer_R8, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.SetDynamicDescriptor(1, 0, g_BlurTemp_HalfBuffer_R8.GetUAV());
+	Context.SetDynamicDescriptor(2, 0, SourceBuffer.GetSRV());
+
+	D3D12_CPU_DESCRIPTOR_HANDLE HorizontalSRVs[2] = { SourceBuffer.GetSRV(),CurrentLinearDepth->GetSRV() };
+	Context.SetDynamicDescriptors(2, 0, 2, HorizontalSRVs);
+
+	Context.SetDynamicConstantBufferView(3, sizeof(BlurConstants), &ConstantData);
+
+	if (IsWideBlur)
+	{
+		Context.SetPipelineState(BilateralBlurWideUnorm1CS);
+	}
+	else
+	{
+		Context.SetPipelineState(BilateralBlurUnorm1CS);
+	}
+
+	//Horizontal Blur
+	Context.Dispatch2D(ConstantData.Dimensions.x, ConstantData.Dimensions.y, 256, 1);
+
+	ConstantData.IsHorizontalBlur = false;
+
+	Context.SetDynamicConstantBufferView(3, sizeof(BlurConstants), &ConstantData);
+
+	Context.SetDynamicDescriptor(1, 0, SourceBuffer.GetUAV());
+	Context.SetDynamicDescriptor(2, 0, g_BlurTemp_HalfBuffer_R8.GetSRV());
+
+	D3D12_CPU_DESCRIPTOR_HANDLE VerticalSRVs[2] = { g_BlurTemp_HalfBuffer_R8.GetSRV(),CurrentLinearDepth->GetSRV() };
+	Context.SetDynamicDescriptors(2, 0, 2, VerticalSRVs);
+
+	//Vertical Blur
+	Context.Dispatch2D(ConstantData.Dimensions.x, ConstantData.Dimensions.y, 1, 256);
 }
 
 void ScreenProcessing::LinearizeZ(ComputeContext& Context, Camera& camera, uint32_t FrameIndex)

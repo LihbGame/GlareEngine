@@ -90,7 +90,7 @@ void SSAO::Render(GraphicsContext& Context, MainConstants& RenderData)
 
 		computeContext.Dispatch2D(g_SSAOFullScreen.GetWidth(), g_SSAOFullScreen.GetHeight());
 
-		ScreenProcessing::GaussianBlur(computeContext, g_SSAOFullScreen);
+		ScreenProcessing::BilateralBlur(computeContext, g_SSAOFullScreen);
 	}
 	else
 	{
