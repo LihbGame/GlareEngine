@@ -302,7 +302,6 @@ void EngineGUI::DrawControlPanel(float IconWindowHigh)
 		ImGui::Checkbox("Shadow", &show_shadow);
 		ImGui::Checkbox("Model", &show_model);
 		ImGui::Checkbox("Sky", &show_sky);
-		ImGui::Checkbox("MSAA", &mMSAA);
 		ImGui::Checkbox("Terrain", &show_HeightMapTerrain);
 	}
 

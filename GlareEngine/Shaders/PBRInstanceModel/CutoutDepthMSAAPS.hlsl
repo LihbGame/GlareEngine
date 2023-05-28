@@ -18,9 +18,7 @@ cbuffer MaterialConstants : register(b2)
     uint flags;
 }
 
-void main(VSOutput vsOutput)
+float4 main(VSOutput vsOutput) :SV_Target
 {
-    //float cutoff = f16tof32(flags >> 16);
-    if (baseColorTexture.Sample(baseColorSampler, vsOutput.uv).a <= 0.5f)
-        discard;
+    return baseColorTexture.Sample(baseColorSampler, vsOutput.uv);
 }

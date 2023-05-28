@@ -22,6 +22,7 @@
 #include "Model/glTFModelLoader.h"
 #include "InstanceModel/glTFInstanceModel.h"
 #include "Misc/LightManager.h"
+#include "PostProcessing/PostProcessing.h"
 
 //lib
 #pragma comment(lib, "dxgi.lib")
@@ -307,9 +308,9 @@ void App::UpdateSceneState(float DeltaTime)
 		gCommonProperty.IsWireframe = EngineGlobal::gCurrentScene->IsWireFrame;
 		IsStateChange = true;
 	}
-	if (mEngineUI->IsMSAA() != EngineGlobal::gCurrentScene->IsMSAA)
+	if (ScreenProcessing::IsMSAA() != EngineGlobal::gCurrentScene->IsMSAA)
 	{
-		EngineGlobal::gCurrentScene->IsMSAA = mEngineUI->IsMSAA();
+		EngineGlobal::gCurrentScene->IsMSAA = ScreenProcessing::IsMSAA();
 		gCommonProperty.IsMSAA = EngineGlobal::gCurrentScene->IsMSAA;
 		if (EngineGlobal::gCurrentScene->IsMSAA)
 		{

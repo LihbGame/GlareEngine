@@ -65,7 +65,6 @@ public:
 	float	GetWaterTransparent()const { return mWaterTransparent; }
 
 	bool	IsWireframe()const { return mWireframe; }
-	bool	IsMSAA()const { return mMSAA; }
 
 	static bool mWindowMaxSize;
 
@@ -112,7 +111,6 @@ private:
 	float mWaterTransparent		= 100.0f;
 
 	bool mWireframe				= false;
-	bool mMSAA					= true;
 
 	int mSceneIndex				= 0;
 	string mSceneName;

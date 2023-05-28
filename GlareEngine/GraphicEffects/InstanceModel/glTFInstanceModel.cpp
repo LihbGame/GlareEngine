@@ -23,6 +23,7 @@
 #include "CompiledShaders/ModelNoTangentNoUV1VS.h"
 #include "CompiledShaders/ModelNoTangentVS.h"
 #include "CompiledShaders/WireframePS.h"
+#include "CompiledShaders/CutoutDepthMSAAPS.h"
 
 using namespace GlareEngine::Render;
 using namespace GlareEngine::ModelPSOFlags;
@@ -106,7 +107,14 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 		CutoutDepthPSO.SetRasterizerState(RasterizerTwoSided);
 	}
 	CutoutDepthPSO.SetVertexShader(g_pCutoutDepthVS, sizeof(g_pCutoutDepthVS));
-	CutoutDepthPSO.SetPixelShader(g_pCutoutDepthPS, sizeof(g_pCutoutDepthPS));
+    if (CommonProperty.IsMSAA)
+    {
+        CutoutDepthPSO.SetPixelShader(g_pCutoutDepthMSAAPS, sizeof(g_pCutoutDepthMSAAPS));
+    }
+    else
+    {
+        CutoutDepthPSO.SetPixelShader(g_pCutoutDepthPS, sizeof(g_pCutoutDepthPS));
+    }
 	CutoutDepthPSO.Finalize();
     gModelPSOs[ModelPSO::CutoutDepthPSO] = CutoutDepthPSO;
 

@@ -78,6 +78,13 @@ namespace ScreenProcessing
 	};
 
 
+	enum AntiAliasingType
+	{
+		MSAA,
+		FXAA,
+		TAA
+	};
+
 	__declspec(align(16)) struct AdaptationConstants
 	{
 		float TargetLuminance;
@@ -115,6 +122,9 @@ namespace ScreenProcessing
 	
 	float MinExposure = 1.0f / 64.0f;
 	float MaxExposure = 64.0f;
+
+	string mAntiAliasingName;
+	int mAntiAliasingIndex = 0;
 
 	//Exposure Data
 	StructuredBuffer g_Exposure;
@@ -274,6 +284,10 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	Shaders[GaussianBlurWideFloat4] = &GaussianBlurWideFloat4CS;
 	Shaders[GaussianBlurWideUnorm1] = &GaussianBlurWideUnorm1CS;
 	Shaders[GaussianBlurWideUnorm4] = &GaussianBlurWideUnorm4CS;
+
+	mAntiAliasingName += string("MSAA") + '\0';
+	mAntiAliasingName += string("FXAA") + '\0';
+	mAntiAliasingName += string("TAA") + '\0';
 
 	__declspec(align(16)) float initExposure[] =
 	{
@@ -479,12 +493,35 @@ void ScreenProcessing::DrawUI()
 			ImGui::Checkbox("Draw Luminance Histogram", &DrawHistogram);
 			ImGui::TreePop();
 		}
+	}
 
-		if (ImGui::TreeNodeEx("FXAA"))
+	if (ImGui::CollapsingHeader("Anti-aliasing", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Combo("Anti Aliasing", &mAntiAliasingIndex, mAntiAliasingName.c_str());
+
+		switch (mAntiAliasingIndex)
 		{
-			ImGui::TreePop();
+		case AntiAliasingType::MSAA:
+			break;
+		case AntiAliasingType::FXAA:
+		{
+			if (ImGui::TreeNodeEx("FXAA"))
+			{
+				ImGui::TreePop();
+			}
+			break;
 		}
-
+		case AntiAliasingType::TAA:
+		{
+			if (ImGui::TreeNodeEx("TAA"))
+			{
+				ImGui::TreePop();
+			}
+			break;
+		}
+		default:
+			break;
+		}
 	}
 }
 
@@ -740,6 +777,11 @@ void ScreenProcessing::LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, C
 #ifdef DEBUG
 	EngineGUI::AddRenderPassVisualizeTexture("Linear Z", WStringToString(LinearDepth.GetName()), LinearDepth.GetHeight(), LinearDepth.GetWidth(), LinearDepth.GetSRV());
 #endif // DEBUG
+}
+
+bool ScreenProcessing::IsMSAA()
+{
+	return mAntiAliasingIndex == AntiAliasingType::MSAA;
 }
 
 ColorBuffer* ScreenProcessing::GetLinearDepthBuffer()

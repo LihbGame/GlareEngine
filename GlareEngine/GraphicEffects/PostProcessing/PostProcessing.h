@@ -33,6 +33,8 @@ namespace ScreenProcessing
 
 	void LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, ColorBuffer* LinearDepth, float zMagic);
 
+    bool IsMSAA();
+
     ColorBuffer* GetLinearDepthBuffer();
 
     void ShutDown();
