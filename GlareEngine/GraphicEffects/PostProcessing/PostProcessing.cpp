@@ -466,34 +466,6 @@ void ScreenProcessing::DrawAfterToneMapping()
 void ScreenProcessing::DrawUI()
 {
 	ImGuiIO& io = ImGui::GetIO();
-	if (ImGui::CollapsingHeader("Post Processing", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		if (ImGui::TreeNodeEx("SSAO", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			SSAO::DrawUI();
-			ImGui::TreePop();
-		}
-
-		if (ImGui::TreeNodeEx("Bloom", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::Checkbox("Enable Bloom", &BloomEnable);
-			if (BloomEnable)
-			{
-				ImGui::Checkbox("High Quality Bloom", &HighQualityBloom);
-				ImGui::SliderVerticalFloat("Bloom Threshold:", &BloomThreshold.GetValue(), BloomThreshold.GetMinValue(), BloomThreshold.GetMaxValue());
-				ImGui::SliderVerticalFloat("Bloom Strength:", &BloomStrength.GetValue(), BloomStrength.GetMinValue(), BloomStrength.GetMaxValue());
-				ImGui::SliderVerticalFloat("Bloom UpSample Factor:", &BloomUpSampleFactor.GetValue(), BloomUpSampleFactor.GetMinValue(), BloomUpSampleFactor.GetMaxValue());
-			}
-			ImGui::TreePop();
-		}
-
-		if (ImGui::TreeNodeEx("Luminance", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::SliderVerticalFloat("Target Luminance:", &TargetLuminance.GetValue(), TargetLuminance.GetMinValue(), TargetLuminance.GetMaxValue());
-			ImGui::Checkbox("Draw Luminance Histogram", &DrawHistogram);
-			ImGui::TreePop();
-		}
-	}
 
 	if (ImGui::CollapsingHeader("Anti-aliasing", ImGuiTreeNodeFlags_DefaultOpen))
 	{
@@ -521,6 +493,35 @@ void ScreenProcessing::DrawUI()
 		}
 		default:
 			break;
+		}
+	}
+
+	if (ImGui::CollapsingHeader("Post Processing", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		if (ImGui::TreeNodeEx("SSAO", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			SSAO::DrawUI();
+			ImGui::TreePop();
+		}
+
+		if (ImGui::TreeNodeEx("Bloom", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Checkbox("Enable Bloom", &BloomEnable);
+			if (BloomEnable)
+			{
+				ImGui::Checkbox("High Quality Bloom", &HighQualityBloom);
+				ImGui::SliderVerticalFloat("Bloom Threshold:", &BloomThreshold.GetValue(), BloomThreshold.GetMinValue(), BloomThreshold.GetMaxValue());
+				ImGui::SliderVerticalFloat("Bloom Strength:", &BloomStrength.GetValue(), BloomStrength.GetMinValue(), BloomStrength.GetMaxValue());
+				ImGui::SliderVerticalFloat("Bloom UpSample Factor:", &BloomUpSampleFactor.GetValue(), BloomUpSampleFactor.GetMinValue(), BloomUpSampleFactor.GetMaxValue());
+			}
+			ImGui::TreePop();
+		}
+
+		if (ImGui::TreeNodeEx("Luminance", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::SliderVerticalFloat("Target Luminance:", &TargetLuminance.GetValue(), TargetLuminance.GetMinValue(), TargetLuminance.GetMaxValue());
+			ImGui::Checkbox("Draw Luminance Histogram", &DrawHistogram);
+			ImGui::TreePop();
 		}
 	}
 }
