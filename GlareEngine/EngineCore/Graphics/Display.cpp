@@ -13,6 +13,7 @@
 #include "Engine/EngineAdjust.h"
 #include "GPUTimeManager.h"
 #include "TextureManager.h"
+#include "PostProcessing/PostProcessing.h"
 
 //Shaders
 #include "CompiledShaders/PresentSDRPS.h"
@@ -59,6 +60,8 @@ namespace GlareEngine
 
 		void PreparePresentLDR();
 		void PreparePresentHDR();
+
+		ColorBuffer* CurrentSceneColorBuffer = nullptr;
 
 		const uint32_t MaxNativeWidth = 3840;
 		const uint32_t MaxNativeHeight = 2160;
@@ -249,6 +252,10 @@ namespace GlareEngine
 
 	void Display::PreparePresent()
 	{
+		CurrentSceneColorBuffer = ScreenProcessing::GetLastPostprocessRT();
+
+		CurrentSceneColorBuffer= CurrentSceneColorBuffer? CurrentSceneColorBuffer: &g_SceneColorBuffer;
+
 		if (g_bEnableHDROutput)
 			PreparePresentHDR();
 		else
@@ -263,13 +270,13 @@ namespace GlareEngine
 		Context.PIXBeginEvent(L"Prepare Present LDR");
 
 		// We're going to be reading these buffers to write to the swap chain buffer(s)
-		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		Context.TransitionResource(*CurrentSceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 		Context.SetRootSignature(s_PresentRS);
 		Context.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		// Copy (and convert) the LDR buffer to the back buffer
-		Context.SetDynamicDescriptor(0, 0, g_SceneColorBuffer.GetSRV());;
+		Context.SetDynamicDescriptor(0, 0, CurrentSceneColorBuffer->GetSRV());;
 
 		Context.SetPipelineState(PresentSDRPS);
 		Context.TransitionResource(g_DisplayBuffers[g_CurrentBuffer], D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -287,13 +294,13 @@ namespace GlareEngine
 		GraphicsContext& Context = GraphicsContext::Begin(L"Present");
 		Context.PIXBeginEvent(L"Prepare Present HDR");
 		// We're going to be reading these buffers to write to the swap chain buffer(s)
-		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		Context.TransitionResource(*CurrentSceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		Context.TransitionResource(g_DisplayBuffers[g_CurrentBuffer], D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 		Context.SetRootSignature(s_PresentRS);
 		Context.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		Context.SetDynamicDescriptor(0, 0, g_SceneColorBuffer.GetSRV());
+		Context.SetDynamicDescriptor(0, 0, CurrentSceneColorBuffer->GetSRV());
 
 		D3D12_CPU_DESCRIPTOR_HANDLE RTVs[] =
 		{

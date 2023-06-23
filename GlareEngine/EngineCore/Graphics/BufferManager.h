@@ -34,6 +34,8 @@ namespace GlareEngine
 
 	extern ColorBuffer				g_PostEffectsBuffer;			// R32_UINT (To support Read-Modify-Write with a UAV)	
 
+	extern ColorBuffer				g_PostColorBuffer;			    //ping-pong with main scene RT in post process chain
+
 	extern ColorBuffer				g_SceneMSAAColorBuffer;
 
 	extern DepthBuffer				g_SceneMSAADepthBuffer;
@@ -79,17 +81,6 @@ namespace GlareEngine
 	//extern ColorBuffer g_DepthTiled2;
 	//extern ColorBuffer g_DepthTiled3;
 	//extern ColorBuffer g_DepthTiled4;
-	//extern ColorBuffer g_AOMerged1;
-	//extern ColorBuffer g_AOMerged2;
-	//extern ColorBuffer g_AOMerged3;
-	//extern ColorBuffer g_AOMerged4;
-	//extern ColorBuffer g_AOSmooth1;
-	//extern ColorBuffer g_AOSmooth2;
-	//extern ColorBuffer g_AOSmooth3;
-	//extern ColorBuffer g_AOHighQuality1;
-	//extern ColorBuffer g_AOHighQuality2;
-	//extern ColorBuffer g_AOHighQuality3;
-	//extern ColorBuffer g_AOHighQuality4;
 
 	//extern ColorBuffer g_DoFTileClass[2];
 	//extern ColorBuffer g_DoFPresortBuffer;
@@ -102,11 +93,6 @@ namespace GlareEngine
 
 	//extern ColorBuffer g_MotionPrepBuffer;        // R10G10B10A2
 	//extern ColorBuffer g_TemporalColor[2];
-
-	//extern ByteAddressBuffer g_FXAAWorkCounters;
-	//extern ByteAddressBuffer g_FXAAWorkQueue;
-	//extern TypedBuffer g_FXAAColorQueue;
-
 
 	void InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t NativeHeight);
 

@@ -13,6 +13,9 @@ namespace GlareEngine
 
 	ColorBuffer				g_PostEffectsBuffer;
 
+	//ping-pong with main scene RT in post process chain
+	ColorBuffer				g_PostColorBuffer;
+
 	//MSAA Buffer
 	DepthBuffer				g_SceneMSAADepthBuffer;
 
@@ -87,6 +90,7 @@ namespace GlareEngine
 	//// For testing GenerateMipMaps()
 	//ColorBuffer g_GenMipsBuffer;
 
+	//DXGI_FORMAT_R11G11B10_FLOAT
 	DXGI_FORMAT DefaultHDRColorFormat = DXGI_FORMAT_R11G11B10_FLOAT;
 }
 
@@ -150,6 +154,8 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 	g_LinearDepth[1].Create(L"Linear Depth 1", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
 
 	g_SSAOFullScreen.Create(L"SSAO Full Resolution", NativeWidth / 2, NativeHeight / 2, 1, DXGI_FORMAT_R8_UNORM);
+
+	g_PostColorBuffer.Create(L"Post Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 
 	g_BlurTemp_HalfBuffer_R8.Create(L"Blur Half Temporary Buffer(R8_UNORM)", NativeWidth / 2, NativeHeight / 2, 1, DXGI_FORMAT_R8_UNORM);
 
@@ -257,6 +263,8 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 
 	g_SSAOFullScreen.Create(L"SSAO Full Resolution", NativeWidth / 2, NativeHeight / 2, 1, DXGI_FORMAT_R8_UNORM);
 
+	g_PostColorBuffer.Create(L"Post Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
+
 	g_BlurTemp_HalfBuffer_R8.Create(L"Blur Half Temporary Buffer(R8_UNORM)", NativeWidth / 2, NativeHeight / 2, 1, DXGI_FORMAT_R8_UNORM);
 }
 
@@ -271,6 +279,8 @@ void GlareEngine::DestroyRenderingBuffers()
 	g_LinearDepth[1].Destroy();
 
 	g_PostEffectsBuffer.Destroy();
+
+	g_PostColorBuffer.Destroy();
 
 	g_SceneMSAAColorBuffer.Destroy();
 

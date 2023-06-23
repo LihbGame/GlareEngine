@@ -40,6 +40,9 @@ namespace ScreenProcessing
     void ShutDown();
 
     const RootSignature& GetRootSignature();
-    
+
+    ColorBuffer* GetLastPostprocessRT();
+
+    ColorBuffer* GetCurrentPostprocessRT();
 }
 

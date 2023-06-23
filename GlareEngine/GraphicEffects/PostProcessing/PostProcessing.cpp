@@ -103,6 +103,8 @@ namespace ScreenProcessing
 		float		CameraFar;
 	};
 
+	ColorBuffer* LastPostprocessRT		= nullptr;
+	ColorBuffer* CurrentPostprocessRT	= nullptr;
 
 	bool  BloomEnable				= true;
 	bool  HighQualityBloom			= true;			// High quality blurs 5 octaves of bloom; low quality only blurs 3.
@@ -297,6 +299,9 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	g_Exposure.Create(L"Exposure", 7, 4, initExposure);
 
 	BuildSRV(CommandList);
+
+	//FXAA Initialize
+	FXAA::Initialize();
 }
 
 void ScreenProcessing::BuildSRV(ID3D12GraphicsCommandList* CommandList)
@@ -405,11 +410,22 @@ void ScreenProcessing::Render()
 {
 	ComputeContext& Context = ComputeContext::Begin(L"Post Processing");
 
+	LastPostprocessRT = &g_PostColorBuffer;
+	CurrentPostprocessRT= &g_SceneColorBuffer;
+
 	Context.SetRootSignature(PostEffectsRS);
 
 	Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 
 	PostProcessHDR(Context);
+
+	std::swap(LastPostprocessRT, CurrentPostprocessRT);
+
+	if (mAntiAliasingIndex == AntiAliasingType::FXAA && FXAA::IsEnable)
+	{
+		FXAA::Render(Context, LastPostprocessRT, CurrentPostprocessRT);
+		std::swap(LastPostprocessRT, CurrentPostprocessRT);
+	}
 
 	if (!g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
 	{
@@ -480,6 +496,7 @@ void ScreenProcessing::DrawUI()
 		{
 			if (ImGui::TreeNodeEx("FXAA"))
 			{
+				FXAA::DrawUI();
 				ImGui::TreePop();
 			}
 			break;
@@ -801,6 +818,16 @@ void ScreenProcessing::ShutDown()
 const RootSignature& ScreenProcessing::GetRootSignature()
 {
 	return PostEffectsRS;
+}
+
+ColorBuffer* ScreenProcessing::GetCurrentPostprocessRT()
+{
+	return CurrentPostprocessRT;
+}
+
+ColorBuffer* ScreenProcessing::GetLastPostprocessRT()
+{
+	return LastPostprocessRT;
 }
 
 void ScreenProcessing::GenerateBloom(ComputeContext& Context)
