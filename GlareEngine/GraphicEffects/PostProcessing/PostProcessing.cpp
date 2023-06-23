@@ -1,11 +1,12 @@
 #include "Engine/EngineProfiling.h"
-#include "PostProcessing.h"
 #include "Graphics/GraphicsCommon.h"
 #include "Graphics/SamplerManager.h"
 #include "Graphics/CommandSignature.h"
-#include "EngineGUI.h"
 #include "Graphics/Display.h"
+#include "PostProcessing.h"
+#include "EngineGUI.h"
 #include "SSAO.h"
+#include "FXAA.h"
 
 //shaders
 #include "CompiledShaders/ScreenQuadVS.h"

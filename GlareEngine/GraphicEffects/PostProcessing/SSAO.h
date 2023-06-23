@@ -9,6 +9,4 @@ namespace SSAO
 	void Render(GraphicsContext& Context, MainConstants& RenderData);
 
 	void DrawUI();
-
-	extern bool Enable;
 }
