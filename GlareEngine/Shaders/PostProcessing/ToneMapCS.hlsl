@@ -40,7 +40,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 
 #if ENABLE_HDR_DISPLAY_MAPPING
     HDRColor = TM_Stanard(REC709toREC2020(HDRColor) * g_PaperWhiteRatio) * g_MaxBrightness;
-    //10000 is a scale for HDR color
+    //Apply REC2084 Curve ,10000 is a scale for HDR color
     HDRColor = ApplyREC2084Curve(HDRColor / 10000);
 
 #if SUPPORT_TYPED_UAV_LOADS
