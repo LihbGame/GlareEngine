@@ -437,14 +437,14 @@ void ScreenProcessing::Render()
 		ScopedTimer Scope(L"Draw Debug Histogram", Context);
 		Context.SetRootSignature(PostEffectsRS);
 		Context.SetPipelineState(DrawHistogramCS);
-		Context.InsertUAVBarrier(g_SceneColorBuffer);
+		Context.InsertUAVBarrier(*LastPostprocessRT);
 		Context.TransitionResource(g_Histogram, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 		Context.TransitionResource(g_Exposure, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-		Context.SetDynamicDescriptor(1, 0, g_SceneColorBuffer.GetUAV());
+		Context.SetDynamicDescriptor(1, 0, LastPostprocessRT->GetUAV());
 		D3D12_CPU_DESCRIPTOR_HANDLE SRVs[2] = { g_Histogram.GetSRV(), g_Exposure.GetSRV() };
 		Context.SetDynamicDescriptors(2, 0, 2, SRVs);
 		Context.Dispatch(1, 32);
-		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		Context.TransitionResource(*LastPostprocessRT, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	}
 
 #ifdef DEBUG

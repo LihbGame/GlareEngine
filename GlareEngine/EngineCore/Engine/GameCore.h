@@ -1,5 +1,6 @@
 #pragma once
 #include "EngineThread.h"
+#include "EngineConfig.h"
 #define RESIZE_RANGE 3
 enum class CursorType
 {
@@ -62,8 +63,8 @@ namespace GlareEngine
 			bool      mResizing = false;
 			bool	  mIsHideUI = false;
 		public:
-			uint32_t mClientWidth = 1600;
-			uint32_t mClientHeight = 900;
+			uint32_t mClientWidth = DEAFAULT_DISPLAY_SIZE_X;
+			uint32_t mClientHeight = DEAFAULT_DISPLAY_SIZE_Y;
 
 			MONITORINFO mMonitorInfo;
 			POINT mLastMousePos;

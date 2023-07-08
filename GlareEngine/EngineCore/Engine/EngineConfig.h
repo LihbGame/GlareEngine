@@ -20,3 +20,6 @@
 #define REVERSE_Z					1
 
 #define BC_COMPRESS					0 //This is for texture BC Compress,need rebuild model texture if changed 
+
+#define DEAFAULT_DISPLAY_SIZE_X				1920
+#define DEAFAULT_DISPLAY_SIZE_Y				1080

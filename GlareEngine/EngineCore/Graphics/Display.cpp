@@ -86,8 +86,8 @@ namespace GlareEngine
 
 		uint32_t g_NativeWidth = 0;
 		uint32_t g_NativeHeight = 0;
-		uint32_t g_DisplayWidth = 1600;
-		uint32_t g_DisplayHeight = 900;
+		uint32_t g_DisplayWidth = DEAFAULT_DISPLAY_SIZE_X;
+		uint32_t g_DisplayHeight = DEAFAULT_DISPLAY_SIZE_Y;
 		ColorBuffer g_PreDisplayBuffer;
 
 		uint64_t g_PreFenceValue = 0;
