@@ -18,9 +18,9 @@ cbuffer CSConstants : register(b0)
 };
 
 
-StructuredBuffer<TileLightData> lightBuffer : register(t0);
-Texture2D<float> depthTex : register(t1);
-RWStructuredBuffer<uint> lightGrid : register(u0);
+StructuredBuffer<TileLightData>     lightBuffer     : register(t0);
+Texture2D<float>                    depthTex        : register(t1);
+RWStructuredBuffer<uint>            lightGrid       : register(u0);
 
 
 groupshared uint minDepthUInt;

@@ -8,13 +8,13 @@ Texture2D<Packed_Velocity_Type> VelocityBuffer		: register(t1);
 RWTexture2D<float4>				PrepBuffer			: register(u0);
 
 
-const float SpeedScale = 8.0f;
+#define SPEED_SCALE  8.0f
 
 
 float4 GetSampleData(uint2 sp)
 {
     float Speed = length(UnpackVelocity(VelocityBuffer[sp]).xy);
-    return float4(ColorBuffer[sp], 1.0) * saturate(Speed * SpeedScale);
+    return float4(ColorBuffer[sp], 1.0) * saturate(Speed * SPEED_SCALE);
 }
 
 [numthreads(8, 8, 1)]
