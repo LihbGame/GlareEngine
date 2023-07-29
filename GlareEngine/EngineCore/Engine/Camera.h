@@ -51,6 +51,7 @@ public:
 	virtual const Frustum& GetViewSpaceFrustum()  { return m_FrustumVS; }
 	virtual const Frustum& GetWorldSpaceFrustum() const { return m_FrustumWS; }
 
+	Matrix4 GetReprojectMatrix()const { return m_ReprojectMatrix; }
 
 	// Get View/Proj matrices.
 	virtual DirectX::XMMATRIX GetView()const;
@@ -110,6 +111,14 @@ protected:
 	//Frustum
 	Frustum m_FrustumVS;
 	Frustum m_FrustumWS;
+
+
+	// The view-projection matrix from the previous frame
+	Matrix4 m_PreviousViewProjMatrix;
+
+	// Projects a clip-space coordinate to the previous frame (useful for temporal effects).
+	Matrix4 m_ReprojectMatrix;
+
 };
 
 

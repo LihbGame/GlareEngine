@@ -1,5 +1,5 @@
 #pragma once
-
+#include "Graphics/CommandContext.h"
 
 namespace MotionBlur
 {
@@ -8,6 +8,8 @@ namespace MotionBlur
 	void Initialize(void);
 
 	void Shutdown(void);
+
+	void GenerateCameraVelocityBuffer(CommandContext& BaseContext, const Camera& camera, bool UseLinearZ = true);
 
 };
 

@@ -41,11 +41,13 @@ namespace GlareEngine
 	
 	ColorBuffer				g_LinearDepth[2];
 
-	ColorBuffer				g_SSAOFullScreen(Color(1.0f, 1.0f, 1.0f));		//Clear Color(1.0f, 1.0f, 1.0f)
+	ColorBuffer				g_SSAOFullScreen(Color(1.0f, 1.0f, 1.0f));				//Clear Color(1.0f, 1.0f, 1.0f)
 	//R8 Format
 	ColorBuffer				g_BlurTemp_HalfBuffer_R8(Color(1.0f, 1.0f, 1.0f));		//Clear Color(1.0f, 1.0f, 1.0f)
 
-	//ColorBuffer g_VelocityBuffer;
+	ColorBuffer				g_VelocityBuffer;
+
+
 	//ColorBuffer g_OverlayBuffer;
 	//ColorBuffer g_HorizontalBuffer;
 
@@ -159,7 +161,7 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 
 	g_BlurTemp_HalfBuffer_R8.Create(L"Blur Half Temporary Buffer(R8_UNORM)", NativeWidth / 2, NativeHeight / 2, 1, DXGI_FORMAT_R8_UNORM);
 
-	//g_VelocityBuffer.Create(L"Motion Vectors", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT);
+	g_VelocityBuffer.Create(L"Motion Vectors", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R32_UINT);
 
 	//g_MinMaxDepth8.Create(L"MinMaxDepth 8x8", bufferWidth3, bufferHeight3, 1, DXGI_FORMAT_R32_UINT, esram);
 	//g_MinMaxDepth16.Create(L"MinMaxDepth 16x16", bufferWidth4, bufferHeight4, 1, DXGI_FORMAT_R32_UINT, esram);
