@@ -1,9 +1,6 @@
 //#include "../../Misc/CommonResource.hlsli"
 #include "../VelocityPacking.hlsli"
 
-#define MAX_SAMPLE_COUNT  10
-#define STEP_SIZE         3.0
-
 Texture2D<Packed_Velocity_Type>		VelocityBuffer	: register(t0);		// Full resolution motion vectors
 Texture2D<float4>					PreBuffer		: register(t1);		// 1/4 resolution pre-weighted blurred color samples
 RWTexture2D<float3>					DstColor		: register(u0);		// Final output color (blurred and temporally blended)
@@ -12,7 +9,9 @@ SamplerState               BiLinearClampSampler		: register(s0);
 
 cbuffer MotionBlurConstantBuffer                    : register(b0)
 {
-    float2 RcpBufferDim;	// 1 / width, 1 / height
+    float2  RcpBufferDim;	// 1 / width, 1 / height
+    float   MaxSampleCount;
+    float   StepSize;
 }
 
 [numthreads(8, 8, 1)]
@@ -33,9 +32,9 @@ void main(uint3 Gid : SV_GroupID, uint GI : SV_GroupIndex, uint3 GTid : SV_Group
         float4 accumulate = float4(thisColor, 1);
 
         // Half of the speed goes in each direction
-        float halfSampleCount = min(MAX_SAMPLE_COUNT * 0.5f, Speed * 0.5f / STEP_SIZE);
+        float halfSampleCount = min(MaxSampleCount * 0.5f, Speed * 0.5f / StepSize);
 
-        float2 deltaUV = Velocity / Speed * RcpBufferDim * STEP_SIZE;
+        float2 deltaUV = Velocity / Speed * RcpBufferDim;
         float2 uv1 = uv;
         float2 uv2 = uv;
 

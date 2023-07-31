@@ -15,6 +15,9 @@ namespace MotionBlur
 {
 	bool IsEnable = true;
 
+	NumVar MaxSampleCount(10, 10, 100);
+	NumVar StepSize(1.0f, 0.01f, 3.0f);
+
 	ComputePSO MotionBlurPrePassCS(L"Motion Blur PrePass CS");
 	ComputePSO MotionBlurFinalPassCS(L"Motion Blur Final Pass CS");
 	ComputePSO CameraVelocityCS = { L"Camera Velocity Linear Z CS" };
@@ -127,7 +130,7 @@ void MotionBlur::RenderMotionBlur(CommandContext& BaseContext, ColorBuffer& velo
 	Context.SetDynamicDescriptor(1, 0, Input->GetUAV());
 	Context.SetDynamicDescriptor(2, 0, velocityBuffer.GetSRV());
 	Context.SetDynamicDescriptor(2, 1, g_MotionPrepBuffer.GetSRV());
-	Context.SetConstants(0, 1.0f / Width, 1.0f / Height);
+	Context.SetConstants(0, 1.0f / Width, 1.0f / Height, MaxSampleCount.GetValue(), StepSize.GetValue());
 
 	Context.Dispatch2D(Width, Height);
 
@@ -137,4 +140,9 @@ void MotionBlur::RenderMotionBlur(CommandContext& BaseContext, ColorBuffer& velo
 void MotionBlur::DrawUI()
 {
 	ImGui::Checkbox("Enable MotionBlur", &IsEnable);
+	if (IsEnable)
+	{
+		ImGui::SliderVerticalFloat("Max Sample Count", &MaxSampleCount.GetValue(), MaxSampleCount.GetMinValue(), MaxSampleCount.GetMaxValue());
+		ImGui::SliderVerticalFloat("Step Size", &StepSize.GetValue(), StepSize.GetMinValue(), StepSize.GetMaxValue());
+	}
 }
