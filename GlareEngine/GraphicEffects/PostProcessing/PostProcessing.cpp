@@ -7,6 +7,7 @@
 #include "EngineGUI.h"
 #include "SSAO.h"
 #include "FXAA.h"
+#include "MotionBlur.h"
 
 //shaders
 #include "CompiledShaders/ScreenQuadVS.h"
@@ -50,6 +51,7 @@
 #include "CompiledShaders/GaussianBlurWideFloat4CS.h"
 #include "CompiledShaders/GaussianBlurWideUnorm1CS.h"
 #include "CompiledShaders/GaussianBlurWideUnorm4CS.h"
+
 
 namespace ScreenProcessing
 {
@@ -302,6 +304,9 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 
 	//FXAA Initialize
 	FXAA::Initialize();
+
+	//Motion Blur Initialize
+	MotionBlur::Initialize();
 }
 
 void ScreenProcessing::BuildSRV(ID3D12GraphicsCommandList* CommandList)
@@ -406,7 +411,7 @@ void ScreenProcessing::Adaptation(ComputeContext& Context)
 }
 
 
-void ScreenProcessing::Render()
+void ScreenProcessing::Render(const Camera& camera)
 {
 	ComputeContext& Context = ComputeContext::Begin(L"Post Processing");
 
@@ -427,10 +432,19 @@ void ScreenProcessing::Render()
 		std::swap(LastPostprocessRT, CurrentPostprocessRT);
 	}
 
-	if (!g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
-	{
-		CopyBackBufferForNotHDRUAVSupport(Context);
-	}
+	// Some systems generate a per-pixel velocity buffer to better track dynamic and skinned meshes.  Everything
+	// is static in our scene, so we generate velocity from camera motion and the depth buffer.  A velocity buffer
+	// is necessary for all temporal effects (and motion blur).
+	MotionBlur::GenerateCameraVelocityBuffer(Context, camera);
+
+	//Motion Blur
+	MotionBlur::RenderMotionBlur(Context, g_VelocityBuffer, LastPostprocessRT);
+
+
+	//if (!g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
+	//{
+	//	CopyBackBufferForNotHDRUAVSupport(Context);
+	//}
 
 	if (DrawHistogram)
 	{

@@ -9,7 +9,7 @@ namespace ScreenProcessing
 
     void RenderFBM(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr);
 
-    void Render();
+    void Render(const Camera& camera);
 
     void DrawBeforeToneMapping();
 

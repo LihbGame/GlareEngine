@@ -58,8 +58,6 @@ void FXAA::Render(ComputeContext& Context, ColorBuffer* Input, ColorBuffer* Outp
 		Context.SetPipelineState(FxaaCS);
 
 		Context.Dispatch2D(Output->GetWidth(), Output->GetHeight());
-
-		std::swap(Input, Output);
 	}
 }
 

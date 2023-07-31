@@ -309,10 +309,9 @@ void Camera::RotateY(float angle)
 
 void Camera::UpdateViewMatrix()
 {
+	m_PreviousViewProjMatrix = Matrix4(mViewProjNoTranspose);
 	if(mViewDirty)
 	{
-		m_PreviousViewProjMatrix = Matrix4(mViewProj);
-
 		XMVECTOR R = XMLoadFloat3(&mRight);
 		XMVECTOR U = XMLoadFloat3(&mUp);
 		XMVECTOR L = XMLoadFloat3(&mLook);
@@ -359,9 +358,8 @@ void Camera::UpdateViewMatrix()
 		
 		mCameraToWorld = Matrix4(XMMatrixInverse(&XMMatrixDeterminant(GetView()), GetView()));
 
-		XMStoreFloat4x4(&mViewProj, XMMatrixTranspose(GetView() * GetProj()));
-
-		m_ReprojectMatrix = Invert(Matrix4(mViewProj)) * m_PreviousViewProjMatrix;
+		mViewProjNoTranspose = GetView() * GetProj();
+		XMStoreFloat4x4(&mViewProj, XMMatrixTranspose(mViewProjNoTranspose));
 
 		//create world space frustum
 		m_FrustumWS = m_FrustumVS * mCameraToWorld;
@@ -370,6 +368,8 @@ void Camera::UpdateViewMatrix()
 	{
 		mViewChanged = false;
 	}
+
+	m_ReprojectMatrix = Invert(Matrix4(mViewProjNoTranspose)) * m_PreviousViewProjMatrix;
 }
 
 XMMATRIX ShadowCamera::GetView() const

@@ -12,7 +12,7 @@
 
 namespace MotionBlur
 {
-	bool IsEnable = false;
+	bool IsEnable = true;
 
 	ComputePSO MotionBlurPrePassCS(L"Motion Blur PrePass CS");
 	ComputePSO MotionBlurFinalPassCS(L"Motion Blur Final Pass CS");
@@ -41,7 +41,7 @@ void MotionBlur::Shutdown(void)
 
 void MotionBlur::GenerateCameraVelocityBuffer(CommandContext& BaseContext, const Camera& camera, bool UseLinearZ)
 {
-	ScopedTimer Marker(L"Generate Camera Velocity", BaseContext);
+	ScopedTimer CameraVelocityScope(L"Generate Camera Velocity", BaseContext);
 
 	ComputeContext& Context = BaseContext.GetComputeContext();
 
@@ -86,7 +86,49 @@ void MotionBlur::GenerateCameraVelocityBuffer(CommandContext& BaseContext, const
 		Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 	Context.SetPipelineState(CameraVelocityCS);
-	Context.SetDynamicDescriptor(1, 0, UseLinearZ ? LinearDepth.GetSRV() : g_SceneDepthBuffer.GetDepthSRV());
-	Context.SetDynamicDescriptor(2, 0, g_VelocityBuffer.GetUAV());
+
+	Context.SetDynamicDescriptor(1, 0, g_VelocityBuffer.GetUAV());
+	Context.SetDynamicDescriptor(2, 0, UseLinearZ ? LinearDepth.GetSRV() : g_SceneDepthBuffer.GetDepthSRV());
 	Context.Dispatch2D(Width, Height);
+}
+
+void MotionBlur::RenderMotionBlur(CommandContext& BaseContext, ColorBuffer& velocityBuffer, ColorBuffer* Input)
+{
+	ScopedTimer MotionBlurScope(L"MotionBlur", BaseContext);
+
+	if (!IsEnable)
+		return;
+
+	uint32_t Width = Input->GetWidth();
+	uint32_t Height = Input->GetHeight();
+
+	ComputeContext& Context = BaseContext.GetComputeContext();
+
+	Context.SetRootSignature(ScreenProcessing::GetRootSignature());
+
+	Context.TransitionResource(g_MotionPrepBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.TransitionResource(*Input, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	Context.TransitionResource(velocityBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+	Context.SetDynamicDescriptor(1, 0, g_MotionPrepBuffer.GetUAV());
+	Context.SetDynamicDescriptor(2, 0, Input->GetSRV());
+	Context.SetDynamicDescriptor(2, 1, velocityBuffer.GetSRV());
+
+	Context.SetPipelineState(MotionBlurPrePassCS);
+	Context.Dispatch2D(g_MotionPrepBuffer.GetWidth(), g_MotionPrepBuffer.GetHeight());
+
+	Context.SetPipelineState(MotionBlurFinalPassCS);
+
+	Context.TransitionResource(*Input, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.TransitionResource(velocityBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	Context.TransitionResource(g_MotionPrepBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+	Context.SetDynamicDescriptor(1, 0, Input->GetUAV());
+	Context.SetDynamicDescriptor(2, 0, velocityBuffer.GetSRV());
+	Context.SetDynamicDescriptor(2, 1, g_MotionPrepBuffer.GetSRV());
+	Context.SetConstants(0, 1.0f / Width, 1.0f / Height);
+
+	Context.Dispatch2D(Width, Height);
+
+	//Context.InsertUAVBarrier(g_SceneColorBuffer);
 }

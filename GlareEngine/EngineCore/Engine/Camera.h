@@ -106,6 +106,7 @@ protected:
 	DirectX::XMFLOAT4X4 mView			= MathHelper::Identity4x4();
 	DirectX::XMFLOAT4X4 mProj			= MathHelper::Identity4x4();
 	DirectX::XMFLOAT4X4 mViewProj		= MathHelper::Identity4x4();
+	DirectX::XMMATRIX mViewProjNoTranspose;
 
 	Matrix4 mCameraToWorld;
 	//Frustum

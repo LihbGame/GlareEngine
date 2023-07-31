@@ -1,5 +1,5 @@
 #include "../VelocityPacking.hlsli"
-
+#include "../../Misc/CommonResource.hlsli"
 
 Texture2D<float3>				ColorBuffer			: register(t0);
 

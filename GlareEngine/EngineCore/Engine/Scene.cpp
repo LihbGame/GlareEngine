@@ -175,7 +175,7 @@ void Scene::RenderScene(RenderPipelineType Type)
 	}
 	
 	//Post Processing
-	ScreenProcessing::Render();
+	ScreenProcessing::Render(*m_pCamera);
 }
 
 void Scene::DrawUI()

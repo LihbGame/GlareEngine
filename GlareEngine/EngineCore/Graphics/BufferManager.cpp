@@ -47,6 +47,7 @@ namespace GlareEngine
 
 	ColorBuffer				g_VelocityBuffer;
 
+	ColorBuffer				g_MotionPrepBuffer;
 
 	//ColorBuffer g_OverlayBuffer;
 	//ColorBuffer g_HorizontalBuffer;
@@ -82,8 +83,7 @@ namespace GlareEngine
 	//StructuredBuffer g_DoFWorkQueue;
 	//StructuredBuffer g_DoFFastQueue;
 	//StructuredBuffer g_DoFFixupQueue;
-
-	//ColorBuffer g_MotionPrepBuffer;
+	
 	//ColorBuffer g_TemporalColor[2];
 	//ByteAddressBuffer g_FXAAWorkCounters;
 	//ByteAddressBuffer g_FXAAWorkQueue;
@@ -162,6 +162,8 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 	g_BlurTemp_HalfBuffer_R8.Create(L"Blur Half Temporary Buffer(R8_UNORM)", NativeWidth / 2, NativeHeight / 2, 1, DXGI_FORMAT_R8_UNORM);
 
 	g_VelocityBuffer.Create(L"Motion Vectors", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R32_UINT);
+
+	g_MotionPrepBuffer.Create(L"Motion Blur Prep", NativeWidth / 2, NativeHeight / 2, 1, HDR_MOTION_FORMAT);
 
 	//g_MinMaxDepth8.Create(L"MinMaxDepth 8x8", bufferWidth3, bufferHeight3, 1, DXGI_FORMAT_R32_UINT, esram);
 	//g_MinMaxDepth16.Create(L"MinMaxDepth 16x16", bufferWidth4, bufferHeight4, 1, DXGI_FORMAT_R32_UINT, esram);
@@ -268,6 +270,10 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 	g_PostColorBuffer.Create(L"Post Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 
 	g_BlurTemp_HalfBuffer_R8.Create(L"Blur Half Temporary Buffer(R8_UNORM)", NativeWidth / 2, NativeHeight / 2, 1, DXGI_FORMAT_R8_UNORM);
+
+	g_VelocityBuffer.Create(L"Motion Vectors", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R32_UINT);
+
+	g_MotionPrepBuffer.Create(L"Motion Blur Prep", NativeWidth / 2, NativeHeight / 2, 1, HDR_MOTION_FORMAT);
 }
 
 void GlareEngine::DestroyRenderingBuffers()
@@ -318,8 +324,11 @@ void GlareEngine::DestroyRenderingBuffers()
 
 	g_BlurTemp_HalfBuffer_R8.Destroy();
 
-	/*g_VelocityBuffer.Destroy();
-	g_HorizontalBuffer.Destroy();*/
+	g_VelocityBuffer.Destroy();
+
+	g_MotionPrepBuffer.Destroy();
+
+	/*g_HorizontalBuffer.Destroy();*/
 
 	//g_ShadowBuffer.Destroy();
 
@@ -358,7 +367,6 @@ void GlareEngine::DestroyRenderingBuffers()
 	//g_DoFFastQueue.Destroy();
 	//g_DoFFixupQueue.Destroy();
 
-	//g_MotionPrepBuffer.Destroy();
 	//g_TemporalColor[0].Destroy();
 	//g_TemporalColor[1].Destroy();
 

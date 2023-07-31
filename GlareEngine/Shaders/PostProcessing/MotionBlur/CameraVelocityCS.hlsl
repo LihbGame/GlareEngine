@@ -1,4 +1,5 @@
 #include "../VelocityPacking.hlsli"
+#include "../../Misc/CommonResource.hlsli"
 
 #define USE_LINEAR_Z
 
@@ -6,7 +7,7 @@ Texture2D<float> DepthBuffer						: register(t0);
 
 RWTexture2D<Packed_Velocity_Type> VelocityBuffer	: register(u0);
 
-cbuffer CBuffer                                     : register(b1)
+cbuffer CameraBuffer                                : register(b1)
 {
     matrix CurrentToPrev;
 }
@@ -31,5 +32,5 @@ void main( uint3 DTid : SV_DispatchThreadID )
     PrevHomogeneousPos.z        = PrevHomogeneousPos.w;
 #endif
 
-    VelocityBuffer[DTid.xy]     = PackVelocity(PrevHomogeneousPos.xyz - float3(CurrentPixel, Depth));
+    VelocityBuffer[DTid.xy] = PackVelocity(PrevHomogeneousPos.xyz - float3(CurrentPixel, Depth));
 }

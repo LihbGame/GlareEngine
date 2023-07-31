@@ -1,4 +1,4 @@
-#include "../../Misc/CommonResource.hlsli"
+//#include "../../Misc/CommonResource.hlsli"
 #include "../VelocityPacking.hlsli"
 
 #define MAX_SAMPLE_COUNT  10
@@ -7,8 +7,10 @@
 Texture2D<Packed_Velocity_Type>		VelocityBuffer	: register(t0);		// Full resolution motion vectors
 Texture2D<float4>					PreBuffer		: register(t1);		// 1/4 resolution pre-weighted blurred color samples
 RWTexture2D<float3>					DstColor		: register(u0);		// Final output color (blurred and temporally blended)
+SamplerState               BiLinearClampSampler		: register(s0);
 
-cbuffer c0 : register(b0)
+
+cbuffer MotionBlurConstantBuffer                    : register(b0)
 {
     float2 RcpBufferDim;	// 1 / width, 1 / height
 }
@@ -38,10 +40,10 @@ void main(uint3 Gid : SV_GroupID, uint GI : SV_GroupIndex, uint3 GTid : SV_Group
         float2 uv2 = uv;
 
         // First accumulate the whole samples
-        for (float i = 0.0f; i < halfSampleCount - 1.0f; i += 1.0f)
+        for (float i = halfSampleCount - 1.0; i > 0.0; i -= 1.0)
         {
-            accumulate += PreBuffer.SampleLevel(gSamplerLinearWrap, uv1 += deltaUV, 0);
-            accumulate += PreBuffer.SampleLevel(gSamplerLinearWrap, uv2 -= deltaUV, 0);
+            accumulate += PreBuffer.SampleLevel(BiLinearClampSampler, uv1 += deltaUV, 0);
+            accumulate += PreBuffer.SampleLevel(BiLinearClampSampler, uv2 -= deltaUV, 0);
         }
 
         // This is almost the same as 'frac(halfSampleCount)' replaces 0 with 1.
@@ -50,8 +52,8 @@ void main(uint3 Gid : SV_GroupID, uint GI : SV_GroupIndex, uint3 GTid : SV_Group
 
         // Then accumulate the fractional samples
         deltaUV *= remainder;
-        accumulate += PreBuffer.SampleLevel(gSamplerLinearWrap, uv1 + deltaUV, 0) * remainder;
-        accumulate += PreBuffer.SampleLevel(gSamplerLinearWrap, uv2 - deltaUV, 0) * remainder;
+        accumulate += PreBuffer.SampleLevel(BiLinearClampSampler, uv1 + deltaUV, 0) * remainder;
+        accumulate += PreBuffer.SampleLevel(BiLinearClampSampler, uv2 - deltaUV, 0) * remainder;
 
         thisColor = lerp(thisColor, accumulate.rgb / accumulate.a, saturate(Speed / 32.0));
     }

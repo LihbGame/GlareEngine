@@ -8,7 +8,6 @@
 
 #include "../Misc/CommonResource.hlsli"
 #include "FXAA.hlsli"
-#include "../Misc/CommonResource.hlsli"
 
 static const float FxaaSubpix               = 0.75;
 static const float FxaaEdgeThreshold        = 0.166;
