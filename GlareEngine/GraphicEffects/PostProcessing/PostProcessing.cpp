@@ -549,6 +549,12 @@ void ScreenProcessing::DrawUI()
 			ImGui::TreePop();
 		}
 
+		if (ImGui::TreeNodeEx("Motion Blur", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			MotionBlur::DrawUI();
+			ImGui::TreePop();
+		}
+
 		if (ImGui::TreeNodeEx("Luminance", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::SliderVerticalFloat("Target Luminance:", &TargetLuminance.GetValue(), TargetLuminance.GetMinValue(), TargetLuminance.GetMaxValue());

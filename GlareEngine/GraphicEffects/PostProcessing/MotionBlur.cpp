@@ -3,6 +3,7 @@
 #include "PostProcessing.h"
 #include "Graphics/CommandContext.h"
 #include "Engine/EngineProfiling.h"
+#include "EngineGUI.h"
 
 //shader
 #include "CompiledShaders/MotionBlurPrePassCS.h"
@@ -94,10 +95,10 @@ void MotionBlur::GenerateCameraVelocityBuffer(CommandContext& BaseContext, const
 
 void MotionBlur::RenderMotionBlur(CommandContext& BaseContext, ColorBuffer& velocityBuffer, ColorBuffer* Input)
 {
-	ScopedTimer MotionBlurScope(L"MotionBlur", BaseContext);
-
 	if (!IsEnable)
 		return;
+
+	ScopedTimer MotionBlurScope(L"MotionBlur", BaseContext);
 
 	uint32_t Width = Input->GetWidth();
 	uint32_t Height = Input->GetHeight();
@@ -131,4 +132,9 @@ void MotionBlur::RenderMotionBlur(CommandContext& BaseContext, ColorBuffer& velo
 	Context.Dispatch2D(Width, Height);
 
 	//Context.InsertUAVBarrier(g_SceneColorBuffer);
+}
+
+void MotionBlur::DrawUI()
+{
+	ImGui::Checkbox("Enable MotionBlur", &IsEnable);
 }

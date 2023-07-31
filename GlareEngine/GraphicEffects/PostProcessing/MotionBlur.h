@@ -12,5 +12,7 @@ namespace MotionBlur
 	void GenerateCameraVelocityBuffer(CommandContext& BaseContext, const Camera& camera, bool UseLinearZ = true);
 
 	void RenderMotionBlur(CommandContext& BaseContext, ColorBuffer& velocityBuffer, ColorBuffer* Input);
+
+	void DrawUI();
 };
 
