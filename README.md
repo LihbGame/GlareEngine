@@ -27,3 +27,6 @@ Bloom
 
 Parallax Mapping
 ![demo](ScreenShot/ParallaxMapping.jpg)
+
+Motion Blur
+![demo](ScreenShot/MotionBlur.jpg)
