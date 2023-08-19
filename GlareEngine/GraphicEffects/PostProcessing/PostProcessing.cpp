@@ -12,8 +12,6 @@
 //shaders
 #include "CompiledShaders/ScreenQuadVS.h"
 #include "CompiledShaders/FbmPostPS.h"
-#include "CompiledShaders/ApplyBloomCS.h"
-#include "CompiledShaders/ApplyBloom2CS.h"
 #include "CompiledShaders/BloomDownSample2CS.h"
 #include "CompiledShaders/BloomDownSample4CS.h"
 #include "CompiledShaders/BloomExtractAndDownSampleHDRCS.h"

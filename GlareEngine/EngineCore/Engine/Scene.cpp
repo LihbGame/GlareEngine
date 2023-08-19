@@ -362,8 +362,28 @@ void Scene::ForwardRendering()
 	{
 		Context.TransitionResource(g_SceneMSAAColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
 		Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, true);
+		Context.TransitionResource(g_SceneMSAADepthBuffer, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
+		Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, true);
 		Context.GetCommandList()->ResolveSubresource(g_SceneColorBuffer.GetResource(), 0, g_SceneMSAAColorBuffer.GetResource(), 0, DefaultHDRColorFormat);
+		Context.GetCommandList()->ResolveSubresource(g_SceneDepthBuffer.GetResource(), 0, g_SceneMSAADepthBuffer.GetResource(), 0, DXGI_FORMAT_R32_FLOAT);
 	}
+
+	//Linear Z
+	{
+		ScopedTimer LinearZScope(L"Linear Z", Context);
+
+		ComputeContext& computeContext = Context.GetComputeContext();
+
+		uint32_t frameIndex = 0; //change it when add TAA
+
+		ScreenProcessing::LinearizeZ(computeContext, *m_pCamera, frameIndex);
+	}
+
+	//SSAO
+	{
+		SSAO::Render(Context, mMainConstants);
+	}
+
 
 	Context.PIXEndEvent();
 #pragma endregion

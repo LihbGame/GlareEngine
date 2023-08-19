@@ -54,7 +54,7 @@ float4 main(PosNorTanTexOut pin) : SV_Target
     float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
 	bumpedNormalW, toEyeW, shadowFactor);
 
-    float4 litColor = ambient + directLight;
+    float4 litColor = ambient +directLight;
 
 // Common convention to take alpha from diffuse material.
     litColor.a = diffuseAlbedo.a;

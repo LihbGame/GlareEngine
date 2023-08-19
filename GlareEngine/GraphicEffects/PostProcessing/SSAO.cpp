@@ -96,7 +96,7 @@ void SSAO::Render(GraphicsContext& Context, MainConstants& RenderData)
 	}
 	else
 	{
-		Context.ClearColor(g_SSAOFullScreen);
+		Context.ClearUAV(g_SSAOFullScreen);
 	}
 
 #ifdef DEBUG
