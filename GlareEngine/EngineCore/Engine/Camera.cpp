@@ -279,7 +279,7 @@ void Camera::Pitch(float angle)
 {
 	// Rotate up and look vector about the right vector.
 
-	XMMATRIX R = XMMatrixRotationAxis(XMLoadFloat3(&mRight), angle);
+	XMMATRIX R = DirectX::XMMatrixRotationAxis(XMLoadFloat3(&mRight), angle);
 
 	XMStoreFloat3(&mUp,   XMVector3TransformNormal(XMLoadFloat3(&mUp), R));
 	XMStoreFloat3(&mLook, XMVector3TransformNormal(XMLoadFloat3(&mLook), R));
@@ -298,7 +298,7 @@ void Camera::RotateY(float angle)
 		angle = -angle;
 	}
 
-	XMMATRIX R = XMMatrixRotationY(angle);
+	XMMATRIX R = DirectX::XMMatrixRotationY(angle);
 	
 	XMStoreFloat3(&mRight,   XMVector3TransformNormal(XMLoadFloat3(&mRight), R));
 	XMStoreFloat3(&mUp, XMVector3TransformNormal(XMLoadFloat3(&mUp), R));
@@ -356,10 +356,11 @@ void Camera::UpdateViewMatrix()
 		mViewDirty = false;
 		mViewChanged = true;
 		
-		mCameraToWorld = Matrix4(XMMatrixInverse(&XMMatrixDeterminant(GetView()), GetView()));
+		XMVECTOR  MatrixDeterminant = DirectX::XMMatrixDeterminant(GetView());
+		mCameraToWorld = Matrix4(DirectX::XMMatrixInverse(&MatrixDeterminant, GetView()));
 
 		mViewProjNoTranspose = GetView() * GetProj();
-		XMStoreFloat4x4(&mViewProj, XMMatrixTranspose(mViewProjNoTranspose));
+		XMStoreFloat4x4(&mViewProj, DirectX::XMMatrixTranspose(mViewProjNoTranspose));
 
 		//create world space frustum
 		m_FrustumWS = m_FrustumVS * mCameraToWorld;
@@ -374,7 +375,8 @@ void Camera::UpdateViewMatrix()
 
 XMMATRIX ShadowCamera::GetView() const
 {
-	return  XMLoadFloat4x4(&m_pShadowMap->GetView());
+	XMFLOAT4X4 View = m_pShadowMap->GetView();
+	return  XMLoadFloat4x4(&View);
 }
 
 const Frustum& ShadowCamera::GetViewSpaceFrustum()

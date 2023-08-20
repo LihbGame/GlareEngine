@@ -45,37 +45,37 @@ ModelRenderData* SimpleModelGenerator::CreateSimpleModelRanderData(string ModelN
 		lModelRenderData.mSubModels.resize(1);
 		ModelData& lModelData = lModelRenderData.mSubModels[0];
 		MeshData lMeshData;
-		char* MeshName = "";
+		char* MeshName = (char*)"";
 		switch (Type)
 		{
 		case SimpleModelType::Box:
 		{
 			lMeshData = mGeometryGenerator.CreateBox(100.0f, 100.0f, 100.0f, 1);
-			MeshName = "Box";
+			MeshName = (char*)"Box";
 			break;
 		}
 		case SimpleModelType::Cylinder:
 		{
 			lMeshData = mGeometryGenerator.CreateCylinder(20.0f, 5.0f, 50.0f, 30, 30);
-			MeshName = "Cylinder";
+			MeshName = (char*)"Cylinder";
 			break;
 		}
 		case SimpleModelType::Grid:
 		{
 			lMeshData = mGeometryGenerator.CreateGrid(100.0f, 100.0f, 10, 10);
-			MeshName = "Grid";
+			MeshName = (char*)"Grid";
 			break;
 		}
 		case SimpleModelType::Sphere:
 		{
 			lMeshData = mGeometryGenerator.CreateSphere(20.0f, 30, 30);
-			MeshName = "Sphere";
+			MeshName = (char*)"Sphere";
 			break;
 		}
 		case SimpleModelType::ScreenQuad:
 		{
 			lMeshData = mGeometryGenerator.CreateQuad(0.0f, 0.0f, 1.0f, 1.0f, 0.0f);
-			MeshName = "ScreenQuad";
+			MeshName = (char*)"ScreenQuad";
 			break;
 		}
 		default:

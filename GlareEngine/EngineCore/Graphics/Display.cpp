@@ -458,7 +458,7 @@ namespace GlareEngine
 
 		static int logIndex = EngineLog::AddLog(L"Changing display resolution to %ux%u", g_DisplayWidth, g_DisplayHeight);
 
-		EngineLog::ReplaceLog(logIndex-1, L"Changing display resolution to %ux%u", g_DisplayWidth, g_DisplayHeight);
+		EngineLog::ReplaceLog(logIndex-1, (wchar_t *)L"Changing display resolution to %ux%u", g_DisplayWidth, g_DisplayHeight);
 
 		//g_PreDisplayBuffer.Create(L"PreDisplay Buffer", width, height, 1, g_SwapChainFormat);
 

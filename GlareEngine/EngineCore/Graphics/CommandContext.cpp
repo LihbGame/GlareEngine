@@ -452,16 +452,19 @@ namespace GlareEngine
 
 		// The footprint may depend on the device of the resource, but we assume there is only one device.
 		D3D12_PLACED_SUBRESOURCE_FOOTPRINT PlacedFootprint;
-		g_Device->GetCopyableFootprints(&SrcBuffer.GetResource()->GetDesc(), 0, 1, 0,
+		D3D12_RESOURCE_DESC desc = SrcBuffer.GetResource()->GetDesc();
+		g_Device->GetCopyableFootprints(&desc, 0, 1, 0,
 			&PlacedFootprint, nullptr, nullptr, &CopySize);
 
 		DstBuffer.Create(L"Read back", (uint32_t)CopySize, 1);
 
 		TransitionResource(SrcBuffer, D3D12_RESOURCE_STATE_COPY_SOURCE, true);
 
+		CD3DX12_TEXTURE_COPY_LOCATION DstLocation = CD3DX12_TEXTURE_COPY_LOCATION(DstBuffer.GetResource(), PlacedFootprint);
+		CD3DX12_TEXTURE_COPY_LOCATION SrcLocation = CD3DX12_TEXTURE_COPY_LOCATION(SrcBuffer.GetResource(), 0);
 		m_CommandList->CopyTextureRegion(
-			&CD3DX12_TEXTURE_COPY_LOCATION(DstBuffer.GetResource(), PlacedFootprint), 0, 0, 0,
-			&CD3DX12_TEXTURE_COPY_LOCATION(SrcBuffer.GetResource(), 0), nullptr);
+			&DstLocation, 0, 0, 0,
+			&SrcLocation, nullptr);
 
 		return PlacedFootprint.Footprint.RowPitch;
 	}

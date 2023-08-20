@@ -225,13 +225,18 @@ void Scene::ResizeViewport(uint32_t width, uint32_t height)
 
 void Scene::UpdateMainConstantBuffer(float DeltaTime)
 {
-	XMMATRIX View = XMLoadFloat4x4(&m_pCamera->GetView4x4f());
-	XMMATRIX Proj = XMLoadFloat4x4(&m_pCamera->GetProj4x4f());
+	XMFLOAT4X4 TempFloat4x4 = m_pCamera->GetView4x4f();
+	XMMATRIX View = XMLoadFloat4x4(&TempFloat4x4);
+	TempFloat4x4 = m_pCamera->GetProj4x4f();
+	XMMATRIX Proj = XMLoadFloat4x4(&TempFloat4x4);
 
 	XMMATRIX ViewProj = XMMatrixMultiply(View, Proj);
-	XMMATRIX InvView = XMMatrixInverse(&XMMatrixDeterminant(View), View);
-	XMMATRIX InvProj = XMMatrixInverse(&XMMatrixDeterminant(Proj), Proj);
-	XMMATRIX InvViewProj = XMMatrixInverse(&XMMatrixDeterminant(ViewProj), ViewProj);
+	XMVECTOR Determinant = XMMatrixDeterminant(View);
+	XMMATRIX InvView = XMMatrixInverse(&Determinant, View);
+	Determinant = XMMatrixDeterminant(Proj);
+	XMMATRIX InvProj = XMMatrixInverse(&Determinant, Proj);
+	Determinant = XMMatrixDeterminant(ViewProj);
+	XMMATRIX InvViewProj = XMMatrixInverse(&Determinant, ViewProj);
 
 	XMStoreFloat4x4(&mMainConstants.View, XMMatrixTranspose(View));
 	XMStoreFloat4x4(&mMainConstants.InvView, XMMatrixTranspose(InvView));
@@ -239,7 +244,8 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 	XMStoreFloat4x4(&mMainConstants.InvProj, XMMatrixTranspose(InvProj));
 	XMStoreFloat4x4(&mMainConstants.ViewProj, XMMatrixTranspose(ViewProj));
 	XMStoreFloat4x4(&mMainConstants.InvViewProj, XMMatrixTranspose(InvViewProj));
-	XMStoreFloat4x4(&mMainConstants.ShadowTransform, XMMatrixTranspose(XMLoadFloat4x4(&m_pShadowMap->GetShadowTransform())));
+	XMFLOAT4X4 ShadowTransform = m_pShadowMap->GetShadowTransform();
+	XMStoreFloat4x4(&mMainConstants.ShadowTransform, XMMatrixTranspose(XMLoadFloat4x4(&ShadowTransform)));
 	
 	mMainConstants.EyePosW = m_pCamera->GetPosition3f();
 	mMainConstants.RenderTargetSize = XMFLOAT2((float)g_SceneColorBuffer.GetWidth(), (float)g_SceneColorBuffer.GetHeight());

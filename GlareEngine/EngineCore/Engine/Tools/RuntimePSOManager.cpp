@@ -68,12 +68,13 @@ void RuntimePSOManager::EnqueuePSOCreationTask(const std::string& shaderFile)
 
 std::vector<std::string> RuntimePSOManager::ParseShaderIncludeFiles(const char* sourceShaderPath)
 {
+	//Todo :not support include files changes for now
 	return std::vector<std::string>();
 }
 
 std::string RuntimePSOManager::GetShaderAssetDirectory()
 {
-	return std::string();
+	return SHADER_ASSET_DIRECTOTY;
 }
 
 void RuntimePSOManager::RegisterPSODependency(const std::string& shaderFile)
@@ -101,15 +102,14 @@ void RuntimePSOManager::RuntimePSOThreadFunc()
 
 		{
 			std::lock_guard<std::mutex> locker(m_TaskMutex);
-			task = m_Tasks.front();
 
 			if (!m_Tasks.empty())
 			{
+				task = m_Tasks.front();
 				m_Tasks.pop_front();
+				task.Execute();
 			}
 		}
-
-		task.Execute();
 	}
 }
 

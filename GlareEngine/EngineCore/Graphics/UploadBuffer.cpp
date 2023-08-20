@@ -45,11 +45,13 @@ void UploadBuffer::Create( const std::wstring& name, size_t BufferSize )
 void* UploadBuffer::Map(void)
 {
     void* Memory;
-    m_pResource->Map(0, &CD3DX12_RANGE(0, m_BufferSize), &Memory);
+    CD3DX12_RANGE range = CD3DX12_RANGE(0, m_BufferSize);
+    m_pResource->Map(0, &range, &Memory);
     return Memory;
 }
 
 void UploadBuffer::Unmap(size_t begin, size_t end)
 {
-    m_pResource->Unmap(0, &CD3DX12_RANGE(begin, min(end, m_BufferSize)));
+    CD3DX12_RANGE range = CD3DX12_RANGE(begin, min(end, m_BufferSize));
+    m_pResource->Unmap(0, &range);
 }

@@ -51,7 +51,7 @@ ShaderBinary ShaderCompiler::Compile(const char* shaderFilePath, const char* ent
 		std::vector<DxcDefine> dxcDefines(definitions.GetDefinitions().size());
 
 		uint32_t Index = 0u;
-		for each (const auto& nameValue in definitions.GetDefinitions())
+		for(const auto& nameValue : definitions.GetDefinitions())
 		{
 			shaderDefines[Index].first = std::wstring(nameValue.first.begin(), nameValue.first.end());
 			shaderDefines[Index].second = std::wstring(nameValue.second.begin(), nameValue.second.end());
@@ -147,7 +147,7 @@ ShaderBinary ShaderCompiler::Compile(const char* shaderFilePath, const char* ent
 
 		uint32_t index = 0u;
 		std::vector<D3D_SHADER_MACRO> d3dMacros(definitions.GetDefinitions().size());
-		for each (const auto& NameValue in definitions.GetDefinitions())
+		for(const auto& NameValue : definitions.GetDefinitions())
 		{
 			d3dMacros[index].Name = NameValue.first.c_str();
 			d3dMacros[index].Definition = NameValue.second.c_str();

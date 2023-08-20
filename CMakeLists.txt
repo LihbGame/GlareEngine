@@ -3,7 +3,7 @@ project (GlareEngine VERSION 0.1.0)
 
 include(CMakeDependentOption)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(BUILD_SHARED_LIBS OFF)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -15,7 +15,7 @@ set(CMAKE_INSTALL_PREFIX "${GLAREENGINE_ROOT_DIR}/bin")
 set(BINARY_ROOT_DIR "${CMAKE_INSTALL_PREFIX}/")
 set(ENGINE_ROOT_DIR "${GLAREENGINE_ROOT_DIR}/GlareEngine")
 
-add_definitions(-DUNICODE -D_UNICODE -D_DEBUG -DDEBUG)
+add_definitions(-DUNICODE -D_UNICODE -D_DEBUG -DDEBUG -D_HAS_STD_BYTE=0)
 
 add_subdirectory(GlareEngine)
 add_subdirectory(GameDemo)

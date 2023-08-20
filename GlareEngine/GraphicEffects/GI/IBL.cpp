@@ -54,7 +54,8 @@ void IBL::BakingEnvironmentDiffuse(GraphicsContext& Context)
 	for (int i = 0; i < 6; i++)
 	{
 		Context.SetRenderTarget(mIndirectDiffuseCube->RTV(i));
-		Context.SetDynamicConstantBufferView((int)RootSignatureType::eCommonConstantBuffer, sizeof(mIndirectDiffuseCube->GetCubeCameraCBV(i)), &mIndirectDiffuseCube->GetCubeCameraCBV(i));
+		CubeMapConstants constants = mIndirectDiffuseCube->GetCubeCameraCBV(i);
+		Context.SetDynamicConstantBufferView((int)RootSignatureType::eCommonConstantBuffer, sizeof(mIndirectDiffuseCube->GetCubeCameraCBV(i)), &constants);
 		m_pSky->Draw(Context, &mIndirectDiffusePSO);
 	}
 	Context.TransitionResource(mIndirectDiffuseCube->Resource(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);

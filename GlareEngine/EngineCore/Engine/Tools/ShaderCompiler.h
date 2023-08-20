@@ -19,7 +19,7 @@ public:
 
 	void Merge(const ShaderDefinitions& other)
 	{
-		for each (const auto & NameValue in other.m_Definitions)
+		for(const auto & NameValue : other.m_Definitions)
 		{
 			SetDefine(NameValue.first.c_str(), NameValue.second);
 		}

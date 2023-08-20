@@ -327,8 +327,10 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 
 	XMMATRIX Proj = camera.GetProj();
 	XMMATRIX ViewProj = camera.GetViewProjection();
-	XMMATRIX InvProj = XMMatrixInverse(&XMMatrixDeterminant(Proj), Proj);
-	XMMATRIX InvViewProj = XMMatrixInverse(&XMMatrixDeterminant(ViewProj), ViewProj);
+	XMVECTOR  Determinant = XMMatrixDeterminant(Proj);
+	XMMATRIX InvProj = XMMatrixInverse(&Determinant, Proj);
+	Determinant = XMMatrixDeterminant(ViewProj);
+	XMMATRIX InvViewProj = XMMatrixInverse(&Determinant, ViewProj);
 	csConstants.InverseProjection = (Matrix4)InvProj;
 	csConstants.InverseViewProj = (Matrix4)InvViewProj;
 	Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);

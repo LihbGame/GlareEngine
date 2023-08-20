@@ -87,9 +87,13 @@ void CubeRenderTarget::BuildCubeMapFacePassCBs()
 		XMMATRIX proj = mCubeMapCamera[i].GetProj();
 
 		XMMATRIX viewProj = XMMatrixMultiply(view, proj);
-		XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
-		XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(proj), proj);
-		XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(viewProj), viewProj);
+
+		XMVECTOR Determinant = XMMatrixDeterminant(view);
+		XMMATRIX invView = XMMatrixInverse(&Determinant, view);
+		Determinant = XMMatrixDeterminant(proj);
+		XMMATRIX invProj = XMMatrixInverse(&Determinant, proj);
+		Determinant = XMMatrixDeterminant(viewProj);
+		XMMATRIX invViewProj = XMMatrixInverse(&Determinant, viewProj);
 
 		XMStoreFloat4x4(&CubeFacePassCB.View, XMMatrixTranspose(view));
 		XMStoreFloat4x4(&CubeFacePassCB.Proj, XMMatrixTranspose(proj));
