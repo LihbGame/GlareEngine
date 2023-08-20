@@ -1,5 +1,6 @@
 #include "RuntimePSOManager.h"
 #include "../packages/filewatch/FileWatch.hpp"
+#include "Engine/EngineThread.h"
 
 static std::unique_ptr<filewatch::FileWatch<std::string>> s_FileWatch;
 
@@ -13,6 +14,7 @@ RuntimePSOManager::~RuntimePSOManager()
 {
 	m_StopRuntimePSOThread = true;
 	s_FileWatch.reset();
+	//m_RuntimePSOThread.get()->detach();
 }
 
 void RuntimePSOManager::StartRuntimePSOThread()
@@ -32,8 +34,10 @@ void RuntimePSOManager::StartRuntimePSOThread()
 				};
 			}
 		);
+		
+		EngineThread::Get().AddTask([&]() {RuntimePSOManager::RuntimePSOThreadFunc(); });
 
-		m_RuntimePSOThread = std::make_unique<std::thread>(&RuntimePSOManager::RuntimePSOThreadFunc, this);
+		//m_RuntimePSOThread = std::make_unique<std::thread>(&RuntimePSOManager::RuntimePSOThreadFunc, this);
 	}
 }
 
@@ -95,7 +99,7 @@ void RuntimePSOManager::RuntimePSOThreadFunc()
 	PSOCreationTask task;
 	while (true)
 	{
-		if (m_StopRuntimePSOThread && m_Tasks.empty())
+		if (m_StopRuntimePSOThread || m_Tasks.empty())
 		{
 			break;
 		}

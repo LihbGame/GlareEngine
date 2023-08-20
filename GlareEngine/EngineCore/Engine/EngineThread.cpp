@@ -2,6 +2,12 @@
 
 using namespace GlareEngine;
 
+EngineThread& EngineThread::Get()
+{
+    static EngineThread s_EngineThread;
+    return s_EngineThread;
+}
+
 EngineThread::EngineThread()
 {
     mStopping = false;

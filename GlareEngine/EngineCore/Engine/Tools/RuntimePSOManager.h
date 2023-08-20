@@ -13,7 +13,7 @@
 #define GET_PSO(TargetPSO) TargetPSO
 #endif
 
-#define SHADER_ASSET_DIRECTOTY   "D:\\GlareEngine\\GlareEngine\\Shaders"
+#define SHADER_ASSET_DIRECTOTY   "../../GlareEngine/Shaders/"
 
 
 enum class EPSOType

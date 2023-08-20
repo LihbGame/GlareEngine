@@ -23,7 +23,6 @@
 #include "InstanceModel/glTFInstanceModel.h"
 #include "Misc/LightManager.h"
 #include "PostProcessing/PostProcessing.h"
-
 #include "Engine/Tools/RuntimePSOManager.h"
 
 //lib
@@ -188,7 +187,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 		TextureManager::GetInstance(CommandList)->ReleaseUploadTextures();
 
 		//Load and Initialize Models in work threads
-		mEngineThread.AddTask([&]() {
+		EngineThread::Get().AddTask([&]() {
 			GraphicsContext& InitializeContext = GraphicsContext::Begin(L"Load and Initialize Models");
 			ID3D12GraphicsCommandList* CommandList = InitializeContext.GetCommandList();
 

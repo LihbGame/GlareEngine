@@ -69,7 +69,6 @@ namespace GlareEngine
 			MONITORINFO mMonitorInfo;
 			POINT mLastMousePos;
 			CursorType mCursorType = CursorType::Count;
-			EngineThread mEngineThread;
 		};
 
 		void RunApplication(GameApp& app, const wchar_t* className, HINSTANCE HAND);

@@ -26,8 +26,12 @@ namespace GlareEngine
 
     class EngineThread
     {
-    public:
+    private:
         EngineThread();
+    public:
+        static EngineThread& Get();
+
+
         ~EngineThread();
 
         // Add a task
