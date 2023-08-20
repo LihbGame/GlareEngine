@@ -24,6 +24,8 @@
 #include "Misc/LightManager.h"
 #include "PostProcessing/PostProcessing.h"
 
+#include "Engine/Tools/RuntimePSOManager.h"
+
 //lib
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "comsuppw.lib")
@@ -273,6 +275,10 @@ void App::Startup(void)
 	InitializeScene(CommandList, InitializeContext);
 
 	InitializeContext.Finish(true);
+
+#if USE_RUNTIME_PSO
+	RuntimePSOManager::Get().StartRuntimePSOThread();
+#endif
 }
 
 void App::Cleanup(void)

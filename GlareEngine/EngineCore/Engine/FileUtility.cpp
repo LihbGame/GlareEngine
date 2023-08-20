@@ -1,7 +1,10 @@
 #include "FileUtility.h"
 #include <fstream>
 #include <mutex>
-#include <zlib.h> 
+#include <zlib.h>
+#if _HAS_CXX17
+#include <filesystem>
+#endif
 #include "EngineLog.h"
 
 using namespace std;
@@ -117,4 +120,124 @@ task<ByteArray> FileUtility::ReadFileAsync(const wstring& fileName)
 {
     shared_ptr<wstring> SharedPtr = make_shared<wstring>(fileName);
     return create_task([=] { return ReadFileHelperEx(SharedPtr); });
+}
+
+bool FileUtility::IsFileExists(const char* filePath)
+{
+    assert(filePath);
+#if _HAS_CXX17
+    return std::filesystem::exists(filePath);
+#else
+#if _WIN32
+    if (auto fileHandle = ::CreateFileA(
+        filePath,
+        GENERIC_READ,
+        FILE_SHARE_READ,
+        nullptr,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_READONLY,
+        nullptr))
+    {
+        ::CloseHandle(fileHandle);
+        return true;
+    }
+    return false;
+#else
+    std::ifstream stream(filePath, std::ios::in);
+    bool exists = stream.good();
+    stream.close();
+    return exists;
+#endif
+#endif
+}
+
+size_t FileUtility::GetFileSize(const char* filePath)
+{
+    assert(filePath);
+#if _HAS_CXX17
+    return std::filesystem::file_size(filePath);
+#else
+#if _WIN32
+    size_t size = 0u;
+    if (auto fileHandle = ::CreateFileA(
+        filePath,
+        GENERIC_READ,
+        FILE_SHARE_READ,
+        nullptr,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_READONLY,
+        nullptr))
+    {
+        ::LARGE_INTEGER fileSize{};
+        if (::GetFileSizeEx(fileHandle, &fileSize))
+        {
+            size = fileSize.HighPart;
+        }
+        ::CloseHandle(fileHandle);
+    }
+    return size;
+#else
+    size_t size = 0u;
+    std::ifstream stream(filePath, std::ios::in | std::ios::ate);
+    if (stream.good())
+    {
+        size = static_cast<size_t>(stream.tellg());
+    }
+    stream.close();
+    return size;
+#endif
+#endif
+}
+
+std::time_t FileUtility::GetFileLastWriteTime(const char* filePath)
+{
+    assert(filePath);
+#if _HAS_CXX17
+    if (std::filesystem::exists(filePath))
+    {
+        return std::chrono::duration_cast<std::filesystem::file_time_type::duration>(
+            std::filesystem::last_write_time(filePath).time_since_epoch()).count();
+    }
+#else
+#if _WIN32
+    std::time_t time = 0;
+    if (auto fileHandle = ::CreateFileA(
+        filePath,
+        GENERIC_READ,
+        FILE_SHARE_READ,
+        nullptr,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_READONLY,
+        nullptr))
+    {
+        ::FILETIME lastWriteTime{};
+        if (::GetFileTime(fileHandle, nullptr, nullptr, &lastWriteTime))
+        {
+            time = *reinterpret_cast<std::time_t*>(&lastWriteTime);
+        }
+        ::CloseHandle(fileHandle);
+    }
+    return time;
+#else
+    assert(false);
+#endif
+#endif
+}
+
+ByteArray FileUtility::ReadFile(const char* filePath, EFileMode mode)
+{
+    auto fileSize = GetFileSize(filePath);
+    ByteArray byteArray = NullFile;
+    if (fileSize > 0u)
+    {
+        ifstream stream(filePath, mode == EFileMode::Binary ? (std::ios::in | std::ios::binary) : std::ios::in);
+        if (stream.good())
+        {
+            byteArray = make_shared<vector<byte>>(fileSize);
+            stream.read((char*)byteArray->data(), fileSize);
+        }
+        stream.close();
+    }
+
+    return byteArray;
 }

@@ -11,6 +11,11 @@ namespace GlareEngine
 
 	extern ByteArray NullFile;
 
+	enum class EFileMode
+	{
+		Text,
+		Binary
+	};
 
 	class FileUtility
 	{
@@ -22,6 +27,13 @@ namespace GlareEngine
 		// Same as previous except that it does not block but instead returns a task.
 		static task<ByteArray> ReadFileAsync(const wstring& fileName);
 
+		static bool IsFileExists(const char* filePath);
+
+		static size_t GetFileSize(const char* filePath);
+
+		static std::time_t GetFileLastWriteTime(const char* filePath);
+
+		static ByteArray ReadFile(const char* filePath, EFileMode mode);
 	};
 
 

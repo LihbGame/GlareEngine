@@ -1,6 +1,8 @@
 #pragma once
 #include "Engine/EngineUtility.h"
 
+struct PSOProxy;
+
 namespace GlareEngine
 {
 	class CommandContext;
@@ -40,12 +42,16 @@ namespace GlareEngine
 
 		ID3D12PipelineState* GetPipelineStateObject(void) const { return m_PSO; }
 
+		void SetProxy(PSOProxy* proxy) { m_Proxy = proxy; }
+		PSOProxy* GetProxy() const { return m_Proxy; }
 	protected:
 		wstring m_Name;
 
 		const RootSignature* m_RootSignature;
 
 		ID3D12PipelineState* m_PSO = nullptr;
+
+		PSOProxy* m_Proxy = nullptr;
 	};
 
 	//GraphicsPSO
