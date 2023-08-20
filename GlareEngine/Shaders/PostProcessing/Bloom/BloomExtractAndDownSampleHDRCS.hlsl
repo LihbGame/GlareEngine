@@ -1,5 +1,5 @@
-#include "../Misc/CommonResource.hlsli"
-#include "../Misc/ShaderUtility.hlsli"
+#include "../../Misc/CommonResource.hlsli"
+#include "../../Misc/ShaderUtility.hlsli"
 
 
 SamplerState LinearClamp : register(s0);

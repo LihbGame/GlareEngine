@@ -1,4 +1,4 @@
-#include "../Misc/ToneMappingUtility.hlsli"
+#include "../../Misc/ToneMappingUtility.hlsli"
 
 StructuredBuffer<float> Exposure : register(t0);
 Texture2D<float3> Bloom : register(t1);
