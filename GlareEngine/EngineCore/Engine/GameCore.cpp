@@ -8,6 +8,7 @@
 #include "EngineProfiling.h"
 #include "EngineGUI.h"
 #include "PostProcessing/PostProcessing.h"
+#include "Engine/Tools/RuntimePSOManager.h"
 
 #include <dwmapi.h>
 #include <windowsx.h>
@@ -145,7 +146,15 @@ namespace GlareEngine
 			//Present
 			Display::Present();
 
-			return !Game.IsDone();
+			bool isDone = Game.IsDone();
+
+#if USE_RUNTIME_PSO
+			if (isDone)
+			{
+				RuntimePSOManager::Get().SetStopRuntimePSOThread(true);
+			}
+#endif
+			return !isDone;
 		}
 
 
@@ -407,6 +416,9 @@ namespace GlareEngine
 			{
 				PostQuitMessage(0); 
 				gExit = true;
+#if USE_RUNTIME_PSO
+				RuntimePSOManager::Get().SetStopRuntimePSOThread(true);
+#endif
 				break;
 			}
 			default:

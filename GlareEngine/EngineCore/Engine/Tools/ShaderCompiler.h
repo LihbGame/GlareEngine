@@ -7,6 +7,7 @@
 #include <memory>
 #include <assert.h>
 
+//use for runtime debug
 #define USE_RUNTIME_PSO 1
 
 class ShaderDefinitions

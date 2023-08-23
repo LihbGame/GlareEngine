@@ -88,6 +88,7 @@ namespace GlareEngine
 		void SetDomainShader(const D3D12_SHADER_BYTECODE& Binary) { m_PSODesc.DS = Binary; }
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC& GetPSODesc() { return m_PSODesc; }
+		void SetPSODesc(D3D12_GRAPHICS_PIPELINE_STATE_DESC desc) { m_PSODesc = desc; }
 		//执行验证并计算一个哈希值，用于快速状态块比较。 
 		void Finalize();
 
@@ -109,6 +110,8 @@ namespace GlareEngine
 
 		void Finalize();
 
+		D3D12_COMPUTE_PIPELINE_STATE_DESC& GetPSODesc() { return m_PSODesc; }
+		void SetPSODesc(D3D12_COMPUTE_PIPELINE_STATE_DESC desc) { m_PSODesc = desc; }
 	private:
 
 		D3D12_COMPUTE_PIPELINE_STATE_DESC m_PSODesc;

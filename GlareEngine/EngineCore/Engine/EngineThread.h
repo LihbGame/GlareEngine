@@ -46,7 +46,7 @@ namespace GlareEngine
             }
 
             // Lock tasks mutex
-            std::unique_lock<std::mutex> lock(mMutexTasks);
+            std::unique_lock<std::mutex> lock(mMutexTasksforAdd);
 
             // Save the task
             mTasks.push_back(std::make_shared<EngineTask>(std::bind(std::forward<Function>(function))));
@@ -118,6 +118,7 @@ namespace GlareEngine
         std::vector<std::thread> mThreads;
         std::deque<std::shared_ptr<EngineTask>> mTasks;
         std::mutex mMutexTasks;
+        std::mutex mMutexTasksforAdd;
         std::condition_variable mConditionVar;
         std::unordered_map<std::thread::id, std::string> mThreadNames;
         bool mStopping;

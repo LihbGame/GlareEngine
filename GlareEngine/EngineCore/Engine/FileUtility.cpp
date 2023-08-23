@@ -222,6 +222,8 @@ std::time_t FileUtility::GetFileLastWriteTime(const char* filePath)
     assert(false);
 #endif
 #endif
+	std::time_t time = 0;
+	return time;
 }
 
 ByteArray FileUtility::ReadFile(const char* filePath, EFileMode mode)

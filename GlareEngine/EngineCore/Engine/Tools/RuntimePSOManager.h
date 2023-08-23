@@ -29,6 +29,7 @@ struct PSOProxy
 		ShaderBinary Binary;
 		const char* SourceFilePath = nullptr;
 		std::time_t LastWriteTime = 0;
+		ShaderDefinitions ShaderDefine;
 	};
 
 	PSOProxy(PSO* origin, EPSOType type)
@@ -85,19 +86,21 @@ public:
 
 	void StartRuntimePSOThread();
 
-	void RegisterPSO(GraphicsPSO* origin, const char* sourceShaderPath, D3D12_SHADER_VERSION_TYPE shaderType)
+	void RegisterPSO(GraphicsPSO* origin, const char* sourceShaderPath, D3D12_SHADER_VERSION_TYPE shaderType, ShaderDefinitions shaderDefine = ShaderDefinitions())
 	{
-		RegisterPSO(origin, EPSOType::Graphics, sourceShaderPath, shaderType);
+		RegisterPSO(origin, EPSOType::Graphics, sourceShaderPath, shaderType,shaderDefine);
 	}
 
-	void RegisterPSO(ComputePSO* origin, const char* sourceShaderPath, D3D12_SHADER_VERSION_TYPE shaderType)
+	void RegisterPSO(ComputePSO* origin, const char* sourceShaderPath, D3D12_SHADER_VERSION_TYPE shaderType, ShaderDefinitions shaderDefine = ShaderDefinitions())
 	{
-		RegisterPSO(origin, EPSOType::Compute, sourceShaderPath, shaderType);
+		RegisterPSO(origin, EPSOType::Compute, sourceShaderPath, shaderType, shaderDefine);
 	}
 
-	void RegisterPSO(PSO* origin, EPSOType type, const char* sourceShaderPath, D3D12_SHADER_VERSION_TYPE shaderType);
+	void RegisterPSO(PSO* origin, EPSOType type, const char* sourceShaderPath, D3D12_SHADER_VERSION_TYPE shaderType, ShaderDefinitions shaderDefine);
 
-	void EnqueuePSOCreationTask(const std::string& shaderFile);
+	void EnqueuePSOCreationTask();
+
+	void SetStopRuntimePSOThread(bool IsStop) { m_StopRuntimePSOThread = IsStop; }
 private:
 	struct PSOCreationTask
 	{
@@ -123,7 +126,7 @@ private:
 
 	std::unordered_map<std::string, std::unique_ptr<PSOProxy>> m_PSOProxies;
 	std::unordered_map<std::string, PSOProxy*> m_PSODependencies;
-	std::unique_ptr<std::thread> m_RuntimePSOThread;
+	//std::unique_ptr<std::thread> m_RuntimePSOThread;
 	std::deque<PSOCreationTask> m_Tasks;
 
 	std::mutex m_TaskMutex;

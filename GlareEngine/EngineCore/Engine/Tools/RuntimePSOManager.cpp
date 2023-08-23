@@ -1,6 +1,7 @@
 #include "RuntimePSOManager.h"
 #include "../packages/filewatch/FileWatch.hpp"
 #include "Engine/EngineThread.h"
+#include <filesystem>
 
 static std::unique_ptr<filewatch::FileWatch<std::string>> s_FileWatch;
 
@@ -23,25 +24,27 @@ void RuntimePSOManager::StartRuntimePSOThread()
 	{
 		ShaderCompiler::Get();
 
-		s_FileWatch = std::make_unique<filewatch::FileWatch<std::string>>(
+		/*s_FileWatch = std::make_unique<filewatch::FileWatch<std::string>>(
 			GetShaderAssetDirectory(),
-			[this](const std::string& path, const filewatch::Event change_type) {
+			[this](const std::filesystem::path& path, const filewatch::Event change_type) {
 				switch (change_type)
 				{
+
 				case filewatch::Event::modified:
-					this->EnqueuePSOCreationTask(path);
+					path.string();
+					this->EnqueuePSOCreationTask(path.string());
 					break;
 				};
 			}
-		);
-		
+		);*/
+
 		EngineThread::Get().AddTask([&]() {RuntimePSOManager::RuntimePSOThreadFunc(); });
 
 		//m_RuntimePSOThread = std::make_unique<std::thread>(&RuntimePSOManager::RuntimePSOThreadFunc, this);
 	}
 }
 
-void RuntimePSOManager::RegisterPSO(PSO* origin, EPSOType type, const char* sourceShaderPath, D3D12_SHADER_VERSION_TYPE shaderType)
+void RuntimePSOManager::RegisterPSO(PSO* origin, EPSOType type, const char* sourceShaderPath, D3D12_SHADER_VERSION_TYPE shaderType,ShaderDefinitions shaderDefine)
 {
 	assert(origin && sourceShaderPath);
 
@@ -53,20 +56,31 @@ void RuntimePSOManager::RegisterPSO(PSO* origin, EPSOType type, const char* sour
 		m_PSOProxies.insert(std::make_pair(shaderSource, std::make_unique<PSOProxy>(origin, type)));
 	}
 
-	it->second->SetShaderSourceFilePath(sourceShaderPath, shaderType);
+	m_PSOProxies[shaderSource]->SetShaderSourceFilePath(sourceShaderPath, shaderType);
+	m_PSOProxies[shaderSource]->ShaderBinaries[shaderType].ShaderDefine = shaderDefine;
 
 	RegisterPSODependency(shaderSource);
 }
 
-void RuntimePSOManager::EnqueuePSOCreationTask(const std::string& shaderFile)
+void RuntimePSOManager::EnqueuePSOCreationTask()
 {
-	auto it = m_PSODependencies.find(shaderFile);
-	if (it != m_PSODependencies.end())
+	for (auto& pso : m_PSODependencies)
 	{
-		RegisterPSODependency(shaderFile);
-
-		std::lock_guard<std::mutex> locker(m_TaskMutex);
-		m_Tasks.push_back(PSOCreationTask(it->second));
+		for (auto type = D3D12_SHVER_PIXEL_SHADER; type <= D3D12_SHVER_COMPUTE_SHADER; type = (D3D12_SHADER_VERSION_TYPE)(type + 1))
+		{
+			PSOProxy::Shader shader = pso.second->ShaderBinaries[type];
+			
+			if (shader.SourceFilePath)
+			{
+				Sleep(100);
+				if (shader.LastWriteTime != FileUtility::GetFileLastWriteTime(shader.SourceFilePath))
+				{
+					std::lock_guard<std::mutex> locker(m_TaskMutex);
+					m_Tasks.push_back(PSOCreationTask(pso.second));
+					break;
+				}
+			}
+		}
 	}
 }
 
@@ -99,7 +113,9 @@ void RuntimePSOManager::RuntimePSOThreadFunc()
 	PSOCreationTask task;
 	while (true)
 	{
-		if (m_StopRuntimePSOThread || m_Tasks.empty())
+		EnqueuePSOCreationTask();
+
+		if (m_StopRuntimePSOThread && m_Tasks.empty())
 		{
 			break;
 		}
@@ -125,7 +141,7 @@ void RuntimePSOManager::PSOCreationTask::Execute()
 
 		for (auto type = D3D12_SHVER_PIXEL_SHADER; type <= D3D12_SHVER_COMPUTE_SHADER; type = (D3D12_SHADER_VERSION_TYPE)(type + 1))
 		{
-			auto shader = Proxy->ShaderBinaries[type];
+			PSOProxy::Shader& shader = Proxy->ShaderBinaries[type];
 			if (shader.SourceFilePath)
 			{
 				auto lastWriteTime = shader.LastWriteTime;
@@ -134,17 +150,13 @@ void RuntimePSOManager::PSOCreationTask::Execute()
 				{
 					shader.LastWriteTime = currentLastWriteTime;
 					Proxy->IsPSODirty.store(true);
-					if (!Proxy->RuntimePSO)
-					{
-						Proxy->RuntimePSO = std::make_shared<PSO>();
-					}
-					*Proxy->RuntimePSO = *Proxy->OriginPSO;
 
+					Sleep(100);
 					auto binary = ShaderCompiler::Get().Compile(
 						shader.SourceFilePath,
-						"",
+						"main",
 						type,
-						definitions);
+						Proxy->ShaderBinaries[type].ShaderDefine);
 
 					if (binary.IsValid())
 					{
@@ -152,7 +164,15 @@ void RuntimePSOManager::PSOCreationTask::Execute()
 
 						if (Proxy->Type == EPSOType::Graphics)
 						{
+							if (!Proxy->RuntimePSO)
+							{
+								Proxy->RuntimePSO = std::make_shared<GraphicsPSO>();
+							}
+
 							auto gfxPSO = static_cast<GraphicsPSO*>(Proxy->RuntimePSO.get());
+							auto originPSO = static_cast<GraphicsPSO*>(Proxy->OriginPSO);
+							gfxPSO->SetPSODesc(originPSO->GetPSODesc());
+							gfxPSO->SetRootSignature(originPSO->GetRootSignature());
 							switch (type)
 							{
 							case D3D12_SHVER_PIXEL_SHADER:
@@ -175,10 +195,19 @@ void RuntimePSOManager::PSOCreationTask::Execute()
 						}
 						else
 						{
+							if (!Proxy->RuntimePSO)
+							{
+								Proxy->RuntimePSO = std::make_shared<ComputePSO>();
+							}
+
 							auto computePSO = static_cast<ComputePSO*>(Proxy->RuntimePSO.get());
+							auto originPSO = static_cast<ComputePSO*>(Proxy->OriginPSO);
+							computePSO->SetPSODesc(originPSO->GetPSODesc());
+							computePSO->SetRootSignature(originPSO->GetRootSignature());
 							assert(type == D3D12_SHVER_COMPUTE_SHADER);
 							computePSO->SetComputeShader(binary.ByteCode);
 							computePSO->Finalize();
+							Proxy->IsRuntimePSOReady.store(true);
 						}
 					}
 				}

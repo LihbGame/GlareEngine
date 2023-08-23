@@ -3,7 +3,7 @@
 #include "PostProcessing/PostProcessing.h"
 #include "Engine/EngineProfiling.h"
 #include "EngineGUI.h"
-
+#include "Engine/Tools/RuntimePSOManager.h"
 //shader
 #include "CompiledShaders/SsaoCS.h"
 
@@ -33,6 +33,10 @@ namespace SSAO
 		XMFLOAT2		InverseDimensions;
 		int				SampleCount;
 	};
+
+#if	USE_RUNTIME_PSO
+	std::map<PSO*, std::string> PSOMap;
+#endif
 }
 
 
@@ -47,6 +51,11 @@ void SSAO::Initialize(void)
 	CreatePSO(SsaoCS, g_pSsaoCS);
 
 #undef CreatePSO
+
+#if	USE_RUNTIME_PSO
+	PSOMap[&SsaoCS] = std::string(SHADER_ASSET_DIRECTOTY) + "PostProcessing/SsaoCS.hlsl";
+	RuntimePSOManager::Get().RegisterPSO(&SsaoCS, PSOMap[&SsaoCS].c_str(), D3D12_SHVER_COMPUTE_SHADER);
+#endif
 }
 
 void SSAO::Shutdown(void)
@@ -88,7 +97,7 @@ void SSAO::Render(GraphicsContext& Context, MainConstants& RenderData)
 
 		computeContext.SetDynamicDescriptors(2, 0, 2, Depth);
 
-		computeContext.SetPipelineState(SsaoCS);
+		computeContext.SetPipelineState(GET_PSO(SsaoCS));
 
 		computeContext.Dispatch2D(g_SSAOFullScreen.GetWidth(), g_SSAOFullScreen.GetHeight());
 

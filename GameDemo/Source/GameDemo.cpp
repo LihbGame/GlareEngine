@@ -133,7 +133,6 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	//Initialize Render
 	Render::Initialize(CommandList);
 
-
 	//////Build Scene//////////
 	assert(mSceneManager);
 	auto InitScene = [&]()
@@ -256,8 +255,9 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 		MaterialManager::GetMaterialInstance()->CreateMaterialsConstantBuffer();
 
 	};
-	
+
 	InitScene();
+
 
 	//mEngineThread.Flush();
 }
