@@ -61,7 +61,7 @@ namespace GlareEngine
 
 	public:
 
-		//以空状态开始. 
+		// Start with an empty state.
 		GraphicsPSO(wstring psoName = L"Unnamed Graphics PSO");
 
 		void SetBlendState(const D3D12_BLEND_DESC& BlendDesc);
@@ -89,6 +89,8 @@ namespace GlareEngine
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC& GetPSODesc() { return m_PSODesc; }
 		void SetPSODesc(D3D12_GRAPHICS_PIPELINE_STATE_DESC desc) { m_PSODesc = desc; }
+
+		const D3D12_INPUT_ELEMENT_DESC* GetInputLayout() const { return m_InputLayouts.get(); }
 		//执行验证并计算一个哈希值，用于快速状态块比较。 
 		void Finalize();
 

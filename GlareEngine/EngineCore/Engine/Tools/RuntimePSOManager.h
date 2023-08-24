@@ -15,6 +15,8 @@
 
 #define SHADER_ASSET_DIRECTOTY   "../../GlareEngine/Shaders/"
 
+#define GET_SHADER_PATH(ShaderPath) (std::string(SHADER_ASSET_DIRECTOTY) + ShaderPath).c_str()
+
 
 enum class EPSOType
 {
@@ -27,7 +29,7 @@ struct PSOProxy
 	struct Shader
 	{
 		ShaderBinary Binary;
-		const char* SourceFilePath = nullptr;
+		string SourceFilePath;
 		std::time_t LastWriteTime = 0;
 		ShaderDefinitions ShaderDefine;
 	};
@@ -42,7 +44,7 @@ struct PSOProxy
 
 	void SetShaderSourceFilePath(const char* shaderFilePath, D3D12_SHADER_VERSION_TYPE type)
 	{
-		ShaderBinaries[type].SourceFilePath = shaderFilePath;
+		ShaderBinaries[type].SourceFilePath = std::string((char*)shaderFilePath);
 		ShaderBinaries[type].LastWriteTime = FileUtility::GetFileLastWriteTime(shaderFilePath);
 	}
 
@@ -65,7 +67,14 @@ struct PSOProxy
 
 	PSO& Get() const
 	{
-		return *(IsPSODirty.load() ? (IsRuntimePSOReady.load() ? RuntimePSO.get() : OriginPSO) : OriginPSO);
+		if (!RuntimePSO.get())
+		{
+			return *OriginPSO;
+		}
+		else
+		{
+			return *(IsPSODirty.load() ? (IsRuntimePSOReady.load() ? RuntimePSO.get() : OriginPSO) : OriginPSO);
+		}
 	}
 
 	PSO* OriginPSO = nullptr;

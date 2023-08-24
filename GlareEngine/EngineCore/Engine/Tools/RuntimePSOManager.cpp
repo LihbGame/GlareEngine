@@ -70,10 +70,10 @@ void RuntimePSOManager::EnqueuePSOCreationTask()
 		{
 			PSOProxy::Shader shader = pso.second->ShaderBinaries[type];
 			
-			if (shader.SourceFilePath)
+			if (!shader.SourceFilePath.empty())
 			{
 				Sleep(100);
-				if (shader.LastWriteTime != FileUtility::GetFileLastWriteTime(shader.SourceFilePath))
+				if (shader.LastWriteTime != FileUtility::GetFileLastWriteTime(shader.SourceFilePath.c_str()))
 				{
 					std::lock_guard<std::mutex> locker(m_TaskMutex);
 					m_Tasks.push_back(PSOCreationTask(pso.second));
@@ -142,10 +142,10 @@ void RuntimePSOManager::PSOCreationTask::Execute()
 		for (auto type = D3D12_SHVER_PIXEL_SHADER; type <= D3D12_SHVER_COMPUTE_SHADER; type = (D3D12_SHADER_VERSION_TYPE)(type + 1))
 		{
 			PSOProxy::Shader& shader = Proxy->ShaderBinaries[type];
-			if (shader.SourceFilePath)
+			if (!shader.SourceFilePath.empty())
 			{
 				auto lastWriteTime = shader.LastWriteTime;
-				auto currentLastWriteTime = FileUtility::GetFileLastWriteTime(shader.SourceFilePath);
+				auto currentLastWriteTime = FileUtility::GetFileLastWriteTime(shader.SourceFilePath.c_str());
 				if (currentLastWriteTime != lastWriteTime)
 				{
 					shader.LastWriteTime = currentLastWriteTime;
@@ -153,7 +153,7 @@ void RuntimePSOManager::PSOCreationTask::Execute()
 
 					Sleep(100);
 					auto binary = ShaderCompiler::Get().Compile(
-						shader.SourceFilePath,
+						shader.SourceFilePath.c_str(),
 						"main",
 						type,
 						Proxy->ShaderBinaries[type].ShaderDefine);
@@ -172,6 +172,7 @@ void RuntimePSOManager::PSOCreationTask::Execute()
 							auto gfxPSO = static_cast<GraphicsPSO*>(Proxy->RuntimePSO.get());
 							auto originPSO = static_cast<GraphicsPSO*>(Proxy->OriginPSO);
 							gfxPSO->SetPSODesc(originPSO->GetPSODesc());
+							gfxPSO->SetInputLayout(gfxPSO->GetPSODesc().InputLayout.NumElements, originPSO->GetInputLayout());
 							gfxPSO->SetRootSignature(originPSO->GetRootSignature());
 							switch (type)
 							{
@@ -207,9 +208,9 @@ void RuntimePSOManager::PSOCreationTask::Execute()
 							assert(type == D3D12_SHVER_COMPUTE_SHADER);
 							computePSO->SetComputeShader(binary.ByteCode);
 							computePSO->Finalize();
-							Proxy->IsRuntimePSOReady.store(true);
 						}
 					}
+					Proxy->IsRuntimePSOReady.store(true);
 				}
 			}
 		}

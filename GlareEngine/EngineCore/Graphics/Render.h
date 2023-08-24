@@ -7,6 +7,7 @@
 #include "Graphics/UploadBuffer.h"
 #include "Graphics/TextureManager.h"
 #include "Engine/EngineConfig.h"
+#include "Engine/Tools/RuntimePSOManager.h"
 
 namespace GlareEngine
 {

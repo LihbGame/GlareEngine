@@ -45,6 +45,12 @@ namespace GlareEngine
 		BuildRootSignature();
 		BuildPSOs();
 
+#if USE_RUNTIME_PSO
+		//After build pso
+		InstanceModel::InitRuntimePSO();
+		ShadowMap::InitRuntimePSO();
+#endif
+
 		gTextureHeap.Create(L"Scene Texture Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4096);
 
 		gSamplerHeap.Create(L"Scene Sampler Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 2048);

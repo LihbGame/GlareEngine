@@ -10,6 +10,7 @@
 #include "Engine/InputLayout.h"
 #include "Graphics/BufferManager.h"
 #include "ConstantBuffer.h"
+#include "Graphics/Render.h"
 
 using namespace GlareEngine;
 
@@ -46,6 +47,9 @@ public:
 	void SetShadowRenderFlag(bool IsShadowRender) { mShouldShadowRender = IsShadowRender; }
 	bool GetShadowRenderFlag()const { return mShouldShadowRender; }
 
+	void SetMaskFlag(bool IsMaskMaterial) { mIsMaskMaterial = IsMaskMaterial; }
+	bool GetMaskFlag()const { return mIsMaskMaterial; }
+
 	void SetVisible(bool isVisible) { mIsVisible = isVisible; }
 	bool GetVisible()const { return mIsVisible; }
 
@@ -55,6 +59,11 @@ public:
 	virtual void DrawUI() = 0;
 
 	static void BuildPSO(const PSOCommonProperty CommonProperty) {};
+
+#if USE_RUNTIME_PSO
+	static void InitRuntimePSO() {};
+#endif
+
 public:
 	ObjectType mObjectType = ObjectType::None;
 protected:
@@ -63,6 +72,7 @@ protected:
 	bool mShouldCastShadow = false;
 	bool mShouldShadowRender = false;
 	bool mIsVisible = true;
+	bool mIsMaskMaterial = false;
 };
 
 

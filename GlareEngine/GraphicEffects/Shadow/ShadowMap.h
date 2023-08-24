@@ -18,6 +18,10 @@ public:
 	ShadowMap& operator=(const ShadowMap& rhs) = delete;
 	~ShadowMap() = default;
 
+#if USE_RUNTIME_PSO
+	static void InitRuntimePSO();
+#endif
+
 	UINT Width()const;
 	UINT Height()const;
 	D3D12_VIEWPORT Viewport()const;
@@ -59,6 +63,7 @@ public:
 private:
 	//PSO
 	static GraphicsPSO mShadowPSO;
+	static GraphicsPSO mMaskShadowPSO;
 
 	D3D12_VIEWPORT mViewport;
 	D3D12_RECT mScissorRect;

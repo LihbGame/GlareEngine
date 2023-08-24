@@ -216,6 +216,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			}*/
 
 			// Scene 1  sponza
+			mGLTFModels[3]->SetMaskFlag(true);
 			gScenes[0]->AddGLTFModelToScene(mGLTFModels[3].get());
 			//Create random lights in Sponsa
 			Lighting::CreateRandomLights(mGLTFModels[3].get()->GetModel()->GetAxisAlignedBox().GetMin(), mGLTFModels[3].get()->GetModel()->GetAxisAlignedBox().GetMax(), Vector3(150, 60, 150));
@@ -231,6 +232,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			// Scene 5
 			for (auto& model : mModels)
 			{
+				model->SetMaskFlag(true);
 				gScenes[4]->AddObjectToScene(model.get());
 			}
 			gScenes[4]->Finalize();
@@ -258,7 +260,9 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 
 	InitScene();
 
-
+#if USE_RUNTIME_PSO
+	RuntimePSOManager::Get().StartRuntimePSOThread();
+#endif
 	//mEngineThread.Flush();
 }
 
@@ -270,14 +274,11 @@ void App::Startup(void)
 	mEngineUI = make_unique<EngineGUI>(CommandList);
 	//Scene Manager
 	mSceneManager = make_unique<SceneManager>(CommandList);
+
 	//Create scene
 	InitializeScene(CommandList, InitializeContext);
 
 	InitializeContext.Finish(true);
-
-#if USE_RUNTIME_PSO
-	RuntimePSOManager::Get().StartRuntimePSOThread();
-#endif
 }
 
 void App::Cleanup(void)
@@ -301,7 +302,8 @@ void App::Update(float DeltaTime)
 
 void App::UpdateSceneState(float DeltaTime)
 {
-	EngineGlobal::gCurrentScene = gScenes[mEngineUI->GetSceneIndex()];
+	if (gScenes[mEngineUI->GetSceneIndex()]->LoadingFinish)
+		EngineGlobal::gCurrentScene = gScenes[mEngineUI->GetSceneIndex()];
 
 	assert(EngineGlobal::gCurrentScene);
 	EngineGlobal::gCurrentScene->VisibleUpdateForType();
@@ -398,7 +400,6 @@ void App::RenderScene(void)
 		EngineGlobal::gCurrentScene->RenderScene(RenderPipelineType::Forward_Plus);
 	}
 }
-
 
 void App::RenderUI()
 {

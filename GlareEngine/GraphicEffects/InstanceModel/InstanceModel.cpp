@@ -24,11 +24,12 @@ void InstanceModel::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 		
 		if (SpecificPSO)
 		{
-			Context.SetPipelineState(*SpecificPSO);
+			GraphicsPSO specificPSO = *SpecificPSO;
+			Context.SetPipelineState(GET_PSO(specificPSO));
 		}
 		else
 		{
-			Context.SetPipelineState(mPSO);
+			Context.SetPipelineState(GET_PSO(mPSO));
 		}
 		Context.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -49,7 +50,8 @@ void InstanceModel::DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificSh
 		const vector<InstanceRenderConstants>& InstanceData = mInstanceData.mInstanceConstants[SubModelIndex];
 		Context.SetDynamicSRV((int)RootSignatureType::eInstanceConstantData, sizeof(InstanceRenderConstants) * InstanceData.size(), (void*)InstanceData.data());
 
-		Context.SetPipelineState(*SpecificShadowPSO);
+		GraphicsPSO specificShadowPSO = *SpecificShadowPSO;
+		Context.SetPipelineState(GET_PSO(specificShadowPSO));
 
 		Context.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -95,4 +97,10 @@ void InstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 	mPSO.SetPixelShader(g_pInstanceModelPS, sizeof(g_pInstanceModelPS));
 	mPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
 	mPSO.Finalize();
+}
+
+void InstanceModel::InitRuntimePSO()
+{
+	RuntimePSOManager::Get().RegisterPSO(&mPSO, GET_SHADER_PATH("PBRInstanceModel/InstanceModelVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&mPSO, GET_SHADER_PATH("PBRInstanceModel/InstanceModelPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
 }

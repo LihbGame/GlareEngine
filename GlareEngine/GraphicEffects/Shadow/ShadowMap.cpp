@@ -8,6 +8,7 @@
 using namespace GlareEngine;
 
 GraphicsPSO ShadowMap::mShadowPSO;
+GraphicsPSO ShadowMap::mMaskShadowPSO;
 DXGI_FORMAT ShadowMap::mFormat = DXGI_FORMAT_D32_FLOAT;
 
 ShadowMap::ShadowMap(XMFLOAT3 LightDirection, UINT width, UINT height)
@@ -90,6 +91,11 @@ void ShadowMap::Update(float DeltaTime)
 	}
 }
 
+void ShadowMap::InitRuntimePSO()
+{
+	RuntimePSOManager::Get().RegisterPSO(&mShadowPSO, GET_SHADER_PATH("Shadow/ModelShadowVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&mMaskShadowPSO, GET_SHADER_PATH("Shadow/ModelShadowPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
+}
 
 UINT ShadowMap::Width()const
 {
@@ -127,7 +133,14 @@ void ShadowMap::Draw(GraphicsContext& Context,vector<RenderObject*> RenderObject
 		if (object->GetVisible() && object->GetShadowRenderFlag())
 		{
 			Context.PIXBeginEvent(object->GetName().c_str());
-			object->DrawShadow(Context, &mShadowPSO);
+			if(object->GetMaskFlag())
+			{
+				object->DrawShadow(Context, &mMaskShadowPSO);
+			}
+			else
+			{
+				object->DrawShadow(Context, &mShadowPSO);
+			}
 			Context.PIXEndEvent();
 		}
 	}
@@ -144,9 +157,13 @@ void ShadowMap::BuildPSO(const PSOCommonProperty CommonProperty)
 	mShadowPSO.SetInputLayout((UINT)InputLayout::PosNormalTangentTexc.size(), InputLayout::PosNormalTangentTexc.data());
 	mShadowPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 	mShadowPSO.SetVertexShader(g_pModelShadowVS, sizeof(g_pModelShadowVS));
-	mShadowPSO.SetPixelShader(g_pModelShadowPS, sizeof(g_pModelShadowPS));
 	mShadowPSO.SetRenderTargetFormats(0,&DefaultHDRColorFormat, DXGI_FORMAT_D32_FLOAT);
 	mShadowPSO.Finalize();
+
+	mMaskShadowPSO = mShadowPSO;
+
+	mMaskShadowPSO.SetPixelShader(g_pModelShadowPS, sizeof(g_pModelShadowPS));
+	mMaskShadowPSO.Finalize();
 }
 
 void ShadowMap::OnResize(UINT newWidth, UINT newHeight)

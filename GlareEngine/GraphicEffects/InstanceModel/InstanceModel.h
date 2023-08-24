@@ -20,6 +20,10 @@ public:
 
 	static void BuildPSO(const PSOCommonProperty CommonProperty);
 
+#if USE_RUNTIME_PSO
+	static void InitRuntimePSO();
+#endif
+
 	void Update(float dt, GraphicsContext* Context = nullptr) {}
 private:
 	//PSO

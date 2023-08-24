@@ -361,6 +361,7 @@ void Scene::ForwardRendering()
 			Context.PIXEndEvent();
 		}
 	}
+	
 	Context.PIXEndEvent();
 
 	//MSAA
