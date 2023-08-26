@@ -17,9 +17,6 @@
 
 #define GET_SHADER_PATH(ShaderPath) (std::string(SHADER_ASSET_DIRECTOTY) + ShaderPath).c_str()
 
-typedef std::map<const PSO*, std::unique_ptr<PSOProxy>> PSOProxyMap;
-typedef std::map<const PSO*, PSOProxy*> PSOProxyPointMap;
-
 enum class EPSOType
 {
 	Graphics,
@@ -34,6 +31,7 @@ struct PSOProxy
 		string SourceFilePath;
 		std::time_t LastWriteTime = 0;
 		ShaderDefinitions ShaderDefine;
+		bool IsDirty = true;
 	};
 
 	PSOProxy(PSO* origin, EPSOType type)
@@ -135,8 +133,8 @@ private:
 
 	void RuntimePSOThreadFunc();
 
-	std::unordered_map<std::string, PSOProxyMap> m_PSOProxies;
-	std::unordered_map<std::string, PSOProxyPointMap> m_PSODependencies;
+	std::map<const PSO*, std::unique_ptr<PSOProxy>> m_PSOProxies;
+	std::map<const PSO*, PSOProxy*> m_PSODependencies;
 
 	//std::unique_ptr<std::thread> m_RuntimePSOThread;
 	std::deque<PSOCreationTask> m_Tasks;
