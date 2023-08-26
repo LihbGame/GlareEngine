@@ -222,8 +222,13 @@ void MeshSorter::RenderMeshes(DrawPass pass, GraphicsContext& context, MainConst
 				context.SetDynamicSRV((UINT)RootSignatureType::eSkinMatrices, sizeof(Joint) * mesh.numJoints, object.skeleton + mesh.startJoint);
 			}
 			//Set PSO
-			context.SetPipelineState(glTFInstanceModel::gModelPSOs[key.psoIdx]);
-
+			PSOProxy* psoProxy = glTFInstanceModel::gModelPSOs[key.psoIdx].GetProxy();
+			if (psoProxy)
+			{
+				context.SetPipelineState(GET_PSO(glTFInstanceModel::gModelPSOs[key.psoIdx]));
+			}
+			else
+				context.SetPipelineState(glTFInstanceModel::gModelPSOs[key.psoIdx]);
 
 			//Set Vertex Buffer
 			if (m_CurrentPass == eZPass)

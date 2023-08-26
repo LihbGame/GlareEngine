@@ -49,6 +49,7 @@ namespace GlareEngine
 		//After build pso
 		InstanceModel::InitRuntimePSO();
 		ShadowMap::InitRuntimePSO();
+		glTFInstanceModel::InitRuntimePSO();
 #endif
 
 		gTextureHeap.Create(L"Scene Texture Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4096);

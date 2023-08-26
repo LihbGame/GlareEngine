@@ -33,11 +33,17 @@ GraphicsPSO glTFInstanceModel::sm_PBRglTFPSO;
 PSOCommonProperty glTFInstanceModel::sm_PSOCommonProperty;
 vector<uint16_t> glTFInstanceModel::mPSOFlags;
 
+#if USE_RUNTIME_PSO
+vector<glTFInstanceModel::ShaderNames> glTFInstanceModel::mShaderNames;
+#endif
+
 D3D12_RASTERIZER_DESC  glTFInstanceModel::mMSAARasterizer;
 D3D12_RASTERIZER_DESC  glTFInstanceModel::mRasterizer;
 D3D12_BLEND_DESC  glTFInstanceModel::mCoverageBlend;
 D3D12_BLEND_DESC  glTFInstanceModel::mBlend;
 std::mutex glTFInstanceModel::m_PSOMutex;
+
+#define MAX_PSO 256
 
 enum ModelPSO:int
 {
@@ -60,8 +66,10 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
     sm_PSOCommonProperty = CommonProperty;
 
     if (gModelPSOs.size() == 0)
+    {
         gModelPSOs.resize(ModelPSO::PSOCount);
-
+        gModelPSOs.reserve(MAX_PSO);
+    }
 	// Depth Only PSOs
 	GraphicsPSO DepthOnlyPSO(L"Render: Depth Only PSO");
 	DepthOnlyPSO.SetRootSignature(gRootSignature);
@@ -90,11 +98,11 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 	DepthOnlyPSO.SetVertexShader(g_pDepthOnlyVS, sizeof(g_pDepthOnlyVS));
 	DepthOnlyPSO.Finalize();
     gModelPSOs[ModelPSO::DepthOnlyPSO] = DepthOnlyPSO;
-
+   
 
 	//Cutout Depth PSO
 	GraphicsPSO CutoutDepthPSO(L"Render: Cutout Depth PSO");
-	CutoutDepthPSO = DepthOnlyPSO;
+    CutoutDepthPSO.RuntimePSOCopy(DepthOnlyPSO);
 	CutoutDepthPSO.SetInputLayout((UINT)InputLayout::PosUV.size(), InputLayout::PosUV.data());
 	if (CommonProperty.IsMSAA)
 	{
@@ -121,7 +129,7 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 
 	//Skin Depth PSO
 	GraphicsPSO SkinDepthOnlyPSO(L"Render: Skin Depth PSO");
-	SkinDepthOnlyPSO = DepthOnlyPSO;
+	SkinDepthOnlyPSO.RuntimePSOCopy(DepthOnlyPSO);
 	SkinDepthOnlyPSO.SetInputLayout((UINT)InputLayout::SkinPos.size(), InputLayout::SkinPos.data());
 	SkinDepthOnlyPSO.SetVertexShader(g_pDepthOnlySkinVS, sizeof(g_pDepthOnlySkinVS));
 	SkinDepthOnlyPSO.Finalize();
@@ -129,7 +137,7 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 
 	//Skin Cutout Depth PSO
 	GraphicsPSO SkinCutoutDepthPSO(L"Render: Skin Cutout Depth PSO");
-	SkinCutoutDepthPSO = CutoutDepthPSO;
+	SkinCutoutDepthPSO.RuntimePSOCopy(CutoutDepthPSO);
 	SkinCutoutDepthPSO.SetInputLayout((UINT)InputLayout::SkinPosUV.size(), InputLayout::SkinPosUV.data());
 	SkinCutoutDepthPSO.SetVertexShader(g_pCutoutDepthSkinVS, sizeof(g_pCutoutDepthSkinVS));
 	SkinCutoutDepthPSO.Finalize();
@@ -157,6 +165,34 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 	SkinCutoutDepthPSO.SetRenderTargetFormats(0, nullptr, ShadowMap::mFormat);
 	SkinCutoutDepthPSO.Finalize();
     gModelPSOs[ModelPSO::ShadowSkinCutoutDepthPSO] = SkinCutoutDepthPSO;
+
+
+#if USE_RUNTIME_PSO
+    RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[ModelPSO::DepthOnlyPSO], GET_SHADER_PATH("PBRInstanceModel/DepthOnlyVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+    RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[ModelPSO::CutoutDepthPSO], GET_SHADER_PATH("PBRInstanceModel/CutoutDepthVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+    RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[ModelPSO::SkinDepthOnlyPSO], GET_SHADER_PATH("PBRInstanceModel/DepthOnlySkinVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+    RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[ModelPSO::SkinCutoutDepthPSO], GET_SHADER_PATH("PBRInstanceModel/CutoutDepthSkinVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+    RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[ModelPSO::ShadowDepthOnlyPSO], GET_SHADER_PATH("PBRInstanceModel/DepthOnlyVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+    RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[ModelPSO::ShadowCutoutDepthPSO], GET_SHADER_PATH("PBRInstanceModel/CutoutDepthVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+    RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[ModelPSO::ShadowSkinDepthOnlyPSO], GET_SHADER_PATH("PBRInstanceModel/DepthOnlySkinVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+    RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[ModelPSO::ShadowSkinCutoutDepthPSO], GET_SHADER_PATH("PBRInstanceModel/CutoutDepthSkinVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+    if (CommonProperty.IsMSAA)
+    {
+        RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[ModelPSO::CutoutDepthPSO], GET_SHADER_PATH("PBRInstanceModel/CutoutDepthMSAAPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
+        RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[ModelPSO::SkinCutoutDepthPSO], GET_SHADER_PATH("PBRInstanceModel/CutoutDepthMSAAPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
+        RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[ModelPSO::ShadowCutoutDepthPSO], GET_SHADER_PATH("PBRInstanceModel/CutoutDepthMSAAPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
+        RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[ModelPSO::ShadowSkinCutoutDepthPSO], GET_SHADER_PATH("PBRInstanceModel/CutoutDepthMSAAPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
+    }
+    else
+    {
+        RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[ModelPSO::CutoutDepthPSO], GET_SHADER_PATH("PBRInstanceModel/CutoutDepthPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
+        RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[ModelPSO::SkinCutoutDepthPSO], GET_SHADER_PATH("PBRInstanceModel/CutoutDepthPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
+        RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[ModelPSO::ShadowCutoutDepthPSO], GET_SHADER_PATH("PBRInstanceModel/CutoutDepthPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
+        RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[ModelPSO::ShadowSkinCutoutDepthPSO], GET_SHADER_PATH("PBRInstanceModel/CutoutDepthPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
+    }
+
+#endif
+
 
 	// Default PSO
 	sm_PBRglTFPSO.SetRootSignature(gRootSignature);
@@ -341,13 +377,25 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 
             gModelPSOs[PSOReadWriteDepthIndex].Finalize();
             gModelPSOs[PSOEqualDepthIndex].Finalize();
+
+#if USE_RUNTIME_PSO
+            RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOReadWriteDepthIndex], mShaderNames[PSOFlagIndex].VSName.c_str(), D3D12_SHVER_VERTEX_SHADER);
+            RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOReadWriteDepthIndex], mShaderNames[PSOFlagIndex].PSName.c_str(), D3D12_SHVER_PIXEL_SHADER);
+            RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOEqualDepthIndex], mShaderNames[PSOFlagIndex].VSName.c_str(), D3D12_SHVER_VERTEX_SHADER);
+            RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOEqualDepthIndex], mShaderNames[PSOFlagIndex].PSName.c_str(), D3D12_SHVER_PIXEL_SHADER);
+#endif
+
         }
     }
 }
 
 uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
 {
-    GraphicsPSO ColorPSO = sm_PBRglTFPSO;
+    GraphicsPSO ColorPSO;
+    ColorPSO.RuntimePSOCopy(sm_PBRglTFPSO);
+#if USE_RUNTIME_PSO
+    ShaderNames shaderNames;
+#endif
 
     //Mesh at least have position and normal
     uint16_t Requirements = eHasPosition | eHasNormal;
@@ -387,11 +435,21 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
             {
                 ColorPSO.SetVertexShader(g_pModelSkinVS, sizeof(g_pModelSkinVS));
                 ColorPSO.SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
+
+#if USE_RUNTIME_PSO
+                shaderNames.VSName = GET_SHADER_PATH("PBRInstanceModel/ModelSkinVS.hlsl");
+                shaderNames.PSName = GET_SHADER_PATH("PBRInstanceModel/ModelPS.hlsl");
+#endif
             }
             else
             {
                 ColorPSO.SetVertexShader(g_pModelNoUV1SkinVS, sizeof(g_pModelNoUV1SkinVS));
                 ColorPSO.SetPixelShader(g_pModelNoUV1PS, sizeof(g_pModelNoUV1PS));
+
+#if USE_RUNTIME_PSO
+                shaderNames.VSName = GET_SHADER_PATH("PBRInstanceModel/ModelNoUV1SkinVS.hlsl");
+                shaderNames.PSName = GET_SHADER_PATH("PBRInstanceModel/ModelNoUV1PS.hlsl");
+#endif
             }
         }
         else
@@ -400,11 +458,21 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
             {
                 ColorPSO.SetVertexShader(g_pModelNoTangentSkinVS, sizeof(g_pModelNoTangentSkinVS));
                 ColorPSO.SetPixelShader(g_pModelNoTangentPS, sizeof(g_pModelNoTangentPS));
+
+#if USE_RUNTIME_PSO
+                shaderNames.VSName = GET_SHADER_PATH("PBRInstanceModel/ModelNoTangentSkinVS.hlsl");
+                shaderNames.PSName = GET_SHADER_PATH("PBRInstanceModel/ModelNoTangentPS.hlsl");
+#endif
             }
             else
             {
                 ColorPSO.SetVertexShader(g_pModelNoTangentNoUV1SkinVS, sizeof(g_pModelNoTangentNoUV1SkinVS));
                 ColorPSO.SetPixelShader(g_pModelNoTangentNoUV1PS, sizeof(g_pModelNoTangentNoUV1PS));
+
+#if USE_RUNTIME_PSO
+                shaderNames.VSName = GET_SHADER_PATH("PBRInstanceModel/ModelNoTangentNoUV1SkinVS.hlsl");
+                shaderNames.PSName = GET_SHADER_PATH("PBRInstanceModel/ModelNoTangentNoUV1PS.hlsl");
+#endif
             }
         }
     }
@@ -416,11 +484,21 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
             {
                 ColorPSO.SetVertexShader(g_pModelVS, sizeof(g_pModelVS));
                 ColorPSO.SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
+
+#if USE_RUNTIME_PSO
+                shaderNames.VSName = GET_SHADER_PATH("PBRInstanceModel/ModelVS.hlsl");
+                shaderNames.PSName = GET_SHADER_PATH("PBRInstanceModel/ModelPS.hlsl");
+#endif
             }
             else
             {
                 ColorPSO.SetVertexShader(g_pModelNoUV1VS, sizeof(g_pModelNoUV1VS));
                 ColorPSO.SetPixelShader(g_pModelNoUV1PS, sizeof(g_pModelNoUV1PS));
+
+#if USE_RUNTIME_PSO
+                shaderNames.VSName = GET_SHADER_PATH("PBRInstanceModel/ModelNoUV1VS.hlsl");
+                shaderNames.PSName = GET_SHADER_PATH("PBRInstanceModel/ModelNoUV1PS.hlsl");
+#endif
             }
         }
         else
@@ -429,11 +507,21 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
             {
                 ColorPSO.SetVertexShader(g_pModelNoTangentVS, sizeof(g_pModelNoTangentVS));
                 ColorPSO.SetPixelShader(g_pModelNoTangentPS, sizeof(g_pModelNoTangentPS));
+
+#if USE_RUNTIME_PSO
+                shaderNames.VSName = GET_SHADER_PATH("PBRInstanceModel/ModelNoTangentVS.hlsl");
+                shaderNames.PSName = GET_SHADER_PATH("PBRInstanceModel/ModelNoTangentPS.hlsl");
+#endif
             }
             else
             {
                 ColorPSO.SetVertexShader(g_pModelNoTangentNoUV1VS, sizeof(g_pModelNoTangentNoUV1VS));
                 ColorPSO.SetPixelShader(g_pModelNoTangentNoUV1PS, sizeof(g_pModelNoTangentNoUV1PS));
+
+#if USE_RUNTIME_PSO
+                shaderNames.VSName = GET_SHADER_PATH("PBRInstanceModel/ModelNoTangentNoUV1VS.hlsl");
+                shaderNames.PSName = GET_SHADER_PATH("PBRInstanceModel/ModelNoTangentNoUV1PS.hlsl");
+#endif
             }
         }
     }
@@ -504,6 +592,10 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
 
     mPSOFlags.push_back(psoFlags);
 
+#if USE_RUNTIME_PSO
+    mShaderNames.push_back(shaderNames);
+#endif
+
     // If not found, keep the new one, and return its index
     gModelPSOs.push_back(ColorPSO);
 
@@ -517,7 +609,12 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
 #endif
     gModelPSOs.push_back(ColorPSO);
 
-    assert(gModelPSOs.size() <= 256);//Out of room for unique PSOs
+    assert(gModelPSOs.size() <= MAX_PSO);//Out of room for unique PSOs
 
     return (uint8_t)gModelPSOs.size() - 2;
+}
+
+void glTFInstanceModel::InitRuntimePSO()
+{
+   
 }

@@ -103,6 +103,7 @@ void GlareEngine::GraphicsPSO::SetInputLayout(UINT NumElements, const D3D12_INPU
 		D3D12_INPUT_ELEMENT_DESC* NewElements = (D3D12_INPUT_ELEMENT_DESC*)malloc(sizeof(D3D12_INPUT_ELEMENT_DESC) * NumElements);
 		memcpy(NewElements, pInputElementDescs, NumElements * sizeof(D3D12_INPUT_ELEMENT_DESC));
 		m_InputLayouts.reset((const D3D12_INPUT_ELEMENT_DESC*)NewElements);
+
 	}
 	else
 		m_InputLayouts = nullptr;

@@ -78,7 +78,7 @@ struct PSOProxy
 	}
 
 	PSO* OriginPSO = nullptr;
-	std::shared_ptr<PSO> RuntimePSO;
+	std::shared_ptr<PSO> RuntimePSO = nullptr;
 
 	EPSOType Type = EPSOType::Graphics;
 	std::atomic<bool> IsRuntimePSOReady = false;
@@ -110,6 +110,11 @@ public:
 	void EnqueuePSOCreationTask();
 
 	void SetStopRuntimePSOThread(bool IsStop) { m_StopRuntimePSOThread = IsStop; }
+
+	void DeletePSO(PSO* deletePSO) { 
+		m_PSOProxies.erase(deletePSO); 
+		m_PSODependencies.erase(deletePSO); 
+	}
 private:
 	struct PSOCreationTask
 	{

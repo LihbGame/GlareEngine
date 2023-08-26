@@ -66,17 +66,20 @@ void RuntimePSOManager::EnqueuePSOCreationTask()
 	Sleep(100);
 	for (auto& pso : m_PSODependencies)
 	{
-		for (auto type = D3D12_SHVER_PIXEL_SHADER; type <= D3D12_SHVER_COMPUTE_SHADER; type = (D3D12_SHADER_VERSION_TYPE)(type + 1))
+		if (pso.first->GetPipelineStateObject())
 		{
-			PSOProxy::Shader shader = pso.second->ShaderBinaries[type];
-
-			if (!shader.SourceFilePath.empty())
+			for (auto type = D3D12_SHVER_PIXEL_SHADER; type <= D3D12_SHVER_COMPUTE_SHADER; type = (D3D12_SHADER_VERSION_TYPE)(type + 1))
 			{
-				if (shader.LastWriteTime != FileUtility::GetFileLastWriteTime(shader.SourceFilePath.c_str()))
+				PSOProxy::Shader shader = pso.second->ShaderBinaries[type];
+
+				if (!shader.SourceFilePath.empty())
 				{
-					shader.IsDirty = true;
-					std::lock_guard<std::mutex> locker(m_TaskMutex);
-					m_Tasks.push_back(PSOCreationTask(pso.second));
+					if (shader.LastWriteTime != FileUtility::GetFileLastWriteTime(shader.SourceFilePath.c_str()))
+					{
+						shader.IsDirty = true;
+						std::lock_guard<std::mutex> locker(m_TaskMutex);
+						m_Tasks.push_back(PSOCreationTask(pso.second));
+					}
 				}
 			}
 		}
@@ -134,7 +137,7 @@ void RuntimePSOManager::RuntimePSOThreadFunc()
 
 void RuntimePSOManager::PSOCreationTask::Execute()
 {
-	if (Proxy)
+	if (Proxy && Proxy->OriginPSO->GetPipelineStateObject())
 	{
 		Sleep(100);
 		ShaderDefinitions definitions;

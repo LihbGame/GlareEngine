@@ -22,11 +22,24 @@ public:
 	void Update(float dt, GraphicsContext* Context = nullptr) { mModel->Update(*Context, dt); }
 
 	ModelInstance* GetModel() { return mModel.get(); }
+
+#if USE_RUNTIME_PSO
+	static void InitRuntimePSO();
+
+	struct ShaderNames
+	{
+		string PSName;
+		string VSName;
+	};
+
+	static vector<ShaderNames> mShaderNames;
+#endif
 public:
 	unique_ptr<ModelInstance> mModel;
 	static 	vector<GraphicsPSO> gModelPSOs;
 	static GraphicsPSO sm_PBRglTFPSO;
 	static PSOCommonProperty sm_PSOCommonProperty;
+	static std::mutex m_PSOMutex;
 
 private:
 	static vector<uint16_t> mPSOFlags;
@@ -34,6 +47,5 @@ private:
 	static D3D12_RASTERIZER_DESC  mRasterizer;
 	static D3D12_BLEND_DESC  mCoverageBlend;
 	static D3D12_BLEND_DESC  mBlend;
-	static std::mutex m_PSOMutex;
 };
 
