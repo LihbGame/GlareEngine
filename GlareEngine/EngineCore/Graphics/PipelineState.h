@@ -64,6 +64,8 @@ namespace GlareEngine
 		// Start with an empty state.
 		GraphicsPSO(wstring psoName = L"Unnamed Graphics PSO");
 
+		GraphicsPSO& RuntimePSOCopy(const GraphicsPSO& copy);
+
 		void SetBlendState(const D3D12_BLEND_DESC& BlendDesc);
 		void SetRasterizerState(const D3D12_RASTERIZER_DESC& RasterizerDesc);
 		void SetDepthStencilState(const D3D12_DEPTH_STENCIL_DESC& DepthStencilDesc);

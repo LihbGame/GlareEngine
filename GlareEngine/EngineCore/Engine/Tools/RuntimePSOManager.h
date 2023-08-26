@@ -17,6 +17,8 @@
 
 #define GET_SHADER_PATH(ShaderPath) (std::string(SHADER_ASSET_DIRECTOTY) + ShaderPath).c_str()
 
+typedef std::map<const PSO*, std::unique_ptr<PSOProxy>> PSOProxyMap;
+typedef std::map<const PSO*, PSOProxy*> PSOProxyPointMap;
 
 enum class EPSOType
 {
@@ -129,12 +131,13 @@ private:
 
 	static std::string GetShaderAssetDirectory();
 
-	void RegisterPSODependency(const std::string& shaderFile);
+	void RegisterPSODependency(const std::string& shaderFile, const PSO* origin);
 
 	void RuntimePSOThreadFunc();
 
-	std::unordered_map<std::string, std::unique_ptr<PSOProxy>> m_PSOProxies;
-	std::unordered_map<std::string, PSOProxy*> m_PSODependencies;
+	std::unordered_map<std::string, PSOProxyMap> m_PSOProxies;
+	std::unordered_map<std::string, PSOProxyPointMap> m_PSODependencies;
+
 	//std::unique_ptr<std::thread> m_RuntimePSOThread;
 	std::deque<PSOCreationTask> m_Tasks;
 

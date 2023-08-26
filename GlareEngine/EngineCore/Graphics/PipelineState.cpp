@@ -35,6 +35,14 @@ GlareEngine::GraphicsPSO::GraphicsPSO(wstring psoName)
 	m_PSODesc.InputLayout.NumElements = 0;
 }
 
+GraphicsPSO& GlareEngine::GraphicsPSO::RuntimePSOCopy(const GraphicsPSO& copy)
+{
+	m_PSODesc= copy.m_PSODesc;
+	SetInputLayout(GetPSODesc().InputLayout.NumElements, copy.GetInputLayout());
+	SetRootSignature(copy.GetRootSignature());
+	return *this;
+}
+
 void GlareEngine::GraphicsPSO::SetBlendState(const D3D12_BLEND_DESC& BlendDesc)
 {
 	m_PSODesc.BlendState = BlendDesc;

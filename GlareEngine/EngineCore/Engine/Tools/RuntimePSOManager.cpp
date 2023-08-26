@@ -53,31 +53,37 @@ void RuntimePSOManager::RegisterPSO(PSO* origin, EPSOType type, const char* sour
 	auto it = m_PSOProxies.find(shaderSource);
 	if (it == m_PSOProxies.end())
 	{
-		m_PSOProxies.insert(std::make_pair(shaderSource, std::make_unique<PSOProxy>(origin, type)));
+		m_PSOProxies[shaderSource] = PSOProxyMap();
 	}
 
-	m_PSOProxies[shaderSource]->SetShaderSourceFilePath(sourceShaderPath, shaderType);
-	m_PSOProxies[shaderSource]->ShaderBinaries[shaderType].ShaderDefine = shaderDefine;
+	m_PSOProxies[shaderSource][origin]= std::make_unique<PSOProxy>(origin, type);
+	
 
-	RegisterPSODependency(shaderSource);
+	m_PSOProxies[shaderSource][origin]->SetShaderSourceFilePath(sourceShaderPath, shaderType);
+	m_PSOProxies[shaderSource][origin]->ShaderBinaries[shaderType].ShaderDefine = shaderDefine;
+
+	RegisterPSODependency(shaderSource,origin);
 }
 
 void RuntimePSOManager::EnqueuePSOCreationTask()
 {
+	Sleep(100);
 	for (auto& pso : m_PSODependencies)
 	{
-		for (auto type = D3D12_SHVER_PIXEL_SHADER; type <= D3D12_SHVER_COMPUTE_SHADER; type = (D3D12_SHADER_VERSION_TYPE)(type + 1))
+		for (auto& psoProxy : pso.second)
 		{
-			PSOProxy::Shader shader = pso.second->ShaderBinaries[type];
-			
-			if (!shader.SourceFilePath.empty())
+			for (auto type = D3D12_SHVER_PIXEL_SHADER; type <= D3D12_SHVER_COMPUTE_SHADER; type = (D3D12_SHADER_VERSION_TYPE)(type + 1))
 			{
-				Sleep(100);
-				if (shader.LastWriteTime != FileUtility::GetFileLastWriteTime(shader.SourceFilePath.c_str()))
+				PSOProxy::Shader shader = psoProxy.second->ShaderBinaries[type];
+
+				if (!shader.SourceFilePath.empty())
 				{
-					std::lock_guard<std::mutex> locker(m_TaskMutex);
-					m_Tasks.push_back(PSOCreationTask(pso.second));
-					break;
+					if (shader.LastWriteTime != FileUtility::GetFileLastWriteTime(shader.SourceFilePath.c_str()))
+					{
+						std::lock_guard<std::mutex> locker(m_TaskMutex);
+						m_Tasks.push_back(PSOCreationTask(psoProxy.second));
+						break;
+					}
 				}
 			}
 		}
@@ -95,15 +101,20 @@ std::string RuntimePSOManager::GetShaderAssetDirectory()
 	return SHADER_ASSET_DIRECTOTY;
 }
 
-void RuntimePSOManager::RegisterPSODependency(const std::string& shaderFile)
+void RuntimePSOManager::RegisterPSODependency(const std::string& shaderFile,const PSO* origin)
 {
 	auto it = m_PSOProxies.find(shaderFile);
 	if (it != m_PSOProxies.end())
 	{
-		m_PSODependencies[shaderFile] = it->second.get();
-		for (auto& include : ParseShaderIncludeFiles(shaderFile.c_str()))
+		auto psoProxy = it->second.find(origin);
+		if (psoProxy != it->second.end())
 		{
-			m_PSODependencies[include] = it->second.get();
+
+			m_PSODependencies[shaderFile][origin] = psoProxy->second.get();
+			for (auto& include : ParseShaderIncludeFiles(shaderFile.c_str()))
+			{
+				m_PSODependencies[include][origin]= psoProxy->second.get();
+			}
 		}
 	}
 }
@@ -137,7 +148,9 @@ void RuntimePSOManager::PSOCreationTask::Execute()
 {
 	if (Proxy)
 	{
+		Sleep(100);
 		ShaderDefinitions definitions;
+		Proxy->IsRuntimePSOReady.store(false);
 
 		for (auto type = D3D12_SHVER_PIXEL_SHADER; type <= D3D12_SHVER_COMPUTE_SHADER; type = (D3D12_SHADER_VERSION_TYPE)(type + 1))
 		{
@@ -151,7 +164,6 @@ void RuntimePSOManager::PSOCreationTask::Execute()
 					shader.LastWriteTime = currentLastWriteTime;
 					Proxy->IsPSODirty.store(true);
 
-					Sleep(100);
 					auto binary = ShaderCompiler::Get().Compile(
 						shader.SourceFilePath.c_str(),
 						"main",
@@ -171,9 +183,8 @@ void RuntimePSOManager::PSOCreationTask::Execute()
 
 							auto gfxPSO = static_cast<GraphicsPSO*>(Proxy->RuntimePSO.get());
 							auto originPSO = static_cast<GraphicsPSO*>(Proxy->OriginPSO);
-							gfxPSO->SetPSODesc(originPSO->GetPSODesc());
-							gfxPSO->SetInputLayout(gfxPSO->GetPSODesc().InputLayout.NumElements, originPSO->GetInputLayout());
-							gfxPSO->SetRootSignature(originPSO->GetRootSignature());
+							gfxPSO->RuntimePSOCopy(*originPSO);
+
 							switch (type)
 							{
 							case D3D12_SHVER_PIXEL_SHADER:
@@ -210,9 +221,9 @@ void RuntimePSOManager::PSOCreationTask::Execute()
 							computePSO->Finalize();
 						}
 					}
-					Proxy->IsRuntimePSOReady.store(true);
 				}
 			}
 		}
+		Proxy->IsRuntimePSOReady.store(true);
 	}
 }

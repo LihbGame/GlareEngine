@@ -17,5 +17,6 @@ void main(VertexOut pin)
     uint diffuseMapIndex = matData.mDiffuseMapIndex;
 	// Dynamically look up the texture in the array.
     float a = gSRVMap[diffuseMapIndex].Sample(gSamplerAnisoWrap, pin.TexC).a;
+
     clip(a - 0.1f);
 }
