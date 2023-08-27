@@ -117,7 +117,7 @@ void RuntimePSOManager::RuntimePSOThreadFunc()
 	{
 		EnqueuePSOCreationTask();
 
-		if (m_StopRuntimePSOThread && m_Tasks.empty())
+		if (m_StopRuntimePSOThread)
 		{
 			break;
 		}
