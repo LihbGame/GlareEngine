@@ -6,6 +6,8 @@ vector<wstring>  EngineLog::FilterDisplayLogs = {};
 wstring EngineLog::OldFilter;
 vector<wstring>  EngineLog::FilterLogs = {};
 
+#define MAX_LOG_SIZE 2048
+
 vector<wstring>& EngineLog::GetLogs()
 {
 	return DisplayLogs;
@@ -20,10 +22,10 @@ void EngineLog::ClearLogs()
 
 int EngineLog::AddLog(const wchar_t* format, ...)
 {
-	wchar_t buffer[256];
+	wchar_t buffer[MAX_LOG_SIZE];
 	va_list ap;
 	va_start(ap, format);
-	vswprintf(buffer, 256, format, ap);
+	vswprintf(buffer, MAX_LOG_SIZE, format, ap);
 	wstring log(buffer);
 
 	DisplayLogs.push_back(log);
@@ -38,10 +40,10 @@ int EngineLog::AddLog(const wchar_t* format, ...)
 
 void EngineLog::ReplaceLog(int location, wchar_t* format, ...)
 {
-	wchar_t buffer[256];
+	wchar_t buffer[MAX_LOG_SIZE];
 	va_list ap;
 	va_start(ap, format);
-	vswprintf(buffer, 256, format, ap);
+	vswprintf(buffer, MAX_LOG_SIZE, format, ap);
 	wstring log(buffer);
 
 	if (DisplayLogs.size() > location)

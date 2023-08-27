@@ -91,12 +91,15 @@ void ShadowMap::Update(float DeltaTime)
 	}
 }
 
+#if USE_RUNTIME_PSO
 void ShadowMap::InitRuntimePSO()
 {
 	RuntimePSOManager::Get().RegisterPSO(&mShadowPSO, GET_SHADER_PATH("Shadow/ModelShadowVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
 	RuntimePSOManager::Get().RegisterPSO(&mMaskShadowPSO, GET_SHADER_PATH("Shadow/ModelShadowVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
 	RuntimePSOManager::Get().RegisterPSO(&mMaskShadowPSO, GET_SHADER_PATH("Shadow/ModelShadowPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
 }
+#endif
+
 
 UINT ShadowMap::Width()const
 {

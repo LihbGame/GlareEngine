@@ -99,8 +99,10 @@ void InstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 	mPSO.Finalize();
 }
 
+#if USE_RUNTIME_PSO
 void InstanceModel::InitRuntimePSO()
 {
 	RuntimePSOManager::Get().RegisterPSO(&mPSO, GET_SHADER_PATH("PBRInstanceModel/InstanceModelVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
 	RuntimePSOManager::Get().RegisterPSO(&mPSO, GET_SHADER_PATH("PBRInstanceModel/InstanceModelPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
 }
+#endif

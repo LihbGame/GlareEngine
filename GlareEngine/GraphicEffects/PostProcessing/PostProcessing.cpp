@@ -306,8 +306,40 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	MotionBlur::Initialize();
 
 #if	USE_RUNTIME_PSO
-	//RuntimePSOManager::Get().RegisterPSO(&SsaoCS, GET_SHADER_PATH("PostProcessing/SsaoCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-
+	RuntimePSOManager::Get().RegisterPSO(&ToneMapCS, GET_SHADER_PATH("PostProcessing/ToneMapping/ToneMap2CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&ToneMapHDRCS, GET_SHADER_PATH("PostProcessing/ToneMapping/ToneMapHDR2CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&GenerateLuminanceHistogramCS, GET_SHADER_PATH("PostProcessing/GenerateLuminanceHistogramCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&UpsampleBlurCS, GET_SHADER_PATH("PostProcessing/UpsampleBlurCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&BlurCS, GET_SHADER_PATH("PostProcessing/BlurCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&DownsampleBloom2CS, GET_SHADER_PATH("PostProcessing/Bloom/BloomDownSample2CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&DownsampleBloom4CS, GET_SHADER_PATH("PostProcessing/Bloom/BloomDownSample4CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&BloomExtractAndDownsampleHDRCS, GET_SHADER_PATH("PostProcessing/Bloom/BloomExtractAndDownSampleHDRCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&ExtractLuminanceCS, GET_SHADER_PATH("PostProcessing/ExtractLuminanceCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&CopyBackBufferForNotHDRUAVSupportCS, GET_SHADER_PATH("PostProcessing/CopyPostBufferHDRCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&AdaptExposureCS, GET_SHADER_PATH("PostProcessing/AdaptExposureCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&DrawHistogramCS, GET_SHADER_PATH("PostProcessing/DrawHistogramCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&LinearizeDepthCS, GET_SHADER_PATH("Misc/LinearizeDepthCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	
+	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurFloat1CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurFloat1CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurFloat3CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurFloat3CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurFloat4CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurFloat4CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurUnorm1CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurUnorm1CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurUnorm4CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurUnorm4CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurWideFloat1CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurWideFloat1CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurWideFloat3CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurWideFloat3CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurWideFloat4CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurWideFloat4CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurWideUnorm1CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurWideUnorm1CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurWideUnorm4CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurWideUnorm4CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurFloat1CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurFloat1CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurFloat3CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurFloat3CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurFloat4CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurFloat4CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurUnorm1CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurUnorm1CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurUnorm4CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurUnorm4CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurWideFloat1CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurWideFloat1CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurWideFloat3CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurWideFloat3CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurWideFloat4CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurWideFloat4CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurWideUnorm1CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurWideUnorm1CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurWideUnorm4CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurWideUnorm4CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
 #endif
 
 }
@@ -324,7 +356,7 @@ void ScreenProcessing::RenderFBM(GraphicsContext& Context, GraphicsPSO* Specific
 	}
 	else
 	{
-		Context.SetPipelineState(mPSO);
+		Context.SetPipelineState(GET_PSO(mPSO));
 	}
 	Context.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	Context.Draw(3);
@@ -356,7 +388,7 @@ void ScreenProcessing::PostProcessHDR(ComputeContext& Context)
 	Context.TransitionResource(g_LumaBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	Context.TransitionResource(g_Exposure, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
-	Context.SetPipelineState(Display::g_bEnableHDROutput ? ToneMapHDRCS : ToneMapCS);
+	Context.SetPipelineState(Display::g_bEnableHDROutput ? GET_PSO(ToneMapHDRCS) : GET_PSO(ToneMapCS));
 
 	// Set constants
 	Context.SetConstants(0, 1.0f / g_SceneColorBuffer.GetWidth(), 1.0f / g_SceneColorBuffer.GetHeight(),(float)BloomStrength);
@@ -395,7 +427,7 @@ void ScreenProcessing::Adaptation(ComputeContext& Context)
 	Context.TransitionResource(g_LumaBloom, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	Context.SetDynamicDescriptor(1, 0, g_Histogram.GetUAV());
 	Context.SetDynamicDescriptor(2, 0, g_LumaBloom.GetSRV());
-	Context.SetPipelineState(GenerateLuminanceHistogramCS);
+	Context.SetPipelineState(GET_PSO(GenerateLuminanceHistogramCS));
 	Context.Dispatch2D(g_LumaBloom.GetWidth(), g_LumaBloom.GetHeight(), 16, 16);
 	
 	AdaptationConstants AdaptationData = {
@@ -408,7 +440,7 @@ void ScreenProcessing::Adaptation(ComputeContext& Context)
 	Context.SetDynamicDescriptor(1, 0, g_Exposure.GetUAV());
 	Context.SetDynamicDescriptor(2, 0, g_Histogram.GetSRV());
 	Context.SetDynamicConstantBufferView(3, sizeof(AdaptationConstants), &AdaptationData);
-	Context.SetPipelineState(AdaptExposureCS);
+	Context.SetPipelineState(GET_PSO(AdaptExposureCS));
 	Context.Dispatch();
 	Context.TransitionResource(g_Exposure, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 }
@@ -453,7 +485,7 @@ void ScreenProcessing::Render(const Camera& camera)
 	{
 		ScopedTimer Scope(L"Draw Debug Histogram", Context);
 		Context.SetRootSignature(PostEffectsRS);
-		Context.SetPipelineState(DrawHistogramCS);
+		Context.SetPipelineState(GET_PSO(DrawHistogramCS));
 		Context.InsertUAVBarrier(*LastPostprocessRT);
 		Context.TransitionResource(g_Histogram, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 		Context.TransitionResource(g_Exposure, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -608,7 +640,7 @@ void ScreenProcessing::UpsampleBlurBuffer(ComputeContext& Context, ColorBuffer b
 	Context.SetDynamicDescriptors(2, 0, 2, SRVs);
 
 	// Set the shader: Up-Sample and blur
-	Context.SetPipelineState(UpsampleBlurCS);
+	Context.SetPipelineState(GET_PSO(UpsampleBlurCS));
 
 	// Dispatch the compute shader with default 8x8 thread groups
 	Context.Dispatch2D(bufferWidth, bufferHeight);
@@ -629,7 +661,7 @@ void ScreenProcessing::BlurBuffer(ComputeContext& Context, ColorBuffer& SourceBu
 	Context.SetDynamicDescriptor(2, 0, SourceBuffer.GetSRV());
 
 	// Set the shader
-	Context.SetPipelineState(BlurCS);
+	Context.SetPipelineState(GET_PSO(BlurCS));
 
 	// Dispatch the compute shader with default 8x8 thread groups
 	Context.Dispatch2D(bufferWidth, bufferHeight);
@@ -688,7 +720,8 @@ void ScreenProcessing::GaussianBlur(ComputeContext& Context, ColorBuffer& Source
 		break;
 	}
 
-	Context.SetPipelineState(*Shaders[GaussianBlurShaderIndex]);
+	ComputePSO& BlurPSO = *Shaders[GaussianBlurShaderIndex];
+	Context.SetPipelineState(GET_PSO(BlurPSO));
 
 	//Horizontal Blur
 	Context.Dispatch2D(ConstantData.Dimensions.x, ConstantData.Dimensions.y, 256, 1);
@@ -759,7 +792,8 @@ void ScreenProcessing::BilateralBlur(ComputeContext& Context, ColorBuffer& Sourc
 		break;
 	}
 
-	Context.SetPipelineState(*Shaders[BilateralBlurShaderIndex]);
+	ComputePSO& BlurPSO = *Shaders[BilateralBlurShaderIndex];
+	Context.SetPipelineState(BlurPSO);
 
 	//Horizontal Blur
 	Context.Dispatch2D(ConstantData.Dimensions.x, ConstantData.Dimensions.y, 256, 1);
@@ -812,7 +846,7 @@ void ScreenProcessing::LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, C
 
 	Context.SetDynamicDescriptors(1, 0, 1, &LinearDepth.GetUAV());
 
-	Context.SetPipelineState(LinearizeDepthCS);
+	Context.SetPipelineState(GET_PSO(LinearizeDepthCS));
 
 	Context.Dispatch2D(LinearDepth.GetWidth(), LinearDepth.GetHeight(), 16, 16);
 
@@ -873,7 +907,7 @@ void ScreenProcessing::GenerateBloom(ComputeContext& Context)
 	Context.SetDynamicDescriptor(2, 1, g_Exposure.GetSRV());
 
 	//Bloom Extract
-	Context.SetPipelineState(BloomExtractAndDownsampleHDRCS);
+	Context.SetPipelineState(GET_PSO(BloomExtractAndDownsampleHDRCS));
 	Context.Dispatch2D(BloomWidth, BloomHeight);
 
 	Context.TransitionResource(g_aBloomUAV1[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -894,7 +928,7 @@ void ScreenProcessing::GenerateBloom(ComputeContext& Context)
 		Context.SetDynamicDescriptors(1, 0, 4, UAVs);
 
 		// Each dispatch group is 8x8 threads,Each dispatch group is 8x8 threads, Each thread reads in 2x2 source Texels use bilinear filter.
-		Context.SetPipelineState(DownsampleBloom4CS);
+		Context.SetPipelineState(GET_PSO(DownsampleBloom4CS));
 		Context.Dispatch2D(BloomWidth / 2, BloomHeight / 2);
 
 		Context.TransitionResource(g_aBloomUAV2[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -917,7 +951,7 @@ void ScreenProcessing::GenerateBloom(ComputeContext& Context)
 		D3D12_CPU_DESCRIPTOR_HANDLE UAVs[2] = { g_aBloomUAV3[0].GetUAV(), g_aBloomUAV5[0].GetUAV() };
 		Context.SetDynamicDescriptors(1, 0, 2, UAVs);
 
-		Context.SetPipelineState(DownsampleBloom2CS);
+		Context.SetPipelineState(GET_PSO(DownsampleBloom2CS));
 		Context.Dispatch2D(BloomWidth / 2, BloomHeight / 2);
 
 		Context.TransitionResource(g_aBloomUAV3[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -940,7 +974,7 @@ void ScreenProcessing::ExtractLuminance(ComputeContext& Context)
 	Context.SetDynamicDescriptor(1, 0, g_LumaBloom.GetUAV());
 	Context.SetDynamicDescriptor(2, 0, g_SceneColorBuffer.GetSRV());
 	Context.SetDynamicDescriptor(2, 1, g_Exposure.GetSRV());
-	Context.SetPipelineState(ExtractLuminanceCS);
+	Context.SetPipelineState(GET_PSO(ExtractLuminanceCS));
 	Context.Dispatch2D(g_LumaBloom.GetWidth(), g_LumaBloom.GetHeight());
 }
 
@@ -949,7 +983,7 @@ void ScreenProcessing::CopyBackBufferForNotHDRUAVSupport(ComputeContext& Context
 {
 	ScopedTimer Scope(L"Copy Post back to Scene For Not HDR UAV Support", Context);
 	Context.SetRootSignature(PostEffectsRS);
-	Context.SetPipelineState(CopyBackBufferForNotHDRUAVSupportCS);
+	Context.SetPipelineState(GET_PSO(CopyBackBufferForNotHDRUAVSupportCS));
 	Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	Context.TransitionResource(g_PostEffectsBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	Context.SetDynamicDescriptor(1, 0, g_SceneColorBuffer.GetUAV());

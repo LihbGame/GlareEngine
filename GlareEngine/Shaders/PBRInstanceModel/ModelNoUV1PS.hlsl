@@ -135,5 +135,5 @@ float4 main(VSOutput vsOutput) : SV_Target0
          color += IBL_Specular(Surface);
      }
 
-     return  float4(color, baseColor.a)/2;
+     return  float4(color, baseColor.a);
 }

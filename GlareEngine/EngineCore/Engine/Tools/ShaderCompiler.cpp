@@ -65,7 +65,10 @@ ShaderBinary ShaderCompiler::Compile(const char* shaderFilePath, const char* ent
 		std::vector<const wchar_t*> args
 		{
 #if defined(DEBUG) || defined(_DEBUG)
-			L"-Zi"
+			L"-Zi",
+			L"-Od",
+			L"-Qembed_debug",
+			L"-HV 2016"
 #else
 			L"Qstrip_debug",
 			L"Qstrip_reflect"
