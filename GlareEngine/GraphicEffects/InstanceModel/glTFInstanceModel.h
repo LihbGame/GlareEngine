@@ -24,7 +24,6 @@ public:
 	ModelInstance* GetModel() { return mModel.get(); }
 
 #if USE_RUNTIME_PSO
-	static void InitRuntimePSO();
 
 	struct ShaderNames
 	{

@@ -379,12 +379,11 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
             gModelPSOs[PSOEqualDepthIndex].Finalize();
 
 #if USE_RUNTIME_PSO
-            RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOReadWriteDepthIndex], mShaderNames[PSOFlagIndex].VSName.c_str(), D3D12_SHVER_VERTEX_SHADER);
-            RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOReadWriteDepthIndex], mShaderNames[PSOFlagIndex].PSName.c_str(), D3D12_SHVER_PIXEL_SHADER);
-            RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOEqualDepthIndex], mShaderNames[PSOFlagIndex].VSName.c_str(), D3D12_SHVER_VERTEX_SHADER);
-            RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOEqualDepthIndex], mShaderNames[PSOFlagIndex].PSName.c_str(), D3D12_SHVER_PIXEL_SHADER);
+            //RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOReadWriteDepthIndex], mShaderNames[PSOFlagIndex].VSName.c_str(), D3D12_SHVER_VERTEX_SHADER);
+            //RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOReadWriteDepthIndex], mShaderNames[PSOFlagIndex].PSName.c_str(), D3D12_SHVER_PIXEL_SHADER);
+           // RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOEqualDepthIndex], mShaderNames[PSOFlagIndex].VSName.c_str(), D3D12_SHVER_VERTEX_SHADER);
+            //RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOEqualDepthIndex], mShaderNames[PSOFlagIndex].PSName.c_str(), D3D12_SHVER_PIXEL_SHADER);
 #endif
-
         }
     }
 }
@@ -609,12 +608,14 @@ uint8_t glTFInstanceModel::GetPSO(uint16_t psoFlags)
 #endif
     gModelPSOs.push_back(ColorPSO);
 
+#if USE_RUNTIME_PSO
+	RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[gModelPSOs.size() - 1], shaderNames.VSName.c_str(), D3D12_SHVER_VERTEX_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[gModelPSOs.size() - 1], shaderNames.PSName.c_str(), D3D12_SHVER_PIXEL_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[gModelPSOs.size() - 2], shaderNames.VSName.c_str(), D3D12_SHVER_VERTEX_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[gModelPSOs.size() - 2], shaderNames.PSName.c_str(), D3D12_SHVER_PIXEL_SHADER);
+#endif
+
     assert(gModelPSOs.size() <= MAX_PSO);//Out of room for unique PSOs
 
     return (uint8_t)gModelPSOs.size() - 2;
-}
-
-void glTFInstanceModel::InitRuntimePSO()
-{
-   
 }
