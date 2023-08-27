@@ -236,18 +236,26 @@ namespace GlareEngine
 		s_PresentPSO.Finalize();
 
 		//Create SDR PSO
-		PresentSDRPS = s_PresentPSO;
+		PresentSDRPS.RuntimePSOCopy(s_PresentPSO);
 		PresentSDRPS.SetBlendState(BlendDisable);
 		PresentSDRPS.SetPixelShader(g_pPresentSDRPS, sizeof(g_pPresentSDRPS));
 		PresentSDRPS.Finalize();
 
 		//Create HDR PSO
-		PresentHDRPS = PresentSDRPS;
+		PresentHDRPS.RuntimePSOCopy(PresentSDRPS);
 		PresentHDRPS.SetPixelShader(g_pPresentHDRPS, sizeof(g_pPresentHDRPS));
 		DXGI_FORMAT SwapChainFormats[2] = { DXGI_FORMAT_R10G10B10A2_UNORM, DXGI_FORMAT_R10G10B10A2_UNORM };
 		PresentHDRPS.SetRenderTargetFormats(2, SwapChainFormats, DXGI_FORMAT_UNKNOWN);
 		PresentHDRPS.Finalize();
 
+#if	USE_RUNTIME_PSO
+		RuntimePSOManager::Get().RegisterPSO(&s_PresentPSO, GET_SHADER_PATH("Misc/ScreenQuadVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+		RuntimePSOManager::Get().RegisterPSO(&s_PresentPSO, GET_SHADER_PATH("Present/BufferCopyPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
+		RuntimePSOManager::Get().RegisterPSO(&PresentSDRPS, GET_SHADER_PATH("Misc/ScreenQuadVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+		RuntimePSOManager::Get().RegisterPSO(&PresentSDRPS, GET_SHADER_PATH("Present/PresentSDRPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
+		RuntimePSOManager::Get().RegisterPSO(&PresentHDRPS, GET_SHADER_PATH("Misc/ScreenQuadVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+		RuntimePSOManager::Get().RegisterPSO(&PresentHDRPS, GET_SHADER_PATH("Present/PresentHDRPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
+#endif
 	}
 
 	void Display::PreparePresent()
@@ -278,7 +286,7 @@ namespace GlareEngine
 		// Copy (and convert) the LDR buffer to the back buffer
 		Context.SetDynamicDescriptor(0, 0, CurrentSceneColorBuffer->GetSRV());;
 
-		Context.SetPipelineState(PresentSDRPS);
+		Context.SetPipelineState(GET_PSO(PresentSDRPS));
 		Context.TransitionResource(g_DisplayBuffers[g_CurrentBuffer], D3D12_RESOURCE_STATE_RENDER_TARGET);
 		Context.SetRenderTarget(g_DisplayBuffers[g_CurrentBuffer].GetRTV());
 		Context.SetViewportAndScissor(0, 0, g_DisplayWidth, g_DisplayHeight);
@@ -307,7 +315,7 @@ namespace GlareEngine
 			g_DisplayBuffers[g_CurrentBuffer].GetRTV()
 		};
 
-		Context.SetPipelineState(PresentHDRPS);
+		Context.SetPipelineState(GET_PSO(PresentHDRPS));
 		Context.SetRenderTargets(_countof(RTVs), RTVs);
 		Context.SetViewportAndScissor(0, 0, g_DisplayWidth, g_DisplayHeight);
 		struct Constants

@@ -343,8 +343,7 @@ namespace GlareEngine
 		GPUTimeManager::Initialize(4096);
 
 		//TemporalEffects::Initialize();
-		
-		//SSAO::Initialize();
+	
 		//ParticleEffectManager::Initialize(3840, 2160);
 	}
 

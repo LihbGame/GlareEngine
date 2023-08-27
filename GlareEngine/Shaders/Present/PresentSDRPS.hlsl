@@ -1,5 +1,5 @@
-#include "../Misc/ShaderUtility.hlsli"
-#include "../Misc/ToneMappingUtility.hlsli"
+//#include "../Misc/ShaderUtility.hlsli"
+//#include "../Misc/ToneMappingUtility.hlsli"
 
 Texture2D<float3> ColorTex : register(t0);
 

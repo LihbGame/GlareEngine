@@ -53,7 +53,7 @@
 
 namespace ScreenProcessing
 {
-	enum ShaderType	:int
+	enum BlurShaderType	:int
 	{
 		BilateralBlurFloat1,
 		BilateralBlurFloat3,
@@ -139,7 +139,7 @@ namespace ScreenProcessing
 
 	ColorBuffer* CurrentLinearDepth = nullptr;
 
-	ComputePSO* Shaders[ShaderType::Count];
+	ComputePSO* Shaders[BlurShaderType::Count];
 
 	//Bloom
 	ComputePSO DownsampleBloom2CS(L"DownSample Bloom 2 CS");
@@ -196,7 +196,6 @@ namespace ScreenProcessing
 	void ExtractLuminance(ComputeContext& Context);
 	void CopyBackBufferForNotHDRUAVSupport(ComputeContext& Context);
 	void PostProcessHDR(ComputeContext& Context);
-
 	void Adaptation(ComputeContext& Context);
 }
 
@@ -305,6 +304,12 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 
 	//Motion Blur Initialize
 	MotionBlur::Initialize();
+
+#if	USE_RUNTIME_PSO
+	//RuntimePSOManager::Get().RegisterPSO(&SsaoCS, GET_SHADER_PATH("PostProcessing/SsaoCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+
+#endif
+
 }
 
 void ScreenProcessing::BuildSRV(ID3D12GraphicsCommandList* CommandList)
@@ -653,7 +658,7 @@ void ScreenProcessing::GaussianBlur(ComputeContext& Context, ColorBuffer& Source
 
 	Context.SetDynamicConstantBufferView(3, sizeof(BlurConstants), &ConstantData);
 
-	ShaderType GaussianBlurShaderIndex;
+	BlurShaderType GaussianBlurShaderIndex;
 	switch (SourceBuffer.GetFormat())
 	{
 	case DXGI_FORMAT_R16_UNORM:
@@ -724,7 +729,7 @@ void ScreenProcessing::BilateralBlur(ComputeContext& Context, ColorBuffer& Sourc
 
 	Context.SetDynamicConstantBufferView(3, sizeof(BlurConstants), &ConstantData);
 
-	ShaderType BilateralBlurShaderIndex;
+	BlurShaderType BilateralBlurShaderIndex;
 	switch (SourceBuffer.GetFormat())
 	{
 	case DXGI_FORMAT_R16_UNORM:
