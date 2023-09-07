@@ -141,24 +141,86 @@ float HdrWeightY(float Color, float Exposure)
 	return rcp(Color * Exposure + 4.0);
 }
 
-// Intersect ray with AABB, knowing there is an intersection.
-//   Dir = Ray direction.
-//   Org = Start of the ray.
-//   Box = Box is at {0,0,0} with this size.
-// Returns distance on line segment.
-float IntersectAABB(float3 Dir, float3 Org, float3 Box)
+float2 WeightedLerpFactors(float WeightA, float WeightB, float Blend)
 {
-#if PS4_PROFILE
-	// This causes flicker, it should only be used on PS4 until proper fix is in.
-	if (min(min(abs(Dir.x), abs(Dir.y)), abs(Dir.z)) < (1.0 / 65536.0)) return 1.0;
-#endif
-	float3 RcpDir = rcp(Dir);
-	float3 TNeg = (Box - Org) * RcpDir;
-	float3 TPos = ((-Box) - Org) * RcpDir;
-	return max(max(min(TNeg.x, TPos.x), min(TNeg.y, TPos.y)), min(TNeg.z, TPos.z));
+	float BlendA = (1.0 - Blend) * WeightA;
+	float BlendB = Blend * WeightB;
+	float RcpBlend = rcp(BlendA + BlendB);
+	BlendA *= RcpBlend;
+	BlendB *= RcpBlend;
+	return float2(BlendA, BlendB);
+}
+
+//Inaccurate but fast calculations
+float ClipHistory(float3 History, float3 Filtered, float3 NeighborMin, float3 NeighborMax)
+{
+	float3 BoxMin = NeighborMin;
+	float3 BoxMax = NeighborMax;
+
+	float3 RayOrigin = History;
+	float3 RayDir = Filtered - History;
+	RayDir = abs(RayDir) < (1.0 / 65536.0) ? (1.0 / 65536.0) : RayDir;
+	float3 InvRayDir = rcp(RayDir);
+
+	float3 MinIntersect = (BoxMin - RayOrigin) * InvRayDir;
+	float3 MaxIntersect = (BoxMax - RayOrigin) * InvRayDir;
+	float3 EnterIntersect = min(MinIntersect, MaxIntersect);
+	return max(max(EnterIntersect.x, EnterIntersect.y), EnterIntersect.z);
 }
 
 
+
+// Payload of the TAA's history.
+struct FTAAHistoryPayload
+{
+	// Transformed scene color and alpha channel.
+	float4 Color;
+
+	// Radius of the circle of confusion for DOF.
+	float CocRadius;
+};
+
+FTAAHistoryPayload MulPayload(in FTAAHistoryPayload Payload, in float x)
+{
+	Payload.Color *= x;
+	Payload.CocRadius *= x;
+	return Payload;
+}
+
+FTAAHistoryPayload AddPayload(in FTAAHistoryPayload Payload0, in FTAAHistoryPayload Payload1)
+{
+	Payload0.Color += Payload1.Color;
+	Payload0.CocRadius += Payload1.CocRadius;
+	return Payload0;
+}
+
+FTAAHistoryPayload MinPayload(in FTAAHistoryPayload Payload0, in FTAAHistoryPayload Payload1)
+{
+	Payload0.Color = min(Payload0.Color, Payload1.Color);
+	Payload0.CocRadius = min(Payload0.CocRadius, Payload1.CocRadius);
+	return Payload0;
+}
+
+FTAAHistoryPayload MaxPayload(in FTAAHistoryPayload Payload0, in FTAAHistoryPayload Payload1)
+{
+	Payload0.Color = max(Payload0.Color, Payload1.Color);
+	Payload0.CocRadius = max(Payload0.CocRadius, Payload1.CocRadius);
+	return Payload0;
+}
+
+FTAAHistoryPayload MinPayload3(in FTAAHistoryPayload Payload0, in FTAAHistoryPayload Payload1, in FTAAHistoryPayload Payload2)
+{
+	Payload0.Color = min(min(Payload0.Color, Payload1.Color), Payload2.Color);
+	Payload0.CocRadius = min(min(Payload0.CocRadius, Payload1.CocRadius), Payload2.CocRadius);
+	return Payload0;
+}
+
+FTAAHistoryPayload MaxPayload3(in FTAAHistoryPayload Payload0, in FTAAHistoryPayload Payload1, in FTAAHistoryPayload Payload2)
+{
+	Payload0.Color = max(max(Payload0.Color, Payload1.Color), Payload2.Color);
+	Payload0.CocRadius = max(max(Payload0.CocRadius, Payload1.CocRadius), Payload2.CocRadius);
+	return Payload0;
+}
 
 
 
