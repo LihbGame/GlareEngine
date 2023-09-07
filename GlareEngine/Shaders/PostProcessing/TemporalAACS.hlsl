@@ -148,10 +148,6 @@ float HdrWeightY(float Color, float Exposure)
 // Returns distance on line segment.
 float IntersectAABB(float3 Dir, float3 Org, float3 Box)
 {
-#if PS4_PROFILE
-	// This causes flicker, it should only be used on PS4 until proper fix is in.
-	if (min(min(abs(Dir.x), abs(Dir.y)), abs(Dir.z)) < (1.0 / 65536.0)) return 1.0;
-#endif
 	float3 RcpDir = rcp(Dir);
 	float3 TNeg = (Box - Org) * RcpDir;
 	float3 TPos = ((-Box) - Org) * RcpDir;
