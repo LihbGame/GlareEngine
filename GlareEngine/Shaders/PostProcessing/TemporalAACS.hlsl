@@ -1,4 +1,15 @@
+#include "../Misc/CommonResource.hlsli"
 
+cbuffer TAAConstantBuffer :			 register(b1)
+{
+	float4 OutputViewportSize;
+	float4 OutputViewportRect;
+
+	float4 InputViewSize;
+	float2 InputViewMin;
+	// Temporal jitter at the pixel.
+	float2 TemporalJitterPixels;
+}
 
 #define THREADGROUP_SIZEX 8
 #define THREADGROUP_SIZEY 8
@@ -10,7 +21,7 @@
 #define TAA_QUALITY_HIGH	2
 
 
-//// Clamping method for scene color
+///////////////////////////////// Clamping method for scene color /////////////////////////////////////
 
 // Min max neighboorhing samples.
 #define HISTORY_CLAMPING_BOX_MIN_MAX 0
@@ -22,7 +33,7 @@
 #define HISTORY_CLAMPING_BOX_SAMPLE_DISTANCE 2
 
 
-//// Caching method for scene color.
+///////////////////////////////// Caching method for scene color /////////////////////////////////////
 
 // Disable any in code cache.
 #define AA_SAMPLE_CACHE_METHOD_DISABLE 0
@@ -51,8 +62,6 @@
 
 //Bicubic filter history
 #define AA_BICUBIC 1
-//Cross distance in pixels used in depth search X pattern.
-#define AA_CROSS 2
 //Use dynamic motion
 #define AA_DYNAMIC 1
 //Whether the history buffer UV should be manually clamped
@@ -63,10 +72,18 @@
 #define AA_YCOCG 1
 
 //Upsample the output
-#define AA_UPSAMPLE 1
+#define AA_UPSAMPLE 0
 //Change the upsampling filter size when history is rejected that reduce blocky output pixels
 #define AA_UPSAMPLE_ADAPTIVE_FILTERING 1
 
+//Cross distance in pixels used in depth search X pattern.
+#if AA_UPSAMPLE
+#define AA_CROSS 1
+#else
+#define AA_CROSS 2
+#endif
+
+//CACHE METHOD
 #define AA_SAMPLE_CACHE_METHOD (AA_SAMPLE_CACHE_METHOD_LDS)
 
 #if TAA_QUALITY == TAA_QUALITY_LOW
@@ -398,12 +415,134 @@ TAASceneColorSample SampleCachedSceneColorTexture(
 	return Sample;
 }
 
-//LDS CACHING
+// LDS CACHING
 #elif AA_SAMPLE_CACHE_METHOD == AA_SAMPLE_CACHE_METHOD_LDS
 
 // Total number of thread per group.
 #define THREADGROUP_TOTAL (THREADGROUP_SIZEX * THREADGROUP_SIZEY)
 #define LDS_BASE_TILE_WIDTH THREADGROUP_SIZEX
+
+
+// Configuration of what should be prefetched.
+// 1: use Load; 2: use gather4. 
+#if !AA_UPSAMPLE
+#define AA_PRECACHE_SCENE_DEPTH 2
+#endif
+
+#define AA_PRECACHE_SCENE_COLOR 1
+
+/////////////////////////// Depth tile constants ///////////////////////////////////////
+
+// Number of texels arround the group tile for depth.
+#define LDS_DEPTH_TILE_BORDER_SIZE (AA_CROSS)
+
+// Width in texels of the depth tile cached into LDS.
+#define LDS_DEPTH_TILE_WIDTH (LDS_BASE_TILE_WIDTH + 2 * LDS_DEPTH_TILE_BORDER_SIZE)
+
+// Total number of texels cached in the depth tile.
+#define LDS_DEPTH_ARRAY_SIZE (LDS_DEPTH_TILE_WIDTH * LDS_DEPTH_TILE_WIDTH)
+
+
+////////////////////////// Scene color tile constants /////////////////////////////////////
+
+// Number of texels arround the group tile for scene color.
+#define LDS_COLOR_TILE_BORDER_SIZE (1)
+
+// Width in texels of the depth tile cached into LDS.
+#define LDS_COLOR_TILE_WIDTH (LDS_BASE_TILE_WIDTH + 2 * LDS_COLOR_TILE_BORDER_SIZE)
+
+// Total number of texels cached in the scene color tile.
+#define LDS_COLOR_ARRAY_SIZE (LDS_COLOR_TILE_WIDTH * LDS_COLOR_TILE_WIDTH)
+
+// Precache GetSceneColorHdrWeight() into scene color's alpha channel.
+#define AA_PRECACHE_SCENE_HDR_WEIGHT (AA_TONE)
+
+// Number of scene color component that gets cached.
+#define LDS_COLOR_COMPONENT_COUNT 4
+
+/////////////////////////// Group shared global /////////////////////////////////////
+
+// Size of the LDS to be allocated.
+#define LDS_ARRAY_SIZE (LDS_COLOR_ARRAY_SIZE * LDS_COLOR_COMPONENT_COUNT)
+
+// Some compilers may have issues optimising LDS store instructions, therefore we give the compiler a hint by using a float4 LDS.
+#if defined(AA_PRECACHE_SCENE_DEPTH)
+#define LDS_USE_FLOAT4_ARRAY 0
+#else
+#define LDS_USE_FLOAT4_ARRAY (LDS_COLOR_COMPONENT_COUNT == 4)
+#endif
+
+#if LDS_USE_FLOAT4_ARRAY
+groupshared float4 GroupSharedArrayFloat4[LDS_ARRAY_SIZE / 4];
+#else
+groupshared float GroupSharedArray[LDS_ARRAY_SIZE];
+#endif
+
+
+/////////////////////////// Generic LDS tile functions /////////////////////////////////////
+
+#if AA_UPSAMPLE
+
+// Get the pixel coordinate of the nearest input pixel for group's thread 0.
+float2 GetGroupThread0InputPixelCoord(in TAAInputParameters InputParams)
+{
+	// Output pixel center position of the group thread index 0, relative to top left corner of the viewport.
+	float2 Thread0SvPosition = InputParams.GroupId * uint2(THREADGROUP_SIZEX, THREADGROUP_SIZEY) + 0.5;
+
+	// Output pixel's viewport UV group thread index 0.
+	float2 Thread0ViewportUV = Thread0SvPosition * OutputViewportSize.zw;
+
+	// Pixel coordinate of the center of output pixel O in the input viewport.
+	float2 Thread0PPCo = Thread0ViewportUV * InputViewSize.xy + TemporalJitterPixels;
+
+	// Pixel coordinate of the center of the nearest input pixel.
+	float2 Thread0PPCk = floor(Thread0PPCo) + 0.5;
+
+	return InputViewMin.xy + Thread0PPCk;
+}
+
+#endif
+
+// Get the texel offset of a LDS tile's top left corner.
+uint2 GetGroupTileTexelOffset(in TAAInputParameters InputParams, uint TileBorderSize)
+{
+#if AA_UPSAMPLE
+	{
+		// Pixel coordinate of the center of the nearest input pixel K.
+		float2 Thread0PPCk = GetGroupThread0InputPixelCoord(InputParams);
+
+		return uint2(floor(Thread0PPCk) - TileBorderSize);
+	}
+#else // !AA_UPSAMPLE
+	{
+		return OutputViewportRect.xy + InputParams.GroupId * uint2(THREADGROUP_SIZEX, THREADGROUP_SIZEY) - TileBorderSize;
+	}
+#endif
+}
+
+// Get the index within the LDS array.
+uint GetTileArrayIndexFromPixelOffset(in TAAInputParameters InputParams, int2 PixelOffset, uint TileBorderSize)
+{
+#if AA_UPSAMPLE
+	{
+		const float2 RowMultiplier = float2(1, TileBorderSize * 2 + LDS_BASE_TILE_WIDTH);
+
+		float2 Thread0PPCk = GetGroupThread0InputPixelCoord(InputParams);
+		float2 PPCk = InputParams.NearestBufferUV * InputSceneColorSize.xy;
+
+		float2 TilePos = floor(PPCk) - floor(Thread0PPCk);
+		return uint(dot(TilePos, RowMultiplier) + dot(float2(PixelOffset)+float(TileBorderSize), RowMultiplier));
+	}
+#else
+	{
+		uint2 TilePos = InputParams.GroupThreadId + uint2(PixelOffset + TileBorderSize);
+		return TilePos.x + TilePos.y * (TileBorderSize * 2 + LDS_BASE_TILE_WIDTH);
+	}
+#endif
+}
+
+
+
 
 #endif
 
