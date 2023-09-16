@@ -1,14 +1,23 @@
 #include "../Misc/CommonResource.hlsli"
 
-cbuffer TAAConstantBuffer :			 register(b1)
-{
-	float4 OutputViewportSize;
-	float4 OutputViewportRect;
 
-	float4 InputViewSize;
-	float2 InputViewMin;
+Texture2D SceneDepthTexture : register(t0);
+
+
+
+SamplerState SceneDepthTextureSampler : register(s1);
+
+cbuffer TAAConstantBuffer : register(b1)
+{
+    float4 OutputViewportSize;
+    float4 OutputViewportRect;
+	
+    float4 InputSceneColorSize;
+	
+    float4 InputViewSize;
+    float2 InputViewMin;
 	// Temporal jitter at the pixel.
-	float2 TemporalJitterPixels;
+    float2 TemporalJitterPixels;
 }
 
 #define THREADGROUP_SIZEX 8
@@ -35,17 +44,11 @@ cbuffer TAAConstantBuffer :			 register(b1)
 
 ///////////////////////////////// Caching method for scene color /////////////////////////////////////
 
-// Disable any in code cache.
-#define AA_SAMPLE_CACHE_METHOD_DISABLE 0
-
-// Caches 3x3 Neighborhood into VGPR (although my have corner optimised away).
-#define AA_SAMPLE_CACHE_METHOD_VGPR_3X3 1
-
 // Prefetches scene color into 10x10 LDS tile.
-#define AA_SAMPLE_CACHE_METHOD_LDS 2
+#define AA_SAMPLE_CACHE_METHOD_LDS 1
 
 
-//// Payload of the history. History might still have addtional TAA internals.
+//// Payload of the history. History might still have addtional TAA internals//////////////////////////
 
 // Only have RGB.
 #define HISTORY_PAYLOAD_RGB 0
@@ -82,9 +85,6 @@ cbuffer TAAConstantBuffer :			 register(b1)
 #else
 #define AA_CROSS 2
 #endif
-
-//CACHE METHOD
-#define AA_SAMPLE_CACHE_METHOD (AA_SAMPLE_CACHE_METHOD_LDS)
 
 #if TAA_QUALITY == TAA_QUALITY_LOW
 //Always enable scene color filtering
@@ -319,17 +319,12 @@ struct TAAInputParameters
 
 	// Frame exposure's scale.
 	float				FrameExposureScale;
-
-	// Cache of neightbors' transformed scene color.
-#if AA_SAMPLE_CACHE_METHOD == AA_SAMPLE_CACHE_METHOD_VGPR_3X3
-	float4				CachedNeighbors[NeighborsCount];
-#endif
 };
 
 
 
 // Transformed scene color's data for a sample.
-struct FTAASceneColorSample
+struct TAASceneColorSample
 {
 	// Transformed scene color and alpha channel.
 	float4 Color;
@@ -384,39 +379,7 @@ float GetSceneColorHdrWeight(in TAAInputParameters InputParams, float4 SceneColo
 	return HdrWeight4(SceneColor.rgb, InputParams.FrameExposureScale);
 }
 
-//3x3 NEIGHTBORS CACHING
-#if AA_SAMPLE_CACHE_METHOD == AA_SAMPLE_CACHE_METHOD_VGPR_3X3
-
-#define AA_PRECACHE_SCENE_COLOR 1
-
-void PrecacheInputSceneColor(inout TAAInputParameters InputParams)
-{
-	// Precache 3x3 input scene color into TAAInputParameters::CachedNeighbors.
-	UNROLL
-		for (uint i = 0; i < NeighborsCount; i++)
-		{
-			int2 Coord = int2(InputParams.NearestBufferUV * InputSceneColorSize.xy) + Offsets3x3[i];
-			Coord = clamp(Coord, InputMinPixelCoord, InputMaxPixelCoord);
-			InputParams.CachedNeighbors[i] = TransformCurrentFrameSceneColor(InputSceneColor[Coord]);
-		}
-}
-
-TAASceneColorSample SampleCachedSceneColorTexture(
-	inout TAAInputParameters InputParams,
-	int2 PixelOffset)
-{
-	// PixelOffset is const at compile time. Therefore all this computaton is actually free.
-	uint NeighborsId = uint(4 + PixelOffset.x + PixelOffset.y * 3);
-	TAASceneColorSample Sample;
-
-	Sample.Color = InputParams.CachedNeighbors[NeighborsId];
-	Sample.CocRadius = 0;
-	Sample.HdrWeight = GetSceneColorHdrWeight(InputParams, Sample.Color);
-	return Sample;
-}
-
-// LDS CACHING
-#elif AA_SAMPLE_CACHE_METHOD == AA_SAMPLE_CACHE_METHOD_LDS
+#if AA_SAMPLE_CACHE_METHOD_LDS
 
 // Total number of thread per group.
 #define THREADGROUP_TOTAL (THREADGROUP_SIZEX * THREADGROUP_SIZEY)
@@ -430,6 +393,7 @@ TAASceneColorSample SampleCachedSceneColorTexture(
 #endif
 
 #define AA_PRECACHE_SCENE_COLOR 1
+
 
 /////////////////////////// Depth tile constants ///////////////////////////////////////
 
@@ -542,10 +506,83 @@ uint GetTileArrayIndexFromPixelOffset(in TAAInputParameters InputParams, int2 Pi
 }
 
 
+///////////////////////////////// Share depth texture fetches////////////////////////////////
+
+#if defined(AA_PRECACHE_SCENE_DEPTH)
+
+// Precache input scene depth into LDS.
+void PrecacheInputSceneDepthToLDS(in TAAInputParameters InputParams)
+{
+	uint2 GroupTexelOffset = GetGroupTileTexelOffset(InputParams, LDS_DEPTH_TILE_BORDER_SIZE);
+	
+	#if AA_PRECACHE_SCENE_DEPTH == 1
+	// Prefetch depth buffer using Load.
+	{
+		const uint LoadCount = (LDS_DEPTH_ARRAY_SIZE + THREADGROUP_TOTAL - 1) / THREADGROUP_TOTAL;
+		
+		uint LinearGroupThreadId = InputParams.GroupThreadIndex;
+
+		[unroll]
+		for (uint i = 0; i < LoadCount; i++)
+		{
+			uint2 TexelLocation =  GroupTexelOffset + uint2(
+				LinearGroupThreadId % LDS_DEPTH_TILE_WIDTH,
+				LinearGroupThreadId / LDS_DEPTH_TILE_WIDTH);
+
+			if ((LinearGroupThreadId < LDS_DEPTH_ARRAY_SIZE) ||
+				(i != LoadCount - 1) || (LDS_DEPTH_ARRAY_SIZE % THREADGROUP_TOTAL) == 0)
+			{
+				GroupSharedArray[LinearGroupThreadId] = SceneDepthTexture.Load(uint3(TexelLocation, 0)).x;
+			}
+			LinearGroupThreadId += THREADGROUP_TOTAL;
+		}
+
+	}
+
+	#elif AA_PRECACHE_SCENE_DEPTH == 2
+	// Prefetch depth buffer using Gather.
+	{
+		const uint LoadCount = (LDS_DEPTH_ARRAY_SIZE / 4 + THREADGROUP_TOTAL - 1) / THREADGROUP_TOTAL;
+		
+		uint LinearGroupThreadId = InputParams.GroupThreadIndex;
+	
+		[unroll]
+		for (uint i = 0; i < LoadCount; i++)
+		{
+			uint2 TileDest = uint2(
+				(2 * LinearGroupThreadId) % LDS_DEPTH_TILE_WIDTH,
+				2 * ((2 * LinearGroupThreadId) / LDS_DEPTH_TILE_WIDTH));
+
+			uint2 TexelLocation =  GroupTexelOffset + TileDest;
+
+			uint DestI = TileDest.x + TileDest.y * LDS_DEPTH_TILE_WIDTH;
+
+			if ((DestI < LDS_DEPTH_ARRAY_SIZE) || (i != LoadCount - 1) ||
+				((LDS_DEPTH_ARRAY_SIZE / 4) % THREADGROUP_TOTAL) == 0)
+			{
+				float2 UV = float2(TexelLocation + 0.5) * InputSceneColorSize.zw;
+				float4 Depth = SceneDepthTexture.Gather(SceneDepthTextureSampler, UV);
+				GroupSharedArray[DestI + 1 * LDS_DEPTH_TILE_WIDTH + 0] = Depth.x;
+				GroupSharedArray[DestI + 1 * LDS_DEPTH_TILE_WIDTH + 1] = Depth.y;
+				GroupSharedArray[DestI + 0 * LDS_DEPTH_TILE_WIDTH + 1] = Depth.z;
+				GroupSharedArray[DestI + 0 * LDS_DEPTH_TILE_WIDTH + 0] = Depth.w;
+			}
+			LinearGroupThreadId += THREADGROUP_TOTAL;
+		}
+	}
+	#endif
+}
+
+float SampleCachedSceneDepthTexture(in TAAInputParameters InputParams, int2 PixelOffset)
+{
+	return GroupSharedArray[GetTileArrayIndexFromPixelOffset(InputParams, PixelOffset, LDS_DEPTH_TILE_BORDER_SIZE)];
+}
+
+
+#endif // define(AA_PRECACHE_SCENE_DEPTH)
 
 
 #endif
-
 
 [numthreads(1, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
