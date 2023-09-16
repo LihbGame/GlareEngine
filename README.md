@@ -7,6 +7,8 @@ TIPS:
 
 1.If the scene becomes dark, there may be a problem with the shader compilation. It is recommended to change the shader model in CMakeLists(GlareEngine->CMakeLists) from 6.0 to 5.1.
 
+## Examples
+
 Editor
 ![demo](ScreenShot/Editor.jpg)
 
@@ -30,3 +32,21 @@ Parallax Mapping
 
 Motion Blur
 ![demo](ScreenShot/MotionBlur.jpg)
+
+## Features
+- Image-based lighting
+- Tiled Base forward renderer
+- Cook-Torrance microfacet specular BRDF
+- Metallic workflow
+- Normal mapping
+- Point lights, spot lights, directional light
+- PCSS, PCF shadows
+- Screen-space ambient occlusion
+- HDR bloom
+- Color grading: exposure, adaptation
+- FXAA, MSAA
+- Parallax Mapping
+- Motion Blur
+
+
+
