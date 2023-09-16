@@ -2,7 +2,7 @@
 
 
 Texture2D SceneDepthTexture : register(t0);
-
+Texture2D InputSceneColor	: register(t1);
 
 
 SamplerState SceneDepthTextureSampler : register(s1);
@@ -578,13 +578,131 @@ float SampleCachedSceneDepthTexture(in TAAInputParameters InputParams, int2 Pixe
 	return GroupSharedArray[GetTileArrayIndexFromPixelOffset(InputParams, PixelOffset, LDS_DEPTH_TILE_BORDER_SIZE)];
 }
 
-
 #endif // define(AA_PRECACHE_SCENE_DEPTH)
+
+
+///////////////////////////////// Share color texture fetches ///////////////////////
+
+#if defined(AA_PRECACHE_SCENE_COLOR)
+
+// Return the index GroupSharedArray from a given ArrayIndex and ComponentId.
+uint GetSceneColorLDSIndex(uint ArrayIndex, uint ComponentId)
+{
+    return ArrayIndex * LDS_COLOR_COMPONENT_COUNT + ComponentId;
+}
+
+// Precache input scene color into LDS.
+void PrecacheInputSceneColorToLDS(in TAAInputParameters InputParams)
+{
+    const uint LoadCount = (LDS_COLOR_ARRAY_SIZE + THREADGROUP_TOTAL - 1) / THREADGROUP_TOTAL;
+	
+#if AA_UPSAMPLE  //use float uv
+    float LinearGroupThreadId = float(InputParams.GroupThreadIndex);
+    float2 Thread0PPCk = GetGroupThread0InputPixelCoord(InputParams);
+    float2 GroupTexelOffset = Thread0PPCk - LDS_COLOR_TILE_BORDER_SIZE;
+#else
+	uint LinearGroupThreadId = InputParams.GroupThreadIndex;
+	uint2 GroupTexelOffset = GetGroupTileTexelOffset(InputParams, LDS_COLOR_TILE_BORDER_SIZE);
+#endif
+	
+	[unroll]
+    for (uint i = 0; i < LoadCount; i++)
+    {
+#if AA_UPSAMPLE //use float uv
+        float Y = floor(LinearGroupThreadId * (1.0 / LDS_COLOR_TILE_WIDTH));
+        float X = LinearGroupThreadId - LDS_COLOR_TILE_WIDTH * Y;
+
+        float2 TexelLocation = GroupTexelOffset + float2(X, Y);
+#else
+		uint2 TexelLocation =  GroupTexelOffset + uint2(
+			LinearGroupThreadId % LDS_COLOR_TILE_WIDTH,
+			LinearGroupThreadId / LDS_COLOR_TILE_WIDTH);
+#endif
+
+        if ((LinearGroupThreadId < LDS_COLOR_ARRAY_SIZE) || (i != LoadCount - 1) ||
+			(LDS_COLOR_ARRAY_SIZE % THREADGROUP_TOTAL) == 0)
+        {
+#if AA_UPSAMPLE //use float uv
+            int2 Coord = TexelLocation;
+            float4 RawColor = InputSceneColor[Coord];
+#else
+			int2 Coord = int2(TexelLocation);
+			float4 RawColor = InputSceneColor.Load(uint3(Coord, 0));
+#endif
+
+            float4 Color = TransformCurrentFrameSceneColor(RawColor);
+
+			// Precache scene color's HDR weight into alpha channel to reduce rcp() instructions in innerloops.
+#if AA_PRECACHE_SCENE_HDR_WEIGHT
+            Color.a = GetSceneColorHdrWeight(InputParams, Color);
+#endif
+
+#if LDS_USE_FLOAT4_ARRAY
+			GroupSharedArrayF4[uint(LinearGroupThreadId)] = Color;
+
+#else
+            GroupSharedArray[GetSceneColorLDSIndex(uint(LinearGroupThreadId), 0)] = Color.r;
+            GroupSharedArray[GetSceneColorLDSIndex(uint(LinearGroupThreadId), 1)] = Color.g;
+            GroupSharedArray[GetSceneColorLDSIndex(uint(LinearGroupThreadId), 2)] = Color.b;
+			
+#if LDS_COLOR_COMPONENT_COUNT == 4
+            GroupSharedArray[GetSceneColorLDSIndex(uint(LinearGroupThreadId), 3)] = Color.a;
+#endif
+			
+#endif
+        }
+        LinearGroupThreadId += THREADGROUP_TOTAL;
+    }
+}
+
+TAASceneColorSample SampleCachedSceneColorTexture(in TAAInputParameters InputParams, int2 PixelOffset)
+{
+    uint ArrayPos = GetTileArrayIndexFromPixelOffset(InputParams, PixelOffset, LDS_COLOR_TILE_BORDER_SIZE);
+	
+    TAASceneColorSample Sample;
+    Sample.CocRadius = 0;
+	
+#if LDS_USE_FLOAT4_ARRAY
+	Sample.Color = GroupSharedArrayF4[ArrayPos];
+
+#if AA_PRECACHE_SCENE_HDR_WEIGHT
+	Sample.HdrWeight = Sample.Color.a;
+	Sample.Color.a = 0;
+#endif	
+	
+#else //!LDS_USE_FLOAT4_ARRAY
+    Sample.Color.r = GroupSharedArray[GetSceneColorLDSIndex(ArrayPos, 0)];
+    Sample.Color.g = GroupSharedArray[GetSceneColorLDSIndex(ArrayPos, 1)];
+    Sample.Color.b = GroupSharedArray[GetSceneColorLDSIndex(ArrayPos, 2)];
+    Sample.Color.a = 0;
+	
+#if AA_PRECACHE_SCENE_HDR_WEIGHT
+    Sample.HdrWeight = GroupSharedArray[GetSceneColorLDSIndex(ArrayPos, 3)];
+#endif
+
+#endif
+	
+// if scene color weight was not precached in LDS, compute it.
+#if !AA_PRECACHE_SCENE_HDR_WEIGHT
+	Sample.HdrWeight = GetSceneColorHdrWeight(InputParams, Sample.Color);
+#endif
+	
+	// Color has already been transformed in PrecacheInputSceneColor.
+    return Sample;
+}
+
+
+#endif // defined(AA_PRECACHE_SCENE_COLOR)
 
 
 #endif
 
-[numthreads(1, 1, 1)]
+
+
+
+
+
+[numthreads(THREADGROUP_SIZEX, THREADGROUP_SIZEY, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
 {
 }
