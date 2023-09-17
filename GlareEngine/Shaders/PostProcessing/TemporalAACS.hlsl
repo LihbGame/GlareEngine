@@ -691,11 +691,12 @@ TAASceneColorSample SampleCachedSceneColorTexture(in TAAInputParameters InputPar
     return Sample;
 }
 
+#endif // AA_PRECACHE_SCENE_COLOR
 
-#endif // defined(AA_PRECACHE_SCENE_COLOR)
 
 
-#endif
+
+#endif //AA_SAMPLE_CACHE_METHOD_LDS
 
 
 

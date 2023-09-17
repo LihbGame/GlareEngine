@@ -7,8 +7,11 @@
 #include <atomic>
 #include <deque>
 
+#ifdef DEBUG
 //use for runtime debug
 #define USE_RUNTIME_PSO 1
+#endif
+
 
 #if USE_RUNTIME_PSO
 #define GET_PSO(TargetPSO) TargetPSO.GetProxy()->Get()
