@@ -4,7 +4,6 @@
 Texture2D SceneDepthTexture : register(t0);
 Texture2D InputSceneColor	: register(t1);
 
-
 SamplerState SceneDepthTextureSampler : register(s1);
 
 cbuffer TAAConstantBuffer : register(b1)
@@ -75,7 +74,10 @@ cbuffer TAAConstantBuffer : register(b1)
 #define AA_YCOCG 1
 
 //Upsample the output
-#define AA_UPSAMPLE 0
+#define AA_UPSAMPLE 1
+
+#define UPSCALE_FACTOR 2.0
+
 //Change the upsampling filter size when history is rejected that reduce blocky output pixels
 #define AA_UPSAMPLE_ADAPTIVE_FILTERING 1
 
@@ -90,11 +92,15 @@ cbuffer TAAConstantBuffer : register(b1)
 //Always enable scene color filtering
 #define AA_FILTERED 0
 //Num samples of current frame
+#if AA_UPSAMPLE
 #define AA_SAMPLES 6
+#endif
 
 #elif TAA_QUALITY == TAA_QUALITY_MEDIUM
 #define AA_FILTERED 1
+#if AA_UPSAMPLE
 #define AA_SAMPLES 6
+#endif
 
 #elif TAA_QUALITY == TAA_QUALITY_HIGH
 #define AA_HISTORY_CLAMPING_BOX (HISTORY_CLAMPING_BOX_SAMPLE_DISTANCE)
@@ -104,6 +110,11 @@ cbuffer TAAConstantBuffer : register(b1)
 #define AA_SAMPLES 9
 
 #endif
+
+#ifndef AA_SAMPLES
+	#define AA_SAMPLES 5
+#endif
+
 
 #define AA_CLAMP 1
 
@@ -328,9 +339,6 @@ struct TAASceneColorSample
 {
 	// Transformed scene color and alpha channel.
 	float4 Color;
-
-	// Radius of the circle of confusion for DOF.
-	float CocRadius;
 
 	// HDR weight of the scene color sample.
 	float HdrWeight;
@@ -638,7 +646,7 @@ void PrecacheInputSceneColorToLDS(in TAAInputParameters InputParams)
 #endif
 
 #if LDS_USE_FLOAT4_ARRAY
-			GroupSharedArrayF4[uint(LinearGroupThreadId)] = Color;
+			GroupSharedArrayFloat4[uint(LinearGroupThreadId)] = Color;
 
 #else
             GroupSharedArray[GetSceneColorLDSIndex(uint(LinearGroupThreadId), 0)] = Color.r;
@@ -660,10 +668,9 @@ TAASceneColorSample SampleCachedSceneColorTexture(in TAAInputParameters InputPar
     uint ArrayPos = GetTileArrayIndexFromPixelOffset(InputParams, PixelOffset, LDS_COLOR_TILE_BORDER_SIZE);
 	
     TAASceneColorSample Sample;
-    Sample.CocRadius = 0;
 	
 #if LDS_USE_FLOAT4_ARRAY
-	Sample.Color = GroupSharedArrayF4[ArrayPos];
+	Sample.Color = GroupSharedArrayFloat4[ArrayPos];
 
 #if AA_PRECACHE_SCENE_HDR_WEIGHT
 	Sample.HdrWeight = Sample.Color.a;
@@ -694,12 +701,168 @@ TAASceneColorSample SampleCachedSceneColorTexture(in TAAInputParameters InputPar
 #endif // AA_PRECACHE_SCENE_COLOR
 
 
+void PrecacheInputSceneDepth(in TAAInputParameters InputParams)
+{
+#if defined(AA_PRECACHE_SCENE_DEPTH)
+    PrecacheInputSceneDepthToLDS(InputParams);
+    GroupMemoryBarrierWithGroupSync();
+#endif
+}
 
+void PrecacheInputSceneColor(in TAAInputParameters InputParams)
+{
+#if defined(AA_PRECACHE_SCENE_DEPTH) && defined(AA_PRECACHE_SCENE_COLOR)
+    GroupMemoryBarrierWithGroupSync();
+#endif
+#if defined(AA_PRECACHE_SCENE_COLOR)
+    PrecacheInputSceneColorToLDS(InputParams);
+    GroupMemoryBarrierWithGroupSync();
+#endif
+}
 
 #endif //AA_SAMPLE_CACHE_METHOD_LDS
 
 
+/////////////////////////////////Temporal Upsampling ///////////////////////
 
+#if AA_UPSAMPLE
+
+// Returns the weight of a pixels at a coordinate PixelDelta from the PDF highest point.
+float ComputeSampleWeigth(in TAAIntermediaryResult IntermediaryResult, float2 PixelDelta)
+{
+    float u2 = UPSCALE_FACTOR * UPSCALE_FACTOR;
+
+	// The point of InvFilterScaleFactor is to blur current frame scene color when upscaling.
+    u2 *= (IntermediaryResult.InvFilterScaleFactor * IntermediaryResult.InvFilterScaleFactor);
+
+	// 1 - 1.9 * x^2 + 0.9 * x^4
+    float x2 = saturate(u2 * dot(PixelDelta, PixelDelta));
+    return (0.905 * x2 - 1.9) * x2 + 1;
+}
+
+
+// Returns the weight of a pixels at a coordinate PixelDelta from the PDF highest point.
+float ComputePixelWeigth(in TAAIntermediaryResult IntermediaryResult, float2 PixelDelta)
+{
+    float u2 = UPSCALE_FACTOR * UPSCALE_FACTOR;
+
+	// The point of InvFilterScaleFactor is to blur current frame scene color when upscaling.
+    u2 *= (IntermediaryResult.InvFilterScaleFactor * IntermediaryResult.InvFilterScaleFactor);
+
+	// 1 - 1.9 * x^2 + 0.9 * x^4
+    float x2 = saturate(u2 * dot(PixelDelta, PixelDelta));
+    float r = (0.905 * x2 - 1.9) * x2 + 1;
+
+	// Multiply pixel weight ^ 2 by upscale factor because have only a probability = screen percentage ^ 2 to return 1.
+    return u2 * r;
+}
+
+#endif // AA_UPSAMPLE
+
+
+///////////////////////////////// TAA MAJOR FUNCTIONS ///////////////////////////////////////
+
+// Filter input pixels.
+void FilterCurrentFrameInputSamples(
+	in TAAInputParameters InputParams,
+	inout TAAIntermediaryResult IntermediaryResult)
+{
+#if !AA_FILTERED
+	{
+        IntermediaryResult.Filtered.Color = SampleCachedSceneColorTexture(InputParams, int2(0, 0)).Color;
+        return;
+    }
+#endif
+
+    TAAHistoryPayload Filtered;
+
+	{
+#if AA_UPSAMPLE
+		// Pixel coordinate of the center of output pixel O in the input viewport.
+        float2 PPCo = InputParams.ViewportUV * InputViewSize.xy + TemporalJitterPixels;
+
+		// Pixel coordinate of the center of the nearest input pixel.
+        float2 PPCk = floor(PPCo) + 0.5;
+		
+		// Vector in pixel between pixel Center and Jitter.
+        float2 dKO = PPCo - PPCk;
+#endif
+		
+#if AA_SAMPLES == 9
+			const uint SampleIndexes[9] = SquareIndexes3x3;
+#else// AA_SAMPLES == 6
+			const uint SampleIndexes[5] = PlusIndexes3x3;
+#endif
+
+        float NeighborsHdrWeight = 0;
+        float NeighborsFinalWeight = 0;
+        float4 NeighborsColor = 0;
+
+        [unroll]
+        for (uint i = 0; i < AA_SAMPLES; i++)
+        {
+			// Get the sample offset from the nearest input pixel.
+            int2 SampleOffset;
+			
+			#if AA_UPSAMPLE && AA_SAMPLES == 6
+				if (i == 5)
+				{
+					SampleOffset= sign(dKO);
+				}
+				else
+			#endif
+			{
+                const uint SampleIndex = SampleIndexes[i];
+                SampleOffset = Offsets3x3[SampleIndex];
+            }
+            float2 fSampleOffset = float2(SampleOffset);
+
+			// Finds out the spatial weight of this input sample.
+#if AA_UPSAMPLE
+				// Compute the pixel delta between output pixels and input pixel I.
+				//  Note: abs() is unecessary because of the dot(dPP, dPP) latter on.
+            float2 dPP = fSampleOffset - dKO;
+
+            float SampleSpatialWeight = ComputeSampleWeigth(IntermediaryResult, dPP);
+
+#elif AA_SAMPLES == 9
+				float SampleSpatialWeight = GET_SCALAR_ARRAY_ELEMENT(SampleWeights, i);
+
+#elif AA_SAMPLES == 5
+				float SampleSpatialWeight = GET_SCALAR_ARRAY_ELEMENT(PlusWeights, i);
+
+#else
+				#error Do not know how to compute filtering sample weight.
+
+#endif
+
+			// Fetch sample.
+            TAASceneColorSample Sample = SampleCachedSceneColorTexture(InputParams, SampleOffset);
+				
+			// Finds out the sample's HDR weight.
+#if AA_TONE
+            float SampleHdrWeight = Sample.HdrWeight;
+#else
+			float SampleHdrWeight = 1;
+#endif
+
+            float SampleFinalWeight = SampleSpatialWeight * SampleHdrWeight;
+
+			// Apply pixel.
+            NeighborsColor += SampleFinalWeight * Sample.Color;
+            NeighborsFinalWeight += SampleFinalWeight;
+
+            NeighborsHdrWeight += SampleSpatialWeight * SampleHdrWeight;
+        }
+		
+#if AA_UPSAMPLE
+			// Compute the temporal weight of the output pixel.
+        IntermediaryResult.FilteredTemporalWeight = ComputePixelWeigth(IntermediaryResult, dKO);
+#endif
+    }
+
+    IntermediaryResult.Filtered = Filtered;
+}
 
 
 
