@@ -234,50 +234,41 @@ struct TAAHistoryPayload
 {
 	// Transformed scene color and alpha channel.
 	float4 Color;
-
-	// Radius of the circle of confusion for DOF.
-	float CocRadius;
 };
 
 TAAHistoryPayload MulPayload(in TAAHistoryPayload Payload, in float x)
 {
 	Payload.Color *= x;
-	Payload.CocRadius *= x;
 	return Payload;
 }
 
 TAAHistoryPayload AddPayload(in TAAHistoryPayload Payload0, in TAAHistoryPayload Payload1)
 {
 	Payload0.Color += Payload1.Color;
-	Payload0.CocRadius += Payload1.CocRadius;
 	return Payload0;
 }
 
 TAAHistoryPayload MinPayload(in TAAHistoryPayload Payload0, in TAAHistoryPayload Payload1)
 {
 	Payload0.Color = min(Payload0.Color, Payload1.Color);
-	Payload0.CocRadius = min(Payload0.CocRadius, Payload1.CocRadius);
 	return Payload0;
 }
 
 TAAHistoryPayload MaxPayload(in TAAHistoryPayload Payload0, in TAAHistoryPayload Payload1)
 {
 	Payload0.Color = max(Payload0.Color, Payload1.Color);
-	Payload0.CocRadius = max(Payload0.CocRadius, Payload1.CocRadius);
 	return Payload0;
 }
 
 TAAHistoryPayload MinPayload3(in TAAHistoryPayload Payload0, in TAAHistoryPayload Payload1, in TAAHistoryPayload Payload2)
 {
 	Payload0.Color = min(min(Payload0.Color, Payload1.Color), Payload2.Color);
-	Payload0.CocRadius = min(min(Payload0.CocRadius, Payload1.CocRadius), Payload2.CocRadius);
 	return Payload0;
 }
 
 TAAHistoryPayload MaxPayload3(in TAAHistoryPayload Payload0, in TAAHistoryPayload Payload1, in TAAHistoryPayload Payload2)
 {
 	Payload0.Color = max(max(Payload0.Color, Payload1.Color), Payload2.Color);
-	Payload0.CocRadius = max(max(Payload0.CocRadius, Payload1.CocRadius), Payload2.CocRadius);
 	return Payload0;
 }
 
@@ -863,6 +854,137 @@ void FilterCurrentFrameInputSamples(
 
     IntermediaryResult.Filtered = Filtered;
 }
+
+
+// Compute the neighborhood bounding box used to reject history.
+void ComputeNeighborhoodBoundingbox(
+	in TAAInputParameters InputParams,in TAAIntermediaryResult IntermediaryResult,
+	out TAAHistoryPayload OutNeighborMin,out TAAHistoryPayload OutNeighborMax)
+{
+    TAAHistoryPayload Neighbors[NeighborsCount];
+	
+    [unroll]
+    for (uint i = 0; i < NeighborsCount; i++)
+    {
+        Neighbors[i].Color = SampleCachedSceneColorTexture(InputParams, Offsets3x3[i]).Color;
+    }
+
+    TAAHistoryPayload NeighborMin;
+    TAAHistoryPayload NeighborMax;
+
+#if AA_HISTORY_CLAMPING_BOX == HISTORY_CLAMPING_BOX_VARIANCE
+	{
+#if AA_SAMPLES == 9
+			const uint SampleIndexes[9] = SquareIndexes3x3;
+#else //AA_SAMPLES == 5
+			const uint SampleIndexes[5] = PlusIndexes3x3;
+#endif
+
+		float4 m1 = 0;
+		float4 m2 = 0;
+		for( uint i = 0; i < AA_SAMPLES; i++ )
+		{
+			float4 SampleColor = Neighbors[ SampleIndexes[i] ];
+
+			m1 += SampleColor;
+			m2 += Pow2( SampleColor );
+		}
+
+		m1 *= (1.0 / AA_SAMPLES);
+		m2 *= (1.0 / AA_SAMPLES);
+
+		float4 StdDev = sqrt( abs(m2 - m1 * m1) );
+		NeighborMin = m1 - 1.25 * StdDev;
+		NeighborMax = m1 + 1.25 * StdDev;
+
+		NeighborMin = min( NeighborMin, IntermediaryResult.Filtered );
+		NeighborMax = max( NeighborMax, IntermediaryResult.Filtered );
+	}
+#elif AA_HISTORY_CLAMPING_BOX == HISTORY_CLAMPING_BOX_SAMPLE_DISTANCE
+	// Do color clamping only within a radius.
+	{
+		float2 PPCo = InputParams.ViewportUV * InputViewSize.xy + TemporalJitterPixels;
+		float2 PPCk = floor(PPCo) + 0.5;
+		float2 dKO = PPCo - PPCk;
+		
+		// Sample 4 is is always going to be considered anyway.
+		NeighborMin = Neighbors[4];
+		NeighborMax = Neighbors[4];
+		
+		// Reduce distance threshold as upsacale factor increase to reduce ghosting.
+#if AA_UPSAMPLE
+		float DistthresholdLerp = UPSCALE_FACTOR - 1;
+#else
+		float DistthresholdLerp = 0;
+#endif
+		float DistThreshold = lerp(1.51, 1.3, DistthresholdLerp);
+
+#if AA_SAMPLES == 9
+			const uint Indexes[9] = SquareIndexes3x3;
+#else
+			const uint Indexes[5] = PlusIndexes3x3;
+#endif
+
+		[unroll]
+		for( uint i = 0; i < AA_SAMPLES; i++ )
+		{
+			uint NeightborId = Indexes[i];
+			if (NeightborId != 4)
+			{
+				float2 dPP = float2(Offsets3x3[NeightborId]) - dKO;
+
+				[flatten]
+				if (dot(dPP, dPP) < (DistThreshold * DistThreshold))
+				{
+					NeighborMin = MinPayload(NeighborMin, Neighbors[NeightborId]);
+					NeighborMax = MaxPayload(NeighborMax, Neighbors[NeightborId]);
+				}
+			}
+		}
+	}
+#elif AA_HISTORY_CLAMPING_BOX == HISTORY_CLAMPING_BOX_MIN_MAX
+	{
+		NeighborMin = MinPayload3( Neighbors[1], Neighbors[3], Neighbors[4] );
+		NeighborMin = MinPayload3( NeighborMin,  Neighbors[5], Neighbors[7] );
+
+		NeighborMax = MaxPayload3( Neighbors[1], Neighbors[3], Neighbors[4] );
+		NeighborMax = MaxPayload3( NeighborMax,  Neighbors[5], Neighbors[7] );
+		
+#if AA_SAMPLES == 6
+		{
+			float2 PPCo = InputParams.ViewportUV * InputViewSize.xy + TemporalJitterPixels;
+			float2 PPCk = floor(PPCo) + 0.5;
+			float2 dKO = PPCo - PPCk;
+			
+			int2 FifthNeighborOffset = SignFastInt(dKO);
+
+			TAAHistoryPayload FifthNeighbor;
+			FifthNeighbor.Color = SampleCachedSceneColorTexture(InputParams, FifthNeighborOffset).Color;
+			
+			NeighborMin = MinPayload(NeighborMin, FifthNeighbor);
+			NeighborMax = MaxPayload(NeighborMax, FifthNeighbor);
+		}
+#elif AA_SAMPLES == 9
+		{
+			TAAHistoryPayload NeighborMinPlus = NeighborMin;
+			TAAHistoryPayload NeighborMaxPlus = NeighborMax;
+
+			NeighborMin = MinPayload3( NeighborMin, Neighbors[0], Neighbors[2] );
+			NeighborMin = MinPayload3( NeighborMin, Neighbors[6], Neighbors[8] );
+
+			NeighborMax = MaxPayload3( NeighborMax, Neighbors[0], Neighbors[2] );
+			NeighborMax = MaxPayload3( NeighborMax, Neighbors[6], Neighbors[8] );
+		}
+#endif
+	}
+#else
+		#error Unknown history clamping box.
+#endif
+
+    OutNeighborMin = NeighborMin;
+    OutNeighborMax = NeighborMax;
+}
+
 
 
 
