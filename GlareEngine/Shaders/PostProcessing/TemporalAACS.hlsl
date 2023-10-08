@@ -985,7 +985,77 @@ void ComputeNeighborhoodBoundingbox(
     OutNeighborMax = NeighborMax;
 }
 
+// Sample history.
+//TAAHistoryPayload SampleHistory(in float2 HistoryScreenPosition)
+//{
+//    float4 RawHistory0 = 0;
+//    float4 RawHistory1 = 0;
 
+//	// Sample the history using Catmull-Rom to reduce blur on motion.
+//	#if AA_BICUBIC
+//	{
+//        float2 HistoryBufferUV = HistoryScreenPosition * InputSceneColorSize.zw;
+
+//        CatmullRomSamples Samples = GetBicubic2DCatmullRomSamples(HistoryBufferUV, InputSceneColorSize.xy, InputSceneColorSize.zw);
+
+//		[unroll]
+//        for (uint i = 0; i < Samples.Count; i++)
+//        {
+//            float2 SampleUV = Samples.UV[i];
+
+//			// Clamp SampleUV within HistoryBufferUVMinMax to avoid sampling potential NaN outside view rect.
+//			// This may look expensive, but Samples.UVDir is actually compile time constant to give a hint on what and how each component can be optimally clamped.
+//            if (AA_MANUALLY_CLAMP_HISTORY_UV)
+//            {
+//                if (Samples.UVDir[i].x < 0)
+//                {
+//                    SampleUV.x = max(SampleUV.x, HistoryBufferUVMinMax.x);
+//                }
+//                else if (Samples.UVDir[i].x > 0)
+//                {
+//                    SampleUV.x = min(SampleUV.x, HistoryBufferUVMinMax.z);
+//                }
+
+//                if (Samples.UVDir[i].y < 0)
+//                {
+//                    SampleUV.y = max(SampleUV.y, HistoryBufferUVMinMax.y);
+//                }
+//                else if (Samples.UVDir[i].y > 0)
+//                {
+//                    SampleUV.y = min(SampleUV.y, HistoryBufferUVMinMax.w);
+//                }
+//            }
+
+//            RawHistory0 += HistoryBuffer.SampleLevel(HistoryBufferSampler, SampleUV, 0) * Samples.Weight[i];
+//        }
+//        RawHistory0 *= Samples.FinalMultiplier;
+//    }
+
+//	// Sample the history using bilinear sampler.
+//#else
+//	{
+//		// Clamp HistoryScreenPosition to be within viewport.
+//		if (AA_MANUALLY_CLAMP_HISTORY_UV)
+//		{
+//			HistoryScreenPosition = clamp(HistoryScreenPosition, -ScreenPosAbsMax, ScreenPosAbsMax);
+//		}
+
+//		float2 HistoryBufferUV = HistoryScreenPosition * ScreenPosToHistoryBufferUV.xy + ScreenPosToHistoryBufferUV.zw;
+
+//		RawHistory0 = HistoryBuffer_0.SampleLevel(HistoryBufferSampler_0, HistoryBufferUV, 0);
+//	}
+//#endif
+
+//    TAAHistoryPayload HistoryPayload;
+//    HistoryPayload.Color = RawHistory0;
+
+//    //HistoryPayload.Color.rgb *= HistoryPreExposureCorrection;
+
+
+//    HistoryPayload.Color = TransformSceneColor(HistoryPayload.Color);
+
+//    return HistoryPayload;
+//}
 
 
 [numthreads(THREADGROUP_SIZEX, THREADGROUP_SIZEY, 1)]
