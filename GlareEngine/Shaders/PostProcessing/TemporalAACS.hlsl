@@ -3,8 +3,10 @@
 
 Texture2D SceneDepthTexture : register(t0);
 Texture2D InputSceneColor	: register(t1);
+Texture2D HistoryColor		: register(t2);
 
-SamplerState SceneDepthTextureSampler : register(s1);
+SamplerState SceneDepthTextureSampler : register(s0);
+SamplerState HistoryColorSampler : register(s0);
 
 cbuffer TAAConstantBuffer : register(b1)
 {
@@ -66,8 +68,6 @@ cbuffer TAAConstantBuffer : register(b1)
 #define AA_BICUBIC 1
 //Use dynamic motion
 #define AA_DYNAMIC 1
-//Whether the history buffer UV should be manually clamped
-#define AA_MANUALLY_CLAMP_HISTORY_UV 1
 //Tone map to kill fireflies
 #define AA_TONE 1
 //Use YCoCg
@@ -986,76 +986,44 @@ void ComputeNeighborhoodBoundingbox(
 }
 
 // Sample history.
-//TAAHistoryPayload SampleHistory(in float2 HistoryScreenPosition)
-//{
-//    float4 RawHistory0 = 0;
-//    float4 RawHistory1 = 0;
+TAAHistoryPayload SampleHistory(in float2 HistoryScreenPosition)
+{
+    float4 RawHistory = 0;
 
-//	// Sample the history using Catmull-Rom to reduce blur on motion.
-//	#if AA_BICUBIC
-//	{
-//        float2 HistoryBufferUV = HistoryScreenPosition * InputSceneColorSize.zw;
+	// Sample the history using Catmull-Rom to reduce blur on motion.
+#if AA_BICUBIC
+	{
+        float2 HistoryBufferUV = HistoryScreenPosition * InputSceneColorSize.zw;
 
-//        CatmullRomSamples Samples = GetBicubic2DCatmullRomSamples(HistoryBufferUV, InputSceneColorSize.xy, InputSceneColorSize.zw);
+        CatmullRomSamples Samples = GetBicubic2DCatmullRomSamples(HistoryBufferUV, InputSceneColorSize.xy, InputSceneColorSize.zw);
 
-//		[unroll]
-//        for (uint i = 0; i < Samples.Count; i++)
-//        {
-//            float2 SampleUV = Samples.UV[i];
+		[unroll]
+        for (uint i = 0; i < Samples.Count; i++)
+        {
+            float2 SampleUV = Samples.UV[i];
 
-//			// Clamp SampleUV within HistoryBufferUVMinMax to avoid sampling potential NaN outside view rect.
-//			// This may look expensive, but Samples.UVDir is actually compile time constant to give a hint on what and how each component can be optimally clamped.
-//            if (AA_MANUALLY_CLAMP_HISTORY_UV)
-//            {
-//                if (Samples.UVDir[i].x < 0)
-//                {
-//                    SampleUV.x = max(SampleUV.x, HistoryBufferUVMinMax.x);
-//                }
-//                else if (Samples.UVDir[i].x > 0)
-//                {
-//                    SampleUV.x = min(SampleUV.x, HistoryBufferUVMinMax.z);
-//                }
+            RawHistory += HistoryColor.SampleLevel(HistoryColorSampler, SampleUV, 0) * Samples.Weight[i];
+        }
+        RawHistory *= Samples.FinalMultiplier;
+    }
 
-//                if (Samples.UVDir[i].y < 0)
-//                {
-//                    SampleUV.y = max(SampleUV.y, HistoryBufferUVMinMax.y);
-//                }
-//                else if (Samples.UVDir[i].y > 0)
-//                {
-//                    SampleUV.y = min(SampleUV.y, HistoryBufferUVMinMax.w);
-//                }
-//            }
+	// Sample the history using bilinear sampler.
+#else
+	{
+		float2 HistoryBufferUV = HistoryScreenPosition * InputSceneColorSize.zw;
+		RawHistory = HistoryColor.SampleLevel(HistoryColorSampler, HistoryBufferUV, 0);
+	}
+#endif
 
-//            RawHistory0 += HistoryBuffer.SampleLevel(HistoryBufferSampler, SampleUV, 0) * Samples.Weight[i];
-//        }
-//        RawHistory0 *= Samples.FinalMultiplier;
-//    }
+    TAAHistoryPayload HistoryPayload;
+    HistoryPayload.Color = RawHistory;
 
-//	// Sample the history using bilinear sampler.
-//#else
-//	{
-//		// Clamp HistoryScreenPosition to be within viewport.
-//		if (AA_MANUALLY_CLAMP_HISTORY_UV)
-//		{
-//			HistoryScreenPosition = clamp(HistoryScreenPosition, -ScreenPosAbsMax, ScreenPosAbsMax);
-//		}
+    //HistoryPayload.Color.rgb *= HistoryPreExposureCorrection;
 
-//		float2 HistoryBufferUV = HistoryScreenPosition * ScreenPosToHistoryBufferUV.xy + ScreenPosToHistoryBufferUV.zw;
+    HistoryPayload.Color = TransformSceneColor(HistoryPayload.Color);
 
-//		RawHistory0 = HistoryBuffer_0.SampleLevel(HistoryBufferSampler_0, HistoryBufferUV, 0);
-//	}
-//#endif
-
-//    TAAHistoryPayload HistoryPayload;
-//    HistoryPayload.Color = RawHistory0;
-
-//    //HistoryPayload.Color.rgb *= HistoryPreExposureCorrection;
-
-
-//    HistoryPayload.Color = TransformSceneColor(HistoryPayload.Color);
-
-//    return HistoryPayload;
-//}
+    return HistoryPayload;
+}
 
 
 [numthreads(THREADGROUP_SIZEX, THREADGROUP_SIZEY, 1)]
