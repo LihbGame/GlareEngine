@@ -5,8 +5,8 @@ Texture2D SceneDepthTexture : register(t0);
 Texture2D InputSceneColor	: register(t1);
 Texture2D HistoryColor		: register(t2);
 
-SamplerState SceneDepthTextureSampler : register(s0);
-SamplerState HistoryColorSampler : register(s0);
+SamplerState SceneDepthTextureSampler	: register(s0);
+SamplerState HistoryColorSampler		: register(s0);
 
 cbuffer TAAConstantBuffer : register(b1)
 {
@@ -1024,6 +1024,19 @@ TAAHistoryPayload SampleHistory(in float2 HistoryScreenPosition)
 
     return HistoryPayload;
 }
+
+// Clamp history.
+TAAHistoryPayload ClampHistory(TAAHistoryPayload History, TAAHistoryPayload NeighborMin, TAAHistoryPayload NeighborMax)
+{
+#if !AA_CLAMP
+		return History;
+#else	
+    History.Color = clamp(History.Color, NeighborMin.Color, NeighborMax.Color);
+    return History;
+#endif
+}
+
+
 
 
 [numthreads(THREADGROUP_SIZEX, THREADGROUP_SIZEY, 1)]
