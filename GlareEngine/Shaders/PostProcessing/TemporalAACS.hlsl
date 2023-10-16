@@ -1037,6 +1037,52 @@ TAAHistoryPayload ClampHistory(TAAHistoryPayload History, TAAHistoryPayload Neig
 }
 
 
+///////////////////////////////// TAA MAIN FUNCTION //////////////////////////
+
+TAAHistoryPayload TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint GroupThreadIndex, float2 ViewportUV, float FrameExposureScale)
+{
+    TAAInputParameters InputParams;
+
+	// Per frame setup.
+	{
+        InputParams.FrameExposureScale = FrameExposureScale;
+
+        InputParams.GroupId = GroupId;
+        InputParams.GroupThreadId = GroupThreadId;
+        InputParams.GroupThreadIndex = GroupThreadIndex;
+        InputParams.ViewportUV = ViewportUV;
+        InputParams.ScreenPos = ViewportUVToScreenPos(ViewportUV);
+        InputParams.NearestBufferUV = ViewportUV;
+		
+#if TAA_RESPONSIVE
+		InputParams.bIsResponsiveAAPixel = 1.f;
+#else
+		InputParams.bIsResponsiveAAPixel = 0.f;
+#endif
+	
+#if AA_UPSAMPLE
+		{
+			// Pixel coordinate of the center of output pixel O in the input viewport.
+            float2 PPCo = ViewportUV * InputViewSize.xy + TemporalJitterPixels;
+		
+			// Pixel coordinate of the center of the nearest input pixel K.
+            float2 PPCk = floor(PPCo) + 0.5;
+		
+			// Pixel coordinate of the center of the nearest top left input pixel T.
+            float2 PPCt = floor(PPCo - 0.5) + 0.5;
+		
+            InputParams.NearestBufferUV = InputSceneColorSize.zw * (InputViewMin + PPCk);
+            InputParams.NearestTopLeftBufferUV = InputSceneColorSize.zw * (InputViewMin + PPCt);
+        }
+#endif
+    }
+	
+	
+	
+    TAAHistoryPayload TEMP;
+    return TEMP;
+
+}
 
 
 [numthreads(THREADGROUP_SIZEX, THREADGROUP_SIZEY, 1)]
