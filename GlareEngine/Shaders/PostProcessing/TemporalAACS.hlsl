@@ -507,8 +507,6 @@ uint GetTileArrayIndexFromPixelOffset(in TAAInputParameters InputParams, int2 Pi
 
 ///////////////////////////////// Share depth texture fetches////////////////////////////////
 
-#if defined(AA_PRECACHE_SCENE_DEPTH)
-
 // Precache input scene depth into LDS.
 void PrecacheInputSceneDepthToLDS(in TAAInputParameters InputParams)
 {
@@ -574,10 +572,14 @@ void PrecacheInputSceneDepthToLDS(in TAAInputParameters InputParams)
 
 float SampleCachedSceneDepthTexture(in TAAInputParameters InputParams, int2 PixelOffset)
 {
+#if AA_PRECACHE_SCENE_DEPTH
 	return GroupSharedArray[GetTileArrayIndexFromPixelOffset(InputParams, PixelOffset, LDS_DEPTH_TILE_BORDER_SIZE)];
+#else
+    return SceneDepthTexture.SampleLevel(SceneDepthTextureSampler, InputParams.NearestBufferUV, 0, PixelOffset).r;
+#endif
+	
 }
 
-#endif // define(AA_PRECACHE_SCENE_DEPTH)
 
 
 ///////////////////////////////// Share color texture fetches ///////////////////////
@@ -1076,6 +1078,19 @@ TAAHistoryPayload TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint Grou
         }
 #endif
     }
+	
+	
+	// Setup intermediary results.
+    TAAIntermediaryResult IntermediaryResult = CreateIntermediaryResult();
+
+	// FIND MOTION OF PIXEL AND NEAREST IN NEIGHBORHOOD
+	
+    float3 PosN; // Position of this pixel, possibly later nearest pixel in neighborhood.
+    PosN.xy = InputParams.ScreenPos;
+
+	//Pre cache SceneDepth
+    PrecacheInputSceneDepth(InputParams);
+    PosN.z = SampleCachedSceneDepthTexture(InputParams, int2(0, 0));
 	
 	
 	
