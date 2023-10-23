@@ -24,6 +24,7 @@ cbuffer TAAConstantBuffer : register(b1)
 #define THREADGROUP_SIZEX 8
 #define THREADGROUP_SIZEY 8
 
+#define INVERTED_Z_BUFFER 1
 
 //Qualities
 #define TAA_QUALITY_LOW		0
@@ -1092,6 +1093,93 @@ TAAHistoryPayload TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint Grou
     PrecacheInputSceneDepth(InputParams);
     PosN.z = SampleCachedSceneDepthTexture(InputParams, int2(0, 0));
 	
+	
+	// Screen position of minimum depth.
+    float2 VelocityOffset = float2(0.0, 0.0);
+	#if AA_CROSS 
+	{
+		// For motion vector, use camera/dynamic motion from min depth pixel in pattern around pixel.
+		// This enables better quality outline on foreground against different motion background.
+		// Larger 2 pixel distance "x" works best (because AA dilates surface).
+        float4 Depths;
+        Depths.x = SampleCachedSceneDepthTexture(InputParams, int2(-AA_CROSS, -AA_CROSS));
+        Depths.y = SampleCachedSceneDepthTexture(InputParams, int2(AA_CROSS, -AA_CROSS));
+        Depths.z = SampleCachedSceneDepthTexture(InputParams, int2(-AA_CROSS, AA_CROSS));
+        Depths.w = SampleCachedSceneDepthTexture(InputParams, int2(AA_CROSS, AA_CROSS));
+
+        float2 DepthOffset = float2(AA_CROSS, AA_CROSS);
+        float DepthOffsetXx = float(AA_CROSS);
+#if INVERTED_Z_BUFFER
+			// Nearest depth is the largest depth (depth surface 0=far, 1=near).
+			if(Depths.x > Depths.y) 
+			{
+				DepthOffsetXx = -AA_CROSS;
+			}
+			if(Depths.z > Depths.w) 
+			{
+				DepthOffset.x = -AA_CROSS;
+			}
+			float DepthsXY = max(Depths.x, Depths.y);
+			float DepthsZW = max(Depths.z, Depths.w);
+			if(DepthsXY > DepthsZW) 
+			{
+				DepthOffset.y = -AA_CROSS;
+				DepthOffset.x = DepthOffsetXx; 
+			}
+			float DepthsXYZW = max(DepthsXY, DepthsZW);
+			if(DepthsXYZW > PosN.z) 
+			{
+				// This is offset for reading from velocity texture.
+				// This supports half or fractional resolution velocity textures.
+				// With the assumption that UV position scales between velocity and color.
+				VelocityOffset = DepthOffset * InputSceneColorSize.zw;
+				PosN.z = DepthsXYZW;
+			}
+#else // ! INVERTED_Z_BUFFER
+			#error Fix me!
+#endif // !INVERTED_Z_BUFFER
+    }
+	#endif	// AA_CROSS
+	
+	
+	// Camera motion for pixel or nearest pixel (in ScreenPos space).
+    bool OffScreen = false;
+    float Velocity = 0;
+    float HistoryBlur = 0;
+    float2 HistoryScreenPosition = InputParams.ScreenPos;
+
+//	#if 1
+//	{
+//        float2 BackN = PosN.xy - PrevScreen;
+//        float2 BackTemp = BackN * OutputViewportSize.xy;
+
+//		#if AA_DYNAMIC
+//		{
+//            ENCODED_VELOCITY_TYPE EncodedVelocity = SampleVelocityTexture(InputParams.NearestBufferUV + VelocityOffset);
+//            bool DynamicN = EncodedVelocity.x > 0.0;
+//            if (DynamicN)
+//            {
+//                BackN = DecodeVelocityFromTexture(EncodedVelocity).xy;
+//            }
+//            BackTemp = BackN * OutputViewportSize.xy;
+//        }
+//#endif
+
+//        Velocity = sqrt(dot(BackTemp, BackTemp));
+//#if !AA_BICUBIC
+//			// Save the amount of pixel offset of just camera motion, used later as the amount of blur introduced by history.
+//			float HistoryBlurAmp = 2.0;
+//			HistoryBlur = saturate(abs(BackTemp.x) * HistoryBlurAmp + abs(BackTemp.y) * HistoryBlurAmp);
+//#endif
+//		// Easier to do off screen check before conversion.
+//		// BackN is in units of 2pixels/viewportWidthInPixels
+//		// This converts back projection vector to [-1 to 1] offset in viewport.
+//        HistoryScreenPosition = InputParams.ScreenPos - BackN;
+
+//		// Detect if HistoryBufferUV would be outside of the viewport.
+//        OffScreen = max(abs(HistoryScreenPosition.x), abs(HistoryScreenPosition.y)) >= 1.0;
+//    }
+//	#endif
 	
 	
     TAAHistoryPayload TEMP;
