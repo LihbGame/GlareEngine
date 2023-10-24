@@ -1,9 +1,11 @@
 #include "../Misc/CommonResource.hlsli"
-
+#include "VelocityPacking.hlsli"
 
 Texture2D SceneDepthTexture : register(t0);
 Texture2D InputSceneColor	: register(t1);
 Texture2D HistoryColor		: register(t2);
+
+Texture2D<Packed_Velocity_Type> VelocityBuffer : register(t3); // Full resolution motion vectors
 
 SamplerState SceneDepthTextureSampler	: register(s0);
 SamplerState HistoryColorSampler		: register(s0);
@@ -1148,38 +1150,29 @@ TAAHistoryPayload TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint Grou
     float HistoryBlur = 0;
     float2 HistoryScreenPosition = InputParams.ScreenPos;
 
-//	#if 1
-//	{
-//        float2 BackN = PosN.xy - PrevScreen;
-//        float2 BackTemp = BackN * OutputViewportSize.xy;
+    float2 BackN;
+    float2 BackTemp;
 
-//		#if AA_DYNAMIC
-//		{
-//            ENCODED_VELOCITY_TYPE EncodedVelocity = SampleVelocityTexture(InputParams.NearestBufferUV + VelocityOffset);
-//            bool DynamicN = EncodedVelocity.x > 0.0;
-//            if (DynamicN)
-//            {
-//                BackN = DecodeVelocityFromTexture(EncodedVelocity).xy;
-//            }
-//            BackTemp = BackN * OutputViewportSize.xy;
-//        }
-//#endif
+#if AA_DYNAMIC
+	{
+        int2 sampleLocation = floor(InputParams.NearestBufferUV + VelocityOffset);
+        BackN = UnpackVelocity(VelocityBuffer[sampleLocation]).xy;
+        BackTemp = BackN * OutputViewportSize.xy;
+    }
+#endif
 
-//        Velocity = sqrt(dot(BackTemp, BackTemp));
-//#if !AA_BICUBIC
-//			// Save the amount of pixel offset of just camera motion, used later as the amount of blur introduced by history.
-//			float HistoryBlurAmp = 2.0;
-//			HistoryBlur = saturate(abs(BackTemp.x) * HistoryBlurAmp + abs(BackTemp.y) * HistoryBlurAmp);
-//#endif
-//		// Easier to do off screen check before conversion.
-//		// BackN is in units of 2pixels/viewportWidthInPixels
-//		// This converts back projection vector to [-1 to 1] offset in viewport.
-//        HistoryScreenPosition = InputParams.ScreenPos - BackN;
+    Velocity = sqrt(dot(BackTemp, BackTemp));
+	
+#if !AA_BICUBIC
+	// Save the amount of pixel offset of just camera motion, used later as the amount of blur introduced by history.
+	float HistoryBlurAmp = 2.0;
+	HistoryBlur = saturate(abs(BackTemp.x) * HistoryBlurAmp + abs(BackTemp.y) * HistoryBlurAmp);
+#endif
+	// Easier to do off screen check before conversion.
+    HistoryScreenPosition = InputParams.ViewportUV + BackN;
 
-//		// Detect if HistoryBufferUV would be outside of the viewport.
-//        OffScreen = max(abs(HistoryScreenPosition.x), abs(HistoryScreenPosition.y)) >= 1.0;
-//    }
-//	#endif
+	// Detect if HistoryBufferUV would be outside of the viewport.
+    OffScreen = max(abs(HistoryScreenPosition.x), abs(HistoryScreenPosition.y)) >= 1.0;
 	
 	
     TAAHistoryPayload TEMP;
