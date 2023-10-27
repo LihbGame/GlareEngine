@@ -21,6 +21,10 @@ cbuffer TAAConstantBuffer : register(b1)
     float2 InputViewMin;
 	// Temporal jitter at the pixel.
     float2 TemporalJitterPixels;
+	
+	//CatmullRom Weight
+	float SampleWeights[9];
+    float PlusWeights[5];
 }
 
 #define THREADGROUP_SIZEX 8
@@ -77,12 +81,16 @@ cbuffer TAAConstantBuffer : register(b1)
 #define AA_YCOCG 1
 
 //Upsample the output
-#define AA_UPSAMPLE 1
+#define AA_UPSAMPLE 0
 
 #define UPSCALE_FACTOR 2.0
 
+#if AA_UPSAMPLE
 //Change the upsampling filter size when history is rejected that reduce blocky output pixels
 #define AA_UPSAMPLE_ADAPTIVE_FILTERING 1
+#else
+#define AA_UPSAMPLE_ADAPTIVE_FILTERING 0
+#endif
 
 //Cross distance in pixels used in depth search X pattern.
 #if AA_UPSAMPLE
@@ -790,7 +798,6 @@ void FilterCurrentFrameInputSamples(
 			const uint SampleIndexes[5] = PlusIndexes3x3;
 #endif
 
-        float NeighborsHdrWeight = 0;
         float NeighborsFinalWeight = 0;
         float4 NeighborsColor = 0;
 
@@ -815,20 +822,20 @@ void FilterCurrentFrameInputSamples(
 
 			// Finds out the spatial weight of this input sample.
 #if AA_UPSAMPLE
-				// Compute the pixel delta between output pixels and input pixel I.
-				//  Note: abs() is unecessary because of the dot(dPP, dPP) latter on.
+			// Compute the pixel delta between output pixels and input pixel I.
+			//  Note: abs() is unecessary because of the dot(dPP, dPP) latter on.
             float2 dPP = fSampleOffset - dKO;
 
             float SampleSpatialWeight = ComputeSampleWeigth(IntermediaryResult, dPP);
 
 #elif AA_SAMPLES == 9
-				float SampleSpatialWeight = GET_SCALAR_ARRAY_ELEMENT(SampleWeights, i);
+			float SampleSpatialWeight = SampleWeights[i];
 
 #elif AA_SAMPLES == 5
-				float SampleSpatialWeight = GET_SCALAR_ARRAY_ELEMENT(PlusWeights, i);
+            float SampleSpatialWeight = PlusWeights[i];
 
 #else
-				#error Do not know how to compute filtering sample weight.
+			#error Do not know how to compute filtering sample weight.
 
 #endif
 
@@ -847,8 +854,6 @@ void FilterCurrentFrameInputSamples(
 			// Apply pixel.
             NeighborsColor += SampleFinalWeight * Sample.Color;
             NeighborsFinalWeight += SampleFinalWeight;
-
-            NeighborsHdrWeight += SampleSpatialWeight * SampleHdrWeight;
         }
 		
 #if AA_UPSAMPLE
@@ -998,7 +1003,8 @@ TAAHistoryPayload SampleHistory(in float2 HistoryScreenPosition)
 	// Sample the history using Catmull-Rom to reduce blur on motion.
 #if AA_BICUBIC
 	{
-        float2 HistoryBufferUV = HistoryScreenPosition * InputSceneColorSize.zw;
+		//[-1,1] to [0,1]
+        float2 HistoryBufferUV = HistoryScreenPosition * float2(0.5f, -0.5f) + 0.5f;
 
         CatmullRomSamples Samples = GetBicubic2DCatmullRomSamples(HistoryBufferUV, InputSceneColorSize.xy, InputSceneColorSize.zw);
 
@@ -1015,7 +1021,8 @@ TAAHistoryPayload SampleHistory(in float2 HistoryScreenPosition)
 	// Sample the history using bilinear sampler.
 #else
 	{
-		float2 HistoryBufferUV = HistoryScreenPosition * InputSceneColorSize.zw;
+		//[-1,1] to [0,1]
+		float2 HistoryBufferUV = HistoryScreenPosition * float2(0.5f, -0.5f) + 0.5f;
 		RawHistory = HistoryColor.SampleLevel(HistoryColorSampler, HistoryBufferUV, 0);
 	}
 #endif
@@ -1169,10 +1176,26 @@ TAAHistoryPayload TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint Grou
 	HistoryBlur = saturate(abs(BackTemp.x) * HistoryBlurAmp + abs(BackTemp.y) * HistoryBlurAmp);
 #endif
 	// Easier to do off screen check before conversion.
-    HistoryScreenPosition = InputParams.ViewportUV + BackN;
+	// This converts back projection vector to [-1 to 1] offset in viewport.
+    HistoryScreenPosition = InputParams.ScreenPos + BackN;
 
 	// Detect if HistoryBufferUV would be outside of the viewport.
     OffScreen = max(abs(HistoryScreenPosition.x), abs(HistoryScreenPosition.y)) >= 1.0;
+	
+	
+	// Precache input scene color.
+    PrecacheInputSceneColor(InputParams);
+
+	// Filter input.
+	#if AA_UPSAMPLE_ADAPTIVE_FILTERING==0
+		FilterCurrentFrameInputSamples(InputParams,IntermediaryResult);
+	#endif
+	
+		// Sample history.
+    TAAHistoryPayload History = SampleHistory(HistoryScreenPosition);
+
+	// Whether the feedback needs to be reset.
+    bool IgnoreHistory = OffScreen;
 	
 	
     TAAHistoryPayload TEMP;
