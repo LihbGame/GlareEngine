@@ -25,6 +25,8 @@ cbuffer TAAConstantBuffer : register(b1)
 	//CatmullRom Weight
 	float SampleWeights[9];
     float PlusWeights[5];
+	//ue5 set 0.04 as default ,Low values cause blurriness and ghosting, high values fail to hide jittering
+    float CurrentFrameWeight;
 }
 
 #define THREADGROUP_SIZEX 8
@@ -83,7 +85,7 @@ cbuffer TAAConstantBuffer : register(b1)
 //Upsample the output
 #define AA_UPSAMPLE 0
 
-#define UPSCALE_FACTOR 2.0
+#define UPSCALE_FACTOR 1.0
 
 #if AA_UPSAMPLE
 //Change the upsampling filter size when history is rejected that reduce blocky output pixels
@@ -1191,11 +1193,67 @@ TAAHistoryPayload TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint Grou
 		FilterCurrentFrameInputSamples(InputParams,IntermediaryResult);
 	#endif
 	
+		// Compute neighborhood bounding box.
+    TAAHistoryPayload NeighborMin;
+    TAAHistoryPayload NeighborMax;
+
+    ComputeNeighborhoodBoundingbox(InputParams, IntermediaryResult, NeighborMin, NeighborMax);
+	
 		// Sample history.
     TAAHistoryPayload History = SampleHistory(HistoryScreenPosition);
 
 	// Whether the feedback needs to be reset.
     bool IgnoreHistory = OffScreen;
+	
+	// Save off luma of history before the clamp.
+    float LumaMin = GetSceneColorLuma4(NeighborMin.Color);
+    float LumaMax = GetSceneColorLuma4(NeighborMax.Color);
+    float LumaHistory = GetSceneColorLuma4(History.Color);
+	
+	// Clamp history.
+    TAAHistoryPayload PreClampingHistoryColor = History;
+    History = ClampHistory(History, NeighborMin, NeighborMax);
+	
+	
+	// Filter input after color clamping.
+	#if AA_UPSAMPLE_ADAPTIVE_FILTERING == 1
+	{
+		#if AA_VARIANCE
+			#error AA_VARIANCE and AA_UPSAMPLE_ADAPTIVE_FILTERING are not compatible because of circular code dependency.
+		#endif
+
+		if (IgnoreHistory)
+		{
+			// Set the input filter infinitely large when we know need to rely on it.
+			IntermediaryResult.InvFilterScaleFactor = 0;
+		}
+
+		FilterCurrentFrameInputSamples(InputParams,IntermediaryResult);
+	}
+	#endif
+	
+	// COMPUTE BLEND AMOUNT 
+    float BlendFinal;
+	{
+        float LumaFiltered = GetSceneColorLuma4(IntermediaryResult.Filtered.Color);
+
+        BlendFinal = IntermediaryResult.FilteredTemporalWeight * CurrentFrameWeight;
+
+        BlendFinal = lerp(BlendFinal, 0.2, saturate(Velocity / 40));
+
+		// Make sure to have at least some small contribution
+        BlendFinal = max(BlendFinal, saturate(0.01 * LumaHistory / abs(LumaFiltered - LumaHistory)));
+
+		// Responsive forces 1/4 of new frame.
+        BlendFinal = InputParams.bIsResponsiveAAPixel ? (1.0 / 4.0) : BlendFinal;
+    }
+	
+	// Offscreen feedback resets.
+    if (IgnoreHistory)
+    {
+        History = IntermediaryResult.Filtered;
+		History.Color.a = 0.0;
+    }
 	
 	
     TAAHistoryPayload TEMP;
