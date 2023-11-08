@@ -1255,10 +1255,22 @@ TAAHistoryPayload TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint Grou
 		History.Color.a = 0.0;
     }
 	
-	
-    TAAHistoryPayload TEMP;
-    return TEMP;
+	// Luma weighted blend
+    float FilterWeight = GetSceneColorHdrWeight(InputParams, IntermediaryResult.Filtered.Color.x);
+    float HistoryWeight = GetSceneColorHdrWeight(InputParams, History.Color.x);
 
+    TAAHistoryPayload OutputPayload;
+	{
+        float2 Weights = WeightedLerpFactors(HistoryWeight, FilterWeight, BlendFinal);
+        OutputPayload = AddPayload(MulPayload(History, Weights.x), MulPayload(IntermediaryResult.Filtered, Weights.y));
+    }
+
+    OutputPayload.Color = TransformBackToRawLinearSceneColor(OutputPayload.Color);
+
+	// Zero out to remove any prior computation of alpha
+	OutputPayload.Color.a = 0;
+
+    return OutputPayload;
 }
 
 
