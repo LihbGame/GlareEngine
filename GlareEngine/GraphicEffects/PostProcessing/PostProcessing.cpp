@@ -461,12 +461,6 @@ void ScreenProcessing::Render(const Camera& camera)
 
 	std::swap(LastPostprocessRT, CurrentPostprocessRT);
 
-	if (mAntiAliasingIndex == AntiAliasingType::FXAA && FXAA::IsEnable)
-	{
-		FXAA::Render(Context, LastPostprocessRT, CurrentPostprocessRT);
-		std::swap(LastPostprocessRT, CurrentPostprocessRT);
-	}
-
 	// Some systems generate a per-pixel velocity buffer to better track dynamic and skinned meshes.  Everything
 	// is static in our scene, so we generate velocity from camera motion and the depth buffer.  A velocity buffer
 	// is necessary for all temporal effects (and motion blur).
@@ -475,6 +469,11 @@ void ScreenProcessing::Render(const Camera& camera)
 	//Motion Blur
 	MotionBlur::RenderMotionBlur(Context, g_VelocityBuffer, LastPostprocessRT);
 
+	if (mAntiAliasingIndex == AntiAliasingType::FXAA && FXAA::IsEnable)
+	{
+		FXAA::Render(Context, LastPostprocessRT, CurrentPostprocessRT);
+		std::swap(LastPostprocessRT, CurrentPostprocessRT);
+	}
 
 	//if (!g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
 	//{

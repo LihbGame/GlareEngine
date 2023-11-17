@@ -2,7 +2,8 @@
 #include "GraphicsCore.h"
 #include "CommandContext.h"
 #include "Render.h"
-//#include "TemporalEffects.h"
+#include "PostProcessing/TemporalAA.h"
+
 
 
 namespace GlareEngine
@@ -49,6 +50,8 @@ namespace GlareEngine
 
 	ColorBuffer				g_MotionPrepBuffer;
 
+	ColorBuffer				g_TemporalColor[2];
+
 	//ColorBuffer g_OverlayBuffer;
 	//ColorBuffer g_HorizontalBuffer;
 
@@ -83,8 +86,7 @@ namespace GlareEngine
 	//StructuredBuffer g_DoFWorkQueue;
 	//StructuredBuffer g_DoFFastQueue;
 	//StructuredBuffer g_DoFFixupQueue;
-	
-	//ColorBuffer g_TemporalColor[2];
+
 	//ByteAddressBuffer g_FXAAWorkCounters;
 	//ByteAddressBuffer g_FXAAWorkQueue;
 	//TypedBuffer g_FXAAColorQueue(DXGI_FORMAT_R11G11B10_FLOAT);
@@ -165,6 +167,10 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 
 	g_MotionPrepBuffer.Create(L"Motion Blur Prep", NativeWidth / 2, NativeHeight / 2, 1, HDR_MOTION_FORMAT);
 
+	g_TemporalColor[0].Create(L"Temporal Color 0", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	g_TemporalColor[1].Create(L"Temporal Color 1", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	TemporalAA::ClearHistory(InitContext);
+
 	//g_MinMaxDepth8.Create(L"MinMaxDepth 8x8", bufferWidth3, bufferHeight3, 1, DXGI_FORMAT_R32_UINT, esram);
 	//g_MinMaxDepth16.Create(L"MinMaxDepth 16x16", bufferWidth4, bufferHeight4, 1, DXGI_FORMAT_R32_UINT, esram);
 	//g_MinMaxDepth32.Create(L"MinMaxDepth 32x32", bufferWidth5, bufferHeight5, 1, DXGI_FORMAT_R32_UINT, esram);
@@ -201,11 +207,6 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 	//g_DoFWorkQueue.Create(L"DoF Work Queue", bufferWidth4 * bufferHeight4, 4, esram);
 	//g_DoFFastQueue.Create(L"DoF Fast Queue", bufferWidth4 * bufferHeight4, 4, esram);
 	//g_DoFFixupQueue.Create(L"DoF Fixup Queue", bufferWidth4 * bufferHeight4, 4, esram);
-
-
-	//g_TemporalColor[0].Create(L"Temporal Color 0", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	//g_TemporalColor[1].Create(L"Temporal Color 1", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	//TemporalEffects::ClearHistory(InitContext);
 
 	
 	//g_MotionPrepBuffer.Create(L"Motion Blur Prep", bufferWidth1, bufferHeight1, 1, HDR_MOTION_FORMAT, esram);
@@ -274,6 +275,9 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 	g_VelocityBuffer.Create(L"Motion Vectors", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R32_UINT);
 
 	g_MotionPrepBuffer.Create(L"Motion Blur Prep", NativeWidth / 2, NativeHeight / 2, 1, HDR_MOTION_FORMAT);
+
+	g_TemporalColor[0].Create(L"Temporal Color 0", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	g_TemporalColor[1].Create(L"Temporal Color 1", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
 }
 
 void GlareEngine::DestroyRenderingBuffers()
@@ -328,6 +332,9 @@ void GlareEngine::DestroyRenderingBuffers()
 
 	g_MotionPrepBuffer.Destroy();
 
+	g_TemporalColor[0].Destroy();
+	g_TemporalColor[1].Destroy();
+
 	/*g_HorizontalBuffer.Destroy();*/
 
 	//g_ShadowBuffer.Destroy();
@@ -366,9 +373,6 @@ void GlareEngine::DestroyRenderingBuffers()
 	//g_DoFWorkQueue.Destroy();
 	//g_DoFFastQueue.Destroy();
 	//g_DoFFixupQueue.Destroy();
-
-	//g_TemporalColor[0].Destroy();
-	//g_TemporalColor[1].Destroy();
 
 	//g_FXAAWorkCounters.Destroy();
 	//g_FXAAWorkQueue.Destroy();
