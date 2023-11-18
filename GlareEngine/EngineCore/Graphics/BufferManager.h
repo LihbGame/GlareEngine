@@ -56,7 +56,7 @@ namespace GlareEngine
 
 	extern ColorBuffer				g_LumaBuffer;
 
-	extern ColorBuffer				g_LinearDepth[2];				// Normalized planar distance [0 at eye, 1 at far plane] computed from the Scene Depth Buffer
+	extern ColorBuffer				g_LinearDepth;					// Normalized planar distance [0 at eye, 1 at far plane] computed from the Scene Depth Buffer
 
 	extern ColorBuffer				g_SSAOFullScreen;				// R8_UNORM
 

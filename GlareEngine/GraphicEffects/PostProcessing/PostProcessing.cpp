@@ -815,7 +815,7 @@ void ScreenProcessing::LinearizeZ(ComputeContext& Context, Camera& camera, uint3
 {
 	DepthBuffer& Depth = g_SceneDepthBuffer;
 
-	CurrentLinearDepth = &g_LinearDepth[FrameIndex];
+	CurrentLinearDepth = &g_LinearDepth;
 
 	const float NearClipDist = camera.GetNearZ();
 

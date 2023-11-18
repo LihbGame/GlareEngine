@@ -30,6 +30,21 @@ namespace TemporalAA
 
 void TemporalAA::ApplyTemporalAA(ComputeContext& Context)
 {
+	ScopedTimer TemporalAAScope(L"Temporal AA", Context);
+
+	Context.SetRootSignature(ScreenProcessing::GetRootSignature());
+
+	Context.SetPipelineState(TemporalAACS);
+
+	Context.SetDynamicConstantBufferView(0, sizeof(TemporalAA::Sharpness), &TemporalAA::Sharpness);
+
+	Context.SetDynamicDescriptor(1, 0, g_SceneColorBuffer.GetSRV());
+	Context.SetDynamicDescriptor(1, 1, g_TemporalColor[0].GetSRV());
+	Context.SetDynamicDescriptor(1, 2, g_LinearDepth.GetSRV());
+
+	Context.SetDynamicDescriptor(2, 0, g_TemporalColor[1].GetUAV());
+
+	Context.Dispatch2D(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
 }
 
 void TemporalAA::SharpenImage(ComputeContext& Context, ColorBuffer& TemporalColor)

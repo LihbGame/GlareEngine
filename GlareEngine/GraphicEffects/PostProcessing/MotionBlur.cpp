@@ -82,7 +82,7 @@ void MotionBlur::GenerateCameraVelocityBuffer(CommandContext& BaseContext, const
 	Context.TransitionResource(g_VelocityBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 	//TemporalEffects::GetFrameIndexMod2() will be change when implement taa
-	ColorBuffer& LinearDepth = g_LinearDepth[0];
+	ColorBuffer& LinearDepth = g_LinearDepth;
 
 	if (UseLinearZ)
 		Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
