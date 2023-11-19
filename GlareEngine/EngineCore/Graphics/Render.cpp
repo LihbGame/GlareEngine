@@ -35,6 +35,9 @@ namespace GlareEngine
 		DescriptorHeap gTextureHeap;
 
 		DescriptorHeap gSamplerHeap;
+
+		//Rendering Setting
+		AntiAliasingType gAntiAliasingType = AntiAliasingType::MSAA;
 	}
 
 	void Render::Initialize(ID3D12GraphicsCommandList* CommandList)
@@ -165,6 +168,16 @@ namespace GlareEngine
 		}
 		g_Device->CopyDescriptors(1, &gTextureHeap[MAXCUBESRVSIZE+ COMMONSRVSIZE], &Texture2DSize,
 			Texture2DSize, Texture2DSRV, Texture2DSrcSize, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	}
+
+	void Render::SetAntiAliasingType(AntiAliasingType type)
+	{
+		gAntiAliasingType = type;
+	}
+
+	Render::AntiAliasingType Render::GetAntiAliasingType()
+	{
+		return gAntiAliasingType;
 	}
 
 

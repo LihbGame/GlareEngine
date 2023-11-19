@@ -4,6 +4,7 @@
 
 using namespace DirectX;
 using namespace GlareEngine::Math;
+using namespace GlareEngine::Render;
 
 Camera::Camera(bool isReverseZ, bool isInfiniteZ):
 mIsReverseZ(isReverseZ),
@@ -177,6 +178,13 @@ void Camera::SetLens(float fovY, float aspect, float zn, float zf)
 	//create view space frustum
 	m_FrustumVS = Frustum(Matrix4(proj));
 
+}
+
+void Camera::UpdateJitter(XMFLOAT2 Jitter)
+{
+	//Apply TAA jitter
+	mProj.m[2][0] = Jitter.x;
+	mProj.m[2][1] = Jitter.y;
 }
 
 void Camera::LookAt(FXMVECTOR pos, FXMVECTOR target, FXMVECTOR worldUp)

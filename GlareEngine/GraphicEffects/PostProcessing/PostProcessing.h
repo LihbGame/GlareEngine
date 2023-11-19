@@ -17,7 +17,7 @@ namespace ScreenProcessing
 
     void DrawUI();
 
-    void Update(float dt, MainConstants& RenderData);
+    void Update(float dt, MainConstants& RenderData,Camera& camera);
 
     void BuildPSO(const PSOCommonProperty CommonProperty);
 

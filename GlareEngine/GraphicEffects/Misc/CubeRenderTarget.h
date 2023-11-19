@@ -2,6 +2,8 @@
 #include "Engine/EngineUtility.h"
 #include "Graphics/ColorBuffer.h"
 #include "Misc/ConstantBuffer.h"
+#include "Engine/Camera.h"
+
 
 enum class CubeMapFace : int
 {

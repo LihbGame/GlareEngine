@@ -44,6 +44,8 @@ public:
 	// Set frustum.
 	void SetLens(float fovY, float aspect, float zn, float zf);
 
+	void UpdateJitter(XMFLOAT2 Jitter);
+
 	// Define camera space via LookAt parameters.
 	void LookAt(DirectX::FXMVECTOR pos, DirectX::FXMVECTOR target, DirectX::FXMVECTOR worldUp);
 	void LookAt(const DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT3& target, const DirectX::XMFLOAT3& up);
@@ -79,6 +81,7 @@ public:
 	void UpdateViewMatrix();
 
 	bool GetViewChange() const { return mViewChanged; }
+
 protected:
 	virtual ShadowMap* GetShadowMap() { return nullptr; }
 
@@ -113,7 +116,6 @@ protected:
 	Frustum m_FrustumVS;
 	Frustum m_FrustumWS;
 
-
 	// The view-projection matrix from the previous frame
 	Matrix4 m_PreviousViewProjMatrix;
 
@@ -142,4 +144,4 @@ private:
 };
 
 
-#endif // CAMERA_H
+#endif // CAMERA

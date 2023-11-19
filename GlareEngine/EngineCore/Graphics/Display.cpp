@@ -442,8 +442,6 @@ namespace GlareEngine
 
 		++s_FrameIndex;
 
-		//TemporalEffects::Update((uint32_t)s_FrameIndex);
-
 		SetNativeResolution();
 	}
 

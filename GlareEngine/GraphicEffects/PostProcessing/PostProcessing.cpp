@@ -8,6 +8,7 @@
 #include "SSAO.h"
 #include "FXAA.h"
 #include "MotionBlur.h"
+#include "TemporalAA.h"
 
 //shaders
 #include "CompiledShaders/ScreenQuadVS.h"
@@ -76,14 +77,6 @@ namespace ScreenProcessing
 		GaussianBlurWideUnorm1,
 		GaussianBlurWideUnorm4,
 		Count
-	};
-
-
-	enum AntiAliasingType
-	{
-		MSAA,
-		FXAA,
-		TAA
 	};
 
 	__declspec(align(16)) struct AdaptationConstants
@@ -469,7 +462,7 @@ void ScreenProcessing::Render(const Camera& camera)
 	//Motion Blur
 	MotionBlur::RenderMotionBlur(Context, g_VelocityBuffer, LastPostprocessRT);
 
-	if (mAntiAliasingIndex == AntiAliasingType::FXAA && FXAA::IsEnable)
+	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::FXAA && FXAA::IsEnable)
 	{
 		FXAA::Render(Context, LastPostprocessRT, CurrentPostprocessRT);
 		std::swap(LastPostprocessRT, CurrentPostprocessRT);
@@ -536,11 +529,13 @@ void ScreenProcessing::DrawUI()
 	{
 		ImGui::Combo("Anti Aliasing", &mAntiAliasingIndex, mAntiAliasingName.c_str());
 
+		Render::SetAntiAliasingType(Render::AntiAliasingType(mAntiAliasingIndex));
+
 		switch (mAntiAliasingIndex)
 		{
-		case AntiAliasingType::MSAA:
+		case Render::AntiAliasingType::MSAA:
 			break;
-		case AntiAliasingType::FXAA:
+		case Render::AntiAliasingType::FXAA:
 		{
 			if (ImGui::TreeNodeEx("FXAA"))
 			{
@@ -549,7 +544,7 @@ void ScreenProcessing::DrawUI()
 			}
 			break;
 		}
-		case AntiAliasingType::TAA:
+		case Render::AntiAliasingType::TAA:
 		{
 			if (ImGui::TreeNodeEx("TAA"))
 			{
@@ -598,9 +593,21 @@ void ScreenProcessing::DrawUI()
 	}
 }
 
-void ScreenProcessing::Update(float dt, MainConstants& RenderData)
+void ScreenProcessing::Update(float dt, MainConstants& RenderData, Camera& camera)
 {
 	gMainConstants = &RenderData;
+
+	//update camera jitter
+	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TAA)
+	{
+		TemporalAA::Update(Display::GetFrameCount());
+
+		const XMFLOAT4& halton = MathHelper::GetHaltonSequence(Display::GetFrameCount() % 256);
+		XMFLOAT2 jitter;
+		jitter.x = (halton.x * 2 - 1) / (float)g_SceneColorBuffer.GetWidth();
+		jitter.y = (halton.y * 2 - 1) / (float)g_SceneColorBuffer.GetHeight();
+		camera.UpdateJitter(jitter);
+	}
 }
 
 void ScreenProcessing::BuildPSO(const PSOCommonProperty CommonProperty)
@@ -856,7 +863,7 @@ void ScreenProcessing::LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, C
 
 bool ScreenProcessing::IsMSAA()
 {
-	return mAntiAliasingIndex == AntiAliasingType::MSAA;
+	return mAntiAliasingIndex == Render::AntiAliasingType::MSAA;
 }
 
 ColorBuffer* ScreenProcessing::GetLinearDepthBuffer()

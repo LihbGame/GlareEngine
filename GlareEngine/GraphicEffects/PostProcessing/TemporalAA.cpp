@@ -32,6 +32,9 @@ void TemporalAA::ApplyTemporalAA(ComputeContext& Context)
 {
 	ScopedTimer TemporalAAScope(L"Temporal AA", Context);
 
+	uint32_t Src = mFrameIndexMod2;
+	uint32_t Dst = Src ^ 1;
+
 	Context.SetRootSignature(ScreenProcessing::GetRootSignature());
 
 	Context.SetPipelineState(TemporalAACS);
@@ -72,22 +75,6 @@ void TemporalAA::Update(uint64_t FrameIndex)
 {
 	mFrameIndex = (uint32_t)FrameIndex;
 	mFrameIndexMod2 = mFrameIndex % 2;
-
-	static const float Halton23[8][2] =
-	{
-		{ 0.0f / 8.0f, 0.0f / 9.0f }, { 4.0f / 8.0f, 3.0f / 9.0f },
-		{ 2.0f / 8.0f, 6.0f / 9.0f }, { 6.0f / 8.0f, 1.0f / 9.0f },
-		{ 1.0f / 8.0f, 4.0f / 9.0f }, { 5.0f / 8.0f, 7.0f / 9.0f },
-		{ 3.0f / 8.0f, 2.0f / 9.0f }, { 7.0f / 8.0f, 5.0f / 9.0f }
-	};
-
-	const float* Offset = nullptr;
-	Offset = Halton23[FrameIndex % 8];
-
-	mJitterDeltaX = mJitterX - Offset[0];
-	mJitterDeltaY = mJitterY - Offset[1];
-	mJitterX = Offset[0];
-	mJitterY = Offset[1];
 }
 
 uint32_t TemporalAA::GetFrameIndexMod2(void)

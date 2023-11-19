@@ -3,6 +3,8 @@
 #include <DirectXMath.h>
 #include <cstdint>
 
+#define ArraySize(a) (sizeof(a) / sizeof(a[0]))
+
 class MathHelper
 {
 public:
@@ -88,6 +90,8 @@ public:
 	static const float Infinity;
 	static const float Pi;
 
+	//Halton Sequence
+	const static DirectX::XMFLOAT4& GetHaltonSequence(int idx);
 
 };
 

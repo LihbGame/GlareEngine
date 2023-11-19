@@ -47,7 +47,7 @@ void Scene::Update(float DeltaTime)
 	}
 
 	//Update Screen Processing
-	ScreenProcessing::Update(DeltaTime, mMainConstants);
+	ScreenProcessing::Update(DeltaTime, mMainConstants, *m_pCamera);
 
 	Context.Finish();
 

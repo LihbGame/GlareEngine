@@ -18,6 +18,18 @@ namespace GlareEngine
 
 	namespace Render
 	{
+		enum AntiAliasingType :int
+		{
+			MSAA,
+			FXAA,
+			TAA
+		};
+
+	}
+
+
+	namespace Render
+	{
 		//Root Signature
 		extern RootSignature gRootSignature;
 		//PSO Common Property
@@ -46,5 +58,10 @@ namespace GlareEngine
 		void BuildPSOs();
 		void BuildCommonPSOs(const PSOCommonProperty CommonProperty);
 		void CopyTextureHeap();
+
+
+		//Render setting
+		void SetAntiAliasingType(AntiAliasingType type);
+		AntiAliasingType GetAntiAliasingType();
 	}
 }
