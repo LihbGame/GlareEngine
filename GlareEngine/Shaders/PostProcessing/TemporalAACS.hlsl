@@ -9,8 +9,7 @@ RWTexture2D<float3> OutTexture : register(u0);
 
 Texture2D<Packed_Velocity_Type> VelocityBuffer : register(t3); // Full resolution motion vectors
 
-SamplerState SceneDepthTextureSampler	: register(s0);
-SamplerState HistoryColorSampler		: register(s1);
+SamplerState BiLinearClampSampler	: register(s0);
 
 cbuffer TAAConstantBuffer : register(b1)
 {
@@ -561,7 +560,7 @@ void PrecacheInputSceneDepthToLDS(in TAAInputParameters InputParams)
 				((LDS_DEPTH_ARRAY_SIZE / 4) % THREADGROUP_TOTAL) == 0)
 			{
 				float2 UV = float2(TexelLocation + 0.5) * InputViewSize.zw;
-				float4 Depth = SceneDepthTexture.Gather(SceneDepthTextureSampler, UV);
+				float4 Depth = SceneDepthTexture.Gather(BiLinearClampSampler, UV);
 				GroupSharedArray[DestI + 1 * LDS_DEPTH_TILE_WIDTH + 0] = Depth.x;
 				GroupSharedArray[DestI + 1 * LDS_DEPTH_TILE_WIDTH + 1] = Depth.y;
 				GroupSharedArray[DestI + 0 * LDS_DEPTH_TILE_WIDTH + 1] = Depth.z;
@@ -578,7 +577,7 @@ float SampleCachedSceneDepthTexture(in TAAInputParameters InputParams, int2 Pixe
 #if AA_PRECACHE_SCENE_DEPTH
 	return GroupSharedArray[GetTileArrayIndexFromPixelOffset(InputParams, PixelOffset, LDS_DEPTH_TILE_BORDER_SIZE)];
 #else
-    return SceneDepthTexture.SampleLevel(SceneDepthTextureSampler, InputParams.NearestBufferUV, 0, PixelOffset).r;
+    return SceneDepthTexture.SampleLevel(BiLinearClampSampler, InputParams.NearestBufferUV, 0, PixelOffset).r;
 #endif
 	
 }
@@ -1018,7 +1017,7 @@ float4 SampleHistory(in float2 HistoryScreenPosition)
         {
             float2 SampleUV = Samples.UV[i];
 
-            RawHistory += HistoryColor.SampleLevel(HistoryColorSampler, SampleUV, 0) * Samples.Weight[i];
+            RawHistory += HistoryColor.SampleLevel(BiLinearClampSampler, SampleUV, 0) * Samples.Weight[i];
         }
         RawHistory *= Samples.FinalMultiplier;
     }
@@ -1028,7 +1027,7 @@ float4 SampleHistory(in float2 HistoryScreenPosition)
 	{
 		//[-1,1] to [0,1]
 		float2 HistoryBufferUV = HistoryScreenPosition * float2(0.5f, -0.5f) + 0.5f;
-		RawHistory = HistoryColor.SampleLevel(HistoryColorSampler, HistoryBufferUV, 0);
+		RawHistory = HistoryColor.SampleLevel(BiLinearClampSampler, HistoryBufferUV, 0);
 	}
 #endif
 

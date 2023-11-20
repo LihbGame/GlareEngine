@@ -135,13 +135,12 @@ void TemporalAA::ApplyTemporalAA(ComputeContext& Context)
 
 	Context.SetPipelineState(TemporalAACS);
 
-	Context.SetDynamicConstantBufferView(0, sizeof(TemporalAA::Sharpness), &TemporalAA::Sharpness);
+	Context.SetDynamicConstantBufferView(3, sizeof(TemporalAA::TAAConstant), &TemporalAAConstant);
 
-	Context.SetDynamicDescriptor(1, 0, g_SceneColorBuffer.GetSRV());
-	Context.SetDynamicDescriptor(1, 1, g_TemporalColor[Src].GetSRV());
-	Context.SetDynamicDescriptor(1, 2, g_LinearDepth.GetSRV());
-
-	Context.SetDynamicDescriptor(2, 0, g_TemporalColor[Dst].GetUAV());
+	Context.SetDynamicDescriptor(1, 0, g_TemporalColor[Dst].GetUAV());
+	Context.SetDynamicDescriptor(2, 0, g_SceneColorBuffer.GetSRV());
+	Context.SetDynamicDescriptor(2, 1, g_TemporalColor[Src].GetSRV());
+	Context.SetDynamicDescriptor(2, 2, g_LinearDepth.GetSRV());
 
 	Context.Dispatch2D(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
 }
