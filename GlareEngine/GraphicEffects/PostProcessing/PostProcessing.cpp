@@ -602,11 +602,7 @@ void ScreenProcessing::Update(float dt, MainConstants& RenderData, Camera& camer
 	{
 		TemporalAA::Update(Display::GetFrameCount());
 
-		const XMFLOAT4& halton = MathHelper::GetHaltonSequence(Display::GetFrameCount() % 256);
-		XMFLOAT2 jitter;
-		jitter.x = (halton.x * 2 - 1) / (float)g_SceneColorBuffer.GetWidth();
-		jitter.y = (halton.y * 2 - 1) / (float)g_SceneColorBuffer.GetHeight();
-		camera.UpdateJitter(jitter);
+		camera.UpdateJitter(TemporalAA::GetJitterOffset());
 	}
 }
 

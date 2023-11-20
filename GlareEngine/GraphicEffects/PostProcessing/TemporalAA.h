@@ -18,7 +18,7 @@ namespace TemporalAA
 
 	// Jittering only occurs when TemporalAA is enabled.  
 	// You can use these values to jitter your viewport or projection matrix.
-	void GetJitterOffset(float& JitterX, float& JitterY);
+	XMFLOAT2& GetJitterOffset();
 
 	void ClearHistory(CommandContext& Context);
 

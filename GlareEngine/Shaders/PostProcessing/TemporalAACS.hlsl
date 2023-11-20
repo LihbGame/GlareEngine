@@ -15,12 +15,7 @@ SamplerState HistoryColorSampler		: register(s1);
 cbuffer TAAConstantBuffer : register(b1)
 {
     float4 OutputViewportSize;
-    float4 OutputViewportRect;
-	
-    float4 InputSceneColorSize;
-	
     float4 InputViewSize;
-    float2 InputViewMin;
 	// Temporal jitter at the pixel.
     float2 TemporalJitterPixels;
 	
@@ -469,7 +464,7 @@ float2 GetGroupThread0InputPixelCoord(in TAAInputParameters InputParams)
 	// Pixel coordinate of the center of the nearest input pixel.
 	float2 Thread0PPCk = floor(Thread0PPCo) + 0.5;
 
-	return InputViewMin.xy + Thread0PPCk;
+	return Thread0PPCk;
 }
 
 #endif
@@ -486,7 +481,7 @@ uint2 GetGroupTileTexelOffset(in TAAInputParameters InputParams, uint TileBorder
 	}
 #else // !AA_UPSAMPLE
 	{
-		return OutputViewportRect.xy + InputParams.GroupId * uint2(THREADGROUP_SIZEX, THREADGROUP_SIZEY) - TileBorderSize;
+		return InputParams.GroupId * uint2(THREADGROUP_SIZEX, THREADGROUP_SIZEY) - TileBorderSize;
 	}
 #endif
 }
@@ -499,7 +494,7 @@ uint GetTileArrayIndexFromPixelOffset(in TAAInputParameters InputParams, int2 Pi
 		const float2 RowMultiplier = float2(1, TileBorderSize * 2 + LDS_BASE_TILE_WIDTH);
 
 		float2 Thread0PPCk = GetGroupThread0InputPixelCoord(InputParams);
-		float2 PPCk = InputParams.NearestBufferUV * InputSceneColorSize.xy;
+		float2 PPCk = InputParams.NearestBufferUV * InputViewSize.xy;
 
 		float2 TilePos = floor(PPCk) - floor(Thread0PPCk);
 		return uint(dot(TilePos, RowMultiplier) + dot(float2(PixelOffset)+float(TileBorderSize), RowMultiplier));
@@ -565,7 +560,7 @@ void PrecacheInputSceneDepthToLDS(in TAAInputParameters InputParams)
 			if ((DestI < LDS_DEPTH_ARRAY_SIZE) || (i != LoadCount - 1) ||
 				((LDS_DEPTH_ARRAY_SIZE / 4) % THREADGROUP_TOTAL) == 0)
 			{
-				float2 UV = float2(TexelLocation + 0.5) * InputSceneColorSize.zw;
+				float2 UV = float2(TexelLocation + 0.5) * InputViewSize.zw;
 				float4 Depth = SceneDepthTexture.Gather(SceneDepthTextureSampler, UV);
 				GroupSharedArray[DestI + 1 * LDS_DEPTH_TILE_WIDTH + 0] = Depth.x;
 				GroupSharedArray[DestI + 1 * LDS_DEPTH_TILE_WIDTH + 1] = Depth.y;
@@ -1016,7 +1011,7 @@ float4 SampleHistory(in float2 HistoryScreenPosition)
 		//[-1,1] to [0,1]
         float2 HistoryBufferUV = HistoryScreenPosition * float2(0.5f, -0.5f) + 0.5f;
 
-        CatmullRomSamples Samples = GetBicubic2DCatmullRomSamples(HistoryBufferUV, InputSceneColorSize.xy, InputSceneColorSize.zw);
+        CatmullRomSamples Samples = GetBicubic2DCatmullRomSamples(HistoryBufferUV, InputViewSize.xy, InputViewSize.zw);
 
 		[unroll]
         for (uint i = 0; i < Samples.Count; i++)
@@ -1093,8 +1088,8 @@ float4 TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint GroupThreadInde
 			// Pixel coordinate of the center of the nearest top left input pixel T.
             float2 PPCt = floor(PPCo - 0.5) + 0.5;
 		
-            InputParams.NearestBufferUV = InputSceneColorSize.zw * (InputViewMin + PPCk);
-            InputParams.NearestTopLeftBufferUV = InputSceneColorSize.zw * (InputViewMin + PPCt);
+            InputParams.NearestBufferUV = InputViewSize.zw * PPCk;
+            InputParams.NearestTopLeftBufferUV = InputViewSize.zw * PPCt;
         }
 #endif
     }
@@ -1151,7 +1146,7 @@ float4 TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint GroupThreadInde
 				// This is offset for reading from velocity texture.
 				// This supports half or fractional resolution velocity textures.
 				// With the assumption that UV position scales between velocity and color.
-				VelocityOffset = DepthOffset * InputSceneColorSize.zw;
+				VelocityOffset = DepthOffset * InputViewSize.zw;
 				PosN.z = DepthsXYZW;
 			}
 #else // ! INVERTED_Z_BUFFER
