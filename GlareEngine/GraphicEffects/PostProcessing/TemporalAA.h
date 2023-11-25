@@ -20,6 +20,8 @@ namespace TemporalAA
 	// You can use these values to jitter your viewport or projection matrix.
 	XMFLOAT2& GetJitterOffset();
 
+	void ApplyTemporalAA(ComputeContext& Context);
+
 	void ClearHistory(CommandContext& Context);
 
 	void ResolveImage(CommandContext& Context);

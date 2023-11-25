@@ -8,10 +8,12 @@
 
 //shader
 #include "CompiledShaders/TemporalAACS.h"
+#include "CompiledShaders/ResolveTAACS.h"
+#include "CompiledShaders/SharpenTAACS.h"
 
 namespace TemporalAA
 {
-	NumVar Sharpness(0.5f, 0.0f, 1.0f);
+	NumVar Sharpness(0.0f, 0.0f, 1.0f);
 
 	//ue5 set 0.04 as default ,Low values cause blurriness and ghosting, high values fail to hide jittering
 	float mCurrentFrameWeight = 0.04f;
@@ -19,12 +21,13 @@ namespace TemporalAA
 	bool TriggerReset = false;
 
 	ComputePSO TemporalAACS(L"Temporal AA CS");
+	ComputePSO SharpenTAACS(L"Sharpen TAA CS");
+	ComputePSO ResolveTAACS(L"Resolve TAA CS");
 
 	uint32_t mFrameIndex = 0;
 	uint32_t mFrameIndexMod2 = 0;
 	XMFLOAT2 mJitter;
 
-	void ApplyTemporalAA(ComputeContext& Context);
 	void SharpenImage(ComputeContext& Context, ColorBuffer& TemporalColor);
 
 
@@ -35,11 +38,12 @@ namespace TemporalAA
 
 		// Temporal jitter at the pixel.
 		XMFLOAT2 TemporalJitterPixels;
+		float CurrentFrameWeight;
+		float pad1;
 
 		//CatmullRom Weight
 		float SampleWeights[9];
 		float PlusWeights[5];
-		float CurrentFrameWeight;
 	};
 };
 
@@ -126,7 +130,7 @@ void TemporalAA::ApplyTemporalAA(ComputeContext& Context)
 		1.0f / g_SceneColorBuffer.GetWidth(), 1.0f / g_SceneColorBuffer.GetHeight());
 
 	TemporalAAConstant.InputViewSize = TemporalAAConstant.OutputViewSize;
-	TemporalAAConstant.TemporalJitterPixels = XMFLOAT2(mJitter.x * g_SceneColorBuffer.GetWidth(), mJitter.y * g_SceneColorBuffer.GetHeight());
+	TemporalAAConstant.TemporalJitterPixels = XMFLOAT2(0, 0);// XMFLOAT2(mJitter.x * g_SceneColorBuffer.GetWidth(), mJitter.y * g_SceneColorBuffer.GetHeight());
 	TemporalAAConstant.CurrentFrameWeight = mCurrentFrameWeight;
 
 	SetupSampleWeightParameters(TemporalAAConstant);
@@ -138,16 +142,19 @@ void TemporalAA::ApplyTemporalAA(ComputeContext& Context)
 	Context.SetDynamicConstantBufferView(3, sizeof(TemporalAA::TAAConstant), &TemporalAAConstant);
 
 	Context.SetDynamicDescriptor(1, 0, g_TemporalColor[Dst].GetUAV());
-	Context.SetDynamicDescriptor(2, 0, g_SceneColorBuffer.GetSRV());
-	Context.SetDynamicDescriptor(2, 1, g_TemporalColor[Src].GetSRV());
-	Context.SetDynamicDescriptor(2, 2, g_LinearDepth.GetSRV());
+
+	Context.SetDynamicDescriptor(2, 0, g_LinearDepth.GetSRV());
+	Context.SetDynamicDescriptor(2, 1, g_SceneColorBuffer.GetSRV());
+	Context.SetDynamicDescriptor(2, 2, g_TemporalColor[Src].GetSRV());
+
+	Context.SetDynamicDescriptor(2, 3, g_VelocityBuffer.GetSRV());
 
 	Context.Dispatch2D(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
+
+	//Sharpen TAA
+	SharpenImage(Context, g_TemporalColor[Dst]);
 }
 
-void TemporalAA::SharpenImage(ComputeContext& Context, ColorBuffer& TemporalColor)
-{
-}
 
 void TemporalAA::Initialize(void)
 {
@@ -157,6 +164,8 @@ void TemporalAA::Initialize(void)
     ObjName.Finalize();
 
 	CreatePSO(TemporalAACS, g_pTemporalAACS);
+	CreatePSO(SharpenTAACS, g_pSharpenTAACS);
+	CreatePSO(ResolveTAACS, g_pResolveTAACS);
 
 #undef CreatePSO
 
@@ -195,6 +204,17 @@ void TemporalAA::ClearHistory(CommandContext& Context)
 	gfxContext.ClearColor(g_TemporalColor[1]);
 }
 
-void TemporalAA::ResolveImage(CommandContext& Context)
+
+void TemporalAA::SharpenImage(ComputeContext& Context, ColorBuffer& TemporalColor)
 {
+	ScopedTimer SharpenScope(L"Sharpen or Copy Image", Context);
+
+	Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.TransitionResource(TemporalColor, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+	Context.SetPipelineState(Sharpness >= 0.001f ? SharpenTAACS : ResolveTAACS);
+	Context.SetConstants(0, 1.0f + Sharpness, 0.25f * Sharpness);
+	Context.SetDynamicDescriptor(2, 0, TemporalColor.GetSRV());
+	Context.SetDynamicDescriptor(1, 0, g_SceneColorBuffer.GetUAV());
+	Context.Dispatch2D(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
 }

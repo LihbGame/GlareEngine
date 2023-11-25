@@ -188,7 +188,7 @@ namespace ScreenProcessing
 	void GenerateBloom(ComputeContext& Context);
 	void ExtractLuminance(ComputeContext& Context);
 	void CopyBackBufferForNotHDRUAVSupport(ComputeContext& Context);
-	void PostProcessHDR(ComputeContext& Context);
+	void ToneMappingHDR(ComputeContext& Context);
 	void Adaptation(ComputeContext& Context);
 }
 
@@ -298,6 +298,9 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	//Motion Blur Initialize
 	MotionBlur::Initialize();
 
+	//TemporalAA Initialize
+	TemporalAA::Initialize();
+
 #if	USE_RUNTIME_PSO
 	RuntimePSOManager::Get().RegisterPSO(&ToneMapCS, GET_SHADER_PATH("PostProcessing/ToneMapping/ToneMap2CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
 	RuntimePSOManager::Get().RegisterPSO(&ToneMapHDRCS, GET_SHADER_PATH("PostProcessing/ToneMapping/ToneMapHDR2CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
@@ -355,19 +358,9 @@ void ScreenProcessing::RenderFBM(GraphicsContext& Context, GraphicsPSO* Specific
 	Context.Draw(3);
 }
 
-void ScreenProcessing::PostProcessHDR(ComputeContext& Context)
+void ScreenProcessing::ToneMappingHDR(ComputeContext& Context)
 {
 	ScopedTimer Scope(L"HDR Tone Mapping", Context);
-
-	if (BloomEnable)
-	{
-		GenerateBloom(Context);
-		Context.TransitionResource(g_aBloomUAV1[1], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-	}
-	else if (EnableAdaptation)
-	{
-		ExtractLuminance(Context);
-	}
 
 	if (g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
 	{
@@ -405,9 +398,6 @@ void ScreenProcessing::PostProcessHDR(ComputeContext& Context)
 	Context.SetDynamicDescriptor(2, 1, BloomEnable ? g_aBloomUAV1[1].GetSRV() : GetDefaultTexture(eBlackOpaque2D));
 
 	Context.Dispatch2D(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
-
-	//Luminance Adaptation
-	Adaptation(Context);
 }
 
 void ScreenProcessing::Adaptation(ComputeContext& Context)
@@ -450,14 +440,33 @@ void ScreenProcessing::Render(const Camera& camera)
 
 	Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 
-	PostProcessHDR(Context);
+	//Some systems generate a per-pixel velocity buffer to better track dynamic and skinned meshes.  Everything
+	//is static in our scene, so we generate velocity from camera motion and the depth buffer.  A velocity buffer
+	//is necessary for all temporal effects (and motion blur).
+	MotionBlur::GenerateCameraVelocityBuffer(Context, camera);
+
+	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TAA)
+	{
+		TemporalAA::ApplyTemporalAA(Context);
+	}
+
+	if (BloomEnable)
+	{
+		GenerateBloom(Context);
+		Context.TransitionResource(g_aBloomUAV1[1], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	}
+	else if (EnableAdaptation)
+	{
+		ExtractLuminance(Context);
+	}
+
+	//Luminance Adaptation
+	Adaptation(Context);
+
+	//ToneMapping
+	ToneMappingHDR(Context);
 
 	std::swap(LastPostprocessRT, CurrentPostprocessRT);
-
-	// Some systems generate a per-pixel velocity buffer to better track dynamic and skinned meshes.  Everything
-	// is static in our scene, so we generate velocity from camera motion and the depth buffer.  A velocity buffer
-	// is necessary for all temporal effects (and motion blur).
-	MotionBlur::GenerateCameraVelocityBuffer(Context, camera);
 
 	//Motion Blur
 	MotionBlur::RenderMotionBlur(Context, g_VelocityBuffer, LastPostprocessRT);

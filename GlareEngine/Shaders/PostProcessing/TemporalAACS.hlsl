@@ -5,7 +5,7 @@ Texture2D SceneDepthTexture : register(t0);
 Texture2D InputSceneColor	: register(t1);
 Texture2D HistoryColor		: register(t2);
 
-RWTexture2D<float3> OutTexture : register(u0);
+RWTexture2D<float4> OutTexture : register(u0);
 
 Texture2D<Packed_Velocity_Type> VelocityBuffer : register(t3); // Full resolution motion vectors
 
@@ -17,12 +17,12 @@ cbuffer TAAConstantBuffer : register(b1)
     float4 InputViewSize;
 	// Temporal jitter at the pixel.
     float2 TemporalJitterPixels;
-	
-	//CatmullRom Weight
-	float SampleWeights[9];
-    float PlusWeights[5];
-	//ue5 set 0.04 as default ,Low values cause blurriness and ghosting, high values fail to hide jittering
+		//ue5 set 0.04 as default ,Low values cause blurriness and ghosting, high values fail to hide jittering
     float CurrentFrameWeight;
+    float pad1;
+	//CatmullRom Weight
+    float SampleWeights[9];
+    float PlusWeights[5];
 }
 
 #define THREADGROUP_SIZEX 8
@@ -1286,5 +1286,5 @@ void main(uint2 DispatchThreadId : SV_DispatchThreadID,
     float2 ViewportUV = (float2(DispatchThreadId) + 0.5f) * OutputViewportSize.zw;
     float FrameExposureScale = 1.0f;
     float4 OutputPayload = TemporalAASample(GroupId, GroupThreadId, GroupThreadIndex, ViewportUV, FrameExposureScale);
-    OutTexture[DispatchThreadId] = OutputPayload.rgb;
+    OutTexture[DispatchThreadId] = OutputPayload;
 }
