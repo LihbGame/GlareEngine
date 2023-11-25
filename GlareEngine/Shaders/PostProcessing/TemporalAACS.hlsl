@@ -70,7 +70,7 @@ cbuffer TAAConstantBuffer : register(b1)
 #define TAA_QUALITY TAA_QUALITY_HIGH
 
 //Bicubic filter history
-#define AA_BICUBIC 1
+#define AA_BICUBIC 0
 //Use dynamic motion
 #define AA_DYNAMIC 1
 //Tone map to kill fireflies
@@ -1106,7 +1106,6 @@ float4 TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint GroupThreadInde
     PrecacheInputSceneDepth(InputParams);
     PosN.z = SampleCachedSceneDepthTexture(InputParams, int2(0, 0));
 	
-	
 	// Screen position of minimum depth.
     float2 VelocityOffset = float2(0.0, 0.0);
 	#if AA_CROSS 
@@ -1203,7 +1202,8 @@ float4 TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint GroupThreadInde
 	
 	// Sample history.
     float4 History = SampleHistory(HistoryScreenPosition);
-
+	
+	
 	// Whether the feedback needs to be reset.
     bool IgnoreHistory = OffScreen;
 	

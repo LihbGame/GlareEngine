@@ -120,7 +120,7 @@ namespace ScreenProcessing
 	float MaxExposure = 64.0f;
 
 	string mAntiAliasingName;
-	int mAntiAliasingIndex = 0;
+	int mAntiAliasingIndex = Render::AntiAliasingType::TAA;
 
 	//Exposure Data
 	StructuredBuffer g_Exposure;
@@ -283,6 +283,7 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	mAntiAliasingName += string("MSAA") + '\0';
 	mAntiAliasingName += string("FXAA") + '\0';
 	mAntiAliasingName += string("TAA") + '\0';
+	mAntiAliasingName += string("NoAA") + '\0';
 
 	__declspec(align(16)) float initExposure[] =
 	{

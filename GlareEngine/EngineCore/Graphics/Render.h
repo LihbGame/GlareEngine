@@ -22,7 +22,8 @@ namespace GlareEngine
 		{
 			MSAA,
 			FXAA,
-			TAA
+			TAA,
+			NOAA
 		};
 
 	}
