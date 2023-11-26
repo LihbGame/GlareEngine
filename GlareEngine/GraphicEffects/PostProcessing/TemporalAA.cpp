@@ -10,6 +10,7 @@
 #include "CompiledShaders/TemporalAACS.h"
 #include "CompiledShaders/ResolveTAACS.h"
 #include "CompiledShaders/SharpenTAACS.h"
+#include "MotionBlur.h"
 
 namespace TemporalAA
 {
@@ -28,16 +29,22 @@ namespace TemporalAA
 	uint32_t mFrameIndexMod2 = 0;
 	XMFLOAT2 mJitter;
 
+	float JitterDeltaX = 0.0f;
+	float JitterDeltaY = 0.0f;
+
 	void SharpenImage(ComputeContext& Context, ColorBuffer& TemporalColor);
 
 
 	struct TAAConstant 
 	{
+		Matrix4 CurrentToPrev;
 		XMFLOAT4 OutputViewSize;
 		XMFLOAT4 InputViewSize;
 
 		// Temporal jitter at the pixel.
 		XMFLOAT2 TemporalJitterPixels;
+		XMFLOAT2 ViewportJitter;
+
 		float CurrentFrameWeight;
 		float pad1;
 
@@ -130,8 +137,10 @@ void TemporalAA::ApplyTemporalAA(ComputeContext& Context)
 		1.0f / g_SceneColorBuffer.GetWidth(), 1.0f / g_SceneColorBuffer.GetHeight());
 
 	TemporalAAConstant.InputViewSize = TemporalAAConstant.OutputViewSize;
-	TemporalAAConstant.TemporalJitterPixels = XMFLOAT2(0, 0);// XMFLOAT2(mJitter.x * g_SceneColorBuffer.GetWidth(), mJitter.y * g_SceneColorBuffer.GetHeight());
+	TemporalAAConstant.TemporalJitterPixels = mJitter;
 	TemporalAAConstant.CurrentFrameWeight = mCurrentFrameWeight;
+	TemporalAAConstant.CurrentToPrev = MotionBlur::GetCurToPrevMatrix();
+	TemporalAAConstant.ViewportJitter= XMFLOAT2(JitterDeltaX, JitterDeltaY);
 
 	SetupSampleWeightParameters(TemporalAAConstant);
 
@@ -143,11 +152,12 @@ void TemporalAA::ApplyTemporalAA(ComputeContext& Context)
 
 	Context.SetDynamicDescriptor(1, 0, g_TemporalColor[Dst].GetUAV());
 
-	Context.SetDynamicDescriptor(2, 0, g_LinearDepth.GetSRV());
-	Context.SetDynamicDescriptor(2, 1, g_SceneColorBuffer.GetSRV());
-	Context.SetDynamicDescriptor(2, 2, g_TemporalColor[Src].GetSRV());
+	Context.SetDynamicDescriptor(2, 0, g_LinearDepth[Src].GetSRV());
+	Context.SetDynamicDescriptor(2, 1, g_LinearDepth[Dst].GetSRV());
+	Context.SetDynamicDescriptor(2, 2, g_SceneColorBuffer.GetSRV());
+	Context.SetDynamicDescriptor(2, 3, g_TemporalColor[Src].GetSRV());
 
-	Context.SetDynamicDescriptor(2, 3, g_VelocityBuffer.GetSRV());
+	Context.SetDynamicDescriptor(2, 4, g_VelocityBuffer.GetSRV());
 
 	Context.Dispatch2D(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
 
@@ -182,14 +192,58 @@ void TemporalAA::Shutdown(void)
 {
 }
 
+/** [ Halton 1964, "Radical-inverse quasi-random point sequence" ] */
+inline float Halton(int Index, int Base)
+{
+	float Result = 0.0f;
+	float InvBase = 1.0f / float(Base);
+	float Fraction = InvBase;
+	while (Index > 0)
+	{
+		Result += float(Index % Base) * Fraction;
+		Index /= Base;
+		Fraction *= InvBase;
+	}
+	return Result;
+}
+
+
 void TemporalAA::Update(uint64_t FrameIndex)
 {
 	mFrameIndex = (uint32_t)FrameIndex;
 	mFrameIndexMod2 = mFrameIndex % 2;
 
-	const XMFLOAT4& halton = MathHelper::GetHaltonSequence(mFrameIndex % 256);
-	mJitter.x = (halton.x * 2 - 1) / (float)g_SceneColorBuffer.GetWidth();
-	mJitter.y = (halton.y * 2 - 1) / (float)g_SceneColorBuffer.GetHeight();
+	static const float Halton23[8][2] =
+	{
+		{ 0.0f / 8.0f, 0.0f / 9.0f }, { 4.0f / 8.0f, 3.0f / 9.0f },
+		{ 2.0f / 8.0f, 6.0f / 9.0f }, { 6.0f / 8.0f, 1.0f / 9.0f },
+		{ 1.0f / 8.0f, 4.0f / 9.0f }, { 5.0f / 8.0f, 7.0f / 9.0f },
+		{ 3.0f / 8.0f, 2.0f / 9.0f }, { 7.0f / 8.0f, 5.0f / 9.0f }
+	};
+
+
+	XMFLOAT2 halton = XMFLOAT2(Halton23[FrameIndex % 8][0], Halton23[FrameIndex % 8][1]);
+
+	//// Scale distribution to set non-unit variance
+	//float Sigma = 0.47f;
+
+	//// Window to [-0.5, 0.5] output
+	//// Without windowing we could generate samples far away on the infinite tails.
+	//float OutWindow = 0.5f;
+	//float InWindow = exp(-0.5 * sqrt(OutWindow / Sigma));
+
+	//// Box-Muller transform
+	//float Theta = 2.0f * MathHelper::Pi * halton.y;
+	//float r = Sigma * Sqrt(-2.0f * logf((1.0f - halton.x) * InWindow + halton.x));
+
+	//halton.x = r * cos(Theta);
+	//halton.y = r * sin(Theta);
+
+	JitterDeltaX = mJitter.x - halton.x;
+	JitterDeltaY = mJitter.y - halton.y;
+
+	mJitter.x = halton.x;
+	mJitter.y = halton.y;
 }
 
 uint32_t TemporalAA::GetFrameIndexMod2(void)
@@ -197,9 +251,9 @@ uint32_t TemporalAA::GetFrameIndexMod2(void)
 	return mFrameIndexMod2;
 }
 
-XMFLOAT2& TemporalAA::GetJitterOffset()
+XMFLOAT2 TemporalAA::GetJitterOffset()
 {
-	return mJitter;
+	return XMFLOAT2(mJitter.x / (float)g_SceneColorBuffer.GetWidth(), mJitter.y / (float)g_SceneColorBuffer.GetHeight());
 }
 
 void TemporalAA::ClearHistory(CommandContext& Context)

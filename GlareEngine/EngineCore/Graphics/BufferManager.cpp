@@ -40,7 +40,7 @@ namespace GlareEngine
 
 	ColorBuffer				g_LumaBuffer;
 	
-	ColorBuffer				g_LinearDepth;
+	ColorBuffer				g_LinearDepth[2];
 
 	ColorBuffer				g_SSAOFullScreen(Color(1.0f, 1.0f, 1.0f));				//Clear Color(1.0f, 1.0f, 1.0f)
 	//R8 Format
@@ -154,7 +154,8 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 	g_LumaBuffer.Create(L"Luminance", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8_UNORM);
 
 	//Linear Depth
-	g_LinearDepth.Create(L"Linear Depth", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
+	g_LinearDepth[0].Create(L"Linear Depth 1", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
+	g_LinearDepth[1].Create(L"Linear Depth 2", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
 
 	g_SSAOFullScreen.Create(L"SSAO Full Resolution", NativeWidth / 2, NativeHeight / 2, 1, DXGI_FORMAT_R8_UNORM);
 
@@ -262,7 +263,8 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 	g_LumaBuffer.Create(L"Luminance", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8_UNORM);
 
 	//Linear Depth
-	g_LinearDepth.Create(L"Linear Depth", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
+	g_LinearDepth[0].Create(L"Linear Depth 1", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
+	g_LinearDepth[1].Create(L"Linear Depth 2", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
 
 	g_SSAOFullScreen.Create(L"SSAO Full Resolution", NativeWidth / 2, NativeHeight / 2, 1, DXGI_FORMAT_R8_UNORM);
 
@@ -284,7 +286,8 @@ void GlareEngine::DestroyRenderingBuffers()
 
 	g_SceneColorBuffer.Destroy();
 
-	g_LinearDepth.Destroy();
+	g_LinearDepth[0].Destroy();
+	g_LinearDepth[1].Destroy();
 
 	g_PostEffectsBuffer.Destroy();
 

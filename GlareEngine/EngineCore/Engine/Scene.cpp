@@ -10,6 +10,7 @@
 #include "Misc/LightManager.h"
 #include "PostProcessing/PostProcessing.h"
 #include "PostProcessing/SSAO.h"
+#include "PostProcessing/TemporalAA.h"
 
 /// Scene/////////////////////////////////////////////
 using namespace GlareEngine::Render;
@@ -463,7 +464,7 @@ void Scene::ForwardPlusRendering()
 
 		ComputeContext& computeContext = Context.GetComputeContext();
 
-		uint32_t frameIndex = 0; //change it when add TAA
+		uint32_t frameIndex = TemporalAA::GetFrameIndexMod2();
 
 		ScreenProcessing::LinearizeZ(computeContext, *m_pCamera, frameIndex);
 	}

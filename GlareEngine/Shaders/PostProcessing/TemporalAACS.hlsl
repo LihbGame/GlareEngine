@@ -1,22 +1,26 @@
 #include "../Misc/CommonResource.hlsli"
 #include "VelocityPacking.hlsli"
+#include "../Misc/ShaderUtility.hlsli"
 
-Texture2D SceneDepthTexture : register(t0);
-Texture2D InputSceneColor	: register(t1);
-Texture2D HistoryColor		: register(t2);
+Texture2D DepthTexture		: register(t0);
+Texture2D PreDepthTexture	: register(t1);
+Texture2D InputSceneColor	: register(t2);
+Texture2D HistoryColor		: register(t3);
 
 RWTexture2D<float4> OutTexture : register(u0);
 
-Texture2D<Packed_Velocity_Type> VelocityBuffer : register(t3); // Full resolution motion vectors
+Texture2D<Packed_Velocity_Type> VelocityBuffer : register(t4); // Full resolution motion vectors
 
 SamplerState BiLinearClampSampler	: register(s0);
 
 cbuffer TAAConstantBuffer : register(b1)
 {
+    matrix CurrentToPrev;
     float4 OutputViewportSize;
     float4 InputViewSize;
 	// Temporal jitter at the pixel.
     float2 TemporalJitterPixels;
+    float2 ViewportJitter;
 		//ue5 set 0.04 as default ,Low values cause blurriness and ghosting, high values fail to hide jittering
     float CurrentFrameWeight;
     float pad1;
@@ -65,12 +69,11 @@ cbuffer TAAConstantBuffer : register(b1)
 // Have RGB and opacity in alpha.
 #define HISTORY_PAYLOAD_RGB_OPACITY (HISTORY_PAYLOAD_RGB_TRANSLUCENCY)
 
-
 //Quality setting
 #define TAA_QUALITY TAA_QUALITY_HIGH
 
 //Bicubic filter history
-#define AA_BICUBIC 0
+#define AA_BICUBIC 1
 //Use dynamic motion
 #define AA_DYNAMIC 1
 //Tone map to kill fireflies
@@ -560,7 +563,7 @@ void PrecacheInputSceneDepthToLDS(in TAAInputParameters InputParams)
 				((LDS_DEPTH_ARRAY_SIZE / 4) % THREADGROUP_TOTAL) == 0)
 			{
 				float2 UV = float2(TexelLocation + 0.5) * InputViewSize.zw;
-				float4 Depth = SceneDepthTexture.Gather(BiLinearClampSampler, UV);
+                float4 Depth = DepthTexture.Gather(BiLinearClampSampler, UV);
 				GroupSharedArray[DestI + 1 * LDS_DEPTH_TILE_WIDTH + 0] = Depth.x;
 				GroupSharedArray[DestI + 1 * LDS_DEPTH_TILE_WIDTH + 1] = Depth.y;
 				GroupSharedArray[DestI + 0 * LDS_DEPTH_TILE_WIDTH + 1] = Depth.z;
@@ -901,7 +904,7 @@ void ComputeNeighborhoodBoundingbox(
 			float4 SampleColor = Neighbors[ SampleIndexes[i] ];
 
 			m1 += SampleColor;
-			m2 += Pow2( SampleColor );
+			m2 += pow(SampleColor,2);
 		}
 
 		m1 *= (1.0 / AA_SAMPLES);
@@ -1021,7 +1024,6 @@ float4 SampleHistory(in float2 HistoryScreenPosition)
         }
         RawHistory *= Samples.FinalMultiplier;
     }
-
 	// Sample the history using bilinear sampler.
 #else
 	{
@@ -1053,9 +1055,75 @@ float4 ClampHistory(float4 History, float4 NeighborMin, float4 NeighborMax)
 }
 
 
+float2 STtoUV(float2 ST)
+{
+    return (ST + 0.5f) * OutputViewportSize.zw;
+}
+
+float MaxOf(float4 Depths)
+{
+    return max(max(Depths.x, Depths.y), max(Depths.z, Depths.w));
+}
+
+float3 ClipColor(float3 Color, float3 BoxMin, float3 BoxMax, float Dilation = 1.0)
+{
+    float3 BoxCenter = (BoxMax + BoxMin) * 0.5;
+    float3 HalfDim = (BoxMax - BoxMin) * 0.5 * Dilation + 0.001;
+    float3 Displacement = Color - BoxCenter;
+    float3 Units = abs(Displacement / HalfDim);
+    float MaxUnit = max(max(Units.x, Units.y), max(Units.z, 1.0));
+    return BoxCenter + Displacement / MaxUnit;
+}
+
+void ApplyTemporalBlend(uint2 ST, float4 CurrentColor, float2 DepthOffset,float3 Min, float3 Max)
+{
+    float CompareDepth = 0;
+
+    // Get the velocity of the closest pixel in the '+' formation
+    float3 Velocity = UnpackVelocity(VelocityBuffer[ST + DepthOffset]);
+
+    CompareDepth += Velocity.z;
+
+    // The temporal depth is the actual depth of the pixel found at the same reprojected location.
+    float TemporalDepth = MaxOf(PreDepthTexture.Gather(BiLinearClampSampler, STtoUV(ST + Velocity.xy + ViewportJitter))) + 1e-3;
+
+    // Fast-moving pixels cause motion blur and probably don't need TAA
+    float RcpSpeedLimiter = 1 / 64.0f;
+    float SpeedFactor = saturate(1.0 - length(Velocity.xy) * RcpSpeedLimiter);
+
+    // Fetch temporal color.  Its "confidence" weight is stored in alpha.
+    float4 Temp = TransformSceneColor(HistoryColor.SampleLevel(BiLinearClampSampler, STtoUV(ST + Velocity.xy), 0));
+    float3 TemporalColor = Temp.rgb;
+    float TemporalWeight = Temp.w;
+
+    // Pixel colors are pre-multiplied by their weight to enable bilinear filtering.  Divide by weight to recover color.
+    TemporalColor /= max(TemporalWeight, 1e-6);
+
+    // Clip the temporal color to the current neighborhood's bounding box.  Increase the size of the bounding box for
+    // stationary pixels to avoid rejecting noisy specular highlights.
+    TemporalColor = ClipColor(TemporalColor, Min, Max, lerp(1.0, 4.0, SpeedFactor * SpeedFactor));
+
+    // Update the confidence term based on speed and disocclusion
+    TemporalWeight *= SpeedFactor * step(CompareDepth, TemporalDepth);
+
+    // Blend previous color with new color based on confidence.  Confidence steadily grows with each iteration
+    // until it is broken by movement such as through disocclusion, color changes, or moving beyond the resolution
+    // of the velocity buffer.
+    TemporalColor = ITM(lerp(TM(YCoCgToRGB(CurrentColor.xyz)), TM(YCoCgToRGB(TemporalColor)), TemporalWeight));
+
+    // Update weight
+    TemporalWeight = saturate(rcp(2.0 - TemporalWeight));
+
+    // Quantize weight to what is representable
+    TemporalWeight = f16tof32(f32tof16(TemporalWeight));
+
+    OutTexture[ST] = float4(TemporalColor, 1) * TemporalWeight;
+}
+
+
 ///////////////////////////////// TAA MAIN FUNCTION //////////////////////////
 
-float4 TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint GroupThreadIndex, float2 ViewportUV, float FrameExposureScale)
+void TemporalAASample(uint2 DispatchThreadId,uint2 GroupId, uint2 GroupThreadId, uint GroupThreadIndex, float2 ViewportUV, float FrameExposureScale)
 {
     TAAInputParameters InputParams;
 
@@ -1104,10 +1172,13 @@ float4 TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint GroupThreadInde
 
 	//Pre cache SceneDepth
     PrecacheInputSceneDepth(InputParams);
+
     PosN.z = SampleCachedSceneDepthTexture(InputParams, int2(0, 0));
 	
 	// Screen position of minimum depth.
     float2 VelocityOffset = float2(0.0, 0.0);
+    float2 DepthOffset = float2(AA_CROSS, AA_CROSS);
+    float  DepthOffsetXx = float(AA_CROSS);
 	#if AA_CROSS 
 	{
 		// For motion vector, use camera/dynamic motion from min depth pixel in pattern around pixel.
@@ -1119,27 +1190,25 @@ float4 TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint GroupThreadInde
         Depths.z = SampleCachedSceneDepthTexture(InputParams, int2(-AA_CROSS, AA_CROSS));
         Depths.w = SampleCachedSceneDepthTexture(InputParams, int2(AA_CROSS, AA_CROSS));
 
-        float2 DepthOffset = float2(AA_CROSS, AA_CROSS);
-        float DepthOffsetXx = float(AA_CROSS);
 #if INVERTED_Z_BUFFER
 			// Nearest depth is the largest depth (depth surface 0=far, 1=near).
-			if(Depths.x > Depths.y) 
+			if(Depths.x < Depths.y) 
 			{
 				DepthOffsetXx = -AA_CROSS;
 			}
-			if(Depths.z > Depths.w) 
+			if(Depths.z < Depths.w) 
 			{
 				DepthOffset.x = -AA_CROSS;
 			}
-			float DepthsXY = max(Depths.x, Depths.y);
-			float DepthsZW = max(Depths.z, Depths.w);
-			if(DepthsXY > DepthsZW) 
+			float DepthsXY = min(Depths.x, Depths.y);
+			float DepthsZW = min(Depths.z, Depths.w);
+			if(DepthsXY < DepthsZW) 
 			{
 				DepthOffset.y = -AA_CROSS;
 				DepthOffset.x = DepthOffsetXx; 
 			}
-			float DepthsXYZW = max(DepthsXY, DepthsZW);
-			if(DepthsXYZW > PosN.z) 
+			float DepthsXYZW = min(DepthsXY, DepthsZW);
+			if(DepthsXYZW < PosN.z) 
 			{
 				// This is offset for reading from velocity texture.
 				// This supports half or fractional resolution velocity textures.
@@ -1160,8 +1229,13 @@ float4 TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint GroupThreadInde
     float HistoryBlur = 0;
     float2 HistoryScreenPosition = InputParams.ScreenPos;
 
-    float2 BackN;
-    float2 BackTemp;
+
+    float4 ThisClip = float4(PosN.xy, PosN.z, 1);
+    float4 PrevClip = mul(CurrentToPrev, ThisClip);
+    float2 PrevScreen = PrevClip.xy / PrevClip.w;
+    float2 BackN = PosN.xy - PrevScreen;
+
+    float2 BackTemp = BackN * OutputViewportSize.xy;
 
 #if AA_DYNAMIC
 	{
@@ -1172,6 +1246,7 @@ float4 TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint GroupThreadInde
 #endif
 
     Velocity = sqrt(dot(BackTemp, BackTemp));
+
 	
 #if !AA_BICUBIC
 	// Save the amount of pixel offset of just camera motion, used later as the amount of blur introduced by history.
@@ -1180,15 +1255,17 @@ float4 TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint GroupThreadInde
 #endif
 	// Easier to do off screen check before conversion.
 	// This converts back projection vector to [-1 to 1] offset in viewport.
-    HistoryScreenPosition = InputParams.ScreenPos + BackN;
+    HistoryScreenPosition = InputParams.ScreenPos - BackN / (Velocity == 0 ? 1 : Velocity);
 
+	
+    //return float4(HistoryScreenPosition, 0, 0);
 	// Detect if HistoryBufferUV would be outside of the viewport.
     OffScreen = max(abs(HistoryScreenPosition.x), abs(HistoryScreenPosition.y)) >= 1.0;
 	
 	
 	// Precache input scene color.
     PrecacheInputSceneColor(InputParams);
-
+	
 	// Filter input.
 	#if AA_UPSAMPLE_ADAPTIVE_FILTERING==0
 		FilterCurrentFrameInputSamples(InputParams,IntermediaryResult);
@@ -1202,7 +1279,6 @@ float4 TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint GroupThreadInde
 	
 	// Sample history.
     float4 History = SampleHistory(HistoryScreenPosition);
-	
 	
 	// Whether the feedback needs to be reset.
     bool IgnoreHistory = OffScreen;
@@ -1234,22 +1310,25 @@ float4 TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint GroupThreadInde
 	}
 	#endif
 	
+	
+	
 	// COMPUTE BLEND AMOUNT 
-    float BlendFinal;
-	{
+ //   float BlendFinal;
+
+	//{
        
-        float LumaFiltered = GetSceneColorLuma4(IntermediaryResult.Filtered);
+ //       float LumaFiltered = GetSceneColorLuma4(IntermediaryResult.Filtered);
 
-        BlendFinal = IntermediaryResult.FilteredTemporalWeight * CurrentFrameWeight;
+ //       BlendFinal = IntermediaryResult.FilteredTemporalWeight * CurrentFrameWeight;
 
-        BlendFinal = lerp(BlendFinal, 0.2, saturate(Velocity / 40));
+ //       BlendFinal = lerp(BlendFinal, 0.2, saturate(Velocity / 40));
+		
+	//	// Make sure to have at least some small contribution
+ //       BlendFinal = max(BlendFinal, saturate(0.01f * LumaHistory / abs(LumaFiltered - LumaHistory)));
 
-		// Make sure to have at least some small contribution
-        BlendFinal = max(BlendFinal, saturate(0.01f * LumaHistory / abs(LumaFiltered - LumaHistory)));
-
-		// Responsive forces 1/4 of new frame.
-        BlendFinal = InputParams.bIsResponsiveAAPixel ? (1.0 / 4.0) : BlendFinal;
-    }
+	//	// Responsive forces 1/4 of new frame.
+ //       BlendFinal = InputParams.bIsResponsiveAAPixel ? (1.0 / 4.0) : BlendFinal;
+ //   }
 	
 	// Offscreen feedback resets.
     if (IgnoreHistory)
@@ -1258,22 +1337,17 @@ float4 TemporalAASample(uint2 GroupId, uint2 GroupThreadId, uint GroupThreadInde
 		History.a = 0.0;
     }
 	
-	// Luma weighted blend
-    float FilterWeight = GetSceneColorHdrWeight(InputParams, IntermediaryResult.Filtered.x);
-    float HistoryWeight = GetSceneColorHdrWeight(InputParams, History.x);
+	//// Luma weighted blend
+ //   float FilterWeight = GetSceneColorHdrWeight(InputParams, IntermediaryResult.Filtered);
+ //   float HistoryWeight = GetSceneColorHdrWeight(InputParams, History);
 
-    float4 OutputPayload;
-	{
-        float2 Weights = WeightedLerpFactors(HistoryWeight, FilterWeight, BlendFinal);
-        OutputPayload = AddPayload(MulPayload(History, Weights.x), MulPayload(IntermediaryResult.Filtered, Weights.y));
-    }
-
-    OutputPayload = TransformBackToRawLinearSceneColor(OutputPayload);
-
-	// Zero out to remove any prior computation of alpha
-	OutputPayload.a = 0;
-
-    return OutputPayload;
+ //   float4 OutputPayload;
+	//{
+ //       float2 Weights = WeightedLerpFactors(HistoryWeight, FilterWeight, BlendFinal);
+ //       OutputPayload = AddPayload(MulPayload(History, Weights.x), MulPayload(IntermediaryResult.Filtered, Weights.y));
+ //   }
+    
+    ApplyTemporalBlend(DispatchThreadId, IntermediaryResult.Filtered, DepthOffset, NeighborMin.rgb, NeighborMax.rgb);
 }
 
 
@@ -1285,6 +1359,5 @@ void main(uint2 DispatchThreadId : SV_DispatchThreadID,
 {
     float2 ViewportUV = (float2(DispatchThreadId) + 0.5f) * OutputViewportSize.zw;
     float FrameExposureScale = 1.0f;
-    float4 OutputPayload = TemporalAASample(GroupId, GroupThreadId, GroupThreadIndex, ViewportUV, FrameExposureScale);
-    OutTexture[DispatchThreadId] = OutputPayload;
+    TemporalAASample(DispatchThreadId, GroupId, GroupThreadId, GroupThreadIndex, ViewportUV, FrameExposureScale);
 }

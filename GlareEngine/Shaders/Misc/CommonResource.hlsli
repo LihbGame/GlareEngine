@@ -959,32 +959,32 @@ struct CatmullRomSamples
     float2 UV[BICUBIC_CATMULL_ROM_SAMPLES];
 
 	// Weights of the samples
-    half Weight[BICUBIC_CATMULL_ROM_SAMPLES];
+    float Weight[BICUBIC_CATMULL_ROM_SAMPLES];
 
 	// Final multiplier (it is faster to multiply 3 RGB values than reweights the 5 weights)
     float FinalMultiplier;
 };
 
-void Bicubic2DCatmullRom(in float2 UV, in float2 Size, in float2 InvSize, out float2 Sample[3], out half2 Weight[3])
+void Bicubic2DCatmullRom(in float2 UV, in float2 Size, in float2 InvSize, out float2 Sample[3], out float2 Weight[3])
 {
     UV *= Size;
 
     float2 tc = floor(UV - 0.5) + 0.5;
-    half2 f = half2(UV - tc);
-    half2 f2 = f * f;
-    half2 f3 = f2 * f;
+    float2 f = UV - tc;
+    float2 f2 = f * f;
+    float2 f3 = f2 * f;
 
-    half2 w0 = f2 - 0.5 * (f3 + f);
-    half2 w1 = 1.5 * f3 - 2.5 * f2 + 1;
-    half2 w3 = 0.5 * (f3 - f2);
-    half2 w2 = 1 - w0 - w1 - w3;
+    float2 w0 = f2 - 0.5 * (f3 + f);
+    float2 w1 = 1.5 * f3 - 2.5 * f2 + 1;
+    float2 w3 = 0.5 * (f3 - f2);
+    float2 w2 = 1 - w0 - w1 - w3;
 
     Weight[0] = w0;
     Weight[1] = w1 + w2;
     Weight[2] = w3;
 
     Sample[0] = tc - 1;
-    Sample[1] = tc + w2 * rcp(f16tof32(Weight[1]));
+    Sample[1] = tc + w2 * rcp(Weight[1]);
     Sample[2] = tc + 2;
 
     Sample[0] *= InvSize;
@@ -997,7 +997,7 @@ CatmullRomSamples GetBicubic2DCatmullRomSamples(float2 UV, float2 Size, in float
     CatmullRomSamples Samples;
     Samples.Count = BICUBIC_CATMULL_ROM_SAMPLES;
 
-    half2 Weight[3];
+    float2 Weight[3];
     float2 Sample[3];
     Bicubic2DCatmullRom(UV, Size, InvSize, Sample, Weight);
 

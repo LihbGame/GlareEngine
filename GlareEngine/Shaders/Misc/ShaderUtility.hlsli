@@ -40,6 +40,18 @@ float3 ITM(float3 rgb)
     return rgb / (1 - RGBToLuminance(rgb));
 }
 
+float3 TM_YCOCG(float3 rgb)
+{
+    return rgb / (1 + rgb.r);
+}
+
+// Inverse of preceding function
+float3 ITM_YCOCG(float3 rgb)
+{
+    return rgb / (1 - rgb.r);
+}
+
+
 // 8-bit should range from 16 to 235
 float3 RGBFullToLimited8bit(float3 x)
 {

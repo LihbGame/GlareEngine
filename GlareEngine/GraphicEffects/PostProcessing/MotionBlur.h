@@ -14,5 +14,7 @@ namespace MotionBlur
 	void RenderMotionBlur(CommandContext& BaseContext, ColorBuffer& velocityBuffer, ColorBuffer* Input);
 
 	void DrawUI();
+
+	const Matrix4& GetCurToPrevMatrix();
 };
 

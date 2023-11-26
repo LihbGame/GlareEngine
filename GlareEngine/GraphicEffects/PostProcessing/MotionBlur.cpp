@@ -9,6 +9,7 @@
 #include "CompiledShaders/MotionBlurPrePassCS.h"
 #include "CompiledShaders/MotionBlurFinalPassCS.h"
 #include "CompiledShaders/CameraVelocityCS.h"
+#include "TemporalAA.h"
 
 
 namespace MotionBlur
@@ -21,6 +22,8 @@ namespace MotionBlur
 	ComputePSO MotionBlurPrePassCS(L"Motion Blur PrePass CS");
 	ComputePSO MotionBlurFinalPassCS(L"Motion Blur Final Pass CS");
 	ComputePSO CameraVelocityCS = { L"Camera Velocity Linear Z CS" };
+
+	Matrix4 gCurToPrevMatrix;
 };
 
 
@@ -75,14 +78,13 @@ void MotionBlur::GenerateCameraVelocityBuffer(CommandContext& BaseContext, const
 		Vector4(1.0f / RcpHalfDimX, 1.0f / RcpHalfDimY, 0.0f, 1.0f));
 
 
-	Matrix4 CurToPrevMatrix = preMult * camera.GetReprojectMatrix() * postMult;
+	gCurToPrevMatrix = preMult * camera.GetReprojectMatrix() * postMult;
 
-	Context.SetDynamicConstantBufferView(3, sizeof(CurToPrevMatrix), &CurToPrevMatrix);
+	Context.SetDynamicConstantBufferView(3, sizeof(gCurToPrevMatrix), &gCurToPrevMatrix);
 
 	Context.TransitionResource(g_VelocityBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-	//TemporalEffects::GetFrameIndexMod2() will be change when implement taa
-	ColorBuffer& LinearDepth = g_LinearDepth;
+	ColorBuffer& LinearDepth = g_LinearDepth[TemporalAA::GetFrameIndexMod2()];;
 
 	if (UseLinearZ)
 		Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -145,4 +147,9 @@ void MotionBlur::DrawUI()
 		ImGui::SliderVerticalFloat("Max Sample Count", &MaxSampleCount.GetValue(), MaxSampleCount.GetMinValue(), MaxSampleCount.GetMaxValue());
 		ImGui::SliderVerticalFloat("Step Size", &StepSize.GetValue(), StepSize.GetMinValue(), StepSize.GetMaxValue());
 	}
+}
+
+const Matrix4& MotionBlur::GetCurToPrevMatrix()
+{
+	return gCurToPrevMatrix;
 }
