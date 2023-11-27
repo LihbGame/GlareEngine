@@ -32,7 +32,6 @@ cbuffer TAAConstantBuffer : register(b1)
 #define THREADGROUP_SIZEX 8
 #define THREADGROUP_SIZEY 8
 
-#define INVERTED_Z_BUFFER 1
 
 //Qualities
 #define TAA_QUALITY_LOW		0
@@ -86,33 +85,15 @@ cbuffer TAAConstantBuffer : register(b1)
 
 #define UPSCALE_FACTOR 1.0
 
-#if AA_UPSAMPLE
-//Change the upsampling filter size when history is rejected that reduce blocky output pixels
-#define AA_UPSAMPLE_ADAPTIVE_FILTERING 1
-#else
-#define AA_UPSAMPLE_ADAPTIVE_FILTERING 0
-#endif
-
 //Cross distance in pixels used in depth search X pattern.
-#if AA_UPSAMPLE
-#define AA_CROSS 1
-#else
 #define AA_CROSS 2
-#endif
 
 #if TAA_QUALITY == TAA_QUALITY_LOW
 //Always enable scene color filtering
 #define AA_FILTERED 0
-//Num samples of current frame
-#if AA_UPSAMPLE
-#define AA_SAMPLES 6
-#endif
 
 #elif TAA_QUALITY == TAA_QUALITY_MEDIUM
 #define AA_FILTERED 1
-#if AA_UPSAMPLE
-#define AA_SAMPLES 6
-#endif
 
 #elif TAA_QUALITY == TAA_QUALITY_HIGH
 #define AA_HISTORY_CLAMPING_BOX (HISTORY_CLAMPING_BOX_SAMPLE_DISTANCE)
@@ -151,21 +132,6 @@ static const uint PlusIndexes3x3[5] = { 1, 3, 4, 5, 7 };
 
 //Number of neighbors.
 static const uint NeighborsCount = 9;
-
-#if AA_UPSAMPLE
-static const int2 Offsets2x2[4] =
-{
-	int2(0,  0),
-	int2(1,  0),
-	int2(0,  1),
-	int2(1,  1),
-};
-
-//Indexes of the 2x2 square.
-static const uint SquareIndexes2x2[4] = { 0, 1, 2, 3 };
-
-#endif // AA_UPSAMPLE
-
 
 RWTexture2D<float4> OutComputeTex;
 
@@ -282,10 +248,7 @@ struct TAAIntermediaryResult
 	float4	Filtered;
 
 	// Temporal weight of the filtered input.
-	float				FilteredTemporalWeight;
-
-	// 1 / filtering kernel scale factor for AA_UPSAMPLE_ADAPTIVE_FILTERING.
-	float				InvFilterScaleFactor;
+	float	FilteredTemporalWeight;
 };
 
 
@@ -295,7 +258,6 @@ TAAIntermediaryResult CreateIntermediaryResult()
     TAAIntermediaryResult IntermediaryResult = (TAAIntermediaryResult) (0.0);
 
 	IntermediaryResult.FilteredTemporalWeight = 1;
-	IntermediaryResult.InvFilterScaleFactor = 1;
 	return IntermediaryResult;
 }
 
@@ -315,11 +277,6 @@ struct TAAInputParameters
 
 	// Buffer UV of the nearest input pixel.
 	float2				NearestBufferUV;
-
-#if AA_UPSAMPLE
-	// Buffer UV of the nearest top left input pixel.
-	float2				NearestTopLeftBufferUV;
-#endif
 
 	// Whether this pixel should be responsive.
 	float				bIsResponsiveAAPixel;
@@ -392,9 +349,7 @@ float GetSceneColorHdrWeight(in TAAInputParameters InputParams, float4 SceneColo
 
 // Configuration of what should be prefetched.
 // 1: use Load; 2: use gather4. 
-#if !AA_UPSAMPLE
 #define AA_PRECACHE_SCENE_DEPTH 2
-#endif
 
 #define AA_PRECACHE_SCENE_COLOR 1
 
@@ -449,64 +404,17 @@ groupshared float GroupSharedArray[LDS_ARRAY_SIZE];
 
 /////////////////////////// Generic LDS tile functions /////////////////////////////////////
 
-#if AA_UPSAMPLE
-
-// Get the pixel coordinate of the nearest input pixel for group's thread 0.
-float2 GetGroupThread0InputPixelCoord(in TAAInputParameters InputParams)
-{
-	// Output pixel center position of the group thread index 0, relative to top left corner of the viewport.
-	float2 Thread0SvPosition = InputParams.GroupId * uint2(THREADGROUP_SIZEX, THREADGROUP_SIZEY) + 0.5;
-
-	// Output pixel's viewport UV group thread index 0.
-	float2 Thread0ViewportUV = Thread0SvPosition * OutputViewportSize.zw;
-
-	// Pixel coordinate of the center of output pixel O in the input viewport.
-	float2 Thread0PPCo = Thread0ViewportUV * InputViewSize.xy + TemporalJitterPixels;
-
-	// Pixel coordinate of the center of the nearest input pixel.
-	float2 Thread0PPCk = floor(Thread0PPCo) + 0.5;
-
-	return Thread0PPCk;
-}
-
-#endif
-
 // Get the texel offset of a LDS tile's top left corner.
 uint2 GetGroupTileTexelOffset(in TAAInputParameters InputParams, uint TileBorderSize)
 {
-#if AA_UPSAMPLE
-	{
-		// Pixel coordinate of the center of the nearest input pixel K.
-		float2 Thread0PPCk = GetGroupThread0InputPixelCoord(InputParams);
-
-		return uint2(floor(Thread0PPCk) - TileBorderSize);
-	}
-#else // !AA_UPSAMPLE
-	{
-		return InputParams.GroupId * uint2(THREADGROUP_SIZEX, THREADGROUP_SIZEY) - TileBorderSize;
-	}
-#endif
+    return InputParams.GroupId * uint2(THREADGROUP_SIZEX, THREADGROUP_SIZEY) - TileBorderSize;
 }
 
 // Get the index within the LDS array.
 uint GetTileArrayIndexFromPixelOffset(in TAAInputParameters InputParams, int2 PixelOffset, uint TileBorderSize)
 {
-#if AA_UPSAMPLE
-	{
-		const float2 RowMultiplier = float2(1, TileBorderSize * 2 + LDS_BASE_TILE_WIDTH);
-
-		float2 Thread0PPCk = GetGroupThread0InputPixelCoord(InputParams);
-		float2 PPCk = InputParams.NearestBufferUV * InputViewSize.xy;
-
-		float2 TilePos = floor(PPCk) - floor(Thread0PPCk);
-		return uint(dot(TilePos, RowMultiplier) + dot(float2(PixelOffset)+float(TileBorderSize), RowMultiplier));
-	}
-#else
-	{
-		uint2 TilePos = InputParams.GroupThreadId + uint2(PixelOffset + TileBorderSize);
-		return TilePos.x + TilePos.y * (TileBorderSize * 2 + LDS_BASE_TILE_WIDTH);
-	}
-#endif
+    uint2 TilePos = InputParams.GroupThreadId + uint2(PixelOffset + TileBorderSize);
+    return TilePos.x + TilePos.y * (TileBorderSize * 2 + LDS_BASE_TILE_WIDTH);
 }
 
 
@@ -602,39 +510,22 @@ void PrecacheInputSceneColorToLDS(in TAAInputParameters InputParams)
 {
     const uint LoadCount = (LDS_COLOR_ARRAY_SIZE + THREADGROUP_TOTAL - 1) / THREADGROUP_TOTAL;
 	
-#if AA_UPSAMPLE  //use float uv
-    float LinearGroupThreadId = float(InputParams.GroupThreadIndex);
-    float2 Thread0PPCk = GetGroupThread0InputPixelCoord(InputParams);
-    float2 GroupTexelOffset = Thread0PPCk - LDS_COLOR_TILE_BORDER_SIZE;
-#else
-	uint LinearGroupThreadId = InputParams.GroupThreadIndex;
-	uint2 GroupTexelOffset = GetGroupTileTexelOffset(InputParams, LDS_COLOR_TILE_BORDER_SIZE);
-#endif
+    uint LinearGroupThreadId = InputParams.GroupThreadIndex;
+    uint2 GroupTexelOffset = GetGroupTileTexelOffset(InputParams, LDS_COLOR_TILE_BORDER_SIZE);
 	
 	[unroll]
     for (uint i = 0; i < LoadCount; i++)
     {
-#if AA_UPSAMPLE //use float uv
-        float Y = floor(LinearGroupThreadId * (1.0 / LDS_COLOR_TILE_WIDTH));
-        float X = LinearGroupThreadId - LDS_COLOR_TILE_WIDTH * Y;
-
-        float2 TexelLocation = GroupTexelOffset + float2(X, Y);
-#else
-		uint2 TexelLocation =  GroupTexelOffset + uint2(
+        uint2 TexelLocation = GroupTexelOffset + uint2(
 			LinearGroupThreadId % LDS_COLOR_TILE_WIDTH,
 			LinearGroupThreadId / LDS_COLOR_TILE_WIDTH);
-#endif
 
         if ((LinearGroupThreadId < LDS_COLOR_ARRAY_SIZE) || (i != LoadCount - 1) ||
 			(LDS_COLOR_ARRAY_SIZE % THREADGROUP_TOTAL) == 0)
         {
-#if AA_UPSAMPLE //use float uv
-            int2 Coord = TexelLocation;
-            float4 RawColor = InputSceneColor[Coord];
-#else
-			int2 Coord = int2(TexelLocation);
-			float4 RawColor = InputSceneColor.Load(uint3(Coord, 0));
-#endif
+
+            int2 Coord = int2(TexelLocation);
+            float4 RawColor = InputSceneColor.Load(uint3(Coord, 0));
 
             float4 Color = TransformCurrentFrameSceneColor(RawColor);
 
@@ -721,43 +612,6 @@ void PrecacheInputSceneColor(in TAAInputParameters InputParams)
 #endif //AA_SAMPLE_CACHE_METHOD_LDS
 
 
-/////////////////////////////////Temporal Upsampling ///////////////////////
-
-#if AA_UPSAMPLE
-
-// Returns the weight of a pixels at a coordinate PixelDelta from the PDF highest point.
-float ComputeSampleWeigth(in TAAIntermediaryResult IntermediaryResult, float2 PixelDelta)
-{
-    float u2 = UPSCALE_FACTOR * UPSCALE_FACTOR;
-
-	// The point of InvFilterScaleFactor is to blur current frame scene color when upscaling.
-    u2 *= (IntermediaryResult.InvFilterScaleFactor * IntermediaryResult.InvFilterScaleFactor);
-
-	// 1 - 1.9 * x^2 + 0.9 * x^4
-    float x2 = saturate(u2 * dot(PixelDelta, PixelDelta));
-    return (0.905 * x2 - 1.9) * x2 + 1;
-}
-
-
-// Returns the weight of a pixels at a coordinate PixelDelta from the PDF highest point.
-float ComputePixelWeigth(in TAAIntermediaryResult IntermediaryResult, float2 PixelDelta)
-{
-    float u2 = UPSCALE_FACTOR * UPSCALE_FACTOR;
-
-	// The point of InvFilterScaleFactor is to blur current frame scene color when upscaling.
-    u2 *= (IntermediaryResult.InvFilterScaleFactor * IntermediaryResult.InvFilterScaleFactor);
-
-	// 1 - 1.9 * x^2 + 0.9 * x^4
-    float x2 = saturate(u2 * dot(PixelDelta, PixelDelta));
-    float r = (0.905 * x2 - 1.9) * x2 + 1;
-
-	// Multiply pixel weight ^ 2 by upscale factor because have only a probability = screen percentage ^ 2 to return 1.
-    return u2 * r;
-}
-
-#endif // AA_UPSAMPLE
-
-
 ///////////////////////////////// TAA MAJOR FUNCTIONS ///////////////////////////////////////
 
 // Filter input pixels.
@@ -765,111 +619,80 @@ void FilterCurrentFrameInputSamples(
 	in TAAInputParameters InputParams,
 	inout TAAIntermediaryResult IntermediaryResult)
 {
-#if !AA_FILTERED
+#if 1
 	{
         IntermediaryResult.Filtered = SampleCachedSceneColorTexture(InputParams, int2(0, 0)).Color;
         return;
     }
 #endif
 
-    float4 Filtered;
-
-	{
-#if AA_UPSAMPLE
-		// Pixel coordinate of the center of output pixel O in the input viewport.
-        float2 PPCo = InputParams.ViewportUV * InputViewSize.xy + TemporalJitterPixels;
-
-		// Pixel coordinate of the center of the nearest input pixel.
-        float2 PPCk = floor(PPCo) + 0.5;
-		
-		// Vector in pixel between pixel Center and Jitter.
-        float2 dKO = PPCo - PPCk;
-#endif
-		
-#if AA_SAMPLES == 9
-			const uint SampleIndexes[9] = SquareIndexes3x3;
-#else// AA_SAMPLES == 6
-			const uint SampleIndexes[5] = PlusIndexes3x3;
-#endif
-
-        float NeighborsFinalWeight = 0;
-        float4 NeighborsColor = 0;
-
-        [unroll]
-        for (uint i = 0; i < AA_SAMPLES; i++)
-        {
-			// Get the sample offset from the nearest input pixel.
-            int2 SampleOffset;
-			
-			#if AA_UPSAMPLE && AA_SAMPLES == 6
-				if (i == 5)
-				{
-					SampleOffset= sign(dKO);
-				}
-				else
-			#endif
-			{
-                const uint SampleIndex = SampleIndexes[i];
-                SampleOffset = Offsets3x3[SampleIndex];
-            }
-            float2 fSampleOffset = float2(SampleOffset);
-
-			// Finds out the spatial weight of this input sample.
-#if AA_UPSAMPLE
-			// Compute the pixel delta between output pixels and input pixel I.
-			//  Note: abs() is unecessary because of the dot(dPP, dPP) latter on.
-            float2 dPP = fSampleOffset - dKO;
-
-            float SampleSpatialWeight = ComputeSampleWeigth(IntermediaryResult, dPP);
-
-#elif AA_SAMPLES == 9
-			float SampleSpatialWeight = SampleWeights[i];
-
-#elif AA_SAMPLES == 5
-            float SampleSpatialWeight = PlusWeights[i];
-
-#else
-			#error Do not know how to compute filtering sample weight.
-
-#endif
-
-			// Fetch sample.
-            TAASceneColorSample Sample = SampleCachedSceneColorTexture(InputParams, SampleOffset);
-				
-			// Finds out the sample's HDR weight.
-#if AA_TONE
-            float SampleHdrWeight = Sample.HdrWeight;
-#else
-			float SampleHdrWeight = 1;
-#endif
-
-            float SampleFinalWeight = SampleSpatialWeight * SampleHdrWeight;
-
-			// Apply pixel.
-            NeighborsColor += SampleFinalWeight * Sample.Color;
-            NeighborsFinalWeight += SampleFinalWeight;
-        }
-		
-#if AA_TONE || AA_UPSAMPLE
-
-        {
-			// Reweight because SampleFinalWeight does not that have total sum = 1.
-            Filtered = NeighborsColor * rcp(NeighborsFinalWeight);
-        }
-#else
-		{
-            Filtered = NeighborsColor;
-        }
-#endif
-		
-		
-#if AA_UPSAMPLE
-		// Compute the temporal weight of the output pixel.
-        IntermediaryResult.FilteredTemporalWeight = ComputePixelWeigth(IntermediaryResult, dKO);
-#endif
-    }
-
-    IntermediaryResult.Filtered = Filtered;
+//    float4 Filtered;
+//
+//#if AA_SAMPLES == 9
+//			const uint SampleIndexes[9] = SquareIndexes3x3;
+//#else// AA_SAMPLES == 6
+//    const uint SampleIndexes[5] = PlusIndexes3x3;
+//#endif
+//
+//    float NeighborsFinalWeight = 0;
+//    float4 NeighborsColor = 0;
+//
+//        [unroll]
+//    for (uint i = 0; i < AA_SAMPLES; i++)
+//    {
+//			// Get the sample offset from the nearest input pixel.
+//        int2 SampleOffset;
+//		
+//			#if AA_UPSAMPLE && AA_SAMPLES == 6
+//				if (i == 5)
+//				{
+//					SampleOffset= sign(dKO);
+//				}
+//				else
+//			#endif
+//			{
+//            const uint SampleIndex = SampleIndexes[i];
+//            SampleOffset = Offsets3x3[SampleIndex];
+//        }
+//        float2 fSampleOffset = float2(SampleOffset);
+//
+//			// Finds out the spatial weight of this input sample.
+//#if AA_SAMPLES == 9
+//			float SampleSpatialWeight = SampleWeights[i];
+//
+//#elif AA_SAMPLES == 5
+//        float SampleSpatialWeight = PlusWeights[i];
+//
+//#else
+//			#error Do not know how to compute filtering sample weight.
+//
+//#endif
+//
+//			// Fetch sample.
+//        TAASceneColorSample Sample = SampleCachedSceneColorTexture(InputParams, SampleOffset);
+//				
+//			// Finds out the sample's HDR weight.
+//#if AA_TONE
+//        float SampleHdrWeight = Sample.HdrWeight;
+//#else
+//			float SampleHdrWeight = 1;
+//#endif
+//
+//        float SampleFinalWeight = SampleSpatialWeight * SampleHdrWeight;
+//
+//			// Apply pixel.
+//        NeighborsColor += SampleFinalWeight * Sample.Color;
+//        NeighborsFinalWeight += SampleFinalWeight;
+//    }
+//		
+//#if AA_TONE
+//			// Reweight because SampleFinalWeight does not that have total sum = 1.
+//    Filtered = NeighborsColor * rcp(NeighborsFinalWeight);
+//#else
+//            Filtered = NeighborsColor;
+//#endif
+//
+//    IntermediaryResult.Filtered = Filtered;
 }
 
 
@@ -920,7 +743,7 @@ void ComputeNeighborhoodBoundingbox(
 #elif AA_HISTORY_CLAMPING_BOX == HISTORY_CLAMPING_BOX_SAMPLE_DISTANCE
 	// Do color clamping only within a radius.
 	{
-		float2 PPCo = InputParams.ViewportUV * InputViewSize.xy + TemporalJitterPixels;
+		float2 PPCo = InputParams.ViewportUV * InputViewSize.xy /*+ TemporalJitterPixels*/;
 		float2 PPCk = floor(PPCo) + 0.5;
 		float2 dKO = PPCo - PPCk;
 		
@@ -929,12 +752,7 @@ void ComputeNeighborhoodBoundingbox(
 		NeighborMax = Neighbors[4];
 		
 		// Reduce distance threshold as upsacale factor increase to reduce ghosting.
-#if AA_UPSAMPLE
-		float DistthresholdLerp = UPSCALE_FACTOR - 1;
-#else
-		float DistthresholdLerp = 0;
-#endif
-		float DistThreshold = lerp(1.51, 1.3, DistthresholdLerp);
+		float DistThreshold = 1.3;
 
 #if AA_SAMPLES == 9
 			const uint Indexes[9] = SquareIndexes3x3;
@@ -1011,7 +829,7 @@ float4 SampleHistory(in float2 HistoryScreenPosition)
 #if AA_BICUBIC
 	{
 		//[-1,1] to [0,1]
-        float2 HistoryBufferUV = HistoryScreenPosition * float2(0.5f, -0.5f) + 0.5f;
+        float2 HistoryBufferUV = HistoryScreenPosition;
 
         CatmullRomSamples Samples = GetBicubic2DCatmullRomSamples(HistoryBufferUV, InputViewSize.xy, InputViewSize.zw);
 
@@ -1028,7 +846,7 @@ float4 SampleHistory(in float2 HistoryScreenPosition)
 #else
 	{
 		//[-1,1] to [0,1]
-		float2 HistoryBufferUV = HistoryScreenPosition * float2(0.5f, -0.5f) + 0.5f;
+		float2 HistoryBufferUV = HistoryScreenPosition;
 		RawHistory = HistoryColor.SampleLevel(BiLinearClampSampler, HistoryBufferUV, 0);
 	}
 #endif
@@ -1092,7 +910,7 @@ void ApplyTemporalBlend(uint2 ST, float4 CurrentColor, float2 DepthOffset,float3
     float SpeedFactor = saturate(1.0 - length(Velocity.xy) * RcpSpeedLimiter);
 
     // Fetch temporal color.  Its "confidence" weight is stored in alpha.
-    float4 Temp = TransformSceneColor(HistoryColor.SampleLevel(BiLinearClampSampler, STtoUV(ST + Velocity.xy), 0));
+    float4 Temp = SampleHistory(STtoUV(ST + Velocity.xy));
     float3 TemporalColor = Temp.rgb;
     float TemporalWeight = Temp.w;
 
@@ -1137,28 +955,6 @@ void TemporalAASample(uint2 DispatchThreadId,uint2 GroupId, uint2 GroupThreadId,
         InputParams.ViewportUV = ViewportUV;
         InputParams.ScreenPos = ViewportUVToScreenPos(ViewportUV);
         InputParams.NearestBufferUV = ViewportUV;
-		
-#if TAA_RESPONSIVE
-		InputParams.bIsResponsiveAAPixel = 1.f;
-#else
-		InputParams.bIsResponsiveAAPixel = 0.f;
-#endif
-	
-#if AA_UPSAMPLE
-		{
-			// Pixel coordinate of the center of output pixel O in the input viewport.
-            float2 PPCo = ViewportUV * InputViewSize.xy + TemporalJitterPixels;
-		
-			// Pixel coordinate of the center of the nearest input pixel K.
-            float2 PPCk = floor(PPCo) + 0.5;
-		
-			// Pixel coordinate of the center of the nearest top left input pixel T.
-            float2 PPCt = floor(PPCo - 0.5) + 0.5;
-		
-            InputParams.NearestBufferUV = InputViewSize.zw * PPCk;
-            InputParams.NearestTopLeftBufferUV = InputViewSize.zw * PPCt;
-        }
-#endif
     }
 	
 	
@@ -1190,35 +986,32 @@ void TemporalAASample(uint2 DispatchThreadId,uint2 GroupId, uint2 GroupThreadId,
         Depths.z = SampleCachedSceneDepthTexture(InputParams, int2(-AA_CROSS, AA_CROSS));
         Depths.w = SampleCachedSceneDepthTexture(InputParams, int2(AA_CROSS, AA_CROSS));
 
-#if INVERTED_Z_BUFFER
 			// Nearest depth is the largest depth (depth surface 0=far, 1=near).
-			if(Depths.x < Depths.y) 
-			{
-				DepthOffsetXx = -AA_CROSS;
-			}
-			if(Depths.z < Depths.w) 
-			{
-				DepthOffset.x = -AA_CROSS;
-			}
-			float DepthsXY = min(Depths.x, Depths.y);
-			float DepthsZW = min(Depths.z, Depths.w);
-			if(DepthsXY < DepthsZW) 
-			{
-				DepthOffset.y = -AA_CROSS;
-				DepthOffset.x = DepthOffsetXx; 
-			}
-			float DepthsXYZW = min(DepthsXY, DepthsZW);
-			if(DepthsXYZW < PosN.z) 
-			{
+        if (Depths.x < Depths.y)
+        {
+            DepthOffsetXx = -AA_CROSS;
+        }
+        if (Depths.z < Depths.w)
+        {
+            DepthOffset.x = -AA_CROSS;
+        }
+        float DepthsXY = min(Depths.x, Depths.y);
+        float DepthsZW = min(Depths.z, Depths.w);
+        if (DepthsXY < DepthsZW)
+        {
+            DepthOffset.y = -AA_CROSS;
+            DepthOffset.x = DepthOffsetXx;
+        }
+        float DepthsXYZW = min(DepthsXY, DepthsZW);
+        if (DepthsXYZW < PosN.z)
+        {
 				// This is offset for reading from velocity texture.
 				// This supports half or fractional resolution velocity textures.
 				// With the assumption that UV position scales between velocity and color.
-				VelocityOffset = DepthOffset * InputViewSize.zw;
-				PosN.z = DepthsXYZW;
-			}
-#else // ! INVERTED_Z_BUFFER
-			#error Fix me!
-#endif // !INVERTED_Z_BUFFER
+            VelocityOffset = DepthOffset * InputViewSize.zw;
+            PosN.z = DepthsXYZW;
+        }
+
     }
 	#endif	// AA_CROSS
 	
@@ -1247,12 +1040,6 @@ void TemporalAASample(uint2 DispatchThreadId,uint2 GroupId, uint2 GroupThreadId,
 
     Velocity = sqrt(dot(BackTemp, BackTemp));
 
-	
-#if !AA_BICUBIC
-	// Save the amount of pixel offset of just camera motion, used later as the amount of blur introduced by history.
-	float HistoryBlurAmp = 2.0;
-	HistoryBlur = saturate(abs(BackTemp.x) * HistoryBlurAmp + abs(BackTemp.y) * HistoryBlurAmp);
-#endif
 	// Easier to do off screen check before conversion.
 	// This converts back projection vector to [-1 to 1] offset in viewport.
     HistoryScreenPosition = InputParams.ScreenPos - BackN / (Velocity == 0 ? 1 : Velocity);
@@ -1262,14 +1049,11 @@ void TemporalAASample(uint2 DispatchThreadId,uint2 GroupId, uint2 GroupThreadId,
 	// Detect if HistoryBufferUV would be outside of the viewport.
     OffScreen = max(abs(HistoryScreenPosition.x), abs(HistoryScreenPosition.y)) >= 1.0;
 	
-	
 	// Precache input scene color.
     PrecacheInputSceneColor(InputParams);
 	
 	// Filter input.
-	#if AA_UPSAMPLE_ADAPTIVE_FILTERING==0
-		FilterCurrentFrameInputSamples(InputParams,IntermediaryResult);
-	#endif
+	FilterCurrentFrameInputSamples(InputParams,IntermediaryResult);
 	
 	// Compute neighborhood bounding box.
     float4 NeighborMin;
@@ -1277,76 +1061,11 @@ void TemporalAASample(uint2 DispatchThreadId,uint2 GroupId, uint2 GroupThreadId,
 
     ComputeNeighborhoodBoundingbox(InputParams, IntermediaryResult, NeighborMin, NeighborMax);
 	
-	// Sample history.
-    float4 History = SampleHistory(HistoryScreenPosition);
-	
 	// Whether the feedback needs to be reset.
     bool IgnoreHistory = OffScreen;
-	
-	// Save off luma of history before the clamp.
-    float LumaMin = GetSceneColorLuma4(NeighborMin);
-    float LumaMax = GetSceneColorLuma4(NeighborMax);
-    float LumaHistory = GetSceneColorLuma4(History);
-	
-	// Clamp history.
-    float4 PreClampingHistoryColor = History;
-    History = ClampHistory(History, NeighborMin, NeighborMax);
-	
-	
-	// Filter input after color clamping.
-	#if AA_UPSAMPLE_ADAPTIVE_FILTERING == 1
-	{
-		#if AA_VARIANCE
-			#error AA_VARIANCE and AA_UPSAMPLE_ADAPTIVE_FILTERING are not compatible because of circular code dependency.
-		#endif
 
-		if (IgnoreHistory)
-		{
-			// Set the input filter infinitely large when we know need to rely on it.
-			IntermediaryResult.InvFilterScaleFactor = 0;
-		}
-
-		FilterCurrentFrameInputSamples(InputParams,IntermediaryResult);
-	}
-	#endif
+	// COMPUTE BLEND AMOUNT
 	
-	
-	
-	// COMPUTE BLEND AMOUNT 
- //   float BlendFinal;
-
-	//{
-       
- //       float LumaFiltered = GetSceneColorLuma4(IntermediaryResult.Filtered);
-
- //       BlendFinal = IntermediaryResult.FilteredTemporalWeight * CurrentFrameWeight;
-
- //       BlendFinal = lerp(BlendFinal, 0.2, saturate(Velocity / 40));
-		
-	//	// Make sure to have at least some small contribution
- //       BlendFinal = max(BlendFinal, saturate(0.01f * LumaHistory / abs(LumaFiltered - LumaHistory)));
-
-	//	// Responsive forces 1/4 of new frame.
- //       BlendFinal = InputParams.bIsResponsiveAAPixel ? (1.0 / 4.0) : BlendFinal;
- //   }
-	
-	// Offscreen feedback resets.
-    if (IgnoreHistory)
-    {
-        History = IntermediaryResult.Filtered;
-		History.a = 0.0;
-    }
-	
-	//// Luma weighted blend
- //   float FilterWeight = GetSceneColorHdrWeight(InputParams, IntermediaryResult.Filtered);
- //   float HistoryWeight = GetSceneColorHdrWeight(InputParams, History);
-
- //   float4 OutputPayload;
-	//{
- //       float2 Weights = WeightedLerpFactors(HistoryWeight, FilterWeight, BlendFinal);
- //       OutputPayload = AddPayload(MulPayload(History, Weights.x), MulPayload(IntermediaryResult.Filtered, Weights.y));
- //   }
-    
     ApplyTemporalBlend(DispatchThreadId, IntermediaryResult.Filtered, DepthOffset, NeighborMin.rgb, NeighborMax.rgb);
 }
 

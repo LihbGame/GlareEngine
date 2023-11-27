@@ -38,6 +38,7 @@ float3 TM(float3 rgb)
 float3 ITM(float3 rgb)
 {
     return rgb / (1 - RGBToLuminance(rgb));
+
 }
 
 float3 TM_YCOCG(float3 rgb)

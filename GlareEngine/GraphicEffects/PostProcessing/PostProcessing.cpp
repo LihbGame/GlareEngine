@@ -863,7 +863,7 @@ void ScreenProcessing::LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, C
 	Context.Dispatch2D(LinearDepth.GetWidth(), LinearDepth.GetHeight(), 16, 16);
 
 #ifdef DEBUG
-	EngineGUI::AddRenderPassVisualizeTexture("Linear Z", WStringToString(LinearDepth.GetName()), LinearDepth.GetHeight(), LinearDepth.GetWidth(), LinearDepth.GetSRV());
+	EngineGUI::AddRenderPassVisualizeTexture("Linear Z", WStringToString(g_LinearDepth[0].GetName()), g_LinearDepth[0].GetHeight(), g_LinearDepth[0].GetWidth(), g_LinearDepth[0].GetSRV());
 #endif // DEBUG
 }
 
