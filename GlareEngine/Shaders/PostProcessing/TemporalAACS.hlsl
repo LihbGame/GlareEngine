@@ -21,7 +21,7 @@ cbuffer TAAConstantBuffer : register(b1)
 	// Temporal jitter at the pixel.
     float2 TemporalJitterPixels;
     float2 ViewportJitter;
-		//ue5 set 0.04 as default ,Low values cause blurriness and ghosting, high values fail to hide jittering
+	//ue5 set 0.04 as default ,Low values cause blurriness and ghosting, high values fail to hide jittering
     float CurrentFrameWeight;
     float pad1;
 	//CatmullRom Weight

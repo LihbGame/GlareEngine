@@ -5,9 +5,10 @@
 #include "PostProcessing/TemporalAA.h"
 
 
-
 namespace GlareEngine
 {
+	using namespace GlareEngine::Render;
+
 	DepthBuffer				g_SceneDepthBuffer;
 
 	ColorBuffer				g_SceneColorBuffer;
@@ -51,6 +52,9 @@ namespace GlareEngine
 	ColorBuffer				g_MotionPrepBuffer;
 
 	ColorBuffer				g_TemporalColor[2];
+
+	ColorBuffer				g_GBuffer[GBufferType::GBUFFER_Count];
+
 
 	//ColorBuffer g_OverlayBuffer;
 	//ColorBuffer g_HorizontalBuffer;
@@ -171,6 +175,15 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 	g_TemporalColor[1].Create(L"Temporal Color 1", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
 	TemporalAA::ClearHistory(InitContext);
 
+	//GBuffer Init
+	g_GBuffer[GBufferType::GBUFFER_BaseColor].Create(L"GBuffer BaseColor", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	g_GBuffer[GBufferType::GBUFFER_Normal].Create(L"GBuffer Normal", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
+	g_GBuffer[GBufferType::GBUFFER_MSR].Create(L"GBuffer MSR", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	g_GBuffer[GBufferType::GBUFFER_Emissive].Create(L"GBuffer Emissive", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R11G11B10_FLOAT);
+	g_GBuffer[GBufferType::GBUFFER_WorldTangent].Create(L"GBuffer WorldTangent", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+
+
+
 	//g_MinMaxDepth8.Create(L"MinMaxDepth 8x8", bufferWidth3, bufferHeight3, 1, DXGI_FORMAT_R32_UINT, esram);
 	//g_MinMaxDepth16.Create(L"MinMaxDepth 16x16", bufferWidth4, bufferHeight4, 1, DXGI_FORMAT_R32_UINT, esram);
 	//g_MinMaxDepth32.Create(L"MinMaxDepth 32x32", bufferWidth5, bufferHeight5, 1, DXGI_FORMAT_R32_UINT, esram);
@@ -278,6 +291,13 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 
 	g_TemporalColor[0].Create(L"Temporal Color 0", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
 	g_TemporalColor[1].Create(L"Temporal Color 1", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
+
+	//GBuffer Init
+	g_GBuffer[GBufferType::GBUFFER_BaseColor].Create(L"GBuffer BaseColor", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	g_GBuffer[GBufferType::GBUFFER_Normal].Create(L"GBuffer Normal", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
+	g_GBuffer[GBufferType::GBUFFER_MSR].Create(L"GBuffer MSR", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	g_GBuffer[GBufferType::GBUFFER_Emissive].Create(L"GBuffer Emissive", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R11G11B10_FLOAT);
+	g_GBuffer[GBufferType::GBUFFER_WorldTangent].Create(L"GBuffer WorldTangent", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
 }
 
 void GlareEngine::DestroyRenderingBuffers()

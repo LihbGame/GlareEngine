@@ -18,12 +18,29 @@ namespace GlareEngine
 
 	namespace Render
 	{
-		enum AntiAliasingType :int
+		enum  AntiAliasingType :int
 		{
 			MSAA,
 			FXAA,
 			TAA,
 			NOAA
+		};
+
+		enum  RenderPipelineType :int
+		{
+			Forward,
+			TBFR,		//Tiled Based Forward Rendering
+			TBDR		//Tiled Based Deferred Rendering
+		};
+
+		enum GBufferType :int
+		{
+			GBUFFER_Emissive,		//RGBAHalf		Emissive(rgb)
+			GBUFFER_Normal,			//R10G10B10A2	Normal(rgb)
+			GBUFFER_MSR,			//R8G8B8A8		Metallic(r), Specular(g), Roughness(b), ShadingModelID(a)
+			GBUFFER_BaseColor,		//R8G8B8A8		BaseColor(rgb), Material AO(a)	
+			GBUFFER_WorldTangent,	//R8G8B8A8		WorldTangent(rgb), Anisotropic intensity(a)
+			GBUFFER_Count
 		};
 
 	}

@@ -4,7 +4,7 @@
 #include "ShadowBuffer.h"
 #include "GPUBuffer.h"
 #include "GraphicsCore.h"
-
+#include "Render.h"
 
 
 /// <summary>
@@ -67,6 +67,10 @@ namespace GlareEngine
 	extern ColorBuffer				g_MotionPrepBuffer;				
 
 	extern ColorBuffer				g_TemporalColor[2];
+
+	//GBuffer
+	extern ColorBuffer				g_GBuffer[Render::GBufferType::GBUFFER_Count];
+	
 
 	//extern ColorBuffer g_OverlayBuffer;        // R8G8B8A8_UNORM
 	//extern ColorBuffer g_HorizontalBuffer;    // For separable (bicubic) upsampling

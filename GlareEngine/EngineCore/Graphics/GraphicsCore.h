@@ -2,13 +2,6 @@
 #include "Display.h"
 namespace GlareEngine
 {
-	enum class RenderPipelineType :int
-	{
-		Forward,
-		Forward_Plus,
-		Deferred
-	};
-
 	using namespace Microsoft::WRL;
 
 	class CommandListManager;

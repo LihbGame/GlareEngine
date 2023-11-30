@@ -5,6 +5,8 @@
 class ShadowMap;
 class EngineGUI;
 
+using Render::RenderPipelineType;
+
 typedef void (*BuildPSO)(PSOCommonProperty);
 
 class Scene
@@ -62,8 +64,8 @@ private:
 	void UpdateMainConstantBuffer(float DeltaTime);
 	void CreateShadowMap(GraphicsContext& Context, vector<RenderObject*> RenderObjects);
 	void ForwardRendering();
-	void ForwardPlusRendering();
-	void DeferredRendering();
+	void TiledBaseForwardRendering();
+	void TiledBaseDeferredRendering();
 	void CreateTileConeShadowMap(GraphicsContext& Context);
 private:
 	ID3D12GraphicsCommandList* m_pCommandList = nullptr;

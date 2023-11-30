@@ -161,14 +161,14 @@ void Scene::RenderScene(RenderPipelineType Type)
 		break;
 	}
 
-	case RenderPipelineType::Forward_Plus:
+	case RenderPipelineType::TBFR:
 	{
-		ForwardPlusRendering();
+		TiledBaseForwardRendering();
 		break;
 	}
-	case RenderPipelineType::Deferred:
+	case RenderPipelineType::TBDR:
 	{
-		DeferredRendering();
+		TiledBaseDeferredRendering();
 		break;
 	}
 	default:
@@ -398,7 +398,7 @@ void Scene::ForwardRendering()
 	Context.Finish();
 }
 
-void Scene::ForwardPlusRendering()
+void Scene::TiledBaseForwardRendering()
 {
 	GraphicsContext& Context = GraphicsContext::Begin(L"Scene Render");
 
@@ -587,7 +587,7 @@ void Scene::ForwardPlusRendering()
 }
 
 
-void Scene::DeferredRendering()
+void Scene::TiledBaseDeferredRendering()
 {
 }
 
