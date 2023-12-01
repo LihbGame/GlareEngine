@@ -155,12 +155,11 @@ void Scene::RenderScene(RenderPipelineType Type)
 {
 	switch (Type)
 	{
-	case RenderPipelineType::Forward:
+	case RenderPipelineType::FR:
 	{
 		ForwardRendering();
 		break;
 	}
-
 	case RenderPipelineType::TBFR:
 	{
 		TiledBaseForwardRendering();
@@ -174,7 +173,7 @@ void Scene::RenderScene(RenderPipelineType Type)
 	default:
 		break;
 	}
-	
+
 	//Post Processing
 	ScreenProcessing::Render(*m_pCamera);
 }

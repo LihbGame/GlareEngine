@@ -28,7 +28,7 @@ namespace GlareEngine
 
 		enum  RenderPipelineType :int
 		{
-			Forward,
+			FR,			//Forward Rendering
 			TBFR,		//Tiled Based Forward Rendering
 			TBDR		//Tiled Based Deferred Rendering
 		};

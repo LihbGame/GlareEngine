@@ -393,7 +393,7 @@ void App::RenderScene(void)
 {
 	if (EngineGlobal::gCurrentScene->GetName() == "Blue Tree")
 	{
-		EngineGlobal::gCurrentScene->RenderScene(RenderPipelineType::Forward);
+		EngineGlobal::gCurrentScene->RenderScene(RenderPipelineType::FR);
 	}
 	else
 	{
