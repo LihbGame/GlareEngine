@@ -38,6 +38,8 @@ namespace GlareEngine
 
 		//Rendering Setting
 		AntiAliasingType gAntiAliasingType = AntiAliasingType::MSAA;
+
+		RenderPipelineType gRenderPipelineType = RenderPipelineType::TBFR;
 	}
 
 	void Render::Initialize(ID3D12GraphicsCommandList* CommandList)

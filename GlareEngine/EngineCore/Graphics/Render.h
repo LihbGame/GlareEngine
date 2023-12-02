@@ -35,14 +35,23 @@ namespace GlareEngine
 
 		enum GBufferType :int
 		{
-			GBUFFER_Emissive,		//RGBAHalf		Emissive(rgb)
-			GBUFFER_Normal,			//R10G10B10A2	Normal(rgb)
-			GBUFFER_MSR,			//R8G8B8A8		Metallic(r), Specular(g), Roughness(b), ShadingModelID(a)
-			GBUFFER_BaseColor,		//R8G8B8A8		BaseColor(rgb), Material AO(a)	
-			GBUFFER_WorldTangent,	//R8G8B8A8		WorldTangent(rgb), Anisotropic intensity(a)
+			GBUFFER_Emissive,		//R11G11B10_FLOAT		Emissive(rgb)
+			GBUFFER_Normal,			//R10G10B10A2			Normal(rgb)
+			GBUFFER_MSR,			//R8G8B8A8				Metallic(r), Specular(g), Roughness(b), ShadingModelID(a)
+			GBUFFER_BaseColor,		//R8G8B8A8				BaseColor(rgb), Material AO(a)	
+			GBUFFER_WorldTangent,	//R8G8B8A8				WorldTangent(rgb), Anisotropic intensity(a)
 			GBUFFER_Count
 		};
 
+
+		const DXGI_FORMAT GBufferFormat[] =
+		{
+			DXGI_FORMAT_R11G11B10_FLOAT,		//GBUFFER_Emissive
+			DXGI_FORMAT_R10G10B10A2_UNORM,		//GBUFFER_Normal
+			DXGI_FORMAT_R8G8B8A8_UNORM,			//GBUFFER_MSR
+			DXGI_FORMAT_R8G8B8A8_UNORM,			//GBUFFER_BaseColor
+			DXGI_FORMAT_R8G8B8A8_UNORM,			//GBUFFER_WorldTangent
+		};
 	}
 
 
@@ -62,6 +71,8 @@ namespace GlareEngine
 		extern DescriptorHeap gSamplerHeap;
 
 		extern BoolVar SeparateZPass;
+
+		extern RenderPipelineType gRenderPipelineType;
 	}
 
 

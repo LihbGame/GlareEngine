@@ -26,6 +26,7 @@ namespace GlareEngine
         float metallicFactor;           // default=1
         float roughnessFactor;          // default=1
         float clearCoatFactor;			// default=1
+        float shaderModelID;			// default=0
         uint32_t flags;
         uint32_t specialFlags;
 

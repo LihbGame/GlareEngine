@@ -316,10 +316,17 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                 }
             }
 
+            if (Render::gRenderPipelineType == RenderPipelineType::TBFR)
+            {
+                gModelPSOs[PSOReadWriteDepthIndex].SetRenderTargetFormats(1, &DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
+                gModelPSOs[PSOEqualDepthIndex].SetRenderTargetFormats(1, &DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
+            }
+            else if(Render::gRenderPipelineType==RenderPipelineType::TBDR)
+            {
+                gModelPSOs[PSOReadWriteDepthIndex].SetRenderTargetFormats(GBufferType::GBUFFER_Count, Render::GBufferFormat, g_SceneDepthBuffer.GetFormat());
+                gModelPSOs[PSOEqualDepthIndex].SetRenderTargetFormats(GBufferType::GBUFFER_Count, Render::GBufferFormat, g_SceneDepthBuffer.GetFormat());
+            }
 
-
-            gModelPSOs[PSOReadWriteDepthIndex].SetRenderTargetFormats(1, &DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
-            gModelPSOs[PSOEqualDepthIndex].SetRenderTargetFormats(1, &DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
 
             if (CommonProperty.IsWireframe)
             {

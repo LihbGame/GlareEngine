@@ -588,6 +588,9 @@ void Scene::TiledBaseForwardRendering()
 
 void Scene::TiledBaseDeferredRendering()
 {
+
+
+
 }
 
 void Scene::CreateTileConeShadowMap(GraphicsContext& Context)

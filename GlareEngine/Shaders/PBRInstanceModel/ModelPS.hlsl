@@ -36,6 +36,7 @@ cbuffer MaterialConstants : register(b2)
     float   normalTextureScale;
     float2  metallicRoughnessFactor;
     float   clearCoatFactor;
+    uint    shaderModelID;
     uint    flags;
     uint    specialflags;
 }

@@ -176,11 +176,11 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 	TemporalAA::ClearHistory(InitContext);
 
 	//GBuffer Init
-	g_GBuffer[GBufferType::GBUFFER_BaseColor].Create(L"GBuffer BaseColor", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-	g_GBuffer[GBufferType::GBUFFER_Normal].Create(L"GBuffer Normal", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
-	g_GBuffer[GBufferType::GBUFFER_MSR].Create(L"GBuffer MSR", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-	g_GBuffer[GBufferType::GBUFFER_Emissive].Create(L"GBuffer Emissive", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R11G11B10_FLOAT);
-	g_GBuffer[GBufferType::GBUFFER_WorldTangent].Create(L"GBuffer WorldTangent", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	g_GBuffer[GBUFFER_BaseColor].Create(L"GBuffer BaseColor", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_BaseColor]);
+	g_GBuffer[GBUFFER_Normal].Create(L"GBuffer Normal", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_Normal]);
+	g_GBuffer[GBUFFER_MSR].Create(L"GBuffer MSR", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_MSR]);
+	g_GBuffer[GBUFFER_Emissive].Create(L"GBuffer Emissive", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_Emissive]);
+	g_GBuffer[GBUFFER_WorldTangent].Create(L"GBuffer WorldTangent", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_WorldTangent]);
 
 
 
@@ -293,11 +293,11 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 	g_TemporalColor[1].Create(L"Temporal Color 1", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
 
 	//GBuffer Init
-	g_GBuffer[GBufferType::GBUFFER_BaseColor].Create(L"GBuffer BaseColor", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-	g_GBuffer[GBufferType::GBUFFER_Normal].Create(L"GBuffer Normal", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
-	g_GBuffer[GBufferType::GBUFFER_MSR].Create(L"GBuffer MSR", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
-	g_GBuffer[GBufferType::GBUFFER_Emissive].Create(L"GBuffer Emissive", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R11G11B10_FLOAT);
-	g_GBuffer[GBufferType::GBUFFER_WorldTangent].Create(L"GBuffer WorldTangent", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+	g_GBuffer[GBUFFER_BaseColor].Create(L"GBuffer BaseColor", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_BaseColor]);
+	g_GBuffer[GBUFFER_Normal].Create(L"GBuffer Normal", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_Normal]);
+	g_GBuffer[GBUFFER_MSR].Create(L"GBuffer MSR", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_MSR]);
+	g_GBuffer[GBUFFER_Emissive].Create(L"GBuffer Emissive", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_Emissive]);
+	g_GBuffer[GBUFFER_WorldTangent].Create(L"GBuffer WorldTangent", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_WorldTangent]);
 }
 
 void GlareEngine::DestroyRenderingBuffers()

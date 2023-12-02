@@ -19,7 +19,7 @@ static const uint BASECOLOR = 0;
 static const uint METALLICROUGHNESS = 1;
 static const uint OCCLUSION = 2;
 static const uint EMISSIVE = 3;
-static const uint NORMAL = 4;
+static const uint NORMALMAP = 4;
 static const uint CLEARCOAT = 5;
 
 //Whether to use second UV
@@ -37,6 +37,7 @@ cbuffer MaterialConstants : register(b2)
     float   normalTextureScale;
     float2  metallicRoughnessFactor;
     float   clearCoatFactor;
+    uint    shaderModelID;
     uint    flags;
     uint    specialflags;
 }
@@ -91,7 +92,7 @@ float4 main(VSOutput vsOutput) : SV_Target0
      float3 normal = normalize(vsOutput.normal);
  #ifndef NO_TANGENT_FRAME
      // Read normal map and convert to SNORM
-     float3 normalMap = normalTexture.Sample(normalSampler, UVSET(NORMAL)) * 2.0 - 1.0;
+    float3 normalMap = normalTexture.Sample(normalSampler, UVSET(NORMALMAP)) * 2.0 - 1.0;
      // glTF spec says to normalize N before and after scaling, but that's excessive
      normalMap = normalize(normalMap * float3(normalTextureScale, normalTextureScale, 1));
      normal = GetNormal(normalMap, normal, vsOutput.tangent);
