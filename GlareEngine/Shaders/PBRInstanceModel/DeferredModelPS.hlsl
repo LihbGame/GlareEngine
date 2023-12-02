@@ -41,7 +41,6 @@ cbuffer MaterialConstants : register(b2)
     uint specialflags;
 }
 
-
 struct VSOutput
 {
     float4 position : SV_POSITION;
