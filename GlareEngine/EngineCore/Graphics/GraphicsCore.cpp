@@ -360,11 +360,6 @@ namespace GlareEngine
 		DestroyCommonState();
 		DestroyRenderingBuffers();
 
-		//TemporalEffects::Shutdown();
-		//PostEffects::Shutdown();
-		//SSAO::Shutdown();
-		//ParticleEffects::Shutdown();
-
 		Display::Shutdown();
 
 #if defined(_DEBUG)

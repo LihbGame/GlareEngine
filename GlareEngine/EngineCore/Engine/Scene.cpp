@@ -47,6 +47,17 @@ void Scene::Update(float DeltaTime)
 		object->Update(DeltaTime, &Context);
 	}
 
+	//update Render Pipeline Type
+	if (LoadingFinish)
+	{
+		RenderPipelineType NewRenderPipelineType = (RenderPipelineType)m_pGUI->GetrenderPipelineIndex();
+		if (NewRenderPipelineType != Render::gRenderPipelineType)
+		{
+			Render::gRenderPipelineType = NewRenderPipelineType;
+			Render::BuildPSOs();
+		}
+	}
+
 	//Update Screen Processing
 	ScreenProcessing::Update(DeltaTime, mMainConstants, *m_pCamera);
 
@@ -588,9 +599,159 @@ void Scene::TiledBaseForwardRendering()
 
 void Scene::TiledBaseDeferredRendering()
 {
+	GraphicsContext& Context = GraphicsContext::Begin(L"Scene Render");
+
+	Render::ClearGBuffer(Context);
+
+	//default batch
+	MeshSorter sorter(MeshSorter::eDefault);
+	sorter.SetCamera(*m_pCamera);
+	sorter.SetViewport(m_MainViewport);
+	sorter.SetScissor(m_MainScissor);
+
+	sorter.SetDepthStencilTarget(g_SceneDepthBuffer);
+	sorter.AddRenderTarget(g_SceneColorBuffer);
+
+	//Culling and add  Render Objects
+	for (auto& model : m_pGLTFRenderObjects)
+	{
+		if (model->GetVisible())
+		{
+			dynamic_cast<glTFInstanceModel*>(model)->GetModel()->AddToRender(sorter);
+		}
+	}
+
+	//Sort Visible objects
+	sorter.Sort();
+
+	//Depth PrePass
+	{
+		ScopedTimer PrePassScope(L"Depth PrePass", Context);
+
+		//Clear Depth And Stencil
+		Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+		Context.ClearDepthAndStencil(g_SceneDepthBuffer, REVERSE_Z ? 0.0f : 1.0f);
+		
+		sorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
+	}
+
+	//Linear Z
+	{
+		ScopedTimer LinearZScope(L"Linear Z", Context);
+
+		ComputeContext& computeContext = Context.GetComputeContext();
+
+		uint32_t frameIndex = TemporalAA::GetFrameIndexMod2();
+
+		ScreenProcessing::LinearizeZ(computeContext, *m_pCamera, frameIndex);
+	}
+
+	//SSAO
+	{
+		SSAO::Render(Context, mMainConstants);
+	}
 
 
+	if (LoadingFinish)
+	{
+		//Flush pso after loading
+		static bool flushPSO = true;
+		if (flushPSO)
+		{
+			Render::BuildPSOs();
+			flushPSO = false;
+		}
+		//Light Culling
+		Lighting::FillLightGrid(Context, *m_pCamera);
 
+		//Copy PBR SRV
+		D3D12_CPU_DESCRIPTOR_HANDLE PBR_SRV[] =
+		{
+		Lighting::m_LightGrid.GetSRV(),
+		Lighting::m_LightBuffer.GetSRV(),
+		Lighting::m_LightShadowArray.GetSRV(),
+		g_SSAOFullScreen.GetSRV()
+		};
+
+		UINT destCount = 4; UINT size[4] = { 1,1,1,1 };
+		g_Device->CopyDescriptors(1, &gTextureHeap[0], &destCount,
+			destCount, PBR_SRV, size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	}
+
+	//set descriptor heap 
+	Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gTextureHeap.GetHeapPointer());
+	//Set Common SRV
+	Context.SetDescriptorTable((int)RootSignatureType::eCommonSRVs, gTextureHeap[0]);
+
+	{
+		ScopedTimer MainRenderScope(L"Main Render", Context);
+
+		if (LoadingFinish)
+		{
+			CreateTileConeShadowMap(Context);
+		}
+
+
+		//Sun Shadow Map
+		{
+			ScopedTimer SunShadowScope(L"Sun Shadow Map", Context);
+
+			MeshSorter shadowSorter(MeshSorter::eShadows);
+			shadowSorter.SetCamera(*m_pSunShadowCamera.get());
+			shadowSorter.SetDepthStencilTarget(m_pSunShadowCamera->GetShadowMap()->GetShadowBuffer());
+
+			for (auto& model : m_pGLTFRenderObjects)
+			{
+				if (model->GetVisible() && model->GetShadowRenderFlag())
+				{
+					dynamic_cast<glTFInstanceModel*>(model)->GetModel()->AddToRender(shadowSorter);
+				}
+			}
+			shadowSorter.Sort();
+			shadowSorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
+		}
+
+		//Base Pass
+		{
+			ScopedTimer RenderColorScope(L"Render Color", Context);
+
+			//Clear Render Target
+			Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+			Context.ClearRenderTarget(g_SceneColorBuffer);
+
+			//Set Cube SRV
+			Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[COMMONSRVSIZE]);
+			//Set Textures SRV
+			Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE + COMMONSRVSIZE]);
+
+			Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
+			Context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV_DepthReadOnly());
+			
+			Context.SetViewportAndScissor(m_MainViewport, m_MainScissor);
+
+			//Sky
+			if (m_pRenderObjectsType[(int)ObjectType::Sky].front()->GetVisible())
+			{
+				Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &mMainConstants);
+				m_pRenderObjectsType[(int)ObjectType::Sky].front()->Draw(Context);
+			}
+
+			sorter.RenderMeshes(MeshSorter::eOpaque, Context, mMainConstants);
+
+		}
+
+		//Transparent Pass
+		sorter.RenderMeshes(MeshSorter::eTransparent, Context, mMainConstants);
+	}
+	Context.Finish();
+
+#ifdef DEBUG
+	EngineGUI::AddRenderPassVisualizeTexture("GBuffer", WStringToString(g_GBuffer[0].GetName()), g_GBuffer[0].GetHeight(), g_GBuffer[0].GetWidth(), g_GBuffer[0].GetSRV());
+	EngineGUI::AddRenderPassVisualizeTexture("GBuffer", WStringToString(g_GBuffer[1].GetName()), g_GBuffer[1].GetHeight(), g_GBuffer[1].GetWidth(), g_GBuffer[1].GetSRV());
+	EngineGUI::AddRenderPassVisualizeTexture("GBuffer", WStringToString(g_GBuffer[2].GetName()), g_GBuffer[2].GetHeight(), g_GBuffer[2].GetWidth(), g_GBuffer[2].GetSRV());
+	EngineGUI::AddRenderPassVisualizeTexture("GBuffer", WStringToString(g_GBuffer[3].GetName()), g_GBuffer[3].GetHeight(), g_GBuffer[3].GetWidth(), g_GBuffer[3].GetSRV());
+	EngineGUI::AddRenderPassVisualizeTexture("GBuffer", WStringToString(g_GBuffer[4].GetName()), g_GBuffer[4].GetHeight(), g_GBuffer[4].GetWidth(), g_GBuffer[4].GetSRV());
+#endif // DEBUG
 }
 
 void Scene::CreateTileConeShadowMap(GraphicsContext& Context)

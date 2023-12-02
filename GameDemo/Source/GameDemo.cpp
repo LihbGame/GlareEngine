@@ -397,7 +397,7 @@ void App::RenderScene(void)
 	}
 	else
 	{
-		EngineGlobal::gCurrentScene->RenderScene(RenderPipelineType::TBFR);
+		EngineGlobal::gCurrentScene->RenderScene(Render::gRenderPipelineType);
 	}
 }
 

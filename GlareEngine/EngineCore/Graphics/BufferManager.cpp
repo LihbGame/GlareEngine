@@ -354,6 +354,12 @@ void GlareEngine::DestroyRenderingBuffers()
 	g_TemporalColor[0].Destroy();
 	g_TemporalColor[1].Destroy();
 
+
+	for (int i=0;i<Render::GBUFFER_Count;++i)
+	{
+		g_GBuffer[i].Destroy();
+	}
+
 	/*g_HorizontalBuffer.Destroy();*/
 
 	//g_ShadowBuffer.Destroy();

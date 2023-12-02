@@ -24,6 +24,8 @@
 #include "CompiledShaders/ModelNoTangentVS.h"
 #include "CompiledShaders/WireframePS.h"
 #include "CompiledShaders/CutoutDepthMSAAPS.h"
+#include "CompiledShaders/DeferredModelPS.h"
+#include "CompiledShaders/DeferredModelNoUV1PS.h"
 
 using namespace GlareEngine::Render;
 using namespace GlareEngine::ModelPSOFlags;
@@ -248,16 +250,49 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                     if (mPSOFlags[PSOFlagIndex] & eHasUV1)
                     {
                         gModelPSOs[PSOEqualDepthIndex].SetVertexShader(g_pModelSkinVS, sizeof(g_pModelSkinVS));
-                        gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
                         gModelPSOs[PSOReadWriteDepthIndex].SetVertexShader(g_pModelSkinVS, sizeof(g_pModelSkinVS));
-                        gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
+                        
+                        if (Render::gRenderPipelineType == RenderPipelineType::TBFR||
+                            Render::gRenderPipelineType ==RenderPipelineType::FR)
+                        {
+                            gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
+                            gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
+#if USE_RUNTIME_PSO
+                            mShaderNames[PSOFlagIndex].PSName = GET_SHADER_PATH("PBRInstanceModel/ModelPS.hlsl");
+#endif
+                        }
+                        else if (Render::gRenderPipelineType == RenderPipelineType::TBDR)
+                        {
+							gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pDeferredModelPS, sizeof(g_pDeferredModelPS));
+							gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pDeferredModelPS, sizeof(g_pDeferredModelPS));
+#if USE_RUNTIME_PSO
+                            mShaderNames[PSOFlagIndex].PSName = GET_SHADER_PATH("PBRInstanceModel/DeferredModelPS.hlsl");
+#endif
+                        }
                     }
                     else
                     {
                         gModelPSOs[PSOEqualDepthIndex].SetVertexShader(g_pModelNoUV1SkinVS, sizeof(g_pModelNoUV1SkinVS));
-                        gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelNoUV1PS, sizeof(g_pModelNoUV1PS));
                         gModelPSOs[PSOReadWriteDepthIndex].SetVertexShader(g_pModelNoUV1SkinVS, sizeof(g_pModelNoUV1SkinVS));
-                        gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelNoUV1PS, sizeof(g_pModelNoUV1PS));
+                       
+						if (Render::gRenderPipelineType == RenderPipelineType::TBFR ||
+							Render::gRenderPipelineType == RenderPipelineType::FR)
+						{
+							gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelNoUV1PS, sizeof(g_pModelNoUV1PS));
+							gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelNoUV1PS, sizeof(g_pModelNoUV1PS));
+#if USE_RUNTIME_PSO
+                            mShaderNames[PSOFlagIndex].PSName = GET_SHADER_PATH("PBRInstanceModel/ModelNoUV1PS.hlsl");
+#endif
+                        }
+						else if (Render::gRenderPipelineType == RenderPipelineType::TBDR)
+						{
+							gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pDeferredModelNoUV1PS, sizeof(g_pDeferredModelNoUV1PS));
+							gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pDeferredModelNoUV1PS, sizeof(g_pDeferredModelNoUV1PS));
+#if USE_RUNTIME_PSO
+                            mShaderNames[PSOFlagIndex].PSName = GET_SHADER_PATH("PBRInstanceModel/DeferredModelNoUV1PS.hlsl");
+#endif
+                        }
+                    
                     }
                 }
                 else
@@ -277,6 +312,18 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                         gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelNoTangentNoUV1PS, sizeof(g_pModelNoTangentNoUV1PS));
                     }
                 }
+
+				if (Render::gRenderPipelineType == RenderPipelineType::TBFR ||
+					Render::gRenderPipelineType == RenderPipelineType::FR)
+				{
+					gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
+					gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
+				}
+				else if (Render::gRenderPipelineType == RenderPipelineType::TBDR)
+				{
+					gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pDeferredModelPS, sizeof(g_pDeferredModelPS));
+					gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pDeferredModelPS, sizeof(g_pDeferredModelPS));
+				}
             }
             else
             {
@@ -285,16 +332,49 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                     if (mPSOFlags[PSOFlagIndex] & eHasUV1)
                     {
                         gModelPSOs[PSOEqualDepthIndex].SetVertexShader(g_pModelVS, sizeof(g_pModelVS));
-                        gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
                         gModelPSOs[PSOReadWriteDepthIndex].SetVertexShader(g_pModelVS, sizeof(g_pModelVS));
-                        gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
+                    
+						if (Render::gRenderPipelineType == RenderPipelineType::TBFR ||
+							Render::gRenderPipelineType == RenderPipelineType::FR)
+						{
+							gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
+							gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
+#if USE_RUNTIME_PSO
+                            mShaderNames[PSOFlagIndex].PSName = GET_SHADER_PATH("PBRInstanceModel/ModelPS.hlsl");
+#endif
+                        }
+						else if (Render::gRenderPipelineType == RenderPipelineType::TBDR)
+						{
+							gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pDeferredModelPS, sizeof(g_pDeferredModelPS));
+							gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pDeferredModelPS, sizeof(g_pDeferredModelPS));
+#if USE_RUNTIME_PSO
+                            mShaderNames[PSOFlagIndex].PSName = GET_SHADER_PATH("PBRInstanceModel/DeferredModelPS.hlsl");
+#endif	
+                        }
+                    
                     }
                     else
                     {
                         gModelPSOs[PSOEqualDepthIndex].SetVertexShader(g_pModelNoUV1VS, sizeof(g_pModelNoUV1VS));
-                        gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelNoUV1PS, sizeof(g_pModelNoUV1PS));
                         gModelPSOs[PSOReadWriteDepthIndex].SetVertexShader(g_pModelNoUV1VS, sizeof(g_pModelNoUV1VS));
-                        gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelNoUV1PS, sizeof(g_pModelNoUV1PS));
+                    
+						if (Render::gRenderPipelineType == RenderPipelineType::TBFR ||
+							Render::gRenderPipelineType == RenderPipelineType::FR)
+						{
+							gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelNoUV1PS, sizeof(g_pModelNoUV1PS));
+							gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelNoUV1PS, sizeof(g_pModelNoUV1PS));
+#if USE_RUNTIME_PSO
+                            mShaderNames[PSOFlagIndex].PSName = GET_SHADER_PATH("PBRInstanceModel/ModelNoUV1PS.hlsl");
+#endif
+                        }
+						else if (Render::gRenderPipelineType == RenderPipelineType::TBDR)
+						{
+							gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pDeferredModelNoUV1PS, sizeof(g_pDeferredModelNoUV1PS));
+							gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pDeferredModelNoUV1PS, sizeof(g_pDeferredModelNoUV1PS));
+#if USE_RUNTIME_PSO
+                            mShaderNames[PSOFlagIndex].PSName = GET_SHADER_PATH("PBRInstanceModel/DeferredModelNoUV1PS.hlsl");
+#endif	
+                        }
                     }
                 }
                 else
@@ -313,10 +393,23 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                         gModelPSOs[PSOReadWriteDepthIndex].SetVertexShader(g_pModelNoTangentNoUV1VS, sizeof(g_pModelNoTangentNoUV1VS));
                         gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelNoTangentNoUV1PS, sizeof(g_pModelNoTangentNoUV1PS));
                     }
+
+					if (Render::gRenderPipelineType == RenderPipelineType::TBFR ||
+						Render::gRenderPipelineType == RenderPipelineType::FR)
+					{
+						gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
+						gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
+					}
+					else if (Render::gRenderPipelineType == RenderPipelineType::TBDR)
+					{
+						gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pDeferredModelPS, sizeof(g_pDeferredModelPS));
+						gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pDeferredModelPS, sizeof(g_pDeferredModelPS));
+					}
                 }
             }
 
-            if (Render::gRenderPipelineType == RenderPipelineType::TBFR)
+			if (Render::gRenderPipelineType == RenderPipelineType::TBFR ||
+				Render::gRenderPipelineType == RenderPipelineType::FR)
             {
                 gModelPSOs[PSOReadWriteDepthIndex].SetRenderTargetFormats(1, &DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
                 gModelPSOs[PSOEqualDepthIndex].SetRenderTargetFormats(1, &DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
@@ -386,10 +479,10 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
             gModelPSOs[PSOEqualDepthIndex].Finalize();
 
 #if USE_RUNTIME_PSO
-            //RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOReadWriteDepthIndex], mShaderNames[PSOFlagIndex].VSName.c_str(), D3D12_SHVER_VERTEX_SHADER);
-            //RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOReadWriteDepthIndex], mShaderNames[PSOFlagIndex].PSName.c_str(), D3D12_SHVER_PIXEL_SHADER);
-           // RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOEqualDepthIndex], mShaderNames[PSOFlagIndex].VSName.c_str(), D3D12_SHVER_VERTEX_SHADER);
-            //RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOEqualDepthIndex], mShaderNames[PSOFlagIndex].PSName.c_str(), D3D12_SHVER_PIXEL_SHADER);
+            RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOReadWriteDepthIndex], mShaderNames[PSOFlagIndex].VSName.c_str(), D3D12_SHVER_VERTEX_SHADER);
+            RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOReadWriteDepthIndex], mShaderNames[PSOFlagIndex].PSName.c_str(), D3D12_SHVER_PIXEL_SHADER);
+            RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOEqualDepthIndex], mShaderNames[PSOFlagIndex].VSName.c_str(), D3D12_SHVER_VERTEX_SHADER);
+            RuntimePSOManager::Get().RegisterPSO(&gModelPSOs[PSOEqualDepthIndex], mShaderNames[PSOFlagIndex].PSName.c_str(), D3D12_SHVER_PIXEL_SHADER);
 #endif
         }
     }

@@ -179,13 +179,29 @@ void MeshSorter::RenderMeshes(DrawPass pass, GraphicsContext& context, MainConst
 				{
 					context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_READ);
 					context.TransitionResource(*m_RTV[0], D3D12_RESOURCE_STATE_RENDER_TARGET);
-					context.SetRenderTarget(m_RTV[0]->GetRTV(), m_DSV->GetDSV_DepthReadOnly());
+					if (Render::gRenderPipelineType == TBFR)
+					{
+						context.SetRenderTarget(m_RTV[0]->GetRTV(), m_DSV->GetDSV_DepthReadOnly());
+					}
+					else if (Render::gRenderPipelineType == TBDR)
+					{
+						context.SetRenderTargets(Render::GBUFFER_Count,Render::GetGBufferRTV(context), m_DSV->GetDSV_DepthReadOnly());
+					}
 				}
 				else
 				{
 					context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 					context.TransitionResource(*m_RTV[0], D3D12_RESOURCE_STATE_RENDER_TARGET);
 					context.SetRenderTarget(m_RTV[0]->GetRTV(), m_DSV->GetDSV());
+
+					if (Render::gRenderPipelineType == TBFR)
+					{
+						context.SetRenderTarget(m_RTV[0]->GetRTV(), m_DSV->GetDSV());
+					}
+					else if (Render::gRenderPipelineType == TBDR)
+					{
+						context.SetRenderTargets(Render::GBUFFER_Count, Render::GetGBufferRTV(context), m_DSV->GetDSV());
+					}
 				}
 				break;
 			case eTransparent:

@@ -1,3 +1,4 @@
+#define NO_SECOND_UV 1
 #include "../Shadow/RealTimeShadowHelper.hlsli"
 
 Texture2D<float4> baseColorTexture : register(t10);
@@ -77,7 +78,7 @@ float3 GetNormal(float3 normalMapSample, float3 unitNormalW, float4 tangentW)
 }
 
 
-void main(in VSOutput vsOutput, 
+void main(in VSOutput vsOutput,
 out float3 GBUFFER_Emissive : SV_Target0,
 out float4 GBUFFER_Normal : SV_Target1,
 out float4 GBUFFER_MSR : SV_Target2,
@@ -104,8 +105,8 @@ out float4 GBUFFER_WorldTangent : SV_Target4)
     
     //Write GBuffer
     GBUFFER_BaseColor = baseColor;
-    GBUFFER_MSR         = float4(metallicRoughness.x, 1.0f, metallicRoughness.y, shaderModelID);
-    GBUFFER_Normal      = float4((normal + 1.0f) / 2.0f, 1.0f);
-    GBUFFER_Emissive    = emissive;
+    GBUFFER_MSR = float4(metallicRoughness.x, 0.0f, metallicRoughness.y, shaderModelID);
+    GBUFFER_Normal = float4((normal + 1.0f) / 2.0f, 1.0f);
+    GBUFFER_Emissive = emissive;
     GBUFFER_WorldTangent = (vsOutput.tangent + 1.0f) / 2.0f;
 }

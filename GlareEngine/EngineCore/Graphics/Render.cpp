@@ -39,7 +39,9 @@ namespace GlareEngine
 		//Rendering Setting
 		AntiAliasingType gAntiAliasingType = AntiAliasingType::MSAA;
 
-		RenderPipelineType gRenderPipelineType = RenderPipelineType::TBFR;
+		RenderPipelineType gRenderPipelineType = RenderPipelineType::TBDR;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE g_GBufferSRV[GBUFFER_Count];
 	}
 
 	void Render::Initialize(ID3D12GraphicsCommandList* CommandList)
@@ -170,6 +172,25 @@ namespace GlareEngine
 		}
 		g_Device->CopyDescriptors(1, &gTextureHeap[MAXCUBESRVSIZE+ COMMONSRVSIZE], &Texture2DSize,
 			Texture2DSize, Texture2DSRV, Texture2DSrcSize, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	}
+
+	D3D12_CPU_DESCRIPTOR_HANDLE* Render::GetGBufferRTV(GraphicsContext& context)
+	{
+		for (int i = 0; i < GBUFFER_Count; ++i)
+		{
+			g_GBufferSRV[i] = g_GBuffer[i].GetRTV();
+			context.TransitionResource(g_GBuffer[i], D3D12_RESOURCE_STATE_RENDER_TARGET);
+		}
+		return g_GBufferSRV;
+	}
+
+	void Render::ClearGBuffer(GraphicsContext& context)
+	{
+		for (int i = 0; i < GBUFFER_Count; ++i)
+		{
+			context.TransitionResource(g_GBuffer[i], D3D12_RESOURCE_STATE_RENDER_TARGET);
+			context.ClearColor(g_GBuffer[i]);
+		}
 	}
 
 	void Render::SetAntiAliasingType(AntiAliasingType type)

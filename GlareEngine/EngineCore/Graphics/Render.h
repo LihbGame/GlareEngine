@@ -28,9 +28,9 @@ namespace GlareEngine
 
 		enum  RenderPipelineType :int
 		{
-			FR,			//Forward Rendering
 			TBFR,		//Tiled Based Forward Rendering
-			TBDR		//Tiled Based Deferred Rendering
+			TBDR,		//Tiled Based Deferred Rendering
+			FR			//Forward Rendering
 		};
 
 		enum GBufferType :int
@@ -88,6 +88,8 @@ namespace GlareEngine
 		void BuildCommonPSOs(const PSOCommonProperty CommonProperty);
 		void CopyTextureHeap();
 
+		D3D12_CPU_DESCRIPTOR_HANDLE* GetGBufferRTV(GraphicsContext& context);
+		void ClearGBuffer(GraphicsContext& context);
 
 		//Render setting
 		void SetAntiAliasingType(AntiAliasingType type);

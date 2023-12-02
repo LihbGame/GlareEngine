@@ -51,6 +51,7 @@ public:
 	float	GetGrassMinWind()const { return GrassMinWind; }
 	float	GetGrassMaxWind()const { return GrassMaxWind; }
 	int		GetSceneIndex() const { return mSceneIndex; }
+	int		GetrenderPipelineIndex() const { return mRenderPipelineIndex; }
 
 	XMFLOAT2 GetEngineLogoSize();
 
@@ -113,6 +114,7 @@ private:
 	bool mWireframe				= false;
 
 	int mSceneIndex				= 0;
+	int mRenderPipelineIndex	= 0;
 	string mSceneName;
 
 	float mGrassColor[3]		= { 0.39f,0.196f,0.0f };

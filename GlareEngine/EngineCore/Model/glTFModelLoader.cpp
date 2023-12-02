@@ -265,7 +265,7 @@ void BuildMaterials(glTFModelData& model, const glTF::Asset& asset)
 		material.flags = srcMat.flags;
 		material.specialFlags = srcMat.specialFlags;
 		//Default ID=0
-		material.shaderModelID = 0;
+		material.shaderModelID = 1;
 
 		MaterialTextureData& dstMat = model.m_MaterialTextures[i];
 		dstMat.addressModes = 0;

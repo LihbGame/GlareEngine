@@ -34,7 +34,7 @@ struct PSOProxy
 	struct Shader
 	{
 		ShaderBinary Binary;
-		string SourceFilePath;
+		string SourceFilePath = "";
 		std::time_t LastWriteTime = 0;
 		ShaderDefinitions ShaderDefine;
 		bool IsDirty = true;

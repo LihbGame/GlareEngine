@@ -207,13 +207,6 @@ void EngineGUI::ShutDown()
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
-
-	ID3D12DescriptorHeap* descriptorHeap = mGUISrvDescriptorHeap.GetHeapPointer();
-
-	if (descriptorHeap)
-	{
-		descriptorHeap->Release();
-	}
 }
 
 void EngineGUI::SetWindowStyles()
@@ -291,6 +284,10 @@ void EngineGUI::DrawControlPanel(float IconWindowHigh)
 
 	ImGui::Text("Camera Move Speed");
 	ImGui::SliderFloat("   ", &CameraMoveSpeed, 0.0f, 10.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+
+	ImGui::Separator();
+	ImGui::Text("Render Pipeline");
+	ImGui::Combo(" ", &mRenderPipelineIndex, "TBFR\0TBDR\0");
 
 
 	ImGui::Separator();
