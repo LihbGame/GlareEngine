@@ -13,6 +13,13 @@
 #include "PostProcessing/PostProcessing.h"
 #include "Misc/LightManager.h"
 #include "PostProcessing/SSAO.h"
+#include "Engine/RenderMaterial.h"
+#include "Engine/EngineProfiling.h"
+
+
+
+#include "CompiledShaders/LightingPassCS.h"
+
 
 namespace GlareEngine
 {
@@ -31,7 +38,7 @@ namespace GlareEngine
 		const int gNumFrameResources = NUMFRAME;
 
 		vector<GraphicsPSO> gCommonPSOs;
-
+		//include UAV AND SRV
 		DescriptorHeap gTextureHeap;
 
 		DescriptorHeap gSamplerHeap;
@@ -39,9 +46,11 @@ namespace GlareEngine
 		//Rendering Setting
 		AntiAliasingType gAntiAliasingType = AntiAliasingType::MSAA;
 
-		RenderPipelineType gRenderPipelineType = RenderPipelineType::TBDR;
+		RenderPipelineType gRenderPipelineType = RenderPipelineType::TBFR;
 
 		D3D12_CPU_DESCRIPTOR_HANDLE g_GBufferSRV[GBUFFER_Count];
+
+		RenderMaterial DeferredLightingMaterial;
 	}
 
 	void Render::Initialize(ID3D12GraphicsCommandList* CommandList)
@@ -50,6 +59,7 @@ namespace GlareEngine
 			return;
 
 		BuildRootSignature();
+		BuildCommonPSOs(gCommonProperty);
 		BuildPSOs();
 
 #if USE_RUNTIME_PSO
@@ -66,7 +76,12 @@ namespace GlareEngine
 
 		ScreenProcessing::Initialize(CommandList);
 
+#if	USE_RUNTIME_PSO
+		RuntimePSOManager::Get().RegisterPSO(&DeferredLightingMaterial.GetComputePSO(), GET_SHADER_PATH("Lighting/LightingPassCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+#endif
+
 		SSAO::Initialize();
+
 
 		s_Initialized = true;
 	}
@@ -92,6 +107,8 @@ namespace GlareEngine
 		gRootSignature[(int)RootSignatureType::eMaterialConstants].InitAsConstantBuffer(2);
 		//Common SRV 
 		gRootSignature[(int)RootSignatureType::eCommonSRVs].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, COMMONSRVSIZE);
+		//Common UAV
+		gRootSignature[(int)RootSignatureType::eCommonUAVs].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, COMMONUAVSIZE);
 		//PBR Material SRVs 
 		gRootSignature[(int)RootSignatureType::eMaterialSRVs].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, COMMONSRVSIZE, MAXPBRSRVSIZE);
 		//Sky Cube Texture
@@ -130,6 +147,16 @@ namespace GlareEngine
 
 	void Render::BuildCommonPSOs(const PSOCommonProperty CommonProperty)
 	{
+#define InitMaterial( MaterialName ,Material, ShaderByteCode ) \
+    Material.BeginInitializeComputeMaterial(MaterialName,gRootSignature); \
+    Material.SetComputeShader(ShaderByteCode, sizeof(ShaderByteCode) ); \
+	Material.EndInitializeComputeMaterial();
+
+		InitMaterial(L"Deferred Light CS", DeferredLightingMaterial, g_pLightingPassCS);
+
+#undef InitMaterial
+
+
 		//assert(gCommonPSOs.size() == 0);
 
 		//// Depth Only PSOs
@@ -159,7 +186,7 @@ namespace GlareEngine
 			CubeSRV[CubeSRVIndex] = g_CubeSRV[CubeSRVIndex];
 			CubeSrcTextureSize[CubeSRVIndex] = 1;
 		}
-		g_Device->CopyDescriptors(1, &gTextureHeap[COMMONSRVSIZE], &CubeTextureSize,
+		g_Device->CopyDescriptors(1, &gTextureHeap[COMMONSRVSIZE+COMMONUAVSIZE], &CubeTextureSize,
 			CubeTextureSize, CubeSRV, CubeSrcTextureSize, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 		UINT Texture2DSize = g_TextureSRV.size();
@@ -170,7 +197,7 @@ namespace GlareEngine
 			Texture2DSRV[Texture2DSRVIndex] = g_TextureSRV[Texture2DSRVIndex];
 			Texture2DSrcSize[Texture2DSRVIndex] = 1;
 		}
-		g_Device->CopyDescriptors(1, &gTextureHeap[MAXCUBESRVSIZE+ COMMONSRVSIZE], &Texture2DSize,
+		g_Device->CopyDescriptors(1, &gTextureHeap[MAXCUBESRVSIZE+ COMMONSRVSIZE+ COMMONUAVSIZE], &Texture2DSize,
 			Texture2DSize, Texture2DSRV, Texture2DSrcSize, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	}
 
@@ -193,6 +220,57 @@ namespace GlareEngine
 		}
 	}
 
+	void Render::RenderLighting(GraphicsContext& context, MainConstants constants)
+	{
+		ComputeContext& Context = context.GetComputeContext();
+
+		ScopedTimer RenderLightingScope(L"Render Deferred Lighting", Context);
+
+		Context.SetRootSignature(gRootSignature);
+		Context.SetPipelineState(GET_PSO(DeferredLightingMaterial.GetComputePSO()));
+
+		//set descriptor heap 
+		Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gTextureHeap.GetHeapPointer());
+
+		//Copy PBR SRV
+		D3D12_CPU_DESCRIPTOR_HANDLE GBUFFER_SRV[] =
+		{
+		g_GBuffer[GBUFFER_Emissive].GetSRV(),
+		g_GBuffer[GBUFFER_Normal].GetSRV(),
+		g_GBuffer[GBUFFER_MSR].GetSRV(),
+		g_GBuffer[GBUFFER_BaseColor].GetSRV(),
+		g_GBuffer[GBUFFER_WorldTangent].GetSRV(),
+		g_SceneDepthBuffer.GetDepthSRV(),
+		g_SceneColorBuffer.GetUAV()
+		};
+
+		UINT destCount = 7; UINT size[7] = { 1,1,1,1,1,1,1 };
+		g_Device->CopyDescriptors(1, &gTextureHeap[4], &destCount,
+			destCount, GBUFFER_SRV, size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+
+		Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
+		Context.TransitionResource(g_GBuffer[GBUFFER_Emissive], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		Context.TransitionResource(g_GBuffer[GBUFFER_Normal], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		Context.TransitionResource(g_GBuffer[GBUFFER_MSR], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		Context.TransitionResource(g_GBuffer[GBUFFER_BaseColor], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		Context.TransitionResource(g_GBuffer[GBUFFER_WorldTangent], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+
+		Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &constants);
+		//Set Common SRV
+		Context.SetDescriptorTable((int)RootSignatureType::eCommonSRVs, gTextureHeap[0]);
+		//Set Cube SRV
+		Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[COMMONSRVSIZE+ COMMONUAVSIZE]);
+		//Set Textures SRV
+		Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE + COMMONSRVSIZE+ COMMONUAVSIZE]);
+		 
+		Context.SetDescriptorTable((int)RootSignatureType::eCommonUAVs, gTextureHeap[COMMONSRVSIZE]);
+		Context.Dispatch2D(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
+
+
+	}
+
 	void Render::SetAntiAliasingType(AntiAliasingType type)
 	{
 		gAntiAliasingType = type;
@@ -206,7 +284,6 @@ namespace GlareEngine
 
 	void Render::BuildPSOs()
 	{
-		BuildCommonPSOs(gCommonProperty);
 		CSky::BuildPSO(gCommonProperty);
 		InstanceModel::BuildPSO(gCommonProperty);
 		glTFInstanceModel::BuildPSO(gCommonProperty);

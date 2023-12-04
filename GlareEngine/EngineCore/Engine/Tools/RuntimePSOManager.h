@@ -44,6 +44,15 @@ struct PSOProxy
 		: OriginPSO(origin)
 		, Type(type)
 	{
+		if (Type==EPSOType::Graphics)
+		{
+			RuntimePSO = std::make_shared<GraphicsPSO>();
+		}
+		else
+		{
+			RuntimePSO = std::make_shared<ComputePSO>();
+		}
+
 		assert(origin);
 		origin->SetProxy(this);
 	}

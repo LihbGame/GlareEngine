@@ -50,7 +50,7 @@ void IBL::BakingEnvironmentDiffuse(GraphicsContext& Context)
 	Context.SetViewport(mIndirectDiffuseCube->Viewport(0));
 	Context.SetScissor(mIndirectDiffuseCube->ScissorRect());
 	Context.TransitionResource(mIndirectDiffuseCube->Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-	Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, Render::gTextureHeap[COMMONSRVSIZE]);
+	Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, Render::gTextureHeap[COMMONSRVSIZE+COMMONUAVSIZE]);
 	for (int i = 0; i < 6; i++)
 	{
 		Context.SetRenderTarget(mIndirectDiffuseCube->RTV(i));

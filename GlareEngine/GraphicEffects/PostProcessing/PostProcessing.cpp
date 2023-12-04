@@ -199,8 +199,8 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	PostEffectsRS.InitStaticSampler(0, SamplerLinearClampDesc);
 	PostEffectsRS.InitStaticSampler(1, SamplerLinearBorderDesc);
 	PostEffectsRS[0].InitAsConstants(0, 5);
-	PostEffectsRS[1].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 5);
-	PostEffectsRS[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 5);
+	PostEffectsRS[1].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 10);
+	PostEffectsRS[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 10);
 	PostEffectsRS[3].InitAsConstantBuffer(1);
 	PostEffectsRS.Finalize(L"Post Effects");
 

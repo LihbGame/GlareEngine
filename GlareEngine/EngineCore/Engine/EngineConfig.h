@@ -11,6 +11,8 @@
 
 #define COMMONSRVSIZE				10
 
+#define COMMONUAVSIZE				10
+
 #define SHADOWMAPSIZE				2048
 
 #define FAR_Z						5000.0f

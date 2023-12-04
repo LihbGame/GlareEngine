@@ -11,16 +11,16 @@ PosVSOut main(float3 PosL : POSITION)
 {
     PosVSOut vout;
 
-	// 使用局部顶点位置作为立方体贴图采样向量。
+	// Use local vertex positions as cubemap sampling vectors.
     vout.PosL = PosL;
 
-	// 转换到世界空间
+	// Convert to world space
     float4 posW = mul(float4(PosL, 1.0f), gWorld);
 
-	//把天空盒固定到眼睛位置
+	//Fix the skybox to the eye position
     posW.xyz += gEyePosW;
 
-	// 设置z = w，以使z / w = 1（即，天穹始终位于远平面上）。
+	// Set z = w so that z/w = 1 (i.e. the celestial dome is always on the far plane).
     vout.PosH = mul(posW, gViewProj).xyww;
 
     return vout;

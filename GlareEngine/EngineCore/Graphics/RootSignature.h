@@ -7,6 +7,7 @@ enum class RootSignatureType :int
 	eMaterialConstants,
 	eCommonConstantBuffer,
 	eCommonSRVs,
+	eCommonUAVs,
 	eMaterialSRVs,
 	eCubeTextures,
 	ePBRTextures,

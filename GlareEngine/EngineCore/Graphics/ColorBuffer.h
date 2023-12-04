@@ -7,7 +7,7 @@ namespace GlareEngine
 		public PixelBuffer
 	{
 	public:
-		ColorBuffer(Color ClearColor = Color(1.0f, 1.0f, 1.0f, 1.0f))
+		ColorBuffer(Color ClearColor = Color(1.0f, 1.0f, 1.0f, 0.0f))
 			: m_ClearColor(ClearColor), m_NumMipMaps(0), m_FragmentCount(1), m_SampleCount(1)
 		{
 			m_SRVHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;

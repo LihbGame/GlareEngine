@@ -104,7 +104,7 @@ out float4 GBUFFER_WorldTangent : SV_Target4)
     
     
     //Write GBuffer
-    GBUFFER_BaseColor = baseColor;
+    GBUFFER_BaseColor = float4(baseColor.xyz, occlusion);
     GBUFFER_MSR = float4(metallicRoughness.x, 0.0f, metallicRoughness.y, shaderModelID);
     GBUFFER_Normal = float4((normal + 1.0f) / 2.0f, 1.0f);
     GBUFFER_Emissive = emissive;

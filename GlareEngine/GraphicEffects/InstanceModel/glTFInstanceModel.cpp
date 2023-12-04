@@ -367,13 +367,16 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                             mShaderNames[PSOFlagIndex].PSName = GET_SHADER_PATH("PBRInstanceModel/ModelNoUV1PS.hlsl");
 #endif
                         }
-						else if (Render::gRenderPipelineType == RenderPipelineType::TBDR)
-						{
-							gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pDeferredModelNoUV1PS, sizeof(g_pDeferredModelNoUV1PS));
-							gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pDeferredModelNoUV1PS, sizeof(g_pDeferredModelNoUV1PS));
+                        else if (Render::gRenderPipelineType == RenderPipelineType::TBDR)
+                        {
+                            if (!(mPSOFlags[PSOFlagIndex] & eAlphaBlend))
+                            {
+                                gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pDeferredModelNoUV1PS, sizeof(g_pDeferredModelNoUV1PS));
+                                gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pDeferredModelNoUV1PS, sizeof(g_pDeferredModelNoUV1PS));
 #if USE_RUNTIME_PSO
-                            mShaderNames[PSOFlagIndex].PSName = GET_SHADER_PATH("PBRInstanceModel/DeferredModelNoUV1PS.hlsl");
+                                mShaderNames[PSOFlagIndex].PSName = GET_SHADER_PATH("PBRInstanceModel/DeferredModelNoUV1PS.hlsl");
 #endif	
+                            }
                         }
                     }
                 }

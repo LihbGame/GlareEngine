@@ -330,9 +330,9 @@ void Scene::ForwardRendering()
 	//set main constant buffer
 	Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(mMainConstants), &mMainConstants);
 	//Set Cube SRV
-	Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[COMMONSRVSIZE]);
+	Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[COMMONSRVSIZE+ COMMONUAVSIZE]);
 	//Set Textures SRV
-	Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE+ COMMONSRVSIZE]);
+	Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE+ COMMONSRVSIZE+ COMMONUAVSIZE]);
 	//Set Material Data
 	const vector<MaterialConstant>& MaterialData = MaterialManager::GetMaterialInstance()->GetMaterialsConstantBuffer();
 	Context.SetDynamicSRV((int)RootSignatureType::eMaterialConstantData, sizeof(MaterialConstant) * MaterialData.size(), MaterialData.data());
@@ -554,9 +554,9 @@ void Scene::TiledBaseForwardRendering()
 			}
 
 			//Set Cube SRV
-			Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[COMMONSRVSIZE]);
+			Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[COMMONSRVSIZE+ COMMONUAVSIZE]);
 			//Set Textures SRV
-			Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE + COMMONSRVSIZE]);
+			Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE + COMMONSRVSIZE+ COMMONUAVSIZE]);
 
 			if (IsMSAA)
 			{
@@ -601,7 +601,10 @@ void Scene::TiledBaseDeferredRendering()
 {
 	GraphicsContext& Context = GraphicsContext::Begin(L"Scene Render");
 
-	Render::ClearGBuffer(Context);
+	{
+		ScopedTimer ClearGBufferScope(L"Clear GBuffer", Context);
+		Render::ClearGBuffer(Context);
+	}
 
 	//default batch
 	MeshSorter sorter(MeshSorter::eDefault);
@@ -694,7 +697,7 @@ void Scene::TiledBaseDeferredRendering()
 
 		//Sun Shadow Map
 		{
-			ScopedTimer SunShadowScope(L"Sun Shadow Map", Context);
+			ScopedTimer SunShadowScope(L"Shadow Map", Context);
 
 			MeshSorter shadowSorter(MeshSorter::eShadows);
 			shadowSorter.SetCamera(*m_pSunShadowCamera.get());
@@ -713,35 +716,46 @@ void Scene::TiledBaseDeferredRendering()
 
 		//Base Pass
 		{
-			ScopedTimer RenderColorScope(L"Render Color", Context);
+			ScopedTimer BasePassScope(L"Base Pass", Context);
 
 			//Clear Render Target
 			Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 			Context.ClearRenderTarget(g_SceneColorBuffer);
 
 			//Set Cube SRV
-			Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[COMMONSRVSIZE]);
+			Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[COMMONSRVSIZE+ COMMONUAVSIZE]);
 			//Set Textures SRV
-			Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE + COMMONSRVSIZE]);
-
-			Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
-			Context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV_DepthReadOnly());
-			
-			Context.SetViewportAndScissor(m_MainViewport, m_MainScissor);
-
-			//Sky
-			if (m_pRenderObjectsType[(int)ObjectType::Sky].front()->GetVisible())
-			{
-				Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &mMainConstants);
-				m_pRenderObjectsType[(int)ObjectType::Sky].front()->Draw(Context);
-			}
+			Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE + COMMONSRVSIZE+ COMMONUAVSIZE]);
 
 			sorter.RenderMeshes(MeshSorter::eOpaque, Context, mMainConstants);
 
 		}
 
+		//Sky
+		{
+			ScopedTimer SkyPassScope(L"Sky", Context);
+			Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
+			Context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV_DepthReadOnly());
+			Context.SetViewportAndScissor(m_MainViewport, m_MainScissor);
+			if (m_pRenderObjectsType[(int)ObjectType::Sky].front()->GetVisible())
+			{
+				Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &mMainConstants);
+				m_pRenderObjectsType[(int)ObjectType::Sky].front()->Draw(Context);
+			}
+		}
+
+		//Lighting Pass
+		if (LoadingFinish)
+		{
+			Render::RenderLighting(Context, mMainConstants);
+		}
+
 		//Transparent Pass
-		sorter.RenderMeshes(MeshSorter::eTransparent, Context, mMainConstants);
+		{
+			ScopedTimer TransparentPassScope(L"Transparent Pass", Context);
+			sorter.RenderMeshes(MeshSorter::eTransparent, Context, mMainConstants);
+		}
+
 	}
 	Context.Finish();
 

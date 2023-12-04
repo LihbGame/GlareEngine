@@ -457,7 +457,7 @@ float3 IBL_Diffuse(SurfaceProperties Surface)
     float LdotH = saturate(dot(Surface.N, normalize(Surface.N + Surface.V)));
     float fd90 = 0.5 + 2.0 * Surface.roughness * LdotH * LdotH;
     float3 DiffuseBurley = Surface.c_diff * Surface.ao * (1 - DielectricSpecular) * Fresnel_Shlick(1, fd90, Surface.NdotV);
-    return DiffuseBurley * gCubeMaps[gBakingDiffuseCubeIndex].Sample(gSamplerLinearWrap, Surface.N).rgb;
+    return DiffuseBurley * gCubeMaps[gBakingDiffuseCubeIndex].SampleLevel(gSamplerLinearWrap, Surface.N, 0).rgb;
 }
 
 // Approximate specular IBL by sampling lower mips according to roughness.
@@ -466,7 +466,7 @@ float3 IBL_Specular(SurfaceProperties Surface)
     float lod = Surface.roughness * IBLRange + IBLBias;
     float3 F = FresnelSchlickRoughness(Surface.NdotV, Surface.c_spec, Surface.roughness);
     float3 PrefilteredColor = gCubeMaps[gBakingPreFilteredEnvIndex].SampleLevel(gSamplerLinearClamp, reflect(-Surface.V, Surface.N), lod).rgb;
-    float2 BRDF = gSRVMap[gBakingIntegrationBRDFIndex].Sample(gSamplerLinearClamp, float2(Surface.NdotV, Surface.roughness)).xy;
+    float2 BRDF = gSRVMap[gBakingIntegrationBRDFIndex].SampleLevel(gSamplerLinearClamp, float2(Surface.NdotV, Surface.roughness), 0).xy;
     return PrefilteredColor * (F * BRDF.x + BRDF.y) * Surface.ao;
 }
 
