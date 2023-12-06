@@ -15,11 +15,12 @@
 #include "PostProcessing/SSAO.h"
 #include "Engine/RenderMaterial.h"
 #include "Engine/EngineProfiling.h"
-
+#include "Engine/EngineGlobal.h"
+#include "Engine/Scene.h"
 
 
 #include "CompiledShaders/LightingPassCS.h"
-
+#include "CompiledShaders/WireframeCS.h"
 
 namespace GlareEngine
 {
@@ -51,6 +52,7 @@ namespace GlareEngine
 		D3D12_CPU_DESCRIPTOR_HANDLE g_GBufferSRV[GBUFFER_Count];
 
 		RenderMaterial DeferredLightingMaterial;
+		RenderMaterial WireFrameMaterial;
 	}
 
 	void Render::Initialize(ID3D12GraphicsCommandList* CommandList)
@@ -78,6 +80,7 @@ namespace GlareEngine
 
 #if	USE_RUNTIME_PSO
 		RuntimePSOManager::Get().RegisterPSO(&DeferredLightingMaterial.GetComputePSO(), GET_SHADER_PATH("Lighting/LightingPassCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+		RuntimePSOManager::Get().RegisterPSO(&WireFrameMaterial.GetComputePSO(), GET_SHADER_PATH("Misc/WireframeCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
 #endif
 
 		SSAO::Initialize();
@@ -153,6 +156,7 @@ namespace GlareEngine
 	Material.EndInitializeComputeMaterial();
 
 		InitMaterial(L"Deferred Light CS", DeferredLightingMaterial, g_pLightingPassCS);
+		InitMaterial(L"Deferred WireFrame CS", WireFrameMaterial, g_pWireframeCS);
 
 #undef InitMaterial
 
@@ -227,8 +231,14 @@ namespace GlareEngine
 		ScopedTimer RenderLightingScope(L"Render Deferred Lighting", Context);
 
 		Context.SetRootSignature(gRootSignature);
-		Context.SetPipelineState(GET_PSO(DeferredLightingMaterial.GetComputePSO()));
-
+		if (EngineGlobal::gCurrentScene->IsWireFrame)
+		{
+			Context.SetPipelineState(GET_PSO(WireFrameMaterial.GetComputePSO()));
+		}
+		else
+		{
+			Context.SetPipelineState(GET_PSO(DeferredLightingMaterial.GetComputePSO()));
+		}
 		//set descriptor heap 
 		Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gTextureHeap.GetHeapPointer());
 
@@ -266,6 +276,7 @@ namespace GlareEngine
 		Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE + COMMONSRVSIZE+ COMMONUAVSIZE]);
 		 
 		Context.SetDescriptorTable((int)RootSignatureType::eCommonUAVs, gTextureHeap[COMMONSRVSIZE]);
+		
 		Context.Dispatch2D(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
 
 
