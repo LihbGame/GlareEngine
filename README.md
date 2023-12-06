@@ -9,7 +9,7 @@ TIPS:
 
 ## Features
 - Image-based lighting
-- Tiled Base forward renderer
+- Tiled Base Forward Rendering,Tiled Base Deferred Rendering 
 - Cook-Torrance microfacet specular BRDF
 - Metallic workflow
 - Normal mapping

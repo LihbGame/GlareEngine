@@ -25,7 +25,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
     
     
         SurfaceProperties Surface;
-        Surface.N = normal;
+        Surface.N = normalize(normal);
         Surface.V = normalize(gEyePosW - worldPos);
         Surface.worldPos = worldPos;
         Surface.NdotV = saturate(dot(Surface.N, Surface.V));
@@ -57,7 +57,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
         {
             Surface.c_diff *= ssao;
             Surface.c_spec *= ssao;
-        //Outdoor environment light (IBL)
+            //Outdoor environment light (IBL)
             color += IBL_Diffuse(Surface);
             color += IBL_Specular(Surface);
         }

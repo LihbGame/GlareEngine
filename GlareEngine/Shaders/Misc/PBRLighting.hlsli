@@ -19,6 +19,8 @@ float3 FresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
 }
 
 //BRDF-D
+// GGX / Trowbridge-Reitz
+// [Walter et al. 2007, "Microfacet models for refraction through rough surfaces"]
 float DistributionGGX(float3 N, float3 H, float roughness)
 {
     float a = roughness * roughness;

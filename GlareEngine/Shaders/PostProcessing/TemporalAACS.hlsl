@@ -927,8 +927,9 @@ void ApplyTemporalBlend(uint2 ST, float4 CurrentColor, float2 DepthOffset,float3
     // Blend previous color with new color based on confidence.  Confidence steadily grows with each iteration
     // until it is broken by movement such as through disocclusion, color changes, or moving beyond the resolution
     // of the velocity buffer.
-    TemporalColor = ITM(lerp(TM(YCoCgToRGB(CurrentColor.xyz)), TM(YCoCgToRGB(TemporalColor)), TemporalWeight));
-
+    //TemporalColor = ITM(lerp(TM(YCoCgToRGB(CurrentColor.xyz)), TM(YCoCgToRGB(TemporalColor)), TemporalWeight));
+    TemporalColor = lerp(YCoCgToRGB(CurrentColor.xyz), YCoCgToRGB(TemporalColor), TemporalWeight);
+	
     // Update weight
     TemporalWeight = saturate(rcp(2.0 - TemporalWeight));
 
