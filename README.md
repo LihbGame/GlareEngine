@@ -5,7 +5,7 @@ Suggest Environment : Win11 VS2022
 
 TIPS: 
 
-1.If the scene becomes dark, there may be a problem with the shader compilation. It is recommended to change the shader model in CMakeLists(GlareEngine->CMakeLists) from 6.0 to 5.1.
+1.If the scene becomes dark, there may be a problem with the shader compilation. It is recommended to change the shader model in CMakeLists(GlareEngine->CMakeLists) from 6.0 to 5.1. It is recommended to update to a stable GPU driver
 
 ## Features
 - Image-based lighting
