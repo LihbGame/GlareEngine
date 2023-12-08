@@ -195,7 +195,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 
 			//GLTF models
 			LoadGITFModel(L"SciFiHelmet/glTF/SciFiHelmet.gltf",80);
-			LoadGITFModel(L"DamagedHelmet/glTF/DamagedHelmet.gltf", 100);
+			LoadGITFModel(L"D:/glTF-Sample-Models-master/2.0/CesiumMan/glTF/CesiumMan.gltf", 100);
 			LoadGITFModel(L"FlightHelmet/glTF/FlightHelmet.gltf",200);
 			LoadGITFModel(L"Sponza/pbr/sponza2.gltf", 30);
 
@@ -263,7 +263,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 #if USE_RUNTIME_PSO
 	RuntimePSOManager::Get().StartRuntimePSOThread();
 #endif
-	//mEngineThread.Flush();
+	//EngineThread::Get().Flush();
 }
 
 void App::Startup(void)

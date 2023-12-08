@@ -114,7 +114,7 @@ private:
 	bool mWireframe				= false;
 
 	int mSceneIndex				= 0;
-	int mRenderPipelineIndex	= 1;
+	int mRenderPipelineIndex	= 0;
 	string mSceneName;
 
 	float mGrassColor[3]		= { 0.39f,0.196f,0.0f };
