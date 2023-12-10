@@ -78,7 +78,7 @@ public:
 
 	void CreateSimpleModelInstance(ID3D12GraphicsCommandList* CommandList,string ModelName, SimpleModelType Type, string MaterialName, int Num_X, int Num_Y);
 
-	void LoadGITFModel(wstring modelName,float SizeScale);
+	void LoadGITFModel(wstring modelName, float SizeScale, bool IsNegetiveZForward = true);
 protected:
 	// 处理鼠标输入的重载函数
 	virtual void OnMouseDown(WPARAM btnState, int x, int y);
@@ -195,7 +195,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 
 			//GLTF models
 			LoadGITFModel(L"SciFiHelmet/glTF/SciFiHelmet.gltf",80);
-			LoadGITFModel(L"D:/glTF-Sample-Models-master/2.0/CesiumMan/glTF/CesiumMan.gltf", 100);
+			LoadGITFModel(L"DamagedHelmet/glTF/DamagedHelmet.gltf", 100);
 			LoadGITFModel(L"FlightHelmet/glTF/FlightHelmet.gltf",200);
 			LoadGITFModel(L"Sponza/pbr/sponza2.gltf", 30);
 
@@ -562,9 +562,9 @@ void App::CreateSimpleModelInstance(ID3D12GraphicsCommandList* CommandList, stri
 }
 
 
-void App::LoadGITFModel(wstring name, float SizeScale)
+void App::LoadGITFModel(wstring name, float SizeScale,bool IsNegetiveZForward)
 {
-	auto modelInstance = make_unique<ModelInstance>(GlareEngine::LoadModel(name), SizeScale);
+	auto modelInstance = make_unique<ModelInstance>(GlareEngine::LoadModel(name), SizeScale, IsNegetiveZForward);
 	auto GLTFModel = make_unique<glTFInstanceModel>(std::move(modelInstance));
 	GLTFModel->SetShadowFlag(true);
 	mGLTFModels.push_back(std::move(GLTFModel));
