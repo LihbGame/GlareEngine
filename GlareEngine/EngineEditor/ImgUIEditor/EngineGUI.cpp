@@ -300,6 +300,7 @@ void EngineGUI::DrawControlPanel(float IconWindowHigh)
 		ImGui::Checkbox("Model", &show_model);
 		ImGui::Checkbox("Sky", &show_sky);
 		ImGui::Checkbox("Terrain", &show_HeightMapTerrain);
+		ImGui::Checkbox("TiledBaseLighting", &mbTiledBaseLighting);
 	}
 
 	//if (ImGui::CollapsingHeader("Water", ImGuiTreeNodeFlags_DefaultOpen))

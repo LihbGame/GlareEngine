@@ -99,10 +99,11 @@ namespace ScreenProcessing
 	ColorBuffer* LastPostprocessRT		= nullptr;
 	ColorBuffer* CurrentPostprocessRT	= nullptr;
 
+	bool  EnableEyeAdaptation		= true;
 	bool  BloomEnable				= true;
 	bool  HighQualityBloom			= true;			// High quality blurs 5 octaves of bloom; low quality only blurs 3.
-	NumVar BloomThreshold(4.0f, 0.0f, 8.0f);		// The threshold luminance above which a pixel will start to bloom
-	NumVar BloomStrength(0.1f, 0.0f, 2.0f);			// A modulator controlling how much bloom is added back into the image
+	NumVar BloomThreshold(1.5f, 0.0f, 8.0f);		// The threshold luminance above which a pixel will start to bloom
+	NumVar BloomStrength(0.5f, 0.0f, 2.0f);			// A modulator controlling how much bloom is added back into the image
 	NumVar BloomUpSampleFactor(0.65f, 0.0f, 1.0f);	// Controls the "focus" of the blur.High values spread out more causing a haze.
 
 	//Exposure Log() Range
@@ -461,8 +462,11 @@ void ScreenProcessing::Render(const Camera& camera)
 		ExtractLuminance(Context);
 	}
 
-	//Luminance Adaptation
-	Adaptation(Context);
+	if (EnableEyeAdaptation)
+	{
+		//Luminance Adaptation
+		Adaptation(Context);
+	}
 
 	//ToneMapping
 	ToneMappingHDR(Context);
@@ -596,6 +600,7 @@ void ScreenProcessing::DrawUI()
 
 		if (ImGui::TreeNodeEx("Luminance", ImGuiTreeNodeFlags_DefaultOpen))
 		{
+			ImGui::Checkbox("Enable Adaption", &EnableEyeAdaptation);
 			ImGui::SliderVerticalFloat("Target Luminance:", &TargetLuminance.GetValue(), TargetLuminance.GetMinValue(), TargetLuminance.GetMaxValue());
 			ImGui::Checkbox("Draw Luminance Histogram", &DrawHistogram);
 			ImGui::TreePop();

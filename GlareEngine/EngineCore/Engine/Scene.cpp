@@ -117,7 +117,7 @@ void Scene::SetSceneLights(DirectionalLight* light, int DirectionalLightsCount)
 	if (mName == "Sponza")
 	{
 		mMainConstants.gIsIndoorScene = true;
-		mSceneLights[0].Strength = { 10.0f, 10.0f, 10.0f };
+		mSceneLights[0].Strength = { 20.0f, 20.0f, 20.0f };
 	}
 	else if (mName == "Blue Tree")
 	{
@@ -286,6 +286,7 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 	mMainConstants.mBakingDiffuseCubeIndex = GlobleSRVIndex::gBakingDiffuseCubeIndex;
 	mMainConstants.gBakingPreFilteredEnvIndex = GlobleSRVIndex::gBakingPreFilteredEnvIndex;
 	mMainConstants.gBakingIntegrationBRDFIndex = GlobleSRVIndex::gBakingIntegrationBRDFIndex;
+	mMainConstants.IsRenderTiledBaseLighting = m_pGUI->IsRenderTiledBaseLighting() ? 1 : 0;
 
 	//Lights constant buffer
 	{

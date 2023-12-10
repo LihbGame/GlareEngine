@@ -126,7 +126,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	//Sky Initialize
 	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
 	//Shadow map Initialize
-	mShadowMap = make_unique<ShadowMap>(XMFLOAT3(0.17735f, -0.335f, 0.07735f), SHADOWMAPSIZE, SHADOWMAPSIZE);
+	mShadowMap = make_unique<ShadowMap>(XMFLOAT3(0.05f, -0.335f, 0.12f), SHADOWMAPSIZE, SHADOWMAPSIZE);
 	//Create PBR Materials
 	SimpleModelGenerator::GetInstance(CommandList)->CreatePBRMaterials();
 
@@ -139,7 +139,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	{
 		DirectionalLight SceneLights[3];
 		SceneLights[0].Direction = mShadowMap->GetShadowedLightDir();
-		SceneLights[0].Strength = { 5.0f, 5.0f, 5.0f };
+		SceneLights[0].Strength = { 20.0f, 20.0f, 20.0f };
 
 		SceneLights[1].Direction = XMFLOAT3(-0.57735f, -0.47735f, 0.57735f);
 		SceneLights[1].Strength = { 0.5f, 0.5f, 0.5f };

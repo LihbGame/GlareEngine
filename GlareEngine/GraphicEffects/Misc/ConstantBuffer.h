@@ -120,7 +120,7 @@ struct MainConstants
 
 	int			gDirectionalLightsCount			= 0;
 	int			gIsIndoorScene					= 0;
-	int			Pad2;
+	int			IsRenderTiledBaseLighting		= 1;
 	int			Pad3;
 };
 
