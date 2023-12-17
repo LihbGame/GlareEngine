@@ -59,8 +59,13 @@ namespace GlareEngine
 {
 	namespace Lighting
 	{
-		//light tile size
+		//light Tile size
 		IntVar LightGridDimension(32, eMinLightGridDimension, 32, 8);
+
+		//light Cluster size
+		XMFLOAT2 ClusterFactor;
+		XMFLOAT2 ClusterTileSize = XMFLOAT2(0, 0);
+		XMFLOAT3 ClusterTiles = XMFLOAT3(36, 20, 64);
 
 		//Light RootSignature
 		RootSignature m_FillLightRootSig;
@@ -91,7 +96,7 @@ namespace GlareEngine
 	}
 }
 
-void Lighting::InitializeResources(void)
+void Lighting::InitializeResources(const Camera& camera)
 {
 	m_FillLightRootSig.Reset(3, 0);
 	m_FillLightRootSig[0].InitAsConstantBuffer(0);
@@ -119,6 +124,10 @@ void Lighting::InitializeResources(void)
 	uint32_t lightGridCells = Math::DivideByMultiple(3840, LightGridDimension) * Math::DivideByMultiple(2160, LightGridDimension);
 	uint32_t lightGridSizeBytes = lightGridCells * (1 + MaxTileLights);
 	m_LightGrid.Create(L"m_LightGrid", lightGridSizeBytes, sizeof(UINT));
+
+	//Cluster
+	ClusterFactor.x = (float)ClusterTiles.z / Math::Log2(camera.GetFarZ() / camera.GetNearZ());
+	ClusterFactor.y = -((float)ClusterTiles.z * Math::Log2(camera.GetNearZ())) / Math::Log2(camera.GetFarZ() / camera.GetNearZ());
 
 	m_LightShadowArray.Create(L"m_LightShadowArray", eShadowDimension, eShadowDimension, DXGI_FORMAT_R32_FLOAT, MaxShadowedLights);
 	m_LightShadowTempBuffer.Create(L"m_LightShadowTempBuffer", eShadowDimension, eShadowDimension, DXGI_FORMAT_R32_FLOAT);
@@ -339,6 +348,13 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 	//Transition light grid Resource to pixel shader resource
 	Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+}
+
+void GlareEngine::Lighting::BuildCluster(GraphicsContext& gfxContext)
+{
+	ClusterTileSize.x = ceil(g_SceneColorBuffer.GetWidth() / ClusterTiles.x);
+	ClusterTileSize.y = ceil(g_SceneColorBuffer.GetHeight() / ClusterTiles.y);
+
 }
 
 void Lighting::Shutdown(void)

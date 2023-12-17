@@ -131,7 +131,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	SimpleModelGenerator::GetInstance(CommandList)->CreatePBRMaterials();
 
 	//Initialize Render
-	Render::Initialize(CommandList);
+	Render::Initialize(CommandList, mCamera.get());
 
 	//////Build Scene//////////
 	assert(mSceneManager);

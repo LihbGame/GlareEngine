@@ -55,7 +55,7 @@ namespace GlareEngine
 		RenderMaterial WireFrameMaterial;
 	}
 
-	void Render::Initialize(ID3D12GraphicsCommandList* CommandList)
+	void Render::Initialize(ID3D12GraphicsCommandList* CommandList,const Camera& camera)
 	{
 		if (s_Initialized)
 			return;
@@ -74,7 +74,7 @@ namespace GlareEngine
 
 		gSamplerHeap.Create(L"Scene Sampler Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 2048);
 
-		Lighting::InitializeResources();
+		Lighting::InitializeResources(camera);
 
 		ScreenProcessing::Initialize(CommandList);
 
