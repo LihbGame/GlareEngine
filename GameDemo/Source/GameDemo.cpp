@@ -43,21 +43,20 @@ class App :public GameApp
 public:
 	virtual ~App() {}
 
-	//此功能可用于初始化应用程序状态，并将在分配必要的硬件资源后运行。 
-	//不依赖于这些资源的某些状态仍应在构造函数中初始化，例如指针和标志。
+	//This function can be used to initialize application state and will run after allocating the necessary hardware resources.
+	//Some state that does not depend on these resources should still be initialized in the constructor, such as pointers and flags.
 	virtual void Startup(void);// = 0;
 	virtual void Cleanup(void);// = 0;
 
-	//确定您是否要退出该应用。 默认情况下，应用程序继续运行，直到按下“ ESC”键为止。
+	//Decide if you want to exit the app. By default, the application continues to run until the "ESC" key is pressed.
 	//virtual bool IsDone(void);
 
-	//每帧将调用一次update方法。 状态更新和场景渲染都应使用此方法处理。
+	//The update method will be called once per frame. Both state updates and scene rendering should be handled using this method.
 	virtual void Update(float DeltaTime);
 
 	//rendering pass
 	virtual void RenderScene(void);// = 0;
 
-	//可选的UI（覆盖）渲染阶段。 这是LDR。 缓冲区已被清除。 
 	virtual void RenderUI();
 
 	virtual void OnResize(uint32_t width, uint32_t height);
@@ -80,7 +79,7 @@ public:
 
 	void LoadGITFModel(wstring modelName, float SizeScale, bool IsNegetiveZForward = true);
 protected:
-	// 处理鼠标输入的重载函数
+	// Overloaded functions for handling mouse input
 	virtual void OnMouseDown(WPARAM btnState, int x, int y);
 	virtual void OnMouseUp(WPARAM btnState, int x, int y);
 	virtual void OnMouseMove(WPARAM btnState, int x, int y);
@@ -471,7 +470,7 @@ void App::OnMouseMove(WPARAM btnState, int x, int y)
 	mLastMousePos.x = x;
 	mLastMousePos.y = y;
 
-	//设置缩放光标
+	//Set zoom cursor
 	if (!mMaximized)
 	{
 		RECT WindowRect;

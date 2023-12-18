@@ -39,6 +39,18 @@ struct LightData
 	float ShadowTextureMatrix[16];
 };
 
+struct ClusterBuildConstants
+{
+	Matrix4 View;
+	Matrix4 InvProj;
+	XMFLOAT3 tileSizes;
+	float nearPlane;
+	XMFLOAT2 perTileSize;
+	float ScreenWidth;
+	float ScreenHeight;
+	float farPlane;
+};
+
 
 struct TileConstants
 {
@@ -350,7 +362,7 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 	Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }
 
-void GlareEngine::Lighting::BuildCluster(GraphicsContext& gfxContext)
+void GlareEngine::Lighting::BuildCluster(GraphicsContext& gfxContext, const Camera& camera)
 {
 	ClusterTileSize.x = ceil(g_SceneColorBuffer.GetWidth() / ClusterTiles.x);
 	ClusterTileSize.y = ceil(g_SceneColorBuffer.GetHeight() / ClusterTiles.y);

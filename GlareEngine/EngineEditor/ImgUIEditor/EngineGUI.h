@@ -51,7 +51,7 @@ public:
 	float	GetGrassMinWind()const { return GrassMinWind; }
 	float	GetGrassMaxWind()const { return GrassMaxWind; }
 	int		GetSceneIndex() const { return mSceneIndex; }
-	int		GetrenderPipelineIndex() const { return mRenderPipelineIndex; }
+	int		GetRenderPipelineIndex() const { return mRenderPipelineIndex; }
 	bool    IsRenderTiledBaseLighting()const { return mbTiledBaseLighting; }
 
 	XMFLOAT2 GetEngineLogoSize();

@@ -50,7 +50,7 @@ void Scene::Update(float DeltaTime)
 	//update Render Pipeline Type
 	if (LoadingFinish)
 	{
-		RenderPipelineType NewRenderPipelineType = (RenderPipelineType)m_pGUI->GetrenderPipelineIndex();
+		RenderPipelineType NewRenderPipelineType = (RenderPipelineType)m_pGUI->GetRenderPipelineIndex();
 		if (NewRenderPipelineType != Render::gRenderPipelineType)
 		{
 			Render::gRenderPipelineType = NewRenderPipelineType;
@@ -168,17 +168,27 @@ void Scene::RenderScene(RenderPipelineType Type)
 	{
 	case RenderPipelineType::FR:
 	{
-		ForwardRendering();
+		ForwardRendering(RenderPipelineType::FR);
 		break;
 	}
 	case RenderPipelineType::TBFR:
 	{
-		TiledBaseForwardRendering();
+		ForwardRendering(RenderPipelineType::TBFR);
+		break;
+	}
+	case RenderPipelineType::CBFR:
+	{
+		ForwardRendering(RenderPipelineType::CBFR);
 		break;
 	}
 	case RenderPipelineType::TBDR:
 	{
-		TiledBaseDeferredRendering();
+		DeferredRendering(RenderPipelineType::TBDR);
+		break;
+	}
+	case RenderPipelineType::CBDR:
+	{
+		DeferredRendering(RenderPipelineType::TBDR);
 		break;
 	}
 	default:
@@ -187,6 +197,11 @@ void Scene::RenderScene(RenderPipelineType Type)
 
 	//Post Processing
 	ScreenProcessing::Render(*m_pCamera);
+
+	if (IsResolutionChanged)
+	{
+		IsResolutionChanged = false;
+	}
 }
 
 void Scene::DrawUI()
@@ -205,7 +220,6 @@ void Scene::DrawUI()
 			RenderObject->DrawUI();
 		}
 	}
-
 
 	//Post Processing UI
 	ScreenProcessing::DrawUI();
@@ -231,6 +245,8 @@ void Scene::ResizeViewport(uint32_t width, uint32_t height)
 	m_MainScissor.top = 0;
 	m_MainScissor.right = (LONG)g_SceneColorBuffer.GetWidth();
 	m_MainScissor.bottom = (LONG)g_SceneColorBuffer.GetHeight();
+
+	IsResolutionChanged = true;
 }
 
 
@@ -409,198 +425,210 @@ void Scene::ForwardRendering()
 	Context.Finish();
 }
 
-void Scene::TiledBaseForwardRendering()
+void Scene::ForwardRendering(RenderPipelineType ForwardRenderPipeline)
 {
-	GraphicsContext& Context = GraphicsContext::Begin(L"Scene Render");
-
-	//default batch
-	MeshSorter sorter(MeshSorter::eDefault);
-	sorter.SetCamera(*m_pCamera);
-	sorter.SetViewport(m_MainViewport);
-	sorter.SetScissor(m_MainScissor);
-
-	if (IsMSAA)
+	if(ForwardRenderPipeline == RenderPipelineType::FR)
 	{
-		sorter.SetDepthStencilTarget(g_SceneMSAADepthBuffer);
-		sorter.AddRenderTarget(g_SceneMSAAColorBuffer);
+		ForwardRendering();
 	}
 	else
-	{ 
-		sorter.SetDepthStencilTarget(g_SceneDepthBuffer);
-		sorter.AddRenderTarget(g_SceneColorBuffer);
-	}
-	
-	//Culling and add  Render Objects
-	for (auto& model : m_pGLTFRenderObjects)
 	{
-		if (model->GetVisible())
-		{
-			dynamic_cast<glTFInstanceModel*>(model)->GetModel()->AddToRender(sorter);
-		}
-	}
+		GraphicsContext& Context = GraphicsContext::Begin(L"Scene Render");
 
-	//Sort Visible objects
-	sorter.Sort();
+		//default batch
+		MeshSorter sorter(MeshSorter::eDefault);
+		sorter.SetCamera(*m_pCamera);
+		sorter.SetViewport(m_MainViewport);
+		sorter.SetScissor(m_MainScissor);
 
-	//Depth PrePass
-	{
-		ScopedTimer PrePassScope(L"Depth PrePass", Context);
-
-		//Clear Depth And Stencil
 		if (IsMSAA)
 		{
-			Context.TransitionResource(g_SceneMSAADepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
-			Context.ClearDepthAndStencil(g_SceneMSAADepthBuffer, REVERSE_Z ? 0.0f : 1.0f);
+			sorter.SetDepthStencilTarget(g_SceneMSAADepthBuffer);
+			sorter.AddRenderTarget(g_SceneMSAAColorBuffer);
 		}
 		else
 		{
-			Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
-			Context.ClearDepthAndStencil(g_SceneDepthBuffer, REVERSE_Z ? 0.0f : 1.0f);
+			sorter.SetDepthStencilTarget(g_SceneDepthBuffer);
+			sorter.AddRenderTarget(g_SceneColorBuffer);
 		}
 
-		sorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
-
-		//Resolve Depth Buffer if MSAA
-		if (IsMSAA)
+		//Culling and add  Render Objects
+		for (auto& model : m_pGLTFRenderObjects)
 		{
-			Context.TransitionResource(g_SceneMSAADepthBuffer, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
-			Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, true);
-			Context.GetCommandList()->ResolveSubresource(g_SceneDepthBuffer.GetResource(), 0, g_SceneMSAADepthBuffer.GetResource(), 0, DXGI_FORMAT_R32_FLOAT);
+			if (model->GetVisible())
+			{
+				dynamic_cast<glTFInstanceModel*>(model)->GetModel()->AddToRender(sorter);
+			}
 		}
-	}
 
-	//Linear Z
-	{
-		ScopedTimer LinearZScope(L"Linear Z", Context);
+		//Sort Visible objects
+		sorter.Sort();
 
-		ComputeContext& computeContext = Context.GetComputeContext();
-
-		uint32_t frameIndex = TemporalAA::GetFrameIndexMod2();
-
-		ScreenProcessing::LinearizeZ(computeContext, *m_pCamera, frameIndex);
-	}
-
-	//SSAO
-	{
-		SSAO::Render(Context, mMainConstants);
-	}
-
-
-	if (LoadingFinish)
-	{
-		//Light Culling
-		Lighting::FillLightGrid(Context, *m_pCamera);
-
-		//Copy PBR SRV
-		D3D12_CPU_DESCRIPTOR_HANDLE PBR_SRV[] = 
+		//Depth PrePass
 		{
-		Lighting::m_LightGrid.GetSRV(),
-		Lighting::m_LightBuffer.GetSRV(),
-		Lighting::m_LightShadowArray.GetSRV(),
-		g_SSAOFullScreen.GetSRV()
-		};
+			ScopedTimer PrePassScope(L"Depth PrePass", Context);
 
-		UINT destCount = 4; UINT size[4] = { 1,1,1,1 };
-		g_Device->CopyDescriptors(1, &gTextureHeap[0], &destCount,
-			destCount, PBR_SRV, size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	}
+			//Clear Depth And Stencil
+			if (IsMSAA)
+			{
+				Context.TransitionResource(g_SceneMSAADepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+				Context.ClearDepthAndStencil(g_SceneMSAADepthBuffer, REVERSE_Z ? 0.0f : 1.0f);
+			}
+			else
+			{
+				Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+				Context.ClearDepthAndStencil(g_SceneDepthBuffer, REVERSE_Z ? 0.0f : 1.0f);
+			}
 
-	//set descriptor heap 
-	Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gTextureHeap.GetHeapPointer());
-	//Set Common SRV
-	Context.SetDescriptorTable((int)RootSignatureType::eCommonSRVs, gTextureHeap[0]);
+			sorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
 
-	{
-		ScopedTimer MainRenderScope(L"Main Render", Context);
+			//Resolve Depth Buffer if MSAA
+			if (IsMSAA)
+			{
+				Context.TransitionResource(g_SceneMSAADepthBuffer, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
+				Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, true);
+				Context.GetCommandList()->ResolveSubresource(g_SceneDepthBuffer.GetResource(), 0, g_SceneMSAADepthBuffer.GetResource(), 0, DXGI_FORMAT_R32_FLOAT);
+			}
+		}
+
+		//Linear Z
+		{
+			ScopedTimer LinearZScope(L"Linear Z", Context);
+
+			ComputeContext& computeContext = Context.GetComputeContext();
+
+			uint32_t frameIndex = TemporalAA::GetFrameIndexMod2();
+
+			ScreenProcessing::LinearizeZ(computeContext, *m_pCamera, frameIndex);
+		}
+
+		//SSAO
+		{
+			SSAO::Render(Context, mMainConstants);
+		}
+
 
 		if (LoadingFinish)
 		{
-			CreateTileConeShadowMap(Context);
+			//Light Culling
+			Lighting::FillLightGrid(Context, *m_pCamera);
+
+			//Copy PBR SRV
+			D3D12_CPU_DESCRIPTOR_HANDLE PBR_SRV[] =
+			{
+			Lighting::m_LightGrid.GetSRV(),
+			Lighting::m_LightBuffer.GetSRV(),
+			Lighting::m_LightShadowArray.GetSRV(),
+			g_SSAOFullScreen.GetSRV()
+			};
+
+			UINT destCount = 4; UINT size[4] = { 1,1,1,1 };
+			g_Device->CopyDescriptors(1, &gTextureHeap[0], &destCount,
+				destCount, PBR_SRV, size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		}
 
+		//set descriptor heap 
+		Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gTextureHeap.GetHeapPointer());
+		//Set Common SRV
+		Context.SetDescriptorTable((int)RootSignatureType::eCommonSRVs, gTextureHeap[0]);
 
-		//Sun Shadow Map
 		{
-			ScopedTimer SunShadowScope(L"Sun Shadow Map", Context);
+			ScopedTimer MainRenderScope(L"Main Render", Context);
 
-			MeshSorter shadowSorter(MeshSorter::eShadows);
-			shadowSorter.SetCamera(*m_pSunShadowCamera.get());
-			shadowSorter.SetDepthStencilTarget(m_pSunShadowCamera->GetShadowMap()->GetShadowBuffer());
-
-			for (auto& model : m_pGLTFRenderObjects)
+			if (LoadingFinish)
 			{
-				if (model->GetVisible() && model->GetShadowRenderFlag())
+				CreateTileConeShadowMap(Context);
+			}
+
+
+			//Sun Shadow Map
+			{
+				ScopedTimer SunShadowScope(L"Sun Shadow Map", Context);
+
+				MeshSorter shadowSorter(MeshSorter::eShadows);
+				shadowSorter.SetCamera(*m_pSunShadowCamera.get());
+				shadowSorter.SetDepthStencilTarget(m_pSunShadowCamera->GetShadowMap()->GetShadowBuffer());
+
+				for (auto& model : m_pGLTFRenderObjects)
 				{
-					dynamic_cast<glTFInstanceModel*>(model)->GetModel()->AddToRender(shadowSorter);
+					if (model->GetVisible() && model->GetShadowRenderFlag())
+					{
+						dynamic_cast<glTFInstanceModel*>(model)->GetModel()->AddToRender(shadowSorter);
+					}
 				}
+				shadowSorter.Sort();
+				shadowSorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
 			}
-			shadowSorter.Sort();
-			shadowSorter.RenderMeshes(MeshSorter::eZPass, Context, mMainConstants);
-		}
 
-		//Base Pass
-		{
-			ScopedTimer RenderColorScope(L"Render Color", Context);
+			//Base Pass
+			{
+				ScopedTimer RenderColorScope(L"Render Color", Context);
 
-			//Clear Render Target
+				//Clear Render Target
+				if (IsMSAA)
+				{
+					Context.TransitionResource(g_SceneMSAAColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+					Context.ClearRenderTarget(g_SceneMSAAColorBuffer);
+				}
+				else
+				{
+					Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+					Context.ClearRenderTarget(g_SceneColorBuffer);
+				}
+
+				//Set Cube SRV
+				Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[COMMONSRVSIZE + COMMONUAVSIZE]);
+				//Set Textures SRV
+				Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE + COMMONSRVSIZE + COMMONUAVSIZE]);
+
+				if (IsMSAA)
+				{
+					Context.TransitionResource(g_SceneMSAADepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
+					Context.SetRenderTarget(g_SceneMSAAColorBuffer.GetRTV(), g_SceneMSAADepthBuffer.GetDSV_DepthReadOnly());
+				}
+				else
+				{
+					Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
+					Context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV_DepthReadOnly());
+				}
+				Context.SetViewportAndScissor(m_MainViewport, m_MainScissor);
+
+				//Sky
+				if (m_pRenderObjectsType[(int)ObjectType::Sky].front()->GetVisible())
+				{
+					Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &mMainConstants);
+					m_pRenderObjectsType[(int)ObjectType::Sky].front()->Draw(Context);
+				}
+
+				sorter.RenderMeshes(MeshSorter::eOpaque, Context, mMainConstants);
+
+			}
+
+			//Transparent Pass
+			sorter.RenderMeshes(MeshSorter::eTransparent, Context, mMainConstants);
+
+			//Resolve MSAA
 			if (IsMSAA)
 			{
-				Context.TransitionResource(g_SceneMSAAColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-				Context.ClearRenderTarget(g_SceneMSAAColorBuffer);
+				Context.TransitionResource(g_SceneMSAAColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
+				Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, true);
+				Context.GetCommandList()->ResolveSubresource(g_SceneColorBuffer.GetResource(), 0, g_SceneMSAAColorBuffer.GetResource(), 0, DefaultHDRColorFormat);
 			}
-			else
-			{
-				Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-				Context.ClearRenderTarget(g_SceneColorBuffer);
-			}
-
-			//Set Cube SRV
-			Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[COMMONSRVSIZE+ COMMONUAVSIZE]);
-			//Set Textures SRV
-			Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE + COMMONSRVSIZE+ COMMONUAVSIZE]);
-
-			if (IsMSAA)
-			{
-				Context.TransitionResource(g_SceneMSAADepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
-				Context.SetRenderTarget(g_SceneMSAAColorBuffer.GetRTV(), g_SceneMSAADepthBuffer.GetDSV_DepthReadOnly());
-			}
-			else
-			{
-				Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
-				Context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV_DepthReadOnly());
-			}
-			Context.SetViewportAndScissor(m_MainViewport, m_MainScissor);
-
-			//Sky
-			if (m_pRenderObjectsType[(int)ObjectType::Sky].front()->GetVisible())
-			{
-				Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &mMainConstants);
-				m_pRenderObjectsType[(int)ObjectType::Sky].front()->Draw(Context);
-			}
-
-			sorter.RenderMeshes(MeshSorter::eOpaque, Context, mMainConstants);
-			
 		}
 
-		//Transparent Pass
-		sorter.RenderMeshes(MeshSorter::eTransparent, Context, mMainConstants);
-
-		//Resolve MSAA
-		if (IsMSAA)
-		{
-			Context.TransitionResource(g_SceneMSAAColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
-			Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RESOLVE_DEST, true);
-			Context.GetCommandList()->ResolveSubresource(g_SceneColorBuffer.GetResource(), 0, g_SceneMSAAColorBuffer.GetResource(), 0, DefaultHDRColorFormat);
-		}
+		Context.Finish();
 	}
-
-	Context.Finish();
 }
 
 
-void Scene::TiledBaseDeferredRendering()
+void Scene::DeferredRendering(RenderPipelineType DeferredRenderPipeline)
 {
 	GraphicsContext& Context = GraphicsContext::Begin(L"Scene Render");
+
+	if (DeferredRenderPipeline == RenderPipelineType::CBDR && IsResolutionChanged)
+	{
+		Lighting::BuildCluster(Context, m_pCamera);
+	}
 
 	{
 		ScopedTimer ClearGBufferScope(L"Clear GBuffer", Context);

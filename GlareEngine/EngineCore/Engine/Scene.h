@@ -64,8 +64,8 @@ private:
 	void UpdateMainConstantBuffer(float DeltaTime);
 	void CreateShadowMap(GraphicsContext& Context, vector<RenderObject*> RenderObjects);
 	void ForwardRendering();
-	void TiledBaseForwardRendering();
-	void TiledBaseDeferredRendering();
+	void ForwardRendering(RenderPipelineType renderPipeline);
+	void DeferredRendering(RenderPipelineType renderPipeline);
 	void CreateTileConeShadowMap(GraphicsContext& Context);
 private:
 	ID3D12GraphicsCommandList* m_pCommandList = nullptr;
@@ -77,6 +77,8 @@ private:
 	//Viewport and Scissor
 	D3D12_VIEWPORT m_MainViewport = { 0 };
 	D3D12_RECT m_MainScissor = { 0 };
+
+	bool IsResolutionChanged = false;
 
 	vector<RenderObject*> m_pRenderObjects;
 	vector<RenderObject*> m_pGLTFRenderObjects;

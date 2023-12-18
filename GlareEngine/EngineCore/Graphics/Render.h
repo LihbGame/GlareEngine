@@ -31,6 +31,8 @@ namespace GlareEngine
 		{
 			TBFR,		//Tiled Based Forward Rendering
 			TBDR,		//Tiled Based Deferred Rendering
+			CBDR,		//Cluster Based Deferred Rendering
+			CBFR,		//Cluster Based Forward Rendering
 			FR			//Forward Rendering
 		};
 

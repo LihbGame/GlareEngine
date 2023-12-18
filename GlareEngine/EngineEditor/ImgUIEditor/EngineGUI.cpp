@@ -287,7 +287,7 @@ void EngineGUI::DrawControlPanel(float IconWindowHigh)
 
 	ImGui::Separator();
 	ImGui::Text("Render Pipeline");
-	ImGui::Combo(" ", &mRenderPipelineIndex, "TBFR\0TBDR\0");
+	ImGui::Combo(" ", &mRenderPipelineIndex, "TBFR\0TBDR\0CBDR\0");
 
 
 	ImGui::Separator();
