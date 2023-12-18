@@ -40,7 +40,7 @@ struct LightData
 };
 
 
-struct CSConstants
+struct TileConstants
 {
 	uint32_t ViewportWidth;
 	uint32_t ViewportHeight;
@@ -326,7 +326,7 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 	float NearClipDist = camera.GetNearZ();
 	const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
 
-	CSConstants csConstants;
+	TileConstants csConstants;
 	csConstants.ViewportWidth = g_SceneColorBuffer.GetWidth();
 	csConstants.ViewportHeight = g_SceneColorBuffer.GetHeight();
 	csConstants.InvTileDim = 1.0f / LightGridDimension;
@@ -342,7 +342,7 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 	XMMATRIX InvViewProj = XMMatrixInverse(&Determinant, ViewProj);
 	csConstants.InverseProjection = (Matrix4)InvProj;
 	csConstants.InverseViewProj = (Matrix4)InvViewProj;
-	Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
+	Context.SetDynamicConstantBufferView(0, sizeof(TileConstants), &csConstants);
 	//Dispatch
 	Context.Dispatch(tileCountX, tileCountY, 1);
 	//Transition light grid Resource to pixel shader resource

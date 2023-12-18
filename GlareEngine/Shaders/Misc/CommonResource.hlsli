@@ -1033,5 +1033,27 @@ CatmullRomSamples GetBicubic2DCatmullRomSamples(float2 UV, float2 Size, in float
     return Samples;
 }
 
+// Convert clip space coordinates to view space
+float4 ClipToView(float4 clip, float4x4 InvProj)
+{
+    // View space position.
+    float4 view = mul(InvProj, clip);
+    // Perspecitive projection.
+    view = view / view.w;
 
+    return view;
+}
+
+// Convert screen space coordinates to view space.
+float4 ScreenToView(float4 screen, float2 Viewport, float4x4 InvProj)
+{
+    screen.xy = min(screen.xy, uint2(Viewport.x, Viewport.y)); // avoid loading from outside the texture, it messes up the min-max depth!
+    // Convert to normalized texture coordinates
+    float2 texCoord = screen.xy / float2(Viewport.x, Viewport.y);
+
+    // Convert to clip space
+    float4 clip = float4(float2(texCoord.x, 1.0f - texCoord.y) * 2.0f - 1.0f, screen.z, screen.w);
+
+    return ClipToView(clip, InvProj);
+}
 #endif

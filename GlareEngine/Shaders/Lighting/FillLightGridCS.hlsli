@@ -43,30 +43,6 @@ groupshared uint tileLightIndicesConeShadowed[MAX_LIGHTS];
 // Now build the frustum planes from the view space points
 groupshared Frustum frustum;
 
-// Convert clip space coordinates to view space
-float4 ClipToView(float4 clip)
-{
-    // View space position.
-    float4 view = mul(InverseProjection, clip);
-    // Perspecitive projection.
-    view = view / view.w;
-
-    return view;
-}
-
-// Convert screen space coordinates to view space.
-float4 ScreenToView(float4 screen)
-{
-    screen.xy = min(screen.xy, uint2(ViewportWidth, ViewportHeight));// avoid loading from outside the texture, it messes up the min-max depth!
-    // Convert to normalized texture coordinates
-    float2 texCoord = screen.xy / float2(ViewportWidth, ViewportHeight);
-
-    // Convert to clip space
-    float4 clip = float4(float2(texCoord.x, 1.0f - texCoord.y) * 2.0f - 1.0f, screen.z, screen.w);
-
-    return ClipToView(clip);
-}
-
 
 Plane ComputePlane(float3 p0, float3 p1, float3 p2)
 {
@@ -206,8 +182,8 @@ void main(
     float fMaxDepth = asfloat(maxDepthUInt);
 
     // Convert depth values to view space.
-    float maxDepthVS = ScreenToView(float4(0, 0, fMinDepth, 1)).z;
-    float minDepthVS = ScreenToView(float4(0, 0, fMaxDepth, 1)).z;
+    float maxDepthVS = ScreenToView(float4(0, 0, fMinDepth, 1), float2(ViewportWidth, ViewportHeight), InverseProjection).z;
+    float minDepthVS = ScreenToView(float4(0, 0, fMaxDepth, 1), float2(ViewportWidth, ViewportHeight), InverseProjection).z;
 
     if (GI == 0)
     {
@@ -280,7 +256,7 @@ void main(
         [unroll]
         for (int i = 0; i < 4; i++)
         {
-            viewSpace[i] = ScreenToView(screenSpace[i]).xyz;
+            viewSpace[i] = ScreenToView(screenSpace[i], float2(ViewportWidth, ViewportHeight), InverseProjection).xyz;
         }
 
         // Left plane
@@ -307,7 +283,7 @@ void main(
         {
             uint2 DTid = Gid * uint2(WORK_GROUP_SIZE_X, WORK_GROUP_SIZE_Y) + uint2(DX, DY);
             DTid = min(DTid, uint2(ViewportWidth - 1, ViewportHeight - 1));// avoid loading from outside the texture, it messes up the min-max depth!
-            float realDepthVS = ScreenToView(float4(0, 0, depthTex[DTid.xy], 1)).z;
+            float realDepthVS = ScreenToView(float4(0, 0, depthTex[DTid.xy], 1), float2(ViewportWidth, ViewportHeight), InverseProjection).z;
             const uint __depthmaskcellindex = max(0, min(31, floor((realDepthVS - minDepthVS) * __depthRangeRecip)));
             __depthmaskUnrolled |= 1u << __depthmaskcellindex;
         }
