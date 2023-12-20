@@ -40,25 +40,23 @@ void FXAA::Initialize(void)
 
 void FXAA::Render(ComputeContext& Context, ColorBuffer* Input, ColorBuffer* Output)
 {
-	if (IsEnable)
-	{
-		ScopedTimer FXAAScope(L"FXAA", Context);
-		Context.TransitionResource(*Output, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-		Context.SetRootSignature(ScreenProcessing::GetRootSignature());
+	ScopedTimer FXAAScope(L"FXAA", Context);
+	Context.TransitionResource(*Output, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-		FXAARenderData renderData{ XMFLOAT2(1.0f / Output->GetWidth(),1.0f / Output->GetHeight()) };
+	Context.SetRootSignature(ScreenProcessing::GetRootSignature());
 
-		Context.SetDynamicConstantBufferView(3, sizeof(FXAARenderData), &renderData);
+	FXAARenderData renderData{ XMFLOAT2(1.0f / Output->GetWidth(),1.0f / Output->GetHeight()) };
 
-		Context.SetDynamicDescriptor(1, 0, Output->GetUAV());
+	Context.SetDynamicConstantBufferView(3, sizeof(FXAARenderData), &renderData);
 
-		Context.SetDynamicDescriptor(2, 0, Input->GetSRV());
+	Context.SetDynamicDescriptor(1, 0, Output->GetUAV());
 
-		Context.SetPipelineState(FxaaCS);
+	Context.SetDynamicDescriptor(2, 0, Input->GetSRV());
 
-		Context.Dispatch2D(Output->GetWidth(), Output->GetHeight());
-	}
+	Context.SetPipelineState(FxaaCS);
+
+	Context.Dispatch2D(Output->GetWidth(), Output->GetHeight());
 }
 
 void FXAA::DrawUI()

@@ -125,7 +125,7 @@ void SetupSampleWeightParameters(TemporalAA::TAAConstant& taaConstant)
 
 
 
-void TemporalAA::ApplyTemporalAA(ComputeContext& Context)
+void TemporalAA::ApplyTemporalAA(ComputeContext& Context,ColorBuffer& scenecolor)
 {
 	ScopedTimer TemporalAAScope(L"Temporal AA", Context);
 
@@ -155,7 +155,7 @@ void TemporalAA::ApplyTemporalAA(ComputeContext& Context)
 
 	Context.SetDynamicDescriptor(2, 0, g_LinearDepth[Src].GetSRV());
 	Context.SetDynamicDescriptor(2, 1, g_LinearDepth[Dst].GetSRV());
-	Context.SetDynamicDescriptor(2, 2, g_SceneColorBuffer.GetSRV());
+	Context.SetDynamicDescriptor(2, 2, scenecolor.GetSRV());
 	Context.SetDynamicDescriptor(2, 3, g_TemporalColor[Src].GetSRV());
 
 	Context.SetDynamicDescriptor(2, 4, g_VelocityBuffer.GetSRV());

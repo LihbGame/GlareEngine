@@ -284,6 +284,7 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	mAntiAliasingName += string("MSAA") + '\0';
 	mAntiAliasingName += string("FXAA") + '\0';
 	mAntiAliasingName += string("TAA") + '\0';
+	mAntiAliasingName += string("TAA_FXAA") + '\0';
 	mAntiAliasingName += string("NoAA") + '\0';
 
 	__declspec(align(16)) float initExposure[] =
@@ -447,9 +448,18 @@ void ScreenProcessing::Render(const Camera& camera)
 	//is necessary for all temporal effects (and motion blur).
 	MotionBlur::GenerateCameraVelocityBuffer(Context, camera);
 
-	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TAA)
+	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TAA_FXAA)
 	{
-		TemporalAA::ApplyTemporalAA(Context);
+		FXAA::Render(Context, CurrentPostprocessRT, LastPostprocessRT);
+	}
+
+	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TAA ||
+		Render::GetAntiAliasingType() == Render::AntiAliasingType::TAA_FXAA)
+	{
+		if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TAA_FXAA)
+			TemporalAA::ApplyTemporalAA(Context, *LastPostprocessRT);
+		else
+			TemporalAA::ApplyTemporalAA(Context, *CurrentPostprocessRT);
 	}
 
 	if (BloomEnable)
@@ -476,7 +486,8 @@ void ScreenProcessing::Render(const Camera& camera)
 	//Motion Blur
 	MotionBlur::RenderMotionBlur(Context, g_VelocityBuffer, LastPostprocessRT);
 
-	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::FXAA && FXAA::IsEnable)
+
+	if ((Render::GetAntiAliasingType() == Render::AntiAliasingType::FXAA && FXAA::IsEnable))
 	{
 		FXAA::Render(Context, LastPostprocessRT, CurrentPostprocessRT);
 		std::swap(LastPostprocessRT, CurrentPostprocessRT);
@@ -613,7 +624,8 @@ void ScreenProcessing::Update(float dt, MainConstants& RenderData, Camera& camer
 	gMainConstants = &RenderData;
 
 	//update camera jitter
-	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TAA)
+	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TAA ||
+		Render::GetAntiAliasingType() == Render::AntiAliasingType::TAA_FXAA)
 	{
 		TemporalAA::Update(Display::GetFrameCount());
 
