@@ -8,12 +8,15 @@
 #include "Engine/EngineAdjust.h"
 #include "Math/MathHelper.h"
 #include "Engine/EngineProfiling.h"
+#include "ConstantBuffer.h"
+#include "Engine/RenderMaterial.h"
 
 //shaders
 #include "CompiledShaders/FillLightGrid_8_CS.h"
 #include "CompiledShaders/FillLightGrid_16_CS.h"
 #include "CompiledShaders/FillLightGrid_24_CS.h"
 #include "CompiledShaders/FillLightGrid_32_CS.h"
+#include "CompiledShaders/BuildClusterCS.h"
 
 
 
@@ -38,6 +41,13 @@ struct LightData
 
 	float ShadowTextureMatrix[16];
 };
+
+struct Cluster 
+{
+	Vector4 minPoint;
+	Vector4 maxPoint;
+};
+
 
 struct ClusterBuildConstants
 {
@@ -82,15 +92,19 @@ namespace GlareEngine
 		//Light RootSignature
 		RootSignature m_FillLightRootSig;
 
-		//four tiled light types
-		ComputePSO m_FillLightGridCS_8(L"Fill Light Grid 8 CS");
-		ComputePSO m_FillLightGridCS_16(L"Fill Light Grid 16 CS");
-		ComputePSO m_FillLightGridCS_24(L"Fill Light Grid 24 CS");
-		ComputePSO m_FillLightGridCS_32(L"Fill Light Grid 32 CS");
+		//Four tiled light types
+		RenderMaterial m_FillLightGridCS_8;
+		RenderMaterial m_FillLightGridCS_16;
+		RenderMaterial m_FillLightGridCS_24;
+		RenderMaterial m_FillLightGridCS_32;
+
+		//Cluster Material
+		RenderMaterial m_BuildClusterCS;
 
 		LightData m_LightData[MaxLights];
 		StructuredBuffer m_LightBuffer;
 		StructuredBuffer m_LightGrid;
+		StructuredBuffer m_LightCluster;
 
 		uint32_t m_FirstConeLight;
 		uint32_t m_FirstConeShadowedLight;
@@ -113,24 +127,22 @@ void Lighting::InitializeResources(const Camera& camera)
 	m_FillLightRootSig.Reset(3, 0);
 	m_FillLightRootSig[0].InitAsConstantBuffer(0);
 	m_FillLightRootSig[1].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2);
-	m_FillLightRootSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1);
+	m_FillLightRootSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 5);
 	m_FillLightRootSig.Finalize(L"FillLightRS");
 
-	m_FillLightGridCS_8.SetRootSignature(m_FillLightRootSig);
-	m_FillLightGridCS_8.SetComputeShader(g_pFillLightGrid_8_CS, sizeof(g_pFillLightGrid_8_CS));
-	m_FillLightGridCS_8.Finalize();
 
-	m_FillLightGridCS_16.SetRootSignature(m_FillLightRootSig);
-	m_FillLightGridCS_16.SetComputeShader(g_pFillLightGrid_16_CS, sizeof(g_pFillLightGrid_16_CS));
-	m_FillLightGridCS_16.Finalize();
+#define InitMaterial( MaterialName ,Material, ShaderByteCode ) \
+    Material.BeginInitializeComputeMaterial(MaterialName,m_FillLightRootSig); \
+    Material.SetComputeShader(ShaderByteCode, sizeof(ShaderByteCode) ); \
+	Material.EndInitializeComputeMaterial();
 
-	m_FillLightGridCS_24.SetRootSignature(m_FillLightRootSig);
-	m_FillLightGridCS_24.SetComputeShader(g_pFillLightGrid_24_CS, sizeof(g_pFillLightGrid_24_CS));
-	m_FillLightGridCS_24.Finalize();
+	InitMaterial(L"Fill Light Grid 8 CS", m_FillLightGridCS_8, g_pFillLightGrid_8_CS);
+	InitMaterial(L"Fill Light Grid 16 CS", m_FillLightGridCS_16, g_pFillLightGrid_16_CS);
+	InitMaterial(L"Fill Light Grid 24 CS", m_FillLightGridCS_24, g_pFillLightGrid_24_CS);
+	InitMaterial(L"Fill Light Grid 32 CS", m_FillLightGridCS_32, g_pFillLightGrid_32_CS);
+	InitMaterial(L"Build Cluster CS", m_BuildClusterCS, g_pBuildClusterCS);
 
-	m_FillLightGridCS_32.SetRootSignature(m_FillLightRootSig);
-	m_FillLightGridCS_32.SetComputeShader(g_pFillLightGrid_32_CS, sizeof(g_pFillLightGrid_32_CS));
-	m_FillLightGridCS_32.Finalize();
+#undef InitMaterial
 
 	// Assumes max resolution of 3840x2160
 	uint32_t lightGridCells = Math::DivideByMultiple(3840, LightGridDimension) * Math::DivideByMultiple(2160, LightGridDimension);
@@ -141,10 +153,12 @@ void Lighting::InitializeResources(const Camera& camera)
 	ClusterFactor.x = (float)ClusterTiles.z / Math::Log2(camera.GetFarZ() / camera.GetNearZ());
 	ClusterFactor.y = -((float)ClusterTiles.z * Math::Log2(camera.GetNearZ())) / Math::Log2(camera.GetFarZ() / camera.GetNearZ());
 
-	m_LightShadowArray.Create(L"m_LightShadowArray", eShadowDimension, eShadowDimension, DXGI_FORMAT_R32_FLOAT, MaxShadowedLights);
-	m_LightShadowTempBuffer.Create(L"m_LightShadowTempBuffer", eShadowDimension, eShadowDimension, DXGI_FORMAT_R32_FLOAT);
+	m_LightShadowArray.Create(L"Light Shadow Array", eShadowDimension, eShadowDimension, DXGI_FORMAT_R32_FLOAT, MaxShadowedLights);
+	m_LightShadowTempBuffer.Create(L"Light Shadow Temp Buffer", eShadowDimension, eShadowDimension, DXGI_FORMAT_R32_FLOAT);
 
-	m_LightBuffer.Create(L"m_LightBuffer", MaxLights, sizeof(LightData));
+	m_LightBuffer.Create(L"Light Buffer", MaxLights, sizeof(LightData));
+
+	m_LightCluster.Create(L"Light Cluster", ClusterTiles.x * ClusterTiles.y * ClusterTiles.z, sizeof(Cluster));
 }
 
 void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound,const Vector3 offset)
@@ -316,10 +330,10 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 
 	switch ((int)LightGridDimension)
 	{
-	case  8: Context.SetPipelineState(m_FillLightGridCS_8); break;
-	case 16: Context.SetPipelineState(m_FillLightGridCS_16); break;
-	case 24: Context.SetPipelineState(m_FillLightGridCS_24); break;
-	case 32: Context.SetPipelineState(m_FillLightGridCS_32); break;
+	case  8: Context.SetPipelineState(m_FillLightGridCS_8.GetComputePSO()); break;
+	case 16: Context.SetPipelineState(m_FillLightGridCS_16.GetComputePSO()); break;
+	case 24: Context.SetPipelineState(m_FillLightGridCS_24.GetComputePSO()); break;
+	case 32: Context.SetPipelineState(m_FillLightGridCS_32.GetComputePSO()); break;
 	default: assert(false); break;
 	}
 
@@ -362,11 +376,30 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 	Context.TransitionResource(m_LightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }
 
-void GlareEngine::Lighting::BuildCluster(GraphicsContext& gfxContext, const Camera& camera)
+void Lighting::BuildCluster(GraphicsContext& gfxContext, const MainConstants& mainConstants)
 {
+	ComputeContext& Context = gfxContext.GetComputeContext();
+
 	ClusterTileSize.x = ceil(g_SceneColorBuffer.GetWidth() / ClusterTiles.x);
 	ClusterTileSize.y = ceil(g_SceneColorBuffer.GetHeight() / ClusterTiles.y);
 
+	ClusterBuildConstants csConstants;
+	csConstants.View = (Matrix4)mainConstants.View;
+	csConstants.InvProj = (Matrix4)mainConstants.InvProj;
+	csConstants.tileSizes = ClusterTiles;
+	csConstants.nearPlane = mainConstants.NearZ;
+	csConstants.perTileSize = ClusterTileSize;
+	csConstants.ScreenWidth = g_SceneColorBuffer.GetWidth();
+	csConstants.ScreenHeight = g_SceneColorBuffer.GetHeight();
+	csConstants.farPlane = mainConstants.FarZ;
+
+	Context.TransitionResource(m_LightCluster, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+	Context.SetRootSignature(m_FillLightRootSig);
+	Context.SetPipelineState(m_BuildClusterCS.GetComputePSO());
+	Context.SetDynamicConstantBufferView(0, sizeof(ClusterBuildConstants), &csConstants);
+	Context.SetDynamicDescriptor(2, 0, m_LightCluster.GetUAV());
+	Context.Dispatch(ClusterTiles.x, ClusterTiles.y, ClusterTiles.z);
 }
 
 void Lighting::Shutdown(void)
@@ -375,4 +408,5 @@ void Lighting::Shutdown(void)
 	m_LightGrid.Destroy();
 	m_LightShadowArray.Destroy();
 	m_LightShadowTempBuffer.Destroy();
+	m_LightCluster.Destroy();
 }

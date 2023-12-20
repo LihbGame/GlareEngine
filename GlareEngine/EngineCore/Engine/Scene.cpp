@@ -627,7 +627,7 @@ void Scene::DeferredRendering(RenderPipelineType DeferredRenderPipeline)
 
 	if (DeferredRenderPipeline == RenderPipelineType::CBDR && IsResolutionChanged)
 	{
-		Lighting::BuildCluster(Context, m_pCamera);
+		Lighting::BuildCluster(Context, mMainConstants);
 	}
 
 	{
