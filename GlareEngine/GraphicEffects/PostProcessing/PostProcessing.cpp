@@ -284,7 +284,7 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	mAntiAliasingName += string("MSAA") + '\0';
 	mAntiAliasingName += string("FXAA") + '\0';
 	mAntiAliasingName += string("TAA") + '\0';
-	mAntiAliasingName += string("TXAA") + '\0';
+	mAntiAliasingName += string("TFAA") + '\0';
 	mAntiAliasingName += string("NoAA") + '\0';
 
 	__declspec(align(16)) float initExposure[] =
@@ -448,18 +448,15 @@ void ScreenProcessing::Render(const Camera& camera)
 	//is necessary for all temporal effects (and motion blur).
 	MotionBlur::GenerateCameraVelocityBuffer(Context, camera);
 
-	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TXAA)
-	{
-		FXAA::Render(Context, CurrentPostprocessRT, LastPostprocessRT);
-	}
+	//if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TFAA)
+	//{
+	//	FXAA::Render(Context, CurrentPostprocessRT, LastPostprocessRT);
+	//}
 
 	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TAA ||
-		Render::GetAntiAliasingType() == Render::AntiAliasingType::TXAA)
+		Render::GetAntiAliasingType() == Render::AntiAliasingType::TFAA)
 	{
-		if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TXAA)
-			TemporalAA::ApplyTemporalAA(Context, *LastPostprocessRT);
-		else
-			TemporalAA::ApplyTemporalAA(Context, *CurrentPostprocessRT);
+		TemporalAA::ApplyTemporalAA(Context, *CurrentPostprocessRT);
 	}
 
 	if (BloomEnable)
@@ -487,7 +484,8 @@ void ScreenProcessing::Render(const Camera& camera)
 	MotionBlur::RenderMotionBlur(Context, g_VelocityBuffer, LastPostprocessRT);
 
 
-	if ((Render::GetAntiAliasingType() == Render::AntiAliasingType::FXAA && FXAA::IsEnable))
+	if ((Render::GetAntiAliasingType() == Render::AntiAliasingType::FXAA && FXAA::IsEnable) ||
+		Render::GetAntiAliasingType() == Render::AntiAliasingType::TFAA)
 	{
 		FXAA::Render(Context, LastPostprocessRT, CurrentPostprocessRT);
 		std::swap(LastPostprocessRT, CurrentPostprocessRT);
@@ -578,9 +576,9 @@ void ScreenProcessing::DrawUI()
 			}
 			break;
 		}
-		case Render::AntiAliasingType::TXAA:
+		case Render::AntiAliasingType::TFAA:
 		{
-			if (ImGui::TreeNodeEx("TXAA"))
+			if (ImGui::TreeNodeEx("TFAA"))
 			{
 				TemporalAA::DrawUI();
 				ImGui::TreePop();
@@ -635,7 +633,7 @@ void ScreenProcessing::Update(float dt, MainConstants& RenderData, Camera& camer
 
 	//update camera jitter
 	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TAA ||
-		Render::GetAntiAliasingType() == Render::AntiAliasingType::TXAA)
+		Render::GetAntiAliasingType() == Render::AntiAliasingType::TFAA)
 	{
 		TemporalAA::Update(Display::GetFrameCount());
 
@@ -976,8 +974,8 @@ void ScreenProcessing::GenerateBloom(ComputeContext& Context)
 		Context.TransitionResource(g_aBloomUAV5[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 		// Blur then Up-sampling and blur four times
-		BlurBuffer(Context, g_aBloomUAV5[0], g_aBloomUAV5[1]);
-		UpsampleBlurBuffer(Context, g_aBloomUAV4, g_aBloomUAV5[1], BloomUpSampleFactor);
+		BlurBuffer(Context, g_aBloomUAV4[0], g_aBloomUAV4[1]);
+		//UpsampleBlurBuffer(Context, g_aBloomUAV4, g_aBloomUAV5[1], BloomUpSampleFactor);
 		UpsampleBlurBuffer(Context, g_aBloomUAV3, g_aBloomUAV4[1], BloomUpSampleFactor);
 		UpsampleBlurBuffer(Context, g_aBloomUAV2, g_aBloomUAV3[1], BloomUpSampleFactor);
 		UpsampleBlurBuffer(Context, g_aBloomUAV1, g_aBloomUAV2[1], BloomUpSampleFactor);
@@ -997,8 +995,8 @@ void ScreenProcessing::GenerateBloom(ComputeContext& Context)
 		Context.TransitionResource(g_aBloomUAV5[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 		// Blur then Up-sampling and blur two times
-		BlurBuffer(Context, g_aBloomUAV5[0], g_aBloomUAV5[1]);
-		UpsampleBlurBuffer(Context, g_aBloomUAV3, g_aBloomUAV5[1], BloomUpSampleFactor);
+		BlurBuffer(Context, g_aBloomUAV4[0], g_aBloomUAV4[1]);
+		UpsampleBlurBuffer(Context, g_aBloomUAV3, g_aBloomUAV4[1], BloomUpSampleFactor);
 		UpsampleBlurBuffer(Context, g_aBloomUAV1, g_aBloomUAV3[1], BloomUpSampleFactor);
 	}
 

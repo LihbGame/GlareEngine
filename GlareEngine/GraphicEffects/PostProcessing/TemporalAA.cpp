@@ -16,7 +16,8 @@
 
 namespace TemporalAA
 {
-	NumVar Sharpness(0.5f, 0.0f, 1.0f);
+	NumVar TAASharpness(0.5f, 0.0f, 1.0f);
+	NumVar TFAASharpness(1.0f, 0.0f, 2.0f);
 
 	//ue5 set 0.04 as default ,Low values cause blurriness and ghosting, high values fail to hide jittering
 	float mCurrentFrameWeight = 0.04f;
@@ -275,6 +276,12 @@ void TemporalAA::SharpenImage(ComputeContext& Context, ColorBuffer& TemporalColo
 	Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	Context.TransitionResource(TemporalColor, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
+	NumVar Sharpness(0);
+	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TFAA)
+		Sharpness= TFAASharpness;
+	else
+		Sharpness= TAASharpness;
+
 	Context.SetPipelineState(Sharpness >= 0.001f ? GET_PSO(SharpenTAAMaterial.GetComputePSO()) : GET_PSO(ResolveTAAMaterial.GetComputePSO()));
 	Context.SetConstants(0, 1.0f + Sharpness, 0.25f * Sharpness);
 	Context.SetDynamicDescriptor(2, 0, TemporalColor.GetSRV());
@@ -284,5 +291,12 @@ void TemporalAA::SharpenImage(ComputeContext& Context, ColorBuffer& TemporalColo
 
 void TemporalAA::DrawUI()
 {
-	ImGui::SliderFloat("Sharpness", &Sharpness.GetValue(), Sharpness.GetMinValue(), Sharpness.GetMaxValue());
+	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TFAA)
+	{
+		ImGui::SliderVerticalFloat("Sharpness", &TFAASharpness.GetValue(), TFAASharpness.GetMinValue(), TFAASharpness.GetMaxValue());
+	}
+	else
+	{
+		ImGui::SliderVerticalFloat("Sharpness", &TAASharpness.GetValue(), TAASharpness.GetMinValue(), TAASharpness.GetMaxValue());
+	}
 }
