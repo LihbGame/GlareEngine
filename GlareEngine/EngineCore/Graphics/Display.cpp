@@ -147,7 +147,7 @@ namespace GlareEngine
 		//SwapChainFormat
 		DXGI_FORMAT g_SwapChainFormat = DXGI_FORMAT_R10G10B10A2_UNORM;
 
-		//Display Buffer(Èý»º´æ)
+		//Display Buffer
 		ColorBuffer g_DisplayBuffers[SWAP_CHAIN_BUFFER_COUNT];
 		UINT g_CurrentBuffer = 0;
 

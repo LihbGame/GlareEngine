@@ -284,7 +284,7 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	mAntiAliasingName += string("MSAA") + '\0';
 	mAntiAliasingName += string("FXAA") + '\0';
 	mAntiAliasingName += string("TAA") + '\0';
-	mAntiAliasingName += string("TAA_FXAA") + '\0';
+	mAntiAliasingName += string("TXAA") + '\0';
 	mAntiAliasingName += string("NoAA") + '\0';
 
 	__declspec(align(16)) float initExposure[] =
@@ -448,15 +448,15 @@ void ScreenProcessing::Render(const Camera& camera)
 	//is necessary for all temporal effects (and motion blur).
 	MotionBlur::GenerateCameraVelocityBuffer(Context, camera);
 
-	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TAA_FXAA)
+	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TXAA)
 	{
 		FXAA::Render(Context, CurrentPostprocessRT, LastPostprocessRT);
 	}
 
 	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TAA ||
-		Render::GetAntiAliasingType() == Render::AntiAliasingType::TAA_FXAA)
+		Render::GetAntiAliasingType() == Render::AntiAliasingType::TXAA)
 	{
-		if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TAA_FXAA)
+		if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TXAA)
 			TemporalAA::ApplyTemporalAA(Context, *LastPostprocessRT);
 		else
 			TemporalAA::ApplyTemporalAA(Context, *CurrentPostprocessRT);
@@ -573,6 +573,16 @@ void ScreenProcessing::DrawUI()
 		{
 			if (ImGui::TreeNodeEx("TAA"))
 			{
+				TemporalAA::DrawUI();
+				ImGui::TreePop();
+			}
+			break;
+		}
+		case Render::AntiAliasingType::TXAA:
+		{
+			if (ImGui::TreeNodeEx("TXAA"))
+			{
+				TemporalAA::DrawUI();
 				ImGui::TreePop();
 			}
 			break;
@@ -625,7 +635,7 @@ void ScreenProcessing::Update(float dt, MainConstants& RenderData, Camera& camer
 
 	//update camera jitter
 	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TAA ||
-		Render::GetAntiAliasingType() == Render::AntiAliasingType::TAA_FXAA)
+		Render::GetAntiAliasingType() == Render::AntiAliasingType::TXAA)
 	{
 		TemporalAA::Update(Display::GetFrameCount());
 

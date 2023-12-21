@@ -5,6 +5,7 @@
 #include "Graphics/CommandContext.h"
 #include "Engine/RenderMaterial.h"
 #include "PostProcessing.h"
+#include "EngineGUI.h"
 
 
 //shader
@@ -15,7 +16,7 @@
 
 namespace TemporalAA
 {
-	NumVar Sharpness(0.0f, 0.0f, 1.0f);
+	NumVar Sharpness(0.5f, 0.0f, 1.0f);
 
 	//ue5 set 0.04 as default ,Low values cause blurriness and ghosting, high values fail to hide jittering
 	float mCurrentFrameWeight = 0.04f;
@@ -279,4 +280,9 @@ void TemporalAA::SharpenImage(ComputeContext& Context, ColorBuffer& TemporalColo
 	Context.SetDynamicDescriptor(2, 0, TemporalColor.GetSRV());
 	Context.SetDynamicDescriptor(1, 0, g_SceneColorBuffer.GetUAV());
 	Context.Dispatch2D(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
+}
+
+void TemporalAA::DrawUI()
+{
+	ImGui::SliderFloat("Sharpness", &Sharpness.GetValue(), Sharpness.GetMinValue(), Sharpness.GetMaxValue());
 }

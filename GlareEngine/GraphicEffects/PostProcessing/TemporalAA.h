@@ -24,4 +24,5 @@ namespace TemporalAA
 
 	void ClearHistory(CommandContext& Context);
 
+	void DrawUI();
 }	// namespace TemporalAA
