@@ -3,6 +3,12 @@
 #include "Graphics/PipelineState.h"
 
 
+#define InitComputeMaterial(rootSignature,Material, ShaderByteCode) \
+    Material.BeginInitializeComputeMaterial(rootSignature); \
+    Material.SetComputeShader(ShaderByteCode, sizeof(ShaderByteCode) ); \
+	Material.EndInitializeComputeMaterial();
+
+
 namespace GlareEngine
 {
 	enum MaterialShaderType :int
@@ -15,13 +21,13 @@ namespace GlareEngine
 	class RenderMaterial
 	{
 	public:
-		RenderMaterial();
+		RenderMaterial(wstring MaterialName=L"Default Material Name");
 
-		void BeginInitializeComputeMaterial(wstring MaterialName, const RootSignature& rootSignature);
+		void BeginInitializeComputeMaterial(const RootSignature& rootSignature);
 		void EndInitializeComputeMaterial() { mComputePSO.Finalize(); }
 		void SetComputeShader(const unsigned char* shaderByteCode, size_t byteCodeLength) { mComputePSO.SetComputeShader(shaderByteCode, byteCodeLength); }
 
-		void BeginInitializeGraphicMaterial(wstring MaterialName, const RootSignature& rootSignature);
+		void BeginInitializeGraphicMaterial(const RootSignature& rootSignature);
 		void EndInitializeGraphicMaterial() { mGraphicsPSO.Finalize(); }
 
 		void SetMaterialType(MaterialShaderType type) { mMaterialType = type; }
@@ -31,6 +37,8 @@ namespace GlareEngine
 	private:
 		ComputePSO mComputePSO;
 		GraphicsPSO mGraphicsPSO;
+
+		wstring mMaterialName;
 
 		//Material Parameters
 		MaterialShaderType mMaterialType = MaterialShaderType::DefaultLight;

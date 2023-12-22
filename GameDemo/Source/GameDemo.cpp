@@ -214,11 +214,11 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 				gScene->AddGLTFModelToScene(model.get());
 			}*/
 
-			// Scene 1  sponza
+			// Scene 1  Sponza
 			mGLTFModels[3]->SetMaskFlag(true);
 			gScenes[0]->AddGLTFModelToScene(mGLTFModels[3].get());
-			//Create random lights in Sponsa
-			Lighting::CreateRandomLights(mGLTFModels[3].get()->GetModel()->GetAxisAlignedBox().GetMin(), mGLTFModels[3].get()->GetModel()->GetAxisAlignedBox().GetMax(), Vector3(150, 60, 150));
+			//Create random lights in Sponza
+			Lighting::CreateRandomLights(mGLTFModels[3].get()->GetModel()->GetAxisAlignedBox().GetMin(), mGLTFModels[3].get()->GetModel()->GetAxisAlignedBox().GetMax(), Vector3(145, 60, 145));
 			gScenes[0]->Finalize();
 
 			// Scene 2
@@ -518,11 +518,11 @@ void App::CreateModelInstance(ID3D12GraphicsCommandList* CommandList,string Mode
 				float scale = MathHelper::RandF() * 0.3f;
 				if (!RotX)
 				{
-					XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMatrixRotationY(MathHelper::RandF() * MathHelper::Pi) * XMMatrixScaling(scale, scale, scale) * XMMatrixTranslation((i - Num_X / 2) * 50.0f + offset, 0, (y - Num_Y / 2) * 50.0f + offset)));
+					XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMatrixRotationY(MathHelper::RandF() * MathHelper::Pi) * XMMatrixScaling(scale, scale, scale) * XMMatrixTranslation((i - Num_X / 2.0f) * 50.0f + offset, 0, (y - Num_Y / 2.0f) * 50.0f + offset)));
 				}
 				else
 				{
-					XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMatrixRotationX(MathHelper::Pi/2) * XMMatrixRotationY(MathHelper::RandF() * MathHelper::Pi) * XMMatrixScaling(scale, scale, scale) * XMMatrixTranslation((i - Num_X / 2) * 50.0f + offset, 0, (y - Num_Y / 2) * 50.0f + offset)));
+					XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMatrixRotationX(MathHelper::Pi/2) * XMMatrixRotationY(MathHelper::RandF() * MathHelper::Pi) * XMMatrixScaling(scale, scale, scale) * XMMatrixTranslation((i - Num_X / 2.0f) * 50.0f + offset, 0, (y - Num_Y / 2.0f) * 50.0f + offset)));
 				}
 				InstanceData.mInstanceConstants[SubMeshIndex].push_back(IRC);
 			}

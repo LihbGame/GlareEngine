@@ -1,16 +1,18 @@
 #include "RenderMaterial.h"
 
-RenderMaterial::RenderMaterial()
+GlareEngine::RenderMaterial::RenderMaterial(wstring MaterialName)
+	:mMaterialName(MaterialName)
 {
 }
 
-void RenderMaterial::BeginInitializeComputeMaterial(wstring MaterialName, const RootSignature& rootSignature)
+void RenderMaterial::BeginInitializeComputeMaterial(const RootSignature& rootSignature)
 {
-	mComputePSO = ComputePSO(MaterialName);
+	mComputePSO = ComputePSO(mMaterialName);
 	mComputePSO.SetRootSignature(rootSignature);
 }
 
-void RenderMaterial::BeginInitializeGraphicMaterial(wstring MaterialName, const RootSignature& rootSignature)
+void RenderMaterial::BeginInitializeGraphicMaterial(const RootSignature& rootSignature)
 {
-	mGraphicsPSO = GraphicsPSO(MaterialName);
+	mGraphicsPSO = GraphicsPSO(mMaterialName);
 }
+

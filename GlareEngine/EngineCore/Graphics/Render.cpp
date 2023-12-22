@@ -51,8 +51,8 @@ namespace GlareEngine
 
 		D3D12_CPU_DESCRIPTOR_HANDLE g_GBufferSRV[GBUFFER_Count];
 
-		RenderMaterial DeferredLightingMaterial;
-		RenderMaterial WireFrameMaterial;
+		RenderMaterial DeferredLightingMaterial(L"Deferred Light CS");
+		RenderMaterial WireFrameMaterial(L"Deferred WireFrame CS");
 	}
 
 	void Render::Initialize(ID3D12GraphicsCommandList* CommandList,const Camera& camera)
@@ -150,16 +150,8 @@ namespace GlareEngine
 
 	void Render::BuildCommonPSOs(const PSOCommonProperty CommonProperty)
 	{
-#define InitMaterial( MaterialName ,Material, ShaderByteCode ) \
-    Material.BeginInitializeComputeMaterial(MaterialName,gRootSignature); \
-    Material.SetComputeShader(ShaderByteCode, sizeof(ShaderByteCode) ); \
-	Material.EndInitializeComputeMaterial();
-
-		InitMaterial(L"Deferred Light CS", DeferredLightingMaterial, g_pLightingPassCS);
-		InitMaterial(L"Deferred WireFrame CS", WireFrameMaterial, g_pWireframeCS);
-
-#undef InitMaterial
-
+		InitComputeMaterial(gRootSignature, DeferredLightingMaterial, g_pLightingPassCS);
+		InitComputeMaterial(gRootSignature, WireFrameMaterial, g_pWireframeCS);
 
 		//assert(gCommonPSOs.size() == 0);
 
@@ -176,7 +168,6 @@ namespace GlareEngine
 		//DepthOnlyPSO.SetVertexShader(g_pDepthOnlyVS, sizeof(g_pDepthOnlyVS));
 		//DepthOnlyPSO.Finalize();
 		//gPSOs.push_back(DepthOnlyPSO);
-
 
 	}
 

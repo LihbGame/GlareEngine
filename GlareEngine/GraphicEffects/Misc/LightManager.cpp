@@ -93,10 +93,10 @@ namespace GlareEngine
 		RootSignature m_FillLightRootSig;
 
 		//Four tiled light types
-		RenderMaterial m_FillLightGridCS_8;
-		RenderMaterial m_FillLightGridCS_16;
-		RenderMaterial m_FillLightGridCS_24;
-		RenderMaterial m_FillLightGridCS_32;
+		RenderMaterial m_FillLightGridCS_8(L"Fill Light Grid 8 CS");
+		RenderMaterial m_FillLightGridCS_16(L"Fill Light Grid 16 CS");
+		RenderMaterial m_FillLightGridCS_24(L"Fill Light Grid 24 CS");
+		RenderMaterial m_FillLightGridCS_32(L"Fill Light Grid 36 CS");
 
 		//Cluster Material
 		RenderMaterial m_BuildClusterCS;
@@ -130,19 +130,11 @@ void Lighting::InitializeResources(const Camera& camera)
 	m_FillLightRootSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 5);
 	m_FillLightRootSig.Finalize(L"FillLightRS");
 
-
-#define InitMaterial( MaterialName ,Material, ShaderByteCode ) \
-    Material.BeginInitializeComputeMaterial(MaterialName,m_FillLightRootSig); \
-    Material.SetComputeShader(ShaderByteCode, sizeof(ShaderByteCode) ); \
-	Material.EndInitializeComputeMaterial();
-
-	InitMaterial(L"Fill Light Grid 8 CS", m_FillLightGridCS_8, g_pFillLightGrid_8_CS);
-	InitMaterial(L"Fill Light Grid 16 CS", m_FillLightGridCS_16, g_pFillLightGrid_16_CS);
-	InitMaterial(L"Fill Light Grid 24 CS", m_FillLightGridCS_24, g_pFillLightGrid_24_CS);
-	InitMaterial(L"Fill Light Grid 32 CS", m_FillLightGridCS_32, g_pFillLightGrid_32_CS);
-	InitMaterial(L"Build Cluster CS", m_BuildClusterCS, g_pBuildClusterCS);
-
-#undef InitMaterial
+	InitComputeMaterial(m_FillLightRootSig, m_FillLightGridCS_8, g_pFillLightGrid_8_CS);
+	InitComputeMaterial(m_FillLightRootSig, m_FillLightGridCS_16, g_pFillLightGrid_16_CS);
+	InitComputeMaterial(m_FillLightRootSig, m_FillLightGridCS_24, g_pFillLightGrid_24_CS);
+	InitComputeMaterial(m_FillLightRootSig, m_FillLightGridCS_32, g_pFillLightGrid_32_CS);
+	InitComputeMaterial(m_FillLightRootSig, m_BuildClusterCS, g_pBuildClusterCS);
 
 	// Assumes max resolution of 3840x2160
 	uint32_t lightGridCells = Math::DivideByMultiple(3840, LightGridDimension) * Math::DivideByMultiple(2160, LightGridDimension);
