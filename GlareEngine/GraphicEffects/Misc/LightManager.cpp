@@ -1,4 +1,5 @@
 #include "LightManager.h"
+#include "Graphics/SamplerManager.h"
 #include "Graphics/PipelineState.h"
 #include "Graphics/RootSignature.h"
 #include "Graphics/CommandContext.h"
@@ -138,7 +139,9 @@ namespace GlareEngine
 
 void Lighting::InitializeResources(const Camera& camera)
 {
-	m_FillLightRootSig.Reset(3, 0);
+	m_FillLightRootSig.Reset(3, 2);
+	m_FillLightRootSig.InitStaticSampler(0, SamplerLinearClampDesc);
+	m_FillLightRootSig.InitStaticSampler(1, SamplerLinearBorderDesc);
 	m_FillLightRootSig[0].InitAsConstantBuffer(0);
 	m_FillLightRootSig[1].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2);
 	m_FillLightRootSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 5);
@@ -149,7 +152,7 @@ void Lighting::InitializeResources(const Camera& camera)
 	InitComputeMaterial(m_FillLightRootSig, m_FillLightGridCS_24, g_pFillLightGrid_24_CS);
 	InitComputeMaterial(m_FillLightRootSig, m_FillLightGridCS_32, g_pFillLightGrid_32_CS);
 	InitComputeMaterial(m_FillLightRootSig, m_BuildClusterCS, g_pBuildClusterCS);
-	InitComputeMaterial(m_FillLightRootSig,m_MaskUnUsedClusterCS,g_pMaskUnUsedClusterCS);
+	InitComputeMaterial(m_FillLightRootSig, m_MaskUnUsedClusterCS, g_pMaskUnUsedClusterCS);
 
 
 	// Assumes max resolution of 3840x2160

@@ -1,5 +1,5 @@
 
-Texture2D<float4> LinearDepthTex : register(t0);
+Texture2D LinearDepthTex : register(t0);
 RWStructuredBuffer<float> ActiveClusterList : register(u0);
 
 SamplerState LinearClampSample : register(s0);
