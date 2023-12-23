@@ -10,6 +10,7 @@
 #include "Engine/EngineProfiling.h"
 #include "ConstantBuffer.h"
 #include "Engine/RenderMaterial.h"
+#include "PostProcessing/PostProcessing.h"
 
 //shaders
 #include "CompiledShaders/FillLightGrid_8_CS.h"
@@ -17,7 +18,7 @@
 #include "CompiledShaders/FillLightGrid_24_CS.h"
 #include "CompiledShaders/FillLightGrid_32_CS.h"
 #include "CompiledShaders/BuildClusterCS.h"
-
+#include "CompiledShaders/MaskUnUsedClusterCS.h"
 
 
 using namespace GlareEngine::Math;
@@ -62,6 +63,17 @@ struct ClusterBuildConstants
 };
 
 
+struct UnUsedClusterMaskConstant
+{
+	XMFLOAT2 cluserFactor;
+	XMFLOAT2 perTileSize;
+	XMFLOAT3 tileSizes;
+	float ScreenWidth;
+	float ScreenHeight;
+	float farPlane;
+	float nearPlane;
+};
+
 struct TileConstants
 {
 	uint32_t ViewportWidth;
@@ -99,12 +111,14 @@ namespace GlareEngine
 		RenderMaterial m_FillLightGridCS_32(L"Fill Light Grid 36 CS");
 
 		//Cluster Material
-		RenderMaterial m_BuildClusterCS;
+		RenderMaterial m_BuildClusterCS(L"Build Cluster CS");
+		RenderMaterial m_MaskUnUsedClusterCS(L"Mask UnUsed Cluster");
 
 		LightData m_LightData[MaxLights];
 		StructuredBuffer m_LightBuffer;
 		StructuredBuffer m_LightGrid;
 		StructuredBuffer m_LightCluster;
+		StructuredBuffer m_UnusedClusterMask;
 
 		uint32_t m_FirstConeLight;
 		uint32_t m_FirstConeShadowedLight;
@@ -135,6 +149,8 @@ void Lighting::InitializeResources(const Camera& camera)
 	InitComputeMaterial(m_FillLightRootSig, m_FillLightGridCS_24, g_pFillLightGrid_24_CS);
 	InitComputeMaterial(m_FillLightRootSig, m_FillLightGridCS_32, g_pFillLightGrid_32_CS);
 	InitComputeMaterial(m_FillLightRootSig, m_BuildClusterCS, g_pBuildClusterCS);
+	InitComputeMaterial(m_FillLightRootSig,m_MaskUnUsedClusterCS,g_pMaskUnUsedClusterCS);
+
 
 	// Assumes max resolution of 3840x2160
 	uint32_t lightGridCells = Math::DivideByMultiple(3840, LightGridDimension) * Math::DivideByMultiple(2160, LightGridDimension);
@@ -150,7 +166,11 @@ void Lighting::InitializeResources(const Camera& camera)
 
 	m_LightBuffer.Create(L"Light Buffer", MaxLights, sizeof(LightData));
 
-	m_LightCluster.Create(L"Light Cluster", ClusterTiles.x * ClusterTiles.y * ClusterTiles.z, sizeof(Cluster));
+	int ClusterSize = ClusterTiles.x * ClusterTiles.y * ClusterTiles.z;
+
+	m_LightCluster.Create(L"Light Cluster", ClusterSize, sizeof(Cluster));
+
+	m_UnusedClusterMask.Create(L"Unused Cluster Mask", ClusterSize, sizeof(float));
 }
 
 void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound,const Vector3 offset)
@@ -387,11 +407,33 @@ void Lighting::BuildCluster(GraphicsContext& gfxContext, const MainConstants& ma
 
 	Context.TransitionResource(m_LightCluster, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-	Context.SetRootSignature(m_FillLightRootSig);
+	Context.SetRootSignature(*m_BuildClusterCS.GetRootSignature());
 	Context.SetPipelineState(m_BuildClusterCS.GetComputePSO());
 	Context.SetDynamicConstantBufferView(0, sizeof(ClusterBuildConstants), &csConstants);
 	Context.SetDynamicDescriptor(2, 0, m_LightCluster.GetUAV());
 	Context.Dispatch(ClusterTiles.x, ClusterTiles.y, ClusterTiles.z);
+}
+
+void Lighting::MaskUnUsedCluster(GraphicsContext& gfxContext, const MainConstants& mainConstants)
+{
+	ComputeContext& Context = gfxContext.GetComputeContext();
+
+	UnUsedClusterMaskConstant csConstants;
+	csConstants.cluserFactor = ClusterFactor;
+	csConstants.farPlane = mainConstants.FarZ;
+	csConstants.nearPlane = mainConstants.NearZ;
+	csConstants.perTileSize = ClusterTileSize;
+	csConstants.ScreenHeight= g_SceneColorBuffer.GetHeight();
+	csConstants.ScreenWidth = g_SceneColorBuffer.GetWidth();
+	csConstants.tileSizes = ClusterTiles;
+
+	Context.TransitionResource(m_UnusedClusterMask, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.SetRootSignature(*m_MaskUnUsedClusterCS.GetRootSignature());
+	Context.SetPipelineState(m_MaskUnUsedClusterCS.GetComputePSO());
+	Context.SetDynamicConstantBufferView(0, sizeof(UnUsedClusterMaskConstant), &csConstants);
+	Context.SetDynamicDescriptor(2, 0, m_UnusedClusterMask.GetUAV());
+	Context.SetDynamicDescriptor(1, 0, ScreenProcessing::GetLinearDepthBuffer()->GetSRV());
+	Context.Dispatch2D(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
 }
 
 void Lighting::Shutdown(void)

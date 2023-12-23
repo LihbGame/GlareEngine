@@ -32,6 +32,8 @@ namespace GlareEngine
 
 		void SetMaterialType(MaterialShaderType type) { mMaterialType = type; }
 
+		const RootSignature* GetRootSignature() { assert(m_pRootSignature); return m_pRootSignature; }
+
 		ComputePSO& GetComputePSO() { return mComputePSO; }
 		GraphicsPSO& GetGraphicsPSO() { return mGraphicsPSO; }
 	private:
@@ -40,6 +42,7 @@ namespace GlareEngine
 
 		wstring mMaterialName;
 
+		const RootSignature* m_pRootSignature = nullptr;
 		//Material Parameters
 		MaterialShaderType mMaterialType = MaterialShaderType::DefaultLight;
 	};
