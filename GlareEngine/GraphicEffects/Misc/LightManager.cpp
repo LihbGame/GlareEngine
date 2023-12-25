@@ -20,7 +20,7 @@
 #include "CompiledShaders/FillLightGrid_32_CS.h"
 #include "CompiledShaders/BuildClusterCS.h"
 #include "CompiledShaders/MaskUnUsedClusterCS.h"
-
+#include "CompiledShaders/ClusterLightCullCS.h"
 
 using namespace GlareEngine::Math;
 using namespace GlareEngine;
@@ -414,7 +414,9 @@ void Lighting::BuildCluster(GraphicsContext& gfxContext, const MainConstants& ma
 	Context.SetPipelineState(m_BuildClusterCS.GetComputePSO());
 	Context.SetDynamicConstantBufferView(0, sizeof(ClusterBuildConstants), &csConstants);
 	Context.SetDynamicDescriptor(2, 0, m_LightCluster.GetUAV());
-	Context.Dispatch(ClusterTiles.x, ClusterTiles.y, ClusterTiles.z);
+
+	//Dispatch(36/4,20/4,64/4)
+	Context.Dispatch3D(ClusterTiles.x, ClusterTiles.y, ClusterTiles.z, 4, 4, 4);
 }
 
 void Lighting::MaskUnUsedCluster(GraphicsContext& gfxContext, const MainConstants& mainConstants)
@@ -446,4 +448,5 @@ void Lighting::Shutdown(void)
 	m_LightShadowArray.Destroy();
 	m_LightShadowTempBuffer.Destroy();
 	m_LightCluster.Destroy();
+	m_UnusedClusterMask.Destroy();
 }
