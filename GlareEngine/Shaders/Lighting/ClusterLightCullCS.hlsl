@@ -1,9 +1,9 @@
 #include "LightGrid.hlsli"
 #include "../Misc/CommonResource.hlsli"
 
-#define THREAD_GROUD_X 4
-#define THREAD_GROUD_Y 4
-#define THREAD_GROUD_Z 4
+#define THREAD_GROUD_X 40
+#define THREAD_GROUD_Y 24
+#define THREAD_GROUD_Z 1
 
 #define GROUD_THREAD_TOTAL_NUM THREAD_GROUD_X * THREAD_GROUD_Y * THREAD_GROUD_Z
 
@@ -37,6 +37,10 @@ cbuffer CSConstant : register(b0)
 };
 
 [numthreads(THREAD_GROUD_X, THREAD_GROUD_Y, THREAD_GROUD_Z)]
-void main( uint3 DTid : SV_DispatchThreadID )
+void main(uint3 groupId : SV_GroupID,
+        uint3 groupThreadId : SV_GroupThreadID,
+        uint groupIndex : SV_GroupIndex,
+        uint3 dispatchThreadId : SV_DispatchThreadID)
 {
+    
 }

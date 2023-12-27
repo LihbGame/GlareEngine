@@ -1,5 +1,9 @@
 #include "../Misc/CommonResource.hlsli"
 
+#define THREAD_GROUD_X 40
+#define THREAD_GROUD_Y 24
+#define THREAD_GROUD_Z 1
+
 struct Cluter
 {
     float4 minPoint;
@@ -30,7 +34,7 @@ float3 LineIntersectionToZPlane(float3 a, float3 b, float z)
     return result;
 }
 
-[numthreads(8, 8, 8)]
+[numthreads(THREAD_GROUD_X, THREAD_GROUD_Y, THREAD_GROUD_Z)]
 void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
     const float3 eyePos = float3(0.0, 0.0, 0.0);

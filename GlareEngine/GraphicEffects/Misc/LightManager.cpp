@@ -100,7 +100,7 @@ namespace GlareEngine
 		//light Cluster size
 		XMFLOAT2 ClusterFactor;
 		XMFLOAT2 ClusterTileSize = XMFLOAT2(0, 0);
-		XMFLOAT3 ClusterTiles = XMFLOAT3(36, 20, 64);
+		XMFLOAT3 ClusterTiles = XMFLOAT3(40, 24, 64);
 
 		//Light RootSignature
 		RootSignature m_FillLightRootSig;
@@ -415,8 +415,7 @@ void Lighting::BuildCluster(GraphicsContext& gfxContext, const MainConstants& ma
 	Context.SetDynamicConstantBufferView(0, sizeof(ClusterBuildConstants), &csConstants);
 	Context.SetDynamicDescriptor(2, 0, m_LightCluster.GetUAV());
 
-	//Dispatch(36/4,20/4,64/4)
-	Context.Dispatch3D(ClusterTiles.x, ClusterTiles.y, ClusterTiles.z, 4, 4, 4);
+	Context.Dispatch(1, 1, ClusterTiles.z);
 }
 
 void Lighting::MaskUnUsedCluster(GraphicsContext& gfxContext, const MainConstants& mainConstants)
