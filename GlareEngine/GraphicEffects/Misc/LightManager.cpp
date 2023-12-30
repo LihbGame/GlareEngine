@@ -50,6 +50,11 @@ struct Cluster
 	Vector4 maxPoint;
 };
 
+struct ClusterLightGrid
+{
+	uint32_t offset;
+	float count;
+};
 
 struct ClusterBuildConstants
 {
@@ -119,8 +124,12 @@ namespace GlareEngine
 		LightData m_LightData[MaxLights];
 		StructuredBuffer m_LightBuffer;
 		StructuredBuffer m_LightGrid;
+
 		StructuredBuffer m_LightCluster;
+		StructuredBuffer m_ClusterLightGrid;
 		StructuredBuffer m_UnusedClusterMask;
+		StructuredBuffer m_GlobalLightIndexList;
+		StructuredBuffer m_GlobalIndexOffset;
 
 		uint32_t m_FirstConeLight;
 		uint32_t m_FirstConeShadowedLight;
@@ -175,7 +184,14 @@ void Lighting::InitializeResources(const Camera& camera)
 
 	m_LightCluster.Create(L"Light Cluster", ClusterSize, sizeof(Cluster));
 
+	m_ClusterLightGrid.Create(L"Cluster Light Grid", ClusterSize, sizeof(ClusterLightGrid));
+
 	m_UnusedClusterMask.Create(L"Unused Cluster Mask", ClusterSize, sizeof(float));
+
+	m_GlobalLightIndexList.Create(L"Global Light Index List", ClusterSize * MaxClusterLights, sizeof(uint32_t));
+
+	uint32_t offset = 0;
+	m_GlobalIndexOffset.Create(L"Global Index Offset", 1, sizeof(uint32_t), &offset);
 }
 
 void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound,const Vector3 offset)
@@ -446,11 +462,26 @@ void GlareEngine::Lighting::ClusterLightingCulling(GraphicsContext& gfxContext)
 {
 	ComputeContext& Context = gfxContext.GetComputeContext();
 
+	Context.TransitionResource(m_UnusedClusterMask, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	Context.TransitionResource(m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	Context.TransitionResource(m_LightCluster, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	Context.TransitionResource(m_ClusterLightGrid, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.TransitionResource(m_GlobalLightIndexList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.TransitionResource(m_GlobalIndexOffset, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
 	Context.SetRootSignature(*m_ClusterLightCullCS.GetRootSignature());
 	Context.SetPipelineState(m_ClusterLightCullCS.GetComputePSO());
 
-	Context.SetDynamicDescriptor(2, 0, m_UnusedClusterMask.GetUAV());
+	Context.SetConstants(0, MaxLights);
 
+	Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
+	Context.SetDynamicDescriptor(1, 1, m_LightCluster.GetSRV());
+	Context.SetDynamicDescriptor(1, 2, m_UnusedClusterMask.GetSRV());
+
+	Context.SetDynamicDescriptor(2, 0, m_ClusterLightGrid.GetUAV());
+	Context.SetDynamicDescriptor(2, 1, m_GlobalLightIndexList.GetUAV());
+	Context.SetDynamicDescriptor(2, 2, m_GlobalIndexOffset.GetUAV());
+	Context.Dispatch(1, 1, ClusterTiles.z);
 }
 
 void Lighting::Shutdown(void)
@@ -460,5 +491,6 @@ void Lighting::Shutdown(void)
 	m_LightShadowArray.Destroy();
 	m_LightShadowTempBuffer.Destroy();
 	m_LightCluster.Destroy();
+	m_ClusterLightGrid.Destroy();
 	m_UnusedClusterMask.Destroy();
 }

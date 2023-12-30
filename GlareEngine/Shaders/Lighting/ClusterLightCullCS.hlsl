@@ -21,12 +21,13 @@ struct Cluter
 };
 
 StructuredBuffer<TileLightData> lightBuffer         : register(t0);
+StructuredBuffer<Cluter> ClusterList                : register(t1);
+StructuredBuffer<float> ClusterActiveList           : register(t2);
 
-RWStructuredBuffer<Cluter> ClusterList              : register(u0);
-RWStructuredBuffer<LightGrid> LightGridList         : register(u1);
-RWStructuredBuffer<float> GlobalLightIndexList      : register(u2);
-RWStructuredBuffer<uint> GlobalIndexCount           : register(u3);
-RWStructuredBuffer<float> ClusterActiveList         : register(u4);
+RWStructuredBuffer<LightGrid> LightGridList         : register(u0);
+RWStructuredBuffer<float> GlobalLightIndexList      : register(u1);
+RWStructuredBuffer<uint> GlobalIndexOffset          : register(u2);
+
 
 cbuffer CSConstant : register(b0)
 {
@@ -44,7 +45,7 @@ void main(uint3 groupId : SV_GroupID,
     //Unused Cluster
     if (ClusterActiveList[clusterIndex] == 0.0)
     {
-        LightGridList[clusterIndex].offset = GlobalIndexCount[0];
+        LightGridList[clusterIndex].offset = GlobalIndexOffset[0];
         LightGridList[clusterIndex].count = 0.0;
         return;
     }
@@ -76,7 +77,7 @@ void main(uint3 groupId : SV_GroupID,
     GroupMemoryBarrierWithGroupSync();
     
     uint offset;
-    InterlockedAdd(GlobalIndexCount[0], visibleLightCount, offset);
+    InterlockedAdd(GlobalIndexOffset[0], visibleLightCount, offset);
 
     for (uint i = 0; i < visibleLightCount; ++i)
     {

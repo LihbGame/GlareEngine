@@ -28,6 +28,7 @@ namespace GlareEngine
 
 		enum { MaxLights = 1024 };
 		enum { MaxTileLights = 512 };
+		enum { MaxClusterLights = 50 };
 		enum { MaxShadowedLights = 16 };
 
 		extern StructuredBuffer m_LightBuffer;
