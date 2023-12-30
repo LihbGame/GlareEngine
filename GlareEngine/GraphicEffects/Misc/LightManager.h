@@ -45,8 +45,11 @@ namespace GlareEngine
 		void InitializeResources(const Camera& camera);
 		void CreateRandomLights(const Vector3 minBound, const Vector3 maxBound, const Vector3 offset);
 		void FillLightGrid(GraphicsContext& gfxContext, const Camera& camera);
+
 		void BuildCluster(GraphicsContext& gfxContext, const MainConstants& mainConstants);
 		void MaskUnUsedCluster(GraphicsContext& gfxContext, const MainConstants& mainConstants);
+		void ClusterLightingCulling(GraphicsContext& gfxContext);
+
 		void Shutdown(void);
 	}
 }

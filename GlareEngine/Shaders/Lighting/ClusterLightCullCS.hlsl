@@ -30,10 +30,6 @@ RWStructuredBuffer<float> ClusterActiveList         : register(u4);
 
 cbuffer CSConstant : register(b0)
 {
-    matrix View;
-    matrix InvProj;
-    float ScreenWidth;
-    float ScreenHeight;
     float LightCount;
 };
 

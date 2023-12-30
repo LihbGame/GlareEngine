@@ -114,6 +114,7 @@ namespace GlareEngine
 		//Cluster Material
 		RenderMaterial m_BuildClusterCS(L"Build Cluster CS");
 		RenderMaterial m_MaskUnUsedClusterCS(L"Mask UnUsed Cluster");
+		RenderMaterial m_ClusterLightCullCS(L"Cluster Light Cull");
 
 		LightData m_LightData[MaxLights];
 		StructuredBuffer m_LightBuffer;
@@ -153,6 +154,7 @@ void Lighting::InitializeResources(const Camera& camera)
 	InitComputeMaterial(m_FillLightRootSig, m_FillLightGridCS_32, g_pFillLightGrid_32_CS);
 	InitComputeMaterial(m_FillLightRootSig, m_BuildClusterCS, g_pBuildClusterCS);
 	InitComputeMaterial(m_FillLightRootSig, m_MaskUnUsedClusterCS, g_pMaskUnUsedClusterCS);
+	InitComputeMaterial(m_FillLightRootSig, m_ClusterLightCullCS, g_pClusterLightCullCS);
 
 
 	// Assumes max resolution of 3840x2160
@@ -438,6 +440,17 @@ void Lighting::MaskUnUsedCluster(GraphicsContext& gfxContext, const MainConstant
 	Context.SetDynamicDescriptor(2, 0, m_UnusedClusterMask.GetUAV());
 	Context.SetDynamicDescriptor(1, 0, ScreenProcessing::GetLinearDepthBuffer()->GetSRV());
 	Context.Dispatch2D(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
+}
+
+void GlareEngine::Lighting::ClusterLightingCulling(GraphicsContext& gfxContext)
+{
+	ComputeContext& Context = gfxContext.GetComputeContext();
+
+	Context.SetRootSignature(*m_ClusterLightCullCS.GetRootSignature());
+	Context.SetPipelineState(m_ClusterLightCullCS.GetComputePSO());
+
+	Context.SetDynamicDescriptor(2, 0, m_UnusedClusterMask.GetUAV());
+
 }
 
 void Lighting::Shutdown(void)
