@@ -144,6 +144,8 @@ namespace GlareEngine
 		bool FirstUpdateViewSpace = true;
 
 		Camera ConeShadowCamera[MaxShadowedLights];
+
+		uint32_t ClusterLightOffset[] = { 0,0,0,0 };
 	}
 }
 
@@ -153,7 +155,7 @@ void Lighting::InitializeResources(const Camera& camera)
 	m_FillLightRootSig.InitStaticSampler(0, SamplerLinearClampDesc);
 	m_FillLightRootSig.InitStaticSampler(1, SamplerLinearBorderDesc);
 	m_FillLightRootSig[0].InitAsConstantBuffer(0);
-	m_FillLightRootSig[1].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2);
+	m_FillLightRootSig[1].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 5);
 	m_FillLightRootSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 5);
 	m_FillLightRootSig.Finalize(L"FillLightRS");
 
@@ -190,8 +192,7 @@ void Lighting::InitializeResources(const Camera& camera)
 
 	m_GlobalLightIndexList.Create(L"Global Light Index List", ClusterSize * MaxClusterLights, sizeof(uint32_t));
 
-	uint32_t offset = 0;
-	m_GlobalIndexOffset.Create(L"Global Index Offset", 1, sizeof(uint32_t), &offset);
+	m_GlobalIndexOffset.Create(L"Global Index Offset", ArraySize(ClusterLightOffset), sizeof(uint32_t), ClusterLightOffset);
 }
 
 void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound,const Vector3 offset)

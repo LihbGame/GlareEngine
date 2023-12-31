@@ -215,7 +215,7 @@ namespace GlareEngine
 		}
 	}
 
-	void Render::RenderLighting(GraphicsContext& context, MainConstants constants)
+	void Render::RenderDeferredLighting(GraphicsContext& context, MainConstants constants)
 	{
 		ComputeContext& Context = context.GetComputeContext();
 
@@ -233,21 +233,33 @@ namespace GlareEngine
 		//set descriptor heap 
 		Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gTextureHeap.GetHeapPointer());
 
-		//Copy PBR SRV
-		D3D12_CPU_DESCRIPTOR_HANDLE GBUFFER_SRV[] =
+		//Copy GBuffer SRV
 		{
-		g_GBuffer[GBUFFER_Emissive].GetSRV(),
-		g_GBuffer[GBUFFER_Normal].GetSRV(),
-		g_GBuffer[GBUFFER_MSR].GetSRV(),
-		g_GBuffer[GBUFFER_BaseColor].GetSRV(),
-		g_GBuffer[GBUFFER_WorldTangent].GetSRV(),
-		g_SceneDepthBuffer.GetDepthSRV(),
-		g_SceneColorBuffer.GetUAV()
-		};
+			D3D12_CPU_DESCRIPTOR_HANDLE GBUFFER_SRV[] =
+			{
+			g_GBuffer[GBUFFER_Emissive].GetSRV(),
+			g_GBuffer[GBUFFER_Normal].GetSRV(),
+			g_GBuffer[GBUFFER_MSR].GetSRV(),
+			g_GBuffer[GBUFFER_BaseColor].GetSRV(),
+			g_GBuffer[GBUFFER_WorldTangent].GetSRV(),
+			g_SceneDepthBuffer.GetDepthSRV()
+			};
 
-		UINT destCount = 7; UINT size[7] = { 1,1,1,1,1,1,1 };
-		g_Device->CopyDescriptors(1, &gTextureHeap[4], &destCount,
-			destCount, GBUFFER_SRV, size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			UINT destCount = 6; UINT size[6] = { 1,1,1,1,1,1 };
+			g_Device->CopyDescriptors(1, &gTextureHeap[4], &destCount,
+				destCount, GBUFFER_SRV, size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		}
+
+		{
+			D3D12_CPU_DESCRIPTOR_HANDLE Scene_UAV[] =
+			{
+			g_SceneColorBuffer.GetUAV()
+			};
+
+			UINT destCount = 1; UINT size[1] = { 1 };
+			g_Device->CopyDescriptors(1, &gTextureHeap[COMMONSRVSIZE], &destCount,
+				destCount, Scene_UAV, size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		}
 
 
 		Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
@@ -269,8 +281,6 @@ namespace GlareEngine
 		Context.SetDescriptorTable((int)RootSignatureType::eCommonUAVs, gTextureHeap[COMMONSRVSIZE]);
 		
 		Context.Dispatch2D(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
-
-
 	}
 
 	void Render::SetAntiAliasingType(AntiAliasingType type)

@@ -5,6 +5,8 @@ StructuredBuffer<uint> gLightGridData               : register(t0);
 StructuredBuffer<TileLightData> gLightBuffer        : register(t1);
 Texture2DArray<float> gLightShadowArrayTex          : register(t2);
 Texture2D<float> gSsaoTex                           : register(t3);
+
+
 //BRDF-F
 float3 fresnelSchlick(float cosTheta, float3 F0)
 {

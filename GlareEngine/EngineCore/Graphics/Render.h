@@ -95,7 +95,7 @@ namespace GlareEngine
 		//Deferred rendering
 		D3D12_CPU_DESCRIPTOR_HANDLE* GetGBufferRTV(GraphicsContext& context);
 		void ClearGBuffer(GraphicsContext& context);
-		void RenderLighting(GraphicsContext& context, MainConstants constants);
+		void RenderDeferredLighting(GraphicsContext& context, MainConstants constants);
 
 		//Render setting
 		void SetAntiAliasingType(AntiAliasingType type);

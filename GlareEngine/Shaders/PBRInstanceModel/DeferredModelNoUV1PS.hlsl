@@ -1,12 +1,12 @@
 #define NO_SECOND_UV 1
 #include "../Shadow/RealTimeShadowHelper.hlsli"
 
-Texture2D<float4> baseColorTexture : register(t10);
-Texture2D<float3> metallicRoughnessTexture : register(t11);
-Texture2D<float1> occlusionTexture : register(t12);
-Texture2D<float3> emissiveTexture : register(t13);
-Texture2D<float3> normalTexture : register(t14);
-Texture2D<float3> clearCoatTexture : register(t15);
+Texture2D<float4> baseColorTexture                  : register(t20);
+Texture2D<float3> metallicRoughnessTexture          : register(t21);
+Texture2D<float1> occlusionTexture                  : register(t22);
+Texture2D<float3> emissiveTexture                   : register(t23);
+Texture2D<float3> normalTexture                     : register(t24);
+Texture2D<float3> clearCoatTexture                  : register(t25);
 
 SamplerState baseColorSampler : register(s0);
 SamplerState metallicRoughnessSampler : register(s1);

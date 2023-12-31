@@ -9,7 +9,7 @@
 
 #define MAXPBRSRVSIZE				10
 
-#define COMMONSRVSIZE				10
+#define COMMONSRVSIZE				20
 
 #define COMMONUAVSIZE				10
 

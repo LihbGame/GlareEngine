@@ -776,7 +776,7 @@ void Scene::DeferredRendering(RenderPipelineType DeferredRenderPipeline)
 		//Lighting Pass
 		if (LoadingFinish)
 		{
-			Render::RenderLighting(Context, mMainConstants);
+			Render::RenderDeferredLighting(Context, mMainConstants);
 		}
 
 		//Transparent Pass
