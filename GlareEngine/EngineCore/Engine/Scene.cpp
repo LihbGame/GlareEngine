@@ -188,7 +188,7 @@ void Scene::RenderScene(RenderPipelineType Type)
 	}
 	case RenderPipelineType::CBDR:
 	{
-		DeferredRendering(RenderPipelineType::TBDR);
+		DeferredRendering(RenderPipelineType::CBDR);
 		break;
 	}
 	default:

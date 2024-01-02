@@ -105,7 +105,7 @@ namespace GlareEngine
 		//light Cluster size
 		XMFLOAT2 ClusterFactor;
 		XMFLOAT2 ClusterTileSize = XMFLOAT2(0, 0);
-		XMFLOAT3 ClusterTiles = XMFLOAT3(40, 24, 64);
+		XMFLOAT3 ClusterTiles = XMFLOAT3(40, 24, 32);
 
 		//Light RootSignature
 		RootSignature m_FillLightRootSig;
