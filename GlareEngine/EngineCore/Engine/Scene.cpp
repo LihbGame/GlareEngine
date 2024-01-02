@@ -61,6 +61,9 @@ void Scene::Update(float DeltaTime)
 	//Update Screen Processing
 	ScreenProcessing::Update(DeltaTime, mMainConstants, *m_pCamera);
 
+	//lighting update
+	Lighting::Update();
+
 	Context.Finish();
 
 }
@@ -197,11 +200,6 @@ void Scene::RenderScene(RenderPipelineType Type)
 
 	//Post Processing
 	ScreenProcessing::Render(*m_pCamera);
-
-	if (IsResolutionChanged)
-	{
-		IsResolutionChanged = false;
-	}
 }
 
 void Scene::DrawUI()
@@ -245,8 +243,6 @@ void Scene::ResizeViewport(uint32_t width, uint32_t height)
 	m_MainScissor.top = 0;
 	m_MainScissor.right = (LONG)g_SceneColorBuffer.GetWidth();
 	m_MainScissor.bottom = (LONG)g_SceneColorBuffer.GetHeight();
-
-	IsResolutionChanged = true;
 }
 
 
@@ -625,7 +621,7 @@ void Scene::DeferredRendering(RenderPipelineType DeferredRenderPipeline)
 {
 	GraphicsContext& Context = GraphicsContext::Begin(L"Scene Render");
 
-	if (DeferredRenderPipeline == RenderPipelineType::CBDR && IsResolutionChanged)
+	if (DeferredRenderPipeline == RenderPipelineType::CBDR)
 	{
 		Lighting::BuildCluster(Context, mMainConstants);
 	}

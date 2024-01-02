@@ -50,6 +50,12 @@ struct Cluster
 	Vector4 maxPoint;
 };
 
+struct ClusterCulling
+{
+	Vector3 TileSizes;
+	float LightCount;
+};
+
 struct ClusterLightGrid
 {
 	uint32_t offset;
@@ -105,7 +111,11 @@ namespace GlareEngine
 		//light Cluster size
 		XMFLOAT2 ClusterFactor;
 		XMFLOAT2 ClusterTileSize = XMFLOAT2(0, 0);
-		XMFLOAT3 ClusterTiles = XMFLOAT3(40, 24, 32);
+		XMFLOAT3 ClusterTiles = XMFLOAT3(0, 0, 32);
+		XMFLOAT2 PreClusterTiles= XMFLOAT2(0, 0);
+		uint32_t LightClusterGridDimension = 64;
+		uint32_t ClusterGroupTheardSize = 4;
+		XMFLOAT3 ClusterDispathSize = XMFLOAT3(0, 0, 0);
 
 		//Light RootSignature
 		RootSignature m_FillLightRootSig;
@@ -146,6 +156,8 @@ namespace GlareEngine
 		Camera ConeShadowCamera[MaxShadowedLights];
 
 		uint32_t ClusterLightOffset[] = { 0,0,0,0 };
+
+		bool bNeedRebuildCluster = true;
 	}
 }
 
@@ -167,6 +179,7 @@ void Lighting::InitializeResources(const Camera& camera)
 	InitComputeMaterial(m_FillLightRootSig, m_MaskUnUsedClusterCS, g_pMaskUnUsedClusterCS);
 	InitComputeMaterial(m_FillLightRootSig, m_ClusterLightCullCS, g_pClusterLightCullCS);
 
+	ClusterTileSize = XMFLOAT2(LightClusterGridDimension, LightClusterGridDimension);
 
 	// Assumes max resolution of 3840x2160
 	uint32_t lightGridCells = Math::DivideByMultiple(3840, LightGridDimension) * Math::DivideByMultiple(2160, LightGridDimension);
@@ -181,16 +194,6 @@ void Lighting::InitializeResources(const Camera& camera)
 	m_LightShadowTempBuffer.Create(L"Light Shadow Temp Buffer", eShadowDimension, eShadowDimension, DXGI_FORMAT_R32_FLOAT);
 
 	m_LightBuffer.Create(L"Light Buffer", MaxLights, sizeof(LightData));
-
-	int ClusterSize = ClusterTiles.x * ClusterTiles.y * ClusterTiles.z;
-
-	m_LightCluster.Create(L"Light Cluster", ClusterSize, sizeof(Cluster));
-
-	m_ClusterLightGrid.Create(L"Cluster Light Grid", ClusterSize, sizeof(ClusterLightGrid));
-
-	m_UnusedClusterMask.Create(L"Unused Cluster Mask", ClusterSize, sizeof(float));
-
-	m_GlobalLightIndexList.Create(L"Global Light Index List", ClusterSize * MaxClusterLights, sizeof(uint32_t));
 
 	m_GlobalIndexOffset.Create(L"Global Index Offset", ArraySize(ClusterLightOffset), sizeof(uint32_t), ClusterLightOffset);
 }
@@ -412,29 +415,34 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 
 void Lighting::BuildCluster(GraphicsContext& gfxContext, const MainConstants& mainConstants)
 {
-	ComputeContext& Context = gfxContext.GetComputeContext();
+	if (bNeedRebuildCluster)
+	{
+		ComputeContext& Context = gfxContext.GetComputeContext();
 
-	ClusterTileSize.x = ceil(g_SceneColorBuffer.GetWidth() / ClusterTiles.x);
-	ClusterTileSize.y = ceil(g_SceneColorBuffer.GetHeight() / ClusterTiles.y);
+		ClusterTileSize.x = ceil(g_SceneColorBuffer.GetWidth() / ClusterTiles.x);
+		ClusterTileSize.y = ceil(g_SceneColorBuffer.GetHeight() / ClusterTiles.y);
 
-	ClusterBuildConstants csConstants;
-	csConstants.View = (Matrix4)mainConstants.View;
-	csConstants.InvProj = (Matrix4)mainConstants.InvProj;
-	csConstants.tileSizes = ClusterTiles;
-	csConstants.nearPlane = mainConstants.NearZ;
-	csConstants.perTileSize = ClusterTileSize;
-	csConstants.ScreenWidth = g_SceneColorBuffer.GetWidth();
-	csConstants.ScreenHeight = g_SceneColorBuffer.GetHeight();
-	csConstants.farPlane = mainConstants.FarZ;
+		ClusterBuildConstants csConstants;
+		csConstants.View = (Matrix4)mainConstants.View;
+		csConstants.InvProj = (Matrix4)mainConstants.InvProj;
+		csConstants.tileSizes = ClusterTiles;
+		csConstants.nearPlane = mainConstants.NearZ;
+		csConstants.perTileSize = ClusterTileSize;
+		csConstants.ScreenWidth = g_SceneColorBuffer.GetWidth();
+		csConstants.ScreenHeight = g_SceneColorBuffer.GetHeight();
+		csConstants.farPlane = mainConstants.FarZ;
 
-	Context.TransitionResource(m_LightCluster, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Context.TransitionResource(m_LightCluster, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-	Context.SetRootSignature(*m_BuildClusterCS.GetRootSignature());
-	Context.SetPipelineState(m_BuildClusterCS.GetComputePSO());
-	Context.SetDynamicConstantBufferView(0, sizeof(ClusterBuildConstants), &csConstants);
-	Context.SetDynamicDescriptor(2, 0, m_LightCluster.GetUAV());
+		Context.SetRootSignature(*m_BuildClusterCS.GetRootSignature());
+		Context.SetPipelineState(m_BuildClusterCS.GetComputePSO());
+		Context.SetDynamicConstantBufferView(0, sizeof(ClusterBuildConstants), &csConstants);
+		Context.SetDynamicDescriptor(2, 0, m_LightCluster.GetUAV());
 
-	Context.Dispatch(1, 1, ClusterTiles.z);
+		Context.Dispatch(ClusterDispathSize.x, ClusterDispathSize.y, ClusterDispathSize.z);
+
+		bNeedRebuildCluster = false;
+	}
 }
 
 void Lighting::MaskUnUsedCluster(GraphicsContext& gfxContext, const MainConstants& mainConstants)
@@ -473,7 +481,11 @@ void GlareEngine::Lighting::ClusterLightingCulling(GraphicsContext& gfxContext)
 	Context.SetRootSignature(*m_ClusterLightCullCS.GetRootSignature());
 	Context.SetPipelineState(m_ClusterLightCullCS.GetComputePSO());
 
-	Context.SetConstants(0, MaxLights);
+	ClusterCulling csConstants;
+	csConstants.TileSizes = ClusterTiles;
+	csConstants.LightCount = MaxLights;
+
+	Context.SetDynamicConstantBufferView(0, sizeof(ClusterCulling), &csConstants);
 
 	Context.SetDynamicDescriptor(1, 0, m_LightBuffer.GetSRV());
 	Context.SetDynamicDescriptor(1, 1, m_LightCluster.GetSRV());
@@ -482,7 +494,35 @@ void GlareEngine::Lighting::ClusterLightingCulling(GraphicsContext& gfxContext)
 	Context.SetDynamicDescriptor(2, 0, m_ClusterLightGrid.GetUAV());
 	Context.SetDynamicDescriptor(2, 1, m_GlobalLightIndexList.GetUAV());
 	Context.SetDynamicDescriptor(2, 2, m_GlobalIndexOffset.GetUAV());
-	Context.Dispatch(1, 1, ClusterTiles.z);
+	Context.Dispatch(ClusterDispathSize.x, ClusterDispathSize.y, ClusterDispathSize.z);
+}
+
+void Lighting::Update()
+{
+	ClusterTiles.x = (uint32_t)(Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightClusterGridDimension));
+	ClusterTiles.y = (uint32_t)(Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightClusterGridDimension));
+
+	if (ClusterTiles.x != PreClusterTiles.x || ClusterTiles.y != PreClusterTiles.y)
+	{
+		ClusterDispathSize.x = (uint32_t)(Math::DivideByMultiple(ClusterTiles.x, ClusterGroupTheardSize));
+		ClusterDispathSize.y = (uint32_t)(Math::DivideByMultiple(ClusterTiles.y, ClusterGroupTheardSize));
+		ClusterDispathSize.z = (uint32_t)(Math::DivideByMultiple(ClusterTiles.z, ClusterGroupTheardSize));
+
+		int ClusterSize = ClusterTiles.x * ClusterTiles.y * ClusterTiles.z;
+
+		m_LightCluster.Create(L"Light Cluster", ClusterSize, sizeof(Cluster));
+
+		m_ClusterLightGrid.Create(L"Cluster Light Grid", ClusterSize, sizeof(ClusterLightGrid));
+
+		m_UnusedClusterMask.Create(L"Unused Cluster Mask", ClusterSize, sizeof(float));
+
+		m_GlobalLightIndexList.Create(L"Global Light Index List", ClusterSize * MaxClusterLights, sizeof(uint32_t));
+
+		bNeedRebuildCluster = true;
+		PreClusterTiles.x = ClusterTiles.x;
+		PreClusterTiles.y = ClusterTiles.y;
+	}
+
 }
 
 void Lighting::Shutdown(void)
