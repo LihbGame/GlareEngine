@@ -96,7 +96,7 @@ void SSAO::Render(GraphicsContext& Context, MainConstants& RenderData)
 
 		computeContext.Dispatch2D(g_SSAOFullScreen.GetWidth(), g_SSAOFullScreen.GetHeight());
 
-		ScreenProcessing::BilateralBlur(computeContext, g_SSAOFullScreen, g_BlurTemp_HalfBuffer_R8, IsWideBlur);
+		ScreenProcessing::BilateralBlur(computeContext, g_SSAOFullScreen, g_BlurTempBuffer_R8, IsWideBlur);
 	}
 	else
 	{

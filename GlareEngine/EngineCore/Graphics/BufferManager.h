@@ -60,7 +60,7 @@ namespace GlareEngine
 
 	extern ColorBuffer				g_SSAOFullScreen;				// R8_UNORM
 
-	extern ColorBuffer				g_BlurTemp_HalfBuffer_R8;		// R8_UNORM
+	extern ColorBuffer				g_BlurTempBuffer_R8;			// R8_UNORM
 
 	extern ColorBuffer				g_VelocityBuffer;				// R10G10B10  (3D velocity)
 

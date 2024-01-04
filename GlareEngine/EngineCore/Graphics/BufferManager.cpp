@@ -45,7 +45,7 @@ namespace GlareEngine
 
 	ColorBuffer				g_SSAOFullScreen(Color(1.0f, 1.0f, 1.0f));				//Clear Color(1.0f, 1.0f, 1.0f)
 	//R8 Format
-	ColorBuffer				g_BlurTemp_HalfBuffer_R8(Color(1.0f, 1.0f, 1.0f));		//Clear Color(1.0f, 1.0f, 1.0f)
+	ColorBuffer				g_BlurTempBuffer_R8(Color(1.0f, 1.0f, 1.0f));			//Clear Color(1.0f, 1.0f, 1.0f)
 
 	ColorBuffer				g_VelocityBuffer;
 
@@ -161,11 +161,11 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 	g_LinearDepth[0].Create(L"Linear Depth 1", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
 	g_LinearDepth[1].Create(L"Linear Depth 2", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
 
-	g_SSAOFullScreen.Create(L"SSAO Full Resolution", NativeWidth / 2, NativeHeight / 2, 1, DXGI_FORMAT_R8_UNORM);
+	g_SSAOFullScreen.Create(L"SSAO Full Resolution", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8_UNORM);
 
 	g_PostColorBuffer.Create(L"Post Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 
-	g_BlurTemp_HalfBuffer_R8.Create(L"Blur Half Temporary Buffer(R8_UNORM)", NativeWidth / 2, NativeHeight / 2, 1, DXGI_FORMAT_R8_UNORM);
+	g_BlurTempBuffer_R8.Create(L"Blur Half Temporary Buffer(R8_UNORM)", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8_UNORM);
 
 	g_VelocityBuffer.Create(L"Motion Vectors", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R32_UINT);
 
@@ -279,11 +279,11 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 	g_LinearDepth[0].Create(L"Linear Depth 1", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
 	g_LinearDepth[1].Create(L"Linear Depth 2", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16_UNORM);
 
-	g_SSAOFullScreen.Create(L"SSAO Full Resolution", NativeWidth / 2, NativeHeight / 2, 1, DXGI_FORMAT_R8_UNORM);
+	g_SSAOFullScreen.Create(L"SSAO Full Resolution", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8_UNORM);
 
 	g_PostColorBuffer.Create(L"Post Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 
-	g_BlurTemp_HalfBuffer_R8.Create(L"Blur Half Temporary Buffer(R8_UNORM)", NativeWidth / 2, NativeHeight / 2, 1, DXGI_FORMAT_R8_UNORM);
+	g_BlurTempBuffer_R8.Create(L"Blur Half Temporary Buffer(R8_UNORM)", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8_UNORM);
 
 	g_VelocityBuffer.Create(L"Motion Vectors", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R32_UINT);
 
@@ -345,7 +345,7 @@ void GlareEngine::DestroyRenderingBuffers()
 
 	g_SSAOFullScreen.Destroy();
 
-	g_BlurTemp_HalfBuffer_R8.Destroy();
+	g_BlurTempBuffer_R8.Destroy();
 
 	g_VelocityBuffer.Destroy();
 
