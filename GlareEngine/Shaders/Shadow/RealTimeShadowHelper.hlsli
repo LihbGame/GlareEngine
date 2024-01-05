@@ -80,7 +80,7 @@ float findBlocker(Texture2D shadowMap, DiskSamples diskSamples, float texelSize,
 
     for (int i = 0; i < NUM_SAMPLES; i++) {
         float2 simpleUV = uv + diskSamples.Samples[i] * texelSize*10;
-        float shadowMapDepth = shadowMap.SampleLevel(gSamplerLinearClamp, simpleUV, 0).r;
+        float shadowMapDepth = shadowMap.Sample(gSamplerLinearClamp, simpleUV).r;
         if (zReceiver > (shadowMapDepth + 0.00001f)) {
             totalDepth += shadowMapDepth;
             blockCount += 1;
@@ -110,34 +110,34 @@ float PCF_Internal(Texture2D shadowMap, DiskSamples diskSamples, float texelSize
 
 
 //利用相似三角形计算半影直径并传递给 PCF 函数以调整其滤波核大小
-float PCSS(Texture2D shadowMap, float4 coords,float2 TemporalJitter)
+float PCSS(Texture2D shadowMap, float4 coords) 
 {
     coords.xyz /= coords.w;
     //caculate poisson disk samples
-    DiskSamples poissonDisk = poissonDiskSamples(coords.xy + TemporalJitter);
+    DiskSamples poissonDisk = poissonDiskSamples(coords.xy);
 
     float lightSize = 30;
         
     uint width, height, numMips;
     shadowMap.GetDimensions(0, width, height, numMips);
     // Texel size.
-    float dx = 1.0f / (float) width;
+    float dx = 1.0f / (float)width;
 
     // STEP 1: avgblocker depth 平均遮挡深度
     float zBlocker = findBlocker(shadowMap, poissonDisk, dx, coords.xy, coords.z);
-    if (zBlocker < EPS)
-    { //没有被遮挡
+    if (zBlocker < EPS) {//没有被遮挡
         return 1.0;
     }
 
-    if (zBlocker > 1.0 + EPS)
-    {
+    if (zBlocker > 1.0 + EPS) {
         return 0.0;
     }
 
     // STEP 2: penumbra size 确定半影的大小
     float penumbraScale = (coords.z - zBlocker) / zBlocker;
 
+
     // STEP 3: filtering  过滤
-    return PCF_Internal(shadowMap, poissonDisk, dx, coords.xy, coords.z, penumbraScale * lightSize);
+    return PCF_Internal(shadowMap, poissonDisk, dx, coords.xy, coords.z, penumbraScale* lightSize);
+
 }

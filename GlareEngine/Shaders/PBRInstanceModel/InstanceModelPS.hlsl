@@ -50,7 +50,7 @@ float4 main(PosNorTanTexOut pin) : SV_Target
     float3 shadowFactor = float3(1.0f, 1.0f, 1.0f);
     //shadowFactor[0] = CalcShadowFactor(pin.ShadowPosH);
     //shadowFactor[0] = PCF(pin.ShadowPosH);
-    shadowFactor[0] = PCSS(gSRVMap[gShadowMapIndex], pin.ShadowPosH, gTemporalJitter * gRenderTargetSize);
+    shadowFactor[0] = PCSS(gSRVMap[gShadowMapIndex], pin.ShadowPosH);
     float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
 	bumpedNormalW, toEyeW, shadowFactor);
 

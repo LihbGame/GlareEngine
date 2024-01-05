@@ -32,6 +32,7 @@ namespace SSAO
 		float			Range;
 		float			Power;
 		XMFLOAT2		InverseDimensions;
+		XMFLOAT2		Jitter;
 		int				SampleCount;
 	};
 }
@@ -83,7 +84,7 @@ void SSAO::Render(GraphicsContext& Context, MainConstants& RenderData)
 			Matrix4(RenderData.Proj),
 			Matrix4(RenderData.InvProj),
 			RenderData.FarZ,RenderData.NearZ,
-			SsaoRange,SsaoPower,XMFLOAT2(1.0f / g_SSAOFullScreen.GetWidth(),1.0f / g_SSAOFullScreen.GetHeight()), SsaoSampleCount };
+			SsaoRange,SsaoPower,XMFLOAT2(1.0f / g_SSAOFullScreen.GetWidth(),1.0f / g_SSAOFullScreen.GetHeight()),TemporalAA::GetJitterOffset(), SsaoSampleCount };
 
 		computeContext.SetDynamicConstantBufferView(3, sizeof(SSAORenderData), &renderData);
 

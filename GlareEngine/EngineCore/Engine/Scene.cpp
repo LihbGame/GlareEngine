@@ -278,7 +278,7 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 	mMainConstants.TotalTime = GameTimer::TotalTime();
 	mMainConstants.DeltaTime = DeltaTime;
 
-	mMainConstants.TemporalJitter = TemporalAA::GetJitterOffset();
+	mMainConstants.gTemporalJitter = TemporalAA::GetJitterOffset();
 
 	//Tiled light data
 	mMainConstants.InvTileDim[0] = 1.0f / Lighting::LightGridDimension;

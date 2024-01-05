@@ -107,10 +107,10 @@ cbuffer MainPass : register(b0)
     float       IBLBias;
     int         pad0;
 
+    float2      gTemporalJitter;
     int         gDirectionalLightsCount;
     int         gIsIndoorScene;
     int         gIsRenderTiledBaseLighting;
-    float2      gTemporalJitter;
 };
 
 

@@ -118,10 +118,10 @@ __declspec(align(16))struct MainConstants
 	float		IBLBias							= 0.0f;
 	int			Pad1							= 0;
 
+	XMFLOAT2	gTemporalJitter					= { 0.0f, 0.0f };
 	int			gDirectionalLightsCount			= 0;
 	int			gIsIndoorScene					= 0;
 	int			IsRenderTiledBaseLighting		= 1;
-	XMFLOAT2	TemporalJitter;
 };
 
 struct TerrainConstants
