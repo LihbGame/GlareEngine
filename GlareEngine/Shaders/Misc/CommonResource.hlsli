@@ -110,6 +110,7 @@ cbuffer MainPass : register(b0)
     int         gDirectionalLightsCount;
     int         gIsIndoorScene;
     int         gIsRenderTiledBaseLighting;
+    float2      gTemporalJitter;
 };
 
 

@@ -83,7 +83,7 @@ struct InstanceRenderConstants
 };
 
 
-struct MainConstants
+__declspec(align(16))struct MainConstants
 {
 	XMFLOAT4X4	View					= MathHelper::Identity4x4();
 	XMFLOAT4X4	InvView					= MathHelper::Identity4x4();
@@ -121,7 +121,7 @@ struct MainConstants
 	int			gDirectionalLightsCount			= 0;
 	int			gIsIndoorScene					= 0;
 	int			IsRenderTiledBaseLighting		= 1;
-	int			Pad3;
+	XMFLOAT2	TemporalJitter;
 };
 
 struct TerrainConstants

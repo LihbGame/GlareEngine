@@ -13,7 +13,7 @@ RWTexture2D<float3> OutColor            : register(u0);
 void main( uint3 DTid : SV_DispatchThreadID )
 {
     uint2 pixelPos = DTid.xy;
-    if (GBUFFER_MSR[pixelPos].a==1)
+    if (GBUFFER_MSR[pixelPos].a == 1)
     {
         float3 normal = GBUFFER_Normal[pixelPos].xyz * 2.0f - 1.0f;
         float3 emissive = GBUFFER_Emissive[pixelPos].xyz;
@@ -39,11 +39,11 @@ void main( uint3 DTid : SV_DispatchThreadID )
         float3 color = emissive;
 
     //Lighting and Shadow
-        Surface.ShadowFactor = CalcShadowFactor(float4(sunShadowCoord, 1.0f));
+        Surface.ShadowFactor = PCSS(gSRVMap[gShadowMapIndex], float4(sunShadowCoord, 1.0f), gTemporalJitter);
         color += ComputeLighting(gLights, Surface);
    
     //SSAO
-        float ssao = gSsaoTex.SampleLevel(gSamplerLinearWrap, pixelPos * gInvRenderTargetSize,0.0f);
+        float ssao = gSsaoTex.SampleLevel(gSamplerLinearWrap, pixelPos * gInvRenderTargetSize, 0.0f);
 
         if (gIsIndoorScene)
         {

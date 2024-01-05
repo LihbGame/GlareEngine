@@ -17,7 +17,6 @@ cbuffer SSAOConstBuffer					: register(b1)
 	float				Range;
 	float				Power;
 	float2				InverseDimensions;
-    float2				Jitter;
 	int					SampleCount;
 }
 
@@ -100,7 +99,7 @@ void main(uint3 DTid : SV_DispatchThreadID, uint3 Gid : SV_GroupID, uint3 GTid :
 	const float3 normal		= normalize(cross(P2 - P0, P1 - P0));
 
 	//Compute a Random Tangent 
-    const float3 noise			= random32(DTid.xy + Jitter / InverseDimensions) * 2 - 1;
+    const float3 noise			= random32(DTid.xy + gTemporalJitter * gRenderTargetSize) * 2 - 1;
 	const float3 tangent		= normalize(noise - normal * dot(noise, normal));
 	const float3 bitangent		= cross(normal, tangent);
 	//Tangent Space (TBN)
