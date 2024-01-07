@@ -5,7 +5,11 @@ Texture2D<float> gSsaoTex                           : register(t6);
 StructuredBuffer<uint> gLightGridData               : register(t7);
 StructuredBuffer<TileLightData> gLightBuffer        : register(t8);
 Texture2DArray<float> gLightShadowArrayTex          : register(t9);
-
+//lighting cluster data
+StructuredBuffer<Cluter> ClusterList                : register(t10);
+StructuredBuffer<float> ClusterActiveList           : register(t11);
+StructuredBuffer<LightGrid> LightGridList           : register(t12);
+StructuredBuffer<float> GlobalLightIndexList        : register(t13);
 
 //BRDF-F
 float3 fresnelSchlick(float cosTheta, float3 F0)

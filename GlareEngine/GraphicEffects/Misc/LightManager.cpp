@@ -62,7 +62,7 @@ struct ClusterLightGrid
 	float count;
 };
 
-struct ClusterBuildConstants
+__declspec(align(16)) struct ClusterBuildConstants
 {
 	Matrix4 View;
 	Matrix4 InvProj;
@@ -75,7 +75,7 @@ struct ClusterBuildConstants
 };
 
 
-struct UnUsedClusterMaskConstant
+__declspec(align(16)) struct UnUsedClusterMaskConstant
 {
 	XMFLOAT2 cluserFactor;
 	XMFLOAT2 perTileSize;
@@ -86,7 +86,7 @@ struct UnUsedClusterMaskConstant
 	float nearPlane;
 };
 
-struct TileConstants
+__declspec(align(16)) struct TileConstants
 {
 	uint32_t ViewportWidth;
 	uint32_t ViewportHeight;

@@ -5,6 +5,18 @@
 #define MAX_TILED_LIGHT 512
 #define TILE_SIZE (1 + MAX_TILED_LIGHT)
 
+struct LightGrid
+{
+    uint offset;
+    float count;
+};
+
+struct Cluter
+{
+    float4 minPoint;
+    float4 maxPoint;
+};
+
 struct TileLightData
 {
     float3 PositionWS;

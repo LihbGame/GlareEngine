@@ -425,7 +425,7 @@ void Scene::ForwardRendering()
 
 void Scene::ForwardRendering(RenderPipelineType ForwardRenderPipeline)
 {
-	Render::SetCommonSRVHeapOffset(GBUFFER_Count + 1);
+	Render::SetCommonSRVHeapOffset(GBUFFER_TEXTURE_REGISTER_COUNT);
 
 	if(ForwardRenderPipeline == RenderPipelineType::FR)
 	{
@@ -513,15 +513,29 @@ void Scene::ForwardRendering(RenderPipelineType ForwardRenderPipeline)
 
 		if (LoadingFinish)
 		{
-			//Light Culling
-			Lighting::FillLightGrid(Context, *m_pCamera);
+			if (ForwardRenderPipeline == RenderPipelineType::TBFR)
+			{
+				//Light Culling
+				Lighting::FillLightGrid(Context, *m_pCamera);
+			}
+			else if (ForwardRenderPipeline == RenderPipelineType::CBFR)
+			{
+				//Light Culling
+				Lighting::BuildCluster(Context, mMainConstants);
+				Lighting::MaskUnUsedCluster(Context, mMainConstants);
+				Lighting::ClusterLightingCulling(Context);
+			}
 
 			//Copy PBR SRV
 			D3D12_CPU_DESCRIPTOR_HANDLE PBR_SRV[] =
 			{
 			Lighting::m_LightGrid.GetSRV(),
 			Lighting::m_LightBuffer.GetSRV(),
-			Lighting::m_LightShadowArray.GetSRV()
+			Lighting::m_LightShadowArray.GetSRV(),
+			Lighting::m_LightCluster.GetSRV(),
+			Lighting::m_ClusterLightGrid.GetSRV(),
+			Lighting::m_UnusedClusterMask.GetSRV(),
+			Lighting::m_GlobalLightIndexList.GetSRV()
 			};
 
 			CopyBufferDescriptors(PBR_SRV, ArraySize(PBR_SRV), &gTextureHeap[Render::GetCommonSRVHeapOffset()]);
@@ -626,7 +640,7 @@ void Scene::DeferredRendering(RenderPipelineType DeferredRenderPipeline)
 {
 	GraphicsContext& Context = GraphicsContext::Begin(L"Scene Render");
 
-	Render::SetCommonSRVHeapOffset(GBUFFER_Count + 1);
+	Render::SetCommonSRVHeapOffset(GBUFFER_TEXTURE_REGISTER_COUNT);
 
 	{
 		ScopedTimer ClearGBufferScope(L"Clear GBuffer", Context);
@@ -699,39 +713,29 @@ void Scene::DeferredRendering(RenderPipelineType DeferredRenderPipeline)
 		{
 			//Light Culling
 			Lighting::FillLightGrid(Context, *m_pCamera);
-
-			//Copy PBR SRV
-			D3D12_CPU_DESCRIPTOR_HANDLE PBR_SRV[] =
-			{
-			Lighting::m_LightGrid.GetSRV(),
-			Lighting::m_LightBuffer.GetSRV(),
-			Lighting::m_LightShadowArray.GetSRV()
-			};
-
-			CopyBufferDescriptors(PBR_SRV,ArraySize(PBR_SRV), &gTextureHeap[Render::GetCommonSRVHeapOffset()]);
-			Render::SetCommonSRVHeapOffset(Render::GetCommonSRVHeapOffset() + ArraySize(PBR_SRV));
 		}
 		else if (DeferredRenderPipeline == RenderPipelineType::CBDR)
 		{
+			//Light Culling
 			Lighting::BuildCluster(Context, mMainConstants);
 			Lighting::MaskUnUsedCluster(Context, mMainConstants);
 			Lighting::ClusterLightingCulling(Context);
-
-			//Copy PBR SRV
-			D3D12_CPU_DESCRIPTOR_HANDLE PBR_SRV[] =
-			{
-			Lighting::m_LightBuffer.GetSRV(),
-			Lighting::m_LightShadowArray.GetSRV(),
-			Lighting::m_LightCluster.GetSRV(),
-			Lighting::m_ClusterLightGrid.GetSRV(),
-			Lighting::m_UnusedClusterMask.GetSRV(),
-			Lighting::m_GlobalLightIndexList.GetSRV(),
-			Lighting::m_GlobalIndexOffset.GetSRV()
-			};
-
-			CopyBufferDescriptors(PBR_SRV, ArraySize(PBR_SRV), &gTextureHeap[Render::GetCommonSRVHeapOffset()]);
-			Render::SetCommonSRVHeapOffset(Render::GetCommonSRVHeapOffset() + ArraySize(PBR_SRV));
 		}
+
+		//Copy PBR SRV
+		D3D12_CPU_DESCRIPTOR_HANDLE PBR_SRV[] =
+		{
+		Lighting::m_LightGrid.GetSRV(),
+		Lighting::m_LightBuffer.GetSRV(),
+		Lighting::m_LightShadowArray.GetSRV(),
+		Lighting::m_LightCluster.GetSRV(),
+		Lighting::m_ClusterLightGrid.GetSRV(),
+		Lighting::m_UnusedClusterMask.GetSRV(),
+		Lighting::m_GlobalLightIndexList.GetSRV()
+		};
+
+		CopyBufferDescriptors(PBR_SRV, ArraySize(PBR_SRV), &gTextureHeap[Render::GetCommonSRVHeapOffset()]);
+		Render::SetCommonSRVHeapOffset(Render::GetCommonSRVHeapOffset() + ArraySize(PBR_SRV));
 	}
 
 	//set descriptor heap 

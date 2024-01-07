@@ -8,18 +8,6 @@
 #define GROUD_THREAD_TOTAL_NUM THREAD_GROUD_X * THREAD_GROUD_Y * THREAD_GROUD_Z
 #define MAX_LIGHT_PER_CLUSTER 1024
 
-struct LightGrid
-{
-    uint offset;
-    float count;
-};
-
-struct Cluter
-{
-    float4 minPoint;
-    float4 maxPoint;
-};
-
 StructuredBuffer<TileLightData> lightBuffer         : register(t0);
 StructuredBuffer<Cluter> ClusterList                : register(t1);
 StructuredBuffer<float> ClusterActiveList           : register(t2);

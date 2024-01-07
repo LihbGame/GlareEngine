@@ -10,6 +10,8 @@
 #include "Engine/Tools/RuntimePSOManager.h"
 #include "Misc/ConstantBuffer.h"
 
+#define GBUFFER_TEXTURE_REGISTER_COUNT 6
+
 namespace GlareEngine
 {
 	class RootSignature;
