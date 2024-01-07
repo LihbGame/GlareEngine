@@ -91,11 +91,15 @@ namespace GlareEngine
 		void BuildPSOs();
 		void BuildCommonPSOs(const PSOCommonProperty CommonProperty);
 		void CopyTextureHeap();
+		void CopyBufferDescriptors(const D3D12_CPU_DESCRIPTOR_HANDLE* pSrcDescriptors, uint32_t Size, const D3D12_CPU_DESCRIPTOR_HANDLE* pDestDescriptors);
 
 		//Deferred rendering
 		D3D12_CPU_DESCRIPTOR_HANDLE* GetGBufferRTV(GraphicsContext& context);
 		void ClearGBuffer(GraphicsContext& context);
 		void RenderDeferredLighting(GraphicsContext& context, MainConstants constants);
+
+		uint32_t GetCommonSRVHeapOffset();
+		void SetCommonSRVHeapOffset(int Offset);
 
 		//Render setting
 		void SetAntiAliasingType(AntiAliasingType type);

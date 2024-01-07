@@ -425,6 +425,8 @@ void Scene::ForwardRendering()
 
 void Scene::ForwardRendering(RenderPipelineType ForwardRenderPipeline)
 {
+	Render::SetCommonSRVHeapOffset(GBUFFER_Count + 1);
+
 	if(ForwardRenderPipeline == RenderPipelineType::FR)
 	{
 		ForwardRendering();
@@ -503,6 +505,9 @@ void Scene::ForwardRendering(RenderPipelineType ForwardRenderPipeline)
 		//SSAO
 		{
 			SSAO::Render(Context, mMainConstants);
+
+			CopyBufferDescriptors(&g_SSAOFullScreen.GetSRV(), 1, &gTextureHeap[Render::GetCommonSRVHeapOffset()]);
+			Render::SetCommonSRVHeapOffset(Render::GetCommonSRVHeapOffset() + 1);
 		}
 
 
@@ -516,13 +521,11 @@ void Scene::ForwardRendering(RenderPipelineType ForwardRenderPipeline)
 			{
 			Lighting::m_LightGrid.GetSRV(),
 			Lighting::m_LightBuffer.GetSRV(),
-			Lighting::m_LightShadowArray.GetSRV(),
-			g_SSAOFullScreen.GetSRV()
+			Lighting::m_LightShadowArray.GetSRV()
 			};
 
-			UINT destCount = 4; UINT size[4] = { 1,1,1,1 };
-			g_Device->CopyDescriptors(1, &gTextureHeap[0], &destCount,
-				destCount, PBR_SRV, size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			CopyBufferDescriptors(PBR_SRV, ArraySize(PBR_SRV), &gTextureHeap[Render::GetCommonSRVHeapOffset()]);
+			Render::SetCommonSRVHeapOffset(Render::GetCommonSRVHeapOffset() + ArraySize(PBR_SRV));
 		}
 
 		//set descriptor heap 
@@ -623,10 +626,7 @@ void Scene::DeferredRendering(RenderPipelineType DeferredRenderPipeline)
 {
 	GraphicsContext& Context = GraphicsContext::Begin(L"Scene Render");
 
-	if (DeferredRenderPipeline == RenderPipelineType::CBDR)
-	{
-		Lighting::BuildCluster(Context, mMainConstants);
-	}
+	Render::SetCommonSRVHeapOffset(GBUFFER_Count + 1);
 
 	{
 		ScopedTimer ClearGBufferScope(L"Clear GBuffer", Context);
@@ -679,6 +679,9 @@ void Scene::DeferredRendering(RenderPipelineType DeferredRenderPipeline)
 	//SSAO
 	{
 		SSAO::Render(Context, mMainConstants);
+
+		CopyBufferDescriptors(&g_SSAOFullScreen.GetSRV(), 1, &gTextureHeap[Render::GetCommonSRVHeapOffset()]);
+		Render::SetCommonSRVHeapOffset(Render::GetCommonSRVHeapOffset() + 1);
 	}
 
 
@@ -691,21 +694,44 @@ void Scene::DeferredRendering(RenderPipelineType DeferredRenderPipeline)
 			Render::BuildPSOs();
 			flushPSO = false;
 		}
-		//Light Culling
-		Lighting::FillLightGrid(Context, *m_pCamera);
 
-		//Copy PBR SRV
-		D3D12_CPU_DESCRIPTOR_HANDLE PBR_SRV[] =
+		if (DeferredRenderPipeline == RenderPipelineType::TBDR)
 		{
-		Lighting::m_LightGrid.GetSRV(),
-		Lighting::m_LightBuffer.GetSRV(),
-		Lighting::m_LightShadowArray.GetSRV(),
-		g_SSAOFullScreen.GetSRV()
-		};
+			//Light Culling
+			Lighting::FillLightGrid(Context, *m_pCamera);
 
-		UINT destCount = 4; UINT size[4] = { 1,1,1,1 };
-		g_Device->CopyDescriptors(1, &gTextureHeap[0], &destCount,
-			destCount, PBR_SRV, size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			//Copy PBR SRV
+			D3D12_CPU_DESCRIPTOR_HANDLE PBR_SRV[] =
+			{
+			Lighting::m_LightGrid.GetSRV(),
+			Lighting::m_LightBuffer.GetSRV(),
+			Lighting::m_LightShadowArray.GetSRV()
+			};
+
+			CopyBufferDescriptors(PBR_SRV,ArraySize(PBR_SRV), &gTextureHeap[Render::GetCommonSRVHeapOffset()]);
+			Render::SetCommonSRVHeapOffset(Render::GetCommonSRVHeapOffset() + ArraySize(PBR_SRV));
+		}
+		else if (DeferredRenderPipeline == RenderPipelineType::CBDR)
+		{
+			Lighting::BuildCluster(Context, mMainConstants);
+			Lighting::MaskUnUsedCluster(Context, mMainConstants);
+			Lighting::ClusterLightingCulling(Context);
+
+			//Copy PBR SRV
+			D3D12_CPU_DESCRIPTOR_HANDLE PBR_SRV[] =
+			{
+			Lighting::m_LightBuffer.GetSRV(),
+			Lighting::m_LightShadowArray.GetSRV(),
+			Lighting::m_LightCluster.GetSRV(),
+			Lighting::m_ClusterLightGrid.GetSRV(),
+			Lighting::m_UnusedClusterMask.GetSRV(),
+			Lighting::m_GlobalLightIndexList.GetSRV(),
+			Lighting::m_GlobalIndexOffset.GetSRV()
+			};
+
+			CopyBufferDescriptors(PBR_SRV, ArraySize(PBR_SRV), &gTextureHeap[Render::GetCommonSRVHeapOffset()]);
+			Render::SetCommonSRVHeapOffset(Render::GetCommonSRVHeapOffset() + ArraySize(PBR_SRV));
+		}
 	}
 
 	//set descriptor heap 
@@ -797,6 +823,7 @@ void Scene::DeferredRendering(RenderPipelineType DeferredRenderPipeline)
 
 void Scene::CreateTileConeShadowMap(GraphicsContext& Context)
 {
+	//Update a light's shadow every frame
 	static UINT shadowIndex = 0;
 
 	if (shadowIndex >= Lighting::MaxShadowedLights)

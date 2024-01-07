@@ -1,10 +1,10 @@
 #include "../Misc/CommonResource.hlsli"
 #include "../Lighting/LightGrid.hlsli"
 
-StructuredBuffer<uint> gLightGridData               : register(t0);
-StructuredBuffer<TileLightData> gLightBuffer        : register(t1);
-Texture2DArray<float> gLightShadowArrayTex          : register(t2);
-Texture2D<float> gSsaoTex                           : register(t3);
+Texture2D<float> gSsaoTex                           : register(t6);
+StructuredBuffer<uint> gLightGridData               : register(t7);
+StructuredBuffer<TileLightData> gLightBuffer        : register(t8);
+Texture2DArray<float> gLightShadowArrayTex          : register(t9);
 
 
 //BRDF-F

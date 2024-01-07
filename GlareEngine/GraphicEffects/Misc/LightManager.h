@@ -41,6 +41,12 @@ namespace GlareEngine
 		extern ShadowBuffer m_LightShadowTempBuffer;
 		extern Matrix4 m_LightShadowMatrix[MaxShadowedLights];
 
+		extern StructuredBuffer m_LightCluster;
+		extern StructuredBuffer m_ClusterLightGrid;
+		extern StructuredBuffer m_UnusedClusterMask;
+		extern StructuredBuffer m_GlobalLightIndexList;
+		extern StructuredBuffer m_GlobalIndexOffset;
+
 		extern Camera ConeShadowCamera[MaxShadowedLights];
 
 		void InitializeResources(const Camera& camera);

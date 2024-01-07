@@ -22,6 +22,8 @@
 #include "CompiledShaders/LightingPassCS.h"
 #include "CompiledShaders/WireframeCS.h"
 
+#define MAX_TEXTURE_HEAP_DESCRIPTORS  4096
+
 namespace GlareEngine
 {
 	namespace Render
@@ -43,6 +45,10 @@ namespace GlareEngine
 		DescriptorHeap gTextureHeap;
 
 		DescriptorHeap gSamplerHeap;
+
+		uint32_t CopyDescriptorsRangesSize[MAX_TEXTURE_HEAP_DESCRIPTORS];
+
+		uint32_t CommonSRVHeapOffset = 0;
 
 		//Rendering Setting
 		AntiAliasingType gAntiAliasingType = AntiAliasingType::MSAA;
@@ -69,11 +75,15 @@ namespace GlareEngine
 		InstanceModel::InitRuntimePSO();
 		ShadowMap::InitRuntimePSO();
 #endif
+		for (UINT index = 0; index < MAX_TEXTURE_HEAP_DESCRIPTORS; index++)
+		{
+			CopyDescriptorsRangesSize[index] = 1;
+		}
 
-		gTextureHeap.Create(L"Scene Texture Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4096);
+		gTextureHeap.Create(L"Scene Texture Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, MAX_TEXTURE_HEAP_DESCRIPTORS);
 
 		gSamplerHeap.Create(L"Scene Sampler Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 2048);
-
+		
 		Lighting::InitializeResources(camera);
 
 		ScreenProcessing::Initialize(CommandList);
@@ -84,7 +94,6 @@ namespace GlareEngine
 #endif
 
 		SSAO::Initialize();
-
 
 		s_Initialized = true;
 	}
@@ -196,6 +205,24 @@ namespace GlareEngine
 			Texture2DSize, Texture2DSRV, Texture2DSrcSize, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	}
 
+	uint32_t Render::GetCommonSRVHeapOffset()
+	{
+		return CommonSRVHeapOffset;
+	}
+
+	void Render::SetCommonSRVHeapOffset(int Offset)
+	{
+		assert(Offset < COMMONSRVSIZE);
+		CommonSRVHeapOffset = Offset;
+	}
+
+	void Render::CopyBufferDescriptors(const D3D12_CPU_DESCRIPTOR_HANDLE* pSrcDescriptors, uint32_t Size,const D3D12_CPU_DESCRIPTOR_HANDLE* pDestDescriptors)
+	{
+		UINT destCount = Size;
+		g_Device->CopyDescriptors(1, pDestDescriptors, &destCount,
+			Size, pSrcDescriptors, CopyDescriptorsRangesSize, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	}
+
 	D3D12_CPU_DESCRIPTOR_HANDLE* Render::GetGBufferRTV(GraphicsContext& context)
 	{
 		for (int i = 0; i < GBUFFER_Count; ++i)
@@ -245,9 +272,7 @@ namespace GlareEngine
 			g_SceneDepthBuffer.GetDepthSRV()
 			};
 
-			UINT destCount = 6; UINT size[6] = { 1,1,1,1,1,1 };
-			g_Device->CopyDescriptors(1, &gTextureHeap[4], &destCount,
-				destCount, GBUFFER_SRV, size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			CopyBufferDescriptors(GBUFFER_SRV, ArraySize(GBUFFER_SRV), &gTextureHeap[0]);
 		}
 
 		{
@@ -256,9 +281,7 @@ namespace GlareEngine
 			g_SceneColorBuffer.GetUAV()
 			};
 
-			UINT destCount = 1; UINT size[1] = { 1 };
-			g_Device->CopyDescriptors(1, &gTextureHeap[COMMONSRVSIZE], &destCount,
-				destCount, Scene_UAV, size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			CopyBufferDescriptors(Scene_UAV, ArraySize(Scene_UAV), &gTextureHeap[COMMONSRVSIZE]);
 		}
 
 

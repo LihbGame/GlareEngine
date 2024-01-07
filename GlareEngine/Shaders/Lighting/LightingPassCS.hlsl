@@ -1,11 +1,11 @@
 #include "../Shadow/RealTimeShadowHelper.hlsli"
 
-Texture2D<float3> GBUFFER_Emissive      : register(t4);
-Texture2D<float4> GBUFFER_Normal        : register(t5);
-Texture2D<float4> GBUFFER_MSR           : register(t6);
-Texture2D<float4> GBUFFER_BaseColor     : register(t7);
-Texture2D<float4> GBUFFER_WorldTangent  : register(t8);
-Texture2D<float>  DepthTexture          : register(t9);
+Texture2D<float3> GBUFFER_Emissive      : register(t0);
+Texture2D<float4> GBUFFER_Normal        : register(t1);
+Texture2D<float4> GBUFFER_MSR           : register(t2);
+Texture2D<float4> GBUFFER_BaseColor     : register(t3);
+Texture2D<float4> GBUFFER_WorldTangent  : register(t4);
+Texture2D<float>  DepthTexture          : register(t5);
 
 RWTexture2D<float3> OutColor            : register(u0);
 
