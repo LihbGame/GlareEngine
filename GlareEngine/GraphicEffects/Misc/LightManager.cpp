@@ -50,9 +50,9 @@ struct Cluster
 	Vector4 maxPoint;
 };
 
-struct ClusterCulling
+__declspec(align(16))struct ClusterCulling
 {
-	Vector3 TileSizes;
+	XMFLOAT3 TileSizes;
 	float LightCount;
 };
 
@@ -62,7 +62,7 @@ struct ClusterLightGrid
 	float count;
 };
 
-__declspec(align(16)) struct ClusterBuildConstants
+__declspec(align(16))struct ClusterBuildConstants
 {
 	Matrix4 View;
 	Matrix4 InvProj;
@@ -75,7 +75,7 @@ __declspec(align(16)) struct ClusterBuildConstants
 };
 
 
-__declspec(align(16)) struct UnUsedClusterMaskConstant
+__declspec(align(16))struct UnUsedClusterMaskConstant
 {
 	XMFLOAT2 cluserFactor;
 	XMFLOAT2 perTileSize;
@@ -419,9 +419,6 @@ void Lighting::BuildCluster(GraphicsContext& gfxContext, const MainConstants& ma
 	{
 		ComputeContext& Context = gfxContext.GetComputeContext();
 
-		ClusterTileSize.x = ceil(g_SceneColorBuffer.GetWidth() / ClusterTiles.x);
-		ClusterTileSize.y = ceil(g_SceneColorBuffer.GetHeight() / ClusterTiles.y);
-
 		ClusterBuildConstants csConstants;
 		csConstants.View = (Matrix4)mainConstants.View;
 		csConstants.InvProj = (Matrix4)mainConstants.InvProj;
@@ -467,7 +464,7 @@ void Lighting::MaskUnUsedCluster(GraphicsContext& gfxContext, const MainConstant
 	Context.Dispatch2D(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
 }
 
-void GlareEngine::Lighting::ClusterLightingCulling(GraphicsContext& gfxContext)
+void Lighting::ClusterLightingCulling(GraphicsContext& gfxContext)
 {
 	ComputeContext& Context = gfxContext.GetComputeContext();
 
