@@ -6,14 +6,14 @@
 #define THREAD_GROUD_Z 4
 
 #define GROUD_THREAD_TOTAL_NUM THREAD_GROUD_X * THREAD_GROUD_Y * THREAD_GROUD_Z
-#define MAX_LIGHT_PER_CLUSTER 1024
+#define MAX_LIGHT_PER_CLUSTER 50
 
 StructuredBuffer<TileLightData> lightBuffer         : register(t0);
 StructuredBuffer<Cluter> ClusterList                : register(t1);
 StructuredBuffer<float> ClusterActiveList           : register(t2);
 
 RWStructuredBuffer<LightGrid> LightGridList         : register(u0);
-RWStructuredBuffer<float> GlobalLightIndexList      : register(u1);
+RWStructuredBuffer<uint> GlobalLightIndexList       : register(u1);
 RWStructuredBuffer<uint> GlobalIndexOffset          : register(u2);
 
 

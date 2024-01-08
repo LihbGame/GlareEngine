@@ -9,7 +9,7 @@ Texture2DArray<float> gLightShadowArrayTex          : register(t9);
 StructuredBuffer<Cluter> ClusterList                : register(t10);
 StructuredBuffer<float> ClusterActiveList           : register(t11);
 StructuredBuffer<LightGrid> LightGridList           : register(t12);
-StructuredBuffer<float> GlobalLightIndexList        : register(t13);
+StructuredBuffer<uint> GlobalLightIndexList         : register(t13);
 
 //BRDF-F
 float3 fresnelSchlick(float cosTheta, float3 F0)
@@ -413,6 +413,49 @@ float3 ComputeConeShadowLight(in TileLightData LightData, in SurfaceProperties S
     return lightColor* shadowFactor;
 }
 
+float3 ComputeLighting_Internal(uint LightCount, uint LightOffset, in SurfaceProperties Surface)
+{
+    float3 lightColor = float3(0, 0, 0);
+
+    for (uint Index = 0; Index < LightCount; Index++, LightOffset += 1)
+    {
+        uint lightIndex = 0;
+        
+        if (gIsClusterBaseLighting)
+        {
+            lightIndex = GlobalLightIndexList[LightOffset];
+        }
+        else
+        {
+            lightIndex = gLightGridData[LightOffset];
+        }
+        
+        TileLightData lightData = gLightBuffer[lightIndex];
+
+        switch (lightData.Type)
+        {
+            case 0: //Point light
+                {
+                    lightColor += ComputePointLight(lightData, Surface);
+                    break;
+                }
+            case 1: //Cone Light
+                {
+                    lightColor += ComputeConeLight(lightData, Surface);
+                    break;
+                }
+            case 2: //Shadowed Cone Light 
+                {
+                    lightColor += ComputeConeShadowLight(lightData, Surface);
+                    break;
+                }
+            default:
+                break;
+        }
+    }
+    return lightColor;
+}
+
 float3 ComputeTiledLighting(uint2 ScreenPosition, in SurfaceProperties Surface)
 {
     uint2 tilePos = GetTilePos(ScreenPosition, gInvTileDimension.xy);
@@ -422,39 +465,19 @@ float3 ComputeTiledLighting(uint2 ScreenPosition, in SurfaceProperties Surface)
     uint tileLightCount = gLightGridData[tileOffset];
     uint tileLightLoadOffset = tileOffset + 1;
 
-
-    float3 lightColor = float3(0, 0, 0);
-    // sphere
-    for (uint Index = 0; Index < tileLightCount; Index++, tileLightLoadOffset += 1)
-    {
-        uint lightIndex = gLightGridData[tileLightLoadOffset];
-        TileLightData lightData = gLightBuffer[lightIndex];
-
-        switch (lightData.Type)
-        {
-        case 0://Point light
-        {
-            lightColor += ComputePointLight(lightData, Surface);
-            break;
-        }
-        case 1://Cone Light
-        {
-            lightColor += ComputeConeLight(lightData, Surface);
-            break;
-        }
-        case 2://Shadowed Cone Light 
-        {
-            lightColor += ComputeConeShadowLight(lightData, Surface);
-            break;
-        }
-        default:
-            break;
-        }
-    }
-    return lightColor;
+    return ComputeLighting_Internal(tileLightCount, tileLightLoadOffset, Surface);
 }
 
-
+float3 ComputeClusterLighting(uint2 ScreenPosition, in float viewZ, in SurfaceProperties Surface)
+{
+    uint clusterZ = uint(max(log2(viewZ) * gCluserFactor.x + gCluserFactor.y, 0.0));
+    uint3 clusters = uint3(uint(ScreenPosition.x / gPerTileSize.x), uint(ScreenPosition.y / gPerTileSize.y), clusterZ);
+    uint clusterIndex = clusters.x + clusters.y * (uint) gTileSizes.x + clusters.z * (uint) gTileSizes.x * (uint) gTileSizes.y;
+    
+    LightGrid lightGrid = LightGridList[clusterIndex];
+    
+    return ComputeLighting_Internal(lightGrid.count, lightGrid.offset, Surface);
+}
 
 
 float3 IBL_Diffuse(SurfaceProperties Surface)

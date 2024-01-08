@@ -62,7 +62,7 @@ void Scene::Update(float DeltaTime)
 	ScreenProcessing::Update(DeltaTime, mMainConstants, *m_pCamera);
 
 	//lighting update
-	Lighting::Update();
+	Lighting::Update(mMainConstants);
 
 	Context.Finish();
 
@@ -277,6 +277,7 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 	mMainConstants.FarZ = m_pCamera->GetFarZ();
 	mMainConstants.TotalTime = GameTimer::TotalTime();
 	mMainConstants.DeltaTime = DeltaTime;
+	mMainConstants.gIsClusterBaseLighting = (gRenderPipelineType == RenderPipelineType::CBDR || gRenderPipelineType == RenderPipelineType::CBFR) ? 1 : 0;
 
 	mMainConstants.gTemporalJitter = TemporalAA::GetJitterOffset();
 

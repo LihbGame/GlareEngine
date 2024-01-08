@@ -13,6 +13,7 @@ RWTexture2D<float3> OutColor            : register(u0);
 void main( uint3 DTid : SV_DispatchThreadID )
 {
     uint2 pixelPos = DTid.xy;
+    //Material mask
     if (GBUFFER_MSR[pixelPos].a==1)
     {
         float3 normal = GBUFFER_Normal[pixelPos].xyz * 2.0f - 1.0f;
@@ -35,22 +36,31 @@ void main( uint3 DTid : SV_DispatchThreadID )
         Surface.alphaSqr = Surface.alpha * Surface.alpha;
         Surface.ao = baseColorAndAO.a;
 
-    // Begin accumulating light starting with emissive
+        // Begin accumulating light starting with emissive
         float3 color = emissive;
 
-    //Lighting and Shadow
+        //Lighting and Shadow
         Surface.ShadowFactor = CalcShadowFactor(float4(sunShadowCoord, 1.0f));
         color += ComputeLighting(gLights, Surface);
    
-    //SSAO
+        //SSAO
         float ssao = gSsaoTex.SampleLevel(gSamplerLinearWrap, pixelPos * gInvRenderTargetSize,0.0f);
 
         if (gIsIndoorScene)
         {
             if (gIsRenderTiledBaseLighting)
             {
-                //Shade each light using Forward+ tiles
-                color += ComputeTiledLighting(pixelPos, Surface);
+                if (!gIsClusterBaseLighting)
+                {
+                    //Shade each light using Forward+ tiles
+                    color += ComputeTiledLighting(pixelPos, Surface);
+                }
+                else
+                {
+                    float viewZ = abs(float3(worldPos - gEyePosW).z);
+                    color += ComputeClusterLighting(pixelPos, viewZ, Surface);
+
+                }
             }
             //Indoor environment light(local environment light)
             color += baseColorAndAO.rgb * gAmbientLight.rgb * ssao * Surface.ao;

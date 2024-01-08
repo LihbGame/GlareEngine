@@ -181,7 +181,7 @@ void Lighting::InitializeResources(const Camera& camera)
 
 	ClusterTileSize = XMFLOAT2(LightClusterGridDimension, LightClusterGridDimension);
 
-	// Assumes max resolution of 3840x2160
+	// Assumes max resolution of 3840x2160 for light grid
 	uint32_t lightGridCells = Math::DivideByMultiple(3840, LightGridDimension) * Math::DivideByMultiple(2160, LightGridDimension);
 	uint32_t lightGridSizeBytes = lightGridCells * (1 + MaxTileLights);
 	m_LightGrid.Create(L"m_LightGrid", lightGridSizeBytes, sizeof(UINT));
@@ -497,7 +497,7 @@ void GlareEngine::Lighting::ClusterLightingCulling(GraphicsContext& gfxContext)
 	Context.Dispatch(ClusterDispathSize.x, ClusterDispathSize.y, ClusterDispathSize.z);
 }
 
-void Lighting::Update()
+void Lighting::Update(MainConstants& mainConstants)
 {
 	ClusterTiles.x = (uint32_t)(Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightClusterGridDimension));
 	ClusterTiles.y = (uint32_t)(Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightClusterGridDimension));
@@ -521,6 +521,10 @@ void Lighting::Update()
 		bNeedRebuildCluster = true;
 		PreClusterTiles.x = ClusterTiles.x;
 		PreClusterTiles.y = ClusterTiles.y;
+
+		mainConstants.gCluserFactor = ClusterFactor;
+		mainConstants.gPerTileSize = ClusterTileSize;
+		mainConstants.gTileSizes = ClusterTiles;
 	}
 
 }

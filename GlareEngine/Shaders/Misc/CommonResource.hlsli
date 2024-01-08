@@ -82,14 +82,18 @@ cbuffer MainPass : register(b0)
     float4x4    gViewProj;
     float4x4    gInvViewProj;
     float4x4    gShadowTransform;
+    
     float3      gEyePosW;
     float       cbPerObjectPad1;
+    
     float2      gRenderTargetSize;
     float2      gInvRenderTargetSize;
+    
     float       gNearZ;
     float       gFarZ;
     float       gTotalTime;
     float       gDeltaTime;
+    
     float4      gAmbientLight;
 
     DirectionalLight gLights[MAX_DIR_LIGHTS];
@@ -102,14 +106,20 @@ cbuffer MainPass : register(b0)
     int         gSkyCubeIndex;
     int         gBakingDiffuseCubeIndex;
     int         gBakingPreFilteredEnvIndex;
+    
     int         gBakingIntegrationBRDFIndex;
     float       IBLRange;
     float       IBLBias;
-    int         pad0;
+    int         gIsClusterBaseLighting;
 
     float2      gTemporalJitter;
     int         gDirectionalLightsCount;
     int         gIsIndoorScene;
+    
+    float2      gCluserFactor;
+    float2      gPerTileSize;
+    
+    float3      gTileSizes;
     int         gIsRenderTiledBaseLighting;
 };
 

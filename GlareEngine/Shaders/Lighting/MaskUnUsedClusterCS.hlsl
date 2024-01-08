@@ -18,9 +18,8 @@ cbuffer CSConstant : register(b0)
 [numthreads(8, 8, 1)]
 void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-    float2 uv = float2(float(dispatchThreadId.x) / ScreenWidth, float(dispatchThreadId.y) / ScreenHeight);
-    float2 screenPos = float2(uv.x * ScreenWidth, uv.y * ScreenHeight);
-    float depth = LinearDepthTex.SampleLevel(LinearClampSample, uv, 0).r;
+    uint2 screenPos = uint2(dispatchThreadId.x, dispatchThreadId.y);
+    float depth = LinearDepthTex[screenPos].r;
     float viewZ = depth * farPlane;
     uint clusterZ = uint(max(log2(viewZ) * cluserFactor.x + cluserFactor.y, 0.0));
     uint3 clusters = uint3(uint(screenPos.x / perTileSize.x), uint(screenPos.y / perTileSize.y), clusterZ);

@@ -92,14 +92,18 @@ __declspec(align(16))struct MainConstants
 	XMFLOAT4X4	ViewProj				= MathHelper::Identity4x4();
 	XMFLOAT4X4	InvViewProj				= MathHelper::Identity4x4();
 	XMFLOAT4X4	ShadowTransform			= MathHelper::Identity4x4();
+
 	XMFLOAT3	EyePosW					= { 0.0f, 0.0f, 0.0f };
 	float		cbPerObjectPad1			= 0.0f;
+
 	XMFLOAT2	RenderTargetSize		= { 0.0f, 0.0f };
 	XMFLOAT2	InvRenderTargetSize		= { 0.0f, 0.0f };
+
 	float		NearZ					= 0.0f;
 	float		FarZ					= 0.0f;
 	float		TotalTime				= 0.0f;
 	float		DeltaTime				= 0.0f;
+
 	XMFLOAT4	gAmbientLight			= { 0.0f, 0.0f, 0.0f ,0.0f };
 
 	DirectionalLight Lights[MAX_DIRECTIONAL_LIGHTS];
@@ -113,14 +117,20 @@ __declspec(align(16))struct MainConstants
 	int			mSkyCubeIndex					= 0;
 	int			mBakingDiffuseCubeIndex			= 0;
 	int			gBakingPreFilteredEnvIndex		= 0;
+
 	int			gBakingIntegrationBRDFIndex		= 0;
 	float		IBLRange						= 10.0f;
 	float		IBLBias							= 0.0f;
-	int			Pad1							= 0;
+	int			gIsClusterBaseLighting			= 0;
 
 	XMFLOAT2	gTemporalJitter					= { 0.0f, 0.0f };
 	int			gDirectionalLightsCount			= 0;
 	int			gIsIndoorScene					= 0;
+
+	XMFLOAT2    gCluserFactor					= { 0.0f, 0.0f };
+	XMFLOAT2    gPerTileSize					= { 0.0f, 0.0f };
+
+	XMFLOAT3    gTileSizes						= { 0.0f, 0.0f, 0.0f };
 	int			IsRenderTiledBaseLighting		= 1;
 };
 
