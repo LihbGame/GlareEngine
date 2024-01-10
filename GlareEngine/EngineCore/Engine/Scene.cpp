@@ -533,8 +533,6 @@ void Scene::ForwardRendering(RenderPipelineType ForwardRenderPipeline)
 				Lighting::m_LightGrid.GetSRV(),
 				Lighting::m_LightBuffer.GetSRV(),
 				Lighting::m_LightShadowArray.GetSRV(),
-				Lighting::m_LightCluster.GetSRV(),
-				Lighting::m_UnusedClusterMask.GetSRV(),
 				Lighting::m_ClusterLightGrid.GetSRV(),
 				Lighting::m_GlobalLightIndexList.GetSRV()
 			};
@@ -729,8 +727,6 @@ void Scene::DeferredRendering(RenderPipelineType DeferredRenderPipeline)
 		Lighting::m_LightGrid.GetSRV(),
 		Lighting::m_LightBuffer.GetSRV(),
 		Lighting::m_LightShadowArray.GetSRV(),
-		Lighting::m_LightCluster.GetSRV(),
-		Lighting::m_UnusedClusterMask.GetSRV(),
 		Lighting::m_ClusterLightGrid.GetSRV(),
 		Lighting::m_GlobalLightIndexList.GetSRV()
 		};

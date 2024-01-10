@@ -36,7 +36,7 @@ void main(uint3 groupId : SV_GroupID,
     //Unused Cluster
         if (ClusterActiveList[clusterIndex] == 0.0)
         {
-            LightGridList[clusterIndex].offset = GlobalIndexOffset[0];
+            LightGridList[clusterIndex].offset = 0.0;
             LightGridList[clusterIndex].count = 0.0;
             return;
         }
@@ -46,7 +46,7 @@ void main(uint3 groupId : SV_GroupID,
     
         uint lightCountInt = (uint) LightCount;
     
-        for (uint LightIndex = 0; LightIndex < lightCountInt; LightIndex += GROUD_THREAD_TOTAL_NUM)
+        for (uint LightIndex = 0; LightIndex < lightCountInt; LightIndex++)
         {
             TileLightData lightData = lightBuffer[LightIndex];
             float lightCullRadius = sqrt(lightData.RadiusSq);
@@ -57,7 +57,7 @@ void main(uint3 groupId : SV_GroupID,
             clusterAABB.Center = (ClusterList[clusterIndex].minPoint + ClusterList[clusterIndex].maxPoint).xyz / 2.0f;
             clusterAABB.Extend = ClusterList[clusterIndex].maxPoint.xyz - clusterAABB.Center;
         
-            if (LightIndex < lightCountInt && LightIndex < MAX_LIGHT_PER_CLUSTER && IntersectionAABBvsSphere(sphere, clusterAABB))
+            if (visibleLightCount < MAX_LIGHT_PER_CLUSTER && IntersectionAABBvsSphere(sphere, clusterAABB))
             {
                 visibleLightIndexs[visibleLightCount] = LightIndex;
                 visibleLightCount++;
@@ -65,7 +65,7 @@ void main(uint3 groupId : SV_GroupID,
         }
     
     //We want all thread groups to have completed the light tests before continuing
-        GroupMemoryBarrierWithGroupSync();
+        //GroupMemoryBarrierWithGroupSync();
     
         uint offset;
         InterlockedAdd(GlobalIndexOffset[0], visibleLightCount, offset);
