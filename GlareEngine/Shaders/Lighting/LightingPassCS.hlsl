@@ -44,7 +44,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
         color += ComputeLighting(gLights, Surface);
    
         //SSAO
-        float ssao = gSsaoTex.SampleLevel(gSamplerLinearWrap, pixelPos * gInvRenderTargetSize,0.0f);
+        float ssao = gSsaoTex[pixelPos];
 
         if (gIsIndoorScene)
         {
