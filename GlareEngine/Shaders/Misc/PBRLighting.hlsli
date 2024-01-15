@@ -471,9 +471,7 @@ float3 ComputeClusterLighting(uint2 ScreenPosition, in float viewZ, in SurfacePr
     uint clusterZ = uint(max(log2(viewZ) * gCluserFactor.x + gCluserFactor.y, 0.0));
     uint3 clusters = uint3(uint(ScreenPosition.x / gPerTileSize.x), uint(ScreenPosition.y / gPerTileSize.y), clusterZ);
     uint clusterIndex = clusters.x + clusters.y * (uint) gTileSizes.x + clusters.z * (uint) gTileSizes.x * (uint) gTileSizes.y;
-    
     LightGrid lightGrid = LightGridList[clusterIndex];
-    
     return ComputeLighting_Internal(lightGrid.count, lightGrid.offset, Surface);
 }
 

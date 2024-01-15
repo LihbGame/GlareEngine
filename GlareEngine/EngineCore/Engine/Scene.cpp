@@ -62,7 +62,7 @@ void Scene::Update(float DeltaTime)
 	ScreenProcessing::Update(DeltaTime, mMainConstants, *m_pCamera);
 
 	//lighting update
-	Lighting::Update(mMainConstants);
+	Lighting::Update(mMainConstants, *m_pCamera);
 
 	Context.Finish();
 
@@ -280,6 +280,7 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 	mMainConstants.gIsClusterBaseLighting = (gRenderPipelineType == RenderPipelineType::CBDR || gRenderPipelineType == RenderPipelineType::CBFR) ? 1 : 0;
 
 	mMainConstants.gTemporalJitter = TemporalAA::GetJitterOffset();
+	mMainConstants.ZMagic= (mMainConstants.FarZ - mMainConstants.NearZ) / mMainConstants.NearZ;
 
 	//Tiled light data
 	mMainConstants.InvTileDim[0] = 1.0f / Lighting::LightGridDimension;
@@ -715,6 +716,7 @@ void Scene::DeferredRendering(RenderPipelineType DeferredRenderPipeline)
 		}
 		else if (DeferredRenderPipeline == RenderPipelineType::CBDR)
 		{
+			ScopedTimer _prof(L"Fill Cluster Grid", Context);
 			//Light Culling
 			Lighting::BuildCluster(Context, mMainConstants);
 			Lighting::MaskUnUsedCluster(Context, mMainConstants);

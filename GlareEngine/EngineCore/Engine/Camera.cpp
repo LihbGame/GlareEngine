@@ -14,7 +14,7 @@ mRight{ 1.0f, 0.0f, 0.0f },
 mUp{ 0.0f, 1.0f, 0.0f },
 mLook{ 0.0f, 0.0f, 1.0f }
 {
-	SetLens(0.25f * MathHelper::Pi, 16.0f / 9.0f, 1.0f, 1000.0f);
+	SetLens(0.25f * MathHelper::Pi, 16.0f / 9.0f, 1.0f, FAR_Z);
 }
 
 Camera::~Camera()

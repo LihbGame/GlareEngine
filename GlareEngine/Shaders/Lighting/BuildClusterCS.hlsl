@@ -43,8 +43,8 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
     uint tileIndex = dispatchThreadId.x + dispatchThreadId.y * (uint) tileSizes.x + dispatchThreadId.z * (uint) tileSizes.x * (uint) tileSizes.y;
 
 	//Calculate the min and max point in screen, far plane, near plane exit error(forever zero)
-        float4 maxPointSs = float4(float2(dispatchThreadId.x + 1, dispatchThreadId.y + 1) * perTileSize, 1.0, 1.0);
-        float4 minPointSs = float4(dispatchThreadId.xy * perTileSize, 1.0, 1.0);
+        float4 maxPointSs = float4(float2(dispatchThreadId.x+1, dispatchThreadId.y+ 1) * perTileSize, 1.0, 1.0);
+        float4 minPointSs = float4(float2(dispatchThreadId.x, dispatchThreadId.y) * perTileSize, 1.0, 1.0);
 
 	//MinPoint and MaxPoint of the cluster in view space(nearest plane, ndc pos.w = 0.0)
         float3 maxPointVs = ScreenToView(maxPointSs, float2(ScreenWidth, ScreenHeight), InvProj).xyz;

@@ -57,7 +57,7 @@ namespace GlareEngine
 		void MaskUnUsedCluster(GraphicsContext& gfxContext, const MainConstants& mainConstants);
 		void ClusterLightingCulling(GraphicsContext& gfxContext);
 
-		void Update(MainConstants& mainConstants);
+		void Update(MainConstants& mainConstants, Camera& camera);
 		void Shutdown(void);
 	}
 }

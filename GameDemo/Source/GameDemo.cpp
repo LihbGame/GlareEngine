@@ -121,7 +121,8 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 {
 	//Main Camera
 	mCamera = make_unique<Camera>(REVERSE_Z);
-	mCamera->LookAt(XMFLOAT3(300, 200, -30), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 1, 0));
+	mCamera->LookAt(XMFLOAT3(300, 200, -30), XMFLOAT3(0, 200, 0), XMFLOAT3(0, 1, 0));
+	mCamera->SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, FAR_Z);
 	//Sky Initialize
 	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
 	//Shadow map Initialize

@@ -94,7 +94,7 @@ __declspec(align(16))struct MainConstants
 	XMFLOAT4X4	ShadowTransform			= MathHelper::Identity4x4();
 
 	XMFLOAT3	EyePosW					= { 0.0f, 0.0f, 0.0f };
-	float		cbPerObjectPad1			= 0.0f;
+	float		ZMagic					= 0.0f;     // (zFar - zNear) / zNear
 
 	XMFLOAT2	RenderTargetSize		= { 0.0f, 0.0f };
 	XMFLOAT2	InvRenderTargetSize		= { 0.0f, 0.0f };

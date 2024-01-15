@@ -84,7 +84,7 @@ cbuffer MainPass : register(b0)
     float4x4    gShadowTransform;
     
     float3      gEyePosW;
-    float       cbPerObjectPad1;
+    float       gZMagic;
     
     float2      gRenderTargetSize;
     float2      gInvRenderTargetSize;

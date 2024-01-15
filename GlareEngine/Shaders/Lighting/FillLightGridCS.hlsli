@@ -214,7 +214,7 @@ void main(
         [unroll]
         for (i = 0; i < 8; i++)
         {
-            viewSpace[i].xyz = ScreenToView(viewSpace[i]).xyz;
+            viewSpace[i].xyz = ScreenToView(viewSpace[i], float2(ViewportWidth, ViewportHeight), InverseProjection).xyz;
         }
 
         float3 minAABB = 10000000;

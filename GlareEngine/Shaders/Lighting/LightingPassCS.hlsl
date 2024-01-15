@@ -52,12 +52,13 @@ void main( uint3 DTid : SV_DispatchThreadID )
             {
                 if (!gIsClusterBaseLighting)
                 {
-                    //Shade each light using Forward+ tiles
+                    //Shading each light using Tiled Base
                     color += ComputeTiledLighting(pixelPos, Surface);
                 }
                 else
                 {
-                    float viewZ = abs(float3(worldPos - gEyePosW).z);
+                    //Shading each light using Cluster Base
+                    float viewZ = (1.0 / (gZMagic * DepthTexture[pixelPos] + 1.0)) * gFarZ;
                     color += ComputeClusterLighting(pixelPos, viewZ, Surface);
 
                 }

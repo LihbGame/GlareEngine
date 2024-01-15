@@ -151,7 +151,7 @@ namespace GlareEngine
 		ShadowBuffer m_LightShadowTempBuffer;
 		Matrix4 m_LightShadowMatrix[MaxShadowedLights];
 
-		bool FirstUpdateViewSpace = true;
+		bool FirstUpdateViewSpace = false;
 
 		Camera ConeShadowCamera[MaxShadowedLights];
 
@@ -187,8 +187,8 @@ void Lighting::InitializeResources(const Camera& camera)
 	m_LightGrid.Create(L"m_LightGrid", lightGridSizeBytes, sizeof(UINT));
 
 	//Cluster
-	ClusterFactor.x = (float)ClusterTiles.z / Math::Log2(camera.GetFarZ() / camera.GetNearZ());
-	ClusterFactor.y = -((float)ClusterTiles.z * Math::Log2(camera.GetNearZ())) / Math::Log2(camera.GetFarZ() / camera.GetNearZ());
+	ClusterFactor.x = (float)ClusterTiles.z / log2(camera.GetFarZ() / camera.GetNearZ());
+	ClusterFactor.y = -((float)ClusterTiles.z * log2(camera.GetNearZ())) / log2(camera.GetFarZ() / camera.GetNearZ());
 
 	m_LightShadowArray.Create(L"Light Shadow Array", eShadowDimension, eShadowDimension, DXGI_FORMAT_R32_FLOAT, MaxShadowedLights);
 	m_LightShadowTempBuffer.Create(L"Light Shadow Temp Buffer", eShadowDimension, eShadowDimension, DXGI_FORMAT_R32_FLOAT);
@@ -203,7 +203,7 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 	Vector3 BoundSize = maxBound - minBound - offset * 2.0f;
 	Vector3 BoundBias = minBound + offset;
 
-	srand((unsigned)time(NULL));
+	//srand((unsigned)time(NULL));
 
 	auto RandUINT = []() -> uint32_t
 	{
@@ -340,26 +340,14 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 		}
 	}
 
+	FirstUpdateViewSpace = true;
+
 	CommandContext::InitializeBuffer(m_LightBuffer, m_LightData, MaxLights * sizeof(LightData));
 }
 
 void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 {
 	ScopedTimer _prof(L"Fill Light Grid", gfxContext);
-
-	if (camera.GetViewChange()|| FirstUpdateViewSpace)
-	{
-		FirstUpdateViewSpace = false;
-		for (size_t i = 0; i < MaxLights; i++)
-		{
-			Vector4 positionWS = Vector4(m_LightData[i].PositionWS[0], m_LightData[i].PositionWS[1], m_LightData[i].PositionWS[2], 1.0f);
-			Vector4 positionVS = positionWS * (Matrix4)camera.GetView();
-			m_LightData[i].PositionVS[0] = positionVS.GetX();
-			m_LightData[i].PositionVS[1] = positionVS.GetY();
-			m_LightData[i].PositionVS[2] = positionVS.GetZ();
-		}
-		CommandContext::InitializeBuffer(m_LightBuffer, m_LightData, MaxLights * sizeof(LightData));
-	}
 
 	ComputeContext& Context = gfxContext.GetComputeContext();
 
@@ -417,6 +405,7 @@ void Lighting::BuildCluster(GraphicsContext& gfxContext, const MainConstants& ma
 {
 	if (bNeedRebuildCluster)
 	{
+		ScopedTimer _prof(L"Build Cluster", gfxContext);
 		ComputeContext& Context = gfxContext.GetComputeContext();
 
 		ClusterBuildConstants csConstants;
@@ -444,6 +433,7 @@ void Lighting::BuildCluster(GraphicsContext& gfxContext, const MainConstants& ma
 
 void Lighting::MaskUnUsedCluster(GraphicsContext& gfxContext, const MainConstants& mainConstants)
 {
+	ScopedTimer _prof(L"Mask UnUsed Cluster", gfxContext);
 	ComputeContext& Context = gfxContext.GetComputeContext();
 
 	UnUsedClusterMaskConstant csConstants;
@@ -466,6 +456,7 @@ void Lighting::MaskUnUsedCluster(GraphicsContext& gfxContext, const MainConstant
 
 void Lighting::ClusterLightingCulling(GraphicsContext& gfxContext)
 {
+	ScopedTimer _prof(L"Cluster Light Culling", gfxContext);
 	ComputeContext& Context = gfxContext.GetComputeContext();
 
 	Context.TransitionResource(m_UnusedClusterMask, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -494,10 +485,26 @@ void Lighting::ClusterLightingCulling(GraphicsContext& gfxContext)
 	Context.Dispatch(ClusterDispathSize.x, ClusterDispathSize.y, ClusterDispathSize.z);
 }
 
-void Lighting::Update(MainConstants& mainConstants)
+void Lighting::Update(MainConstants& mainConstants,Camera& camera)
 {
+	if (camera.GetViewChange() || FirstUpdateViewSpace)
+	{
+		FirstUpdateViewSpace = false;
+		for (size_t i = 0; i < MaxLights; i++)
+		{
+			Vector4 positionWS = Vector4(m_LightData[i].PositionWS[0], m_LightData[i].PositionWS[1], m_LightData[i].PositionWS[2], 1.0f);
+			Vector4 positionVS = positionWS * (Matrix4)camera.GetView();
+			m_LightData[i].PositionVS[0] = positionVS.GetX();
+			m_LightData[i].PositionVS[1] = positionVS.GetY();
+			m_LightData[i].PositionVS[2] = positionVS.GetZ();
+		}
+		CommandContext::InitializeBuffer(m_LightBuffer, m_LightData, MaxLights * sizeof(LightData));
+	}
+
 	ClusterTiles.x = (uint32_t)(Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), LightClusterGridDimension));
 	ClusterTiles.y = (uint32_t)(Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), LightClusterGridDimension));
+
+	CommandContext::InitializeBuffer(m_GlobalIndexOffset, ClusterLightOffset, sizeof(ClusterLightOffset));
 
 	if (ClusterTiles.x != PreClusterTiles.x || ClusterTiles.y != PreClusterTiles.y)
 	{

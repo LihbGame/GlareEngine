@@ -64,18 +64,17 @@ void main(uint3 groupId : SV_GroupID,
             }
         }
     
-    //We want all thread groups to have completed the light tests before continuing
+        //We want all thread groups to have completed the light tests before continuing
         //GroupMemoryBarrierWithGroupSync();
     
         uint offset;
         InterlockedAdd(GlobalIndexOffset[0], visibleLightCount, offset);
-
+        
         for (uint i = 0; i < visibleLightCount; ++i)
         {
             GlobalLightIndexList[offset + i] = visibleLightIndexs[i];
         }
-
-        LightGridList[clusterIndex].offset = (float) offset;
+        LightGridList[clusterIndex].offset = offset;
         LightGridList[clusterIndex].count = (float) visibleLightCount;
     }
 }
