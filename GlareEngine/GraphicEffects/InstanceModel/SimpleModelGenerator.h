@@ -1,35 +1,3 @@
-#pragma once
-#include "Animation/ModelMesh.h"
-#include "Engine/GeometryGenerator.h"
-
-using namespace GlareEngine;
-
-enum class SimpleModelType
-{
-	Box,
-	Sphere,
-	Cylinder,
-	Grid,
-	ScreenQuad,
-};
-
-
-class SimpleModelGenerator
-{
-public:
-	static SimpleModelGenerator* GetInstance(ID3D12GraphicsCommandList* CommandList) 
-	{ 
-		pCommandList = CommandList;
-		return S_SimpleModelGenerator; 
-	}
-	static void Release() { delete  S_SimpleModelGenerator; }
-	void CreatePBRMaterials();
-	ModelRenderData* CreateSimpleModelRanderData(string ModelName,SimpleModelType Type,string MaterialName);
-private:
-	static ID3D12GraphicsCommandList* pCommandList;
-	GeometryGenerator mGeometryGenerator;
-	SimpleModelGenerator() {}
-	static SimpleModelGenerator* S_SimpleModelGenerator;
-
-	unordered_map<string, ModelRenderData> mMeshes;
-};
+version https://git-lfs.github.com/spec/v1
+oid sha256:3e0ad941a55392cd44bbcd1d1e6859c78f8b948e7f450a85a763e2d1185f3598
+size 854
