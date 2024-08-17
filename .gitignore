@@ -1,29 +1,3 @@
-/.vs/
-/.vscode/
-/Debug/
-/x64/
-/build/
-/lib/
-/bin/
-/GlareEngine/Debug/
-/GlareEngine/x64/
-/GlareEngine/Release/
-/GlareEngine/Shaders/CompiledShaders/
-#/Resource/Textures/HDRSky/*
-# !/Resource/Textures/HDRSky/SKY_LDR.dds
-/GlareEngine/Dependences/lib/assimp-vc142-mt.lib
-/GlareEngine/EngineEditor/NoesisUIEditor/Data/.vs/
-/GlareEngine/EngineEditor/NoesisUIEditor/Data/bin/
-/GlareEngine/EngineEditor/NoesisUIEditor/Data/obj/
-/GlareEngine/EngineEditor/NoesisUIEditor/Data/packages/
-/GameDemo/Debug/
-/GameDemo/x64/
-/GameDemo/Release/
-/GameDemo/.vs/
-/EngineDemo_Old/Debug/
-/EngineDemo_Old/x64/
-/EngineDemo_Old/Release/
-/EngineDemo_Old/.vs/
-/EngineDemo_Old/CMakeFiles/
-/EngineDemo_Old/cmake_install*
-/CMakeFiles/
+version https://git-lfs.github.com/spec/v1
+oid sha256:f71f68fb4dfd34797c5edebcf25a912f65aa426de2d408a07039e00c767dde5b
+size 742
