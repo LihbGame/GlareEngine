@@ -1,3 +1,36 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:522a1c10844d5f5837ed621fe7501ea712b76837bd3d819889eed5e713289c1a
-size 656
+#pragma once
+#include "Engine/EngineUtility.h"
+#include "MeshStruct.h"
+#include "Engine/Vertex.h"
+
+namespace GlareEngine
+{
+	class ModelMesh
+	{
+	public:
+		ModelMesh() {}
+		ModelMesh(ID3D12GraphicsCommandList* CommandList, const char* name, vector<Vertices::PosNormalTangentTexc> vertices, vector<UINT> indices);
+		~ModelMesh();
+	public:
+		MeshGeometry mMeshGeo;
+		string pModelMeshName;
+	private:
+		void SetupMesh(ID3D12GraphicsCommandList* CommandList, const char* name);
+	
+	private:
+
+		MeshData mMeshData;
+	};
+
+	struct ModelData
+	{
+		ModelMesh mMeshData;
+		const Material* mMaterial;
+	};
+
+	struct ModelRenderData
+	{
+		vector<ModelData> mSubModels;
+	};
+}
+

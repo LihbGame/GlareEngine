@@ -1,3 +1,33 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:1a4b75592273fcfd8c7b5249f28af72363d02484ab1196fcb01f5bf89c2318f8
-size 1078
+#include "../Misc/CommonResource.hlsli"
+
+PosNorTanTexOut main(PosNorTanTexIn vin, uint instanceID : SV_InstanceID)
+{
+    PosNorTanTexOut vout = (PosNorTanTexOut) 0.0f;
+
+	// Fetch the instance data.
+    InstanceData instData = gInstanceData[instanceID];
+    float4x4 world = instData.World;
+    uint MatIndex = instData.MaterialIndex;
+
+    vout.MatIndex = MatIndex;
+
+	// Fetch the material data.
+    MaterialData matData = gMaterialData[MatIndex];
+
+	//PS NEED
+    vout.NormalW = mul(vin.NormalL, (float3x3) world);
+    vout.TangentW = mul(vin.TangentL, (float3x3) world);
+
+	// Transform to world space.
+    float4 posW = mul(float4(vin.PosL, 1.0f), world);
+    vout.PosW = posW.xyz;
+	// Transform to homogeneous clip space.
+    vout.PosH = mul(posW, gViewProj);
+
+	// Output vertex attributes for interpolation across triangle.
+    vout.TexC = mul(float4(vin.TexC, 0.0f, 1.0f), instData.TexTransform).xy;
+    
+	// Generate projective tex-coords to project shadow map onto scene.
+    vout.ShadowPosH = mul(posW, gShadowTransform);
+    return vout;
+}

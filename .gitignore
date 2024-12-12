@@ -1,3 +1,41 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:50e9766b3592e164b41d6b0d1941964f7edf99dc246c4b0c64cdc762618ac21c
-size 1094
+/.vs/
+/.vscode/
+/.idea/
+/Debug/
+/x64/
+/build/
+/lib/
+/bin/
+/GlareEngine/Debug/
+/GlareEngine/x64/
+/GlareEngine/Release/
+/GlareEngine/Shaders/CompiledShaders/
+#/Resource/Textures/HDRSky/*
+# !/Resource/Textures/HDRSky/SKY_LDR.dds
+/GlareEngine/Dependences/lib/assimp-vc142-mt.lib
+/GlareEngine/EngineEditor/NoesisUIEditor/Data/.vs/
+/GlareEngine/EngineEditor/NoesisUIEditor/Data/bin/
+/GlareEngine/EngineEditor/NoesisUIEditor/Data/obj/
+/GlareEngine/EngineEditor/NoesisUIEditor/Data/packages/
+
+/Resource/Model/DamagedHelmet/gltf/*.Model
+/Resource/Model/DamagedHelmet/gltf/*.dds
+/Resource/Model/FlightHelmet/gltf/*.Model
+/Resource/Model/FlightHelmet/gltf/*.dds
+/Resource/Model/SciFiHelmet/gltf/*.Model
+/Resource/Model/SciFiHelmet/gltf/*.dds
+/Resource/Model/Sponza/pbr/*.Model
+/Resource/Model/Sponza/pbr/*.dds
+/Resource/Textures/*.dds
+
+/GameDemo/Debug/
+/GameDemo/x64/
+/GameDemo/Release/
+/GameDemo/.vs/
+/EngineDemo_Old/Debug/
+/EngineDemo_Old/x64/
+/EngineDemo_Old/Release/
+/EngineDemo_Old/.vs/
+/EngineDemo_Old/CMakeFiles/
+/EngineDemo_Old/cmake_install*
+/CMakeFiles/

@@ -1,3 +1,28 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:08fbfe52a14ac8991ccc44456724610cf61aae22dfd03f59e7a3490e435eb9dc
-size 592
+#pragma once
+#include "Misc/CubeRenderTarget.h"
+#include "Graphics/DepthBuffer.h"
+#include "Animation/ModelMesh.h"
+
+#define PROBE_TARGET_RESOLUTION 512
+
+class SHProbe
+{
+public:
+	~SHProbe();
+
+	SHProbe(XMFLOAT3 position, CubeRenderTarget& cubeTarget);
+
+	void PreComputeSH();
+
+	void PrepareCubeMap(Scene& scene, GraphicsContext& Context);
+
+	void StoreSH();
+	 
+	void SetPosition(XMFLOAT3 probePosition) { mProbePosition = probePosition; }
+
+	XMFLOAT3 GetPosition() const { return mProbePosition; }
+private:
+	XMFLOAT3 mProbePosition;
+	CubeRenderTarget& mCubeTarget;
+};
+
