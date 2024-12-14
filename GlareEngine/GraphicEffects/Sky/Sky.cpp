@@ -121,7 +121,7 @@ void CSky::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 	}
 	else
 	{
-		Context.SetPipelineState(mSkyMaterial->GetGraphicsPSO());
+		Context.SetPipelineState(mSkyMaterial->GetRuntimePSO());
 		Context.SetDynamicConstantBufferView((int)RootSignatureType::eCommonConstantBuffer, sizeof(mWorld), &mWorld);
 	}
 	Context.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -137,32 +137,41 @@ void CSky::DrawUI()
 void CSky::InitMaterial()
 {
 	mSkyMaterial = RenderMaterialManager::GetInstance().GetMaterial("HDR Sky");
-	mSkyMaterial->BindPSOCreateFunc([&](const PSOCommonProperty CommonProperty) {
-		D3D12_RASTERIZER_DESC Rasterizer = RasterizerDefault;
-		if (CommonProperty.IsWireframe)
-		{
-			Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
-			Rasterizer.FillMode = D3D12_FILL_MODE_WIREFRAME;
-		}
-		if (CommonProperty.IsMSAA)
-		{
-			Rasterizer.MultisampleEnable = true;
-		}
+	if (!mSkyMaterial->IsInitialized)
+	{
+		mSkyMaterial->BindPSOCreateFunc([&](const PSOCommonProperty CommonProperty) {
+			D3D12_RASTERIZER_DESC Rasterizer = RasterizerDefault;
+			if (CommonProperty.IsWireframe)
+			{
+				Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
+				Rasterizer.FillMode = D3D12_FILL_MODE_WIREFRAME;
+			}
+			if (CommonProperty.IsMSAA)
+			{
+				Rasterizer.MultisampleEnable = true;
+			}
 
-		GraphicsPSO& SkyPSO = mSkyMaterial->GetGraphicsPSO();
+			GraphicsPSO& SkyPSO = mSkyMaterial->GetGraphicsPSO();
 
-		SkyPSO.SetRootSignature(*CommonProperty.pRootSignature);
-		SkyPSO.SetRasterizerState(Rasterizer);
-		SkyPSO.SetBlendState(BlendDisable);
-		SkyPSO.SetDepthStencilState(DepthStateDisabled);
-		SkyPSO.SetSampleMask(0xFFFFFFFF);
-		SkyPSO.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
-		SkyPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-		SkyPSO.SetVertexShader(g_pSkyVS, sizeof(g_pSkyVS));
-		SkyPSO.SetPixelShader(g_pSkyPS, sizeof(g_pSkyPS));
-		SkyPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
-		SkyPSO.Finalize();
-		});
+			SkyPSO.SetRootSignature(*CommonProperty.pRootSignature);
+			SkyPSO.SetRasterizerState(Rasterizer);
+			SkyPSO.SetBlendState(BlendDisable);
+			SkyPSO.SetDepthStencilState(DepthStateDisabled);
+			SkyPSO.SetSampleMask(0xFFFFFFFF);
+			SkyPSO.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
+			SkyPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+			SkyPSO.SetVertexShader(g_pSkyVS, sizeof(g_pSkyVS));
+			SkyPSO.SetPixelShader(g_pSkyPS, sizeof(g_pSkyPS));
+			SkyPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
+			SkyPSO.Finalize();
+			});
+
+		mSkyMaterial->BindPSORuntimeModifyFunc([&]() {
+			RuntimePSOManager::Get().RegisterPSO(&mSkyMaterial->GetGraphicsPSO(), GET_SHADER_PATH("Sky/SkyVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+			RuntimePSOManager::Get().RegisterPSO(&mSkyMaterial->GetGraphicsPSO(), GET_SHADER_PATH("Sky/SkyPS.hlsl"), D3D12_SHVER_PIXEL_SHADER); });
+
+		mSkyMaterial->IsInitialized = true;
+	}
 }
 
 void CSky::Update(float dt, GraphicsContext* Context)

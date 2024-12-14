@@ -1,7 +1,8 @@
 #include "RenderMaterial.h"
 
-GlareEngine::RenderMaterial::RenderMaterial(wstring MaterialName)
-	:mMaterialName(MaterialName)
+GlareEngine::RenderMaterial::RenderMaterial(wstring MaterialName,MaterialPipelineType PipelineType)
+	:mMaterialName(MaterialName),
+	mPipelineType(PipelineType)
 {
 }
 
@@ -12,15 +13,26 @@ void RenderMaterial::BeginInitializeComputeMaterial(const RootSignature& rootSig
 	mComputePSO.SetRootSignature(rootSignature);
 }
 
-void RenderMaterial::BeginInitializeGraphicMaterial(const RootSignature& rootSignature)
-{
-	mGraphicsPSO = GraphicsPSO(mMaterialName);
-	m_pRootSignature = &rootSignature;
-}
-
 void RenderMaterial::BuildMaterialPSO(const PSOCommonProperty CommonProperty)
 {
-	mFuntionPSO(CommonProperty);
+	mBuildPSOFunction(CommonProperty);
+}
+
+void RenderMaterial::InitRuntimePSO()
+{
+	mRuntimeModifyPSOFunction();
+}
+
+PSO& RenderMaterial::GetRuntimePSO()
+{
+	if (mPipelineType == MaterialPipelineType::Graphics)
+	{
+		return GET_PSO(mGraphicsPSO);
+	}
+	else
+	{
+		return GET_PSO(mComputePSO);
+	}
 }
 
 RenderMaterial* RenderMaterialManager::GetMaterial(string MaterialName)
@@ -37,5 +49,13 @@ void RenderMaterialManager::BuildMaterialsPSO(const PSOCommonProperty CommonProp
 	for (auto& Material:mRenderMaterialMap)
 	{
 		Material.second.BuildMaterialPSO(CommonProperty);
+	}
+}
+
+void RenderMaterialManager::InitRuntimePSO()
+{
+	for (auto& Material : mRenderMaterialMap)
+	{
+		Material.second.InitRuntimePSO();
 	}
 }

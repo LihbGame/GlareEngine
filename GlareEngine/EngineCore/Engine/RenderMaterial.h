@@ -1,6 +1,7 @@
 #pragma once
 #include "Graphics/Render.h"
 #include "Graphics/PipelineState.h"
+#include "Tools/RuntimePSOManager.h"
 
 
 #define InitComputeMaterial(rootSignature,Material, ShaderByteCode) \
@@ -17,17 +18,20 @@ namespace GlareEngine
 		MaterialTypeCount
 	};
 
+	enum MaterialPipelineType :int
+	{
+		Graphics,
+		Compute
+	};
+
 	class RenderMaterial
 	{
 	public:
-		RenderMaterial(wstring MaterialName=L"Default Material Name");
+		RenderMaterial(wstring MaterialName = L"Default Material Name", MaterialPipelineType PipelineType = MaterialPipelineType::Graphics);
 
 		void BeginInitializeComputeMaterial(const RootSignature& rootSignature);
 		void EndInitializeComputeMaterial() { mComputePSO.Finalize(); }
 		void SetComputeShader(const unsigned char* shaderByteCode, size_t byteCodeLength) { mComputePSO.SetComputeShader(shaderByteCode, byteCodeLength); }
-
-		void BeginInitializeGraphicMaterial(const RootSignature& rootSignature);
-		void EndInitializeGraphicMaterial() { mGraphicsPSO.Finalize(); }
 
 		void SetMaterialType(MaterialShaderType type) { mMaterialType = type; }
 
@@ -37,21 +41,32 @@ namespace GlareEngine
 
 		void BuildMaterialPSO(const PSOCommonProperty CommonProperty);
 
-		void BindPSOCreateFunc(const std::function<void(const PSOCommonProperty)>& lambda) { mFuntionPSO = lambda; };
+		void BindPSOCreateFunc(const std::function<void(const PSOCommonProperty)>& lambda) { mBuildPSOFunction = lambda; }
+
+		void InitRuntimePSO();
+		void BindPSORuntimeModifyFunc(const std::function<void()>& lambda) { mRuntimeModifyPSOFunction = lambda; }
 
 		ComputePSO& GetComputePSO() { return mComputePSO; }
 		GraphicsPSO& GetGraphicsPSO() { return mGraphicsPSO; }
+
+		PSO& GetRuntimePSO();
+	public:
+		bool IsInitialized = false;
 	private:
 		ComputePSO mComputePSO;
 		GraphicsPSO mGraphicsPSO;
 
+		MaterialPipelineType  mPipelineType;
+
 		wstring mMaterialName;
 
-		std::function<void(const PSOCommonProperty)> mFuntionPSO;
+		std::function<void(const PSOCommonProperty)> mBuildPSOFunction;
+		std::function<void()> mRuntimeModifyPSOFunction;
 
 		const RootSignature* m_pRootSignature = nullptr;
 		//Material Parameters
 		MaterialShaderType mMaterialType = MaterialShaderType::DefaultLight;
+	
 	};
 
 
@@ -67,6 +82,7 @@ namespace GlareEngine
 		RenderMaterial* GetMaterial(string MaterialName);
 
 		void BuildMaterialsPSO(const PSOCommonProperty CommonProperty);
+		void InitRuntimePSO();
 	private:
 		RenderMaterialManager() {};
 		unordered_map<string, RenderMaterial> mRenderMaterialMap;

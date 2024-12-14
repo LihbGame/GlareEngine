@@ -72,7 +72,9 @@ namespace GlareEngine
 		BuildPSOs();
 
 #if USE_RUNTIME_PSO
-		//After build pso
+		//After build PSOs
+		RenderMaterialManager::GetInstance().InitRuntimePSO();
+
 		InstanceModel::InitRuntimePSO();
 		PRTManager::InitRuntimePSO();
 		Lighting::InitRuntimePSO();
@@ -323,6 +325,7 @@ namespace GlareEngine
 	void Render::BuildPSOs()
 	{
 		RenderMaterialManager::GetInstance().BuildMaterialsPSO(gCommonProperty);
+
 		InstanceModel::BuildPSO(gCommonProperty);
 		PRTManager::BuildPSO(gCommonProperty);
 		Lighting::BuildPSO(gCommonProperty);
