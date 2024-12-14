@@ -2,6 +2,8 @@
 #include "Misc/RenderObject.h"
 #include "Graphics/PipelineState.h"
 #include "Animation/MeshStruct.h"
+#include "Engine/RenderMaterial.h"
+
 using namespace GlareEngine;
 
 class CSky :
@@ -24,14 +26,14 @@ public:
     
     virtual void DrawUI();
 
-    static void BuildPSO(const PSOCommonProperty CommonProperty);
+    virtual void InitMaterial();
 
     CD3DX12_CPU_DESCRIPTOR_HANDLE GetSkyCubeDescriptor() { return m_Descriptor; }
 
     void Update(float dt, GraphicsContext* Context = nullptr);
 private:
-	//PSO
-	static GraphicsPSO mPSO;
+    //sky material
+    RenderMaterial* mSkyMaterial = nullptr;
 	//World mat
 	XMFLOAT4X4 mWorld = MathHelper::Identity4x4();
     //Sky Cube Mesh

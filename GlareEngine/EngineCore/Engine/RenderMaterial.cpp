@@ -18,3 +18,24 @@ void RenderMaterial::BeginInitializeGraphicMaterial(const RootSignature& rootSig
 	m_pRootSignature = &rootSignature;
 }
 
+void RenderMaterial::BuildMaterialPSO(const PSOCommonProperty CommonProperty)
+{
+	mFuntionPSO(CommonProperty);
+}
+
+RenderMaterial* RenderMaterialManager::GetMaterial(string MaterialName)
+{
+	if (mRenderMaterialMap.find(MaterialName) == mRenderMaterialMap.end())
+	{
+		mRenderMaterialMap[MaterialName] = RenderMaterial(StringToWString(MaterialName));
+	}
+	return &mRenderMaterialMap[MaterialName];
+}
+
+void RenderMaterialManager::BuildMaterialsPSO(const PSOCommonProperty CommonProperty)
+{
+	for (auto& Material:mRenderMaterialMap)
+	{
+		Material.second.BuildMaterialPSO(CommonProperty);
+	}
+}

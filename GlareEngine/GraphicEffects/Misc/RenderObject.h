@@ -57,12 +57,7 @@ public:
 	virtual void DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificShadowPSO = nullptr) = 0;
 	virtual void Update(float DeltaTime, GraphicsContext* Context = nullptr) = 0;
 	virtual void DrawUI() = 0;
-
-	static void BuildPSO(const PSOCommonProperty CommonProperty) {};
-
-#if USE_RUNTIME_PSO
-	static void InitRuntimePSO() {};
-#endif
+	virtual void InitMaterial() = 0;
 
 public:
 	ObjectType mObjectType = ObjectType::None;

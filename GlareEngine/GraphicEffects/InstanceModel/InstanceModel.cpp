@@ -65,6 +65,11 @@ void InstanceModel::DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificSh
 	}
 }
 
+void InstanceModel::InitMaterial()
+{
+
+}
+
 void InstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 {
 	D3D12_RASTERIZER_DESC Rasterizer = RasterizerTwoSidedCw;

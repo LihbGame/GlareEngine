@@ -322,7 +322,7 @@ namespace GlareEngine
 
 	void Render::BuildPSOs()
 	{
-		CSky::BuildPSO(gCommonProperty);
+		RenderMaterialManager::GetInstance().BuildMaterialsPSO(gCommonProperty);
 		InstanceModel::BuildPSO(gCommonProperty);
 		PRTManager::BuildPSO(gCommonProperty);
 		Lighting::BuildPSO(gCommonProperty);

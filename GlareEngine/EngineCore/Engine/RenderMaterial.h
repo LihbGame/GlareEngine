@@ -17,7 +17,6 @@ namespace GlareEngine
 		MaterialTypeCount
 	};
 
-
 	class RenderMaterial
 	{
 	public:
@@ -32,7 +31,13 @@ namespace GlareEngine
 
 		void SetMaterialType(MaterialShaderType type) { mMaterialType = type; }
 
+		wstring GetMaterialName() { return mMaterialName; }
+
 		const RootSignature* GetRootSignature() { assert(m_pRootSignature); return m_pRootSignature; }
+
+		void BuildMaterialPSO(const PSOCommonProperty CommonProperty);
+
+		void BindPSOCreateFunc(const std::function<void(const PSOCommonProperty)>& lambda) { mFuntionPSO = lambda; };
 
 		ComputePSO& GetComputePSO() { return mComputePSO; }
 		GraphicsPSO& GetGraphicsPSO() { return mGraphicsPSO; }
@@ -42,8 +47,28 @@ namespace GlareEngine
 
 		wstring mMaterialName;
 
+		std::function<void(const PSOCommonProperty)> mFuntionPSO;
+
 		const RootSignature* m_pRootSignature = nullptr;
 		//Material Parameters
 		MaterialShaderType mMaterialType = MaterialShaderType::DefaultLight;
+	};
+
+
+	class RenderMaterialManager
+	{
+	public:
+		static RenderMaterialManager& GetInstance()
+		{
+			static RenderMaterialManager renderMaterialManager;
+			return renderMaterialManager;
+		}
+
+		RenderMaterial* GetMaterial(string MaterialName);
+
+		void BuildMaterialsPSO(const PSOCommonProperty CommonProperty);
+	private:
+		RenderMaterialManager() {};
+		unordered_map<string, RenderMaterial> mRenderMaterialMap;
 	};
 }

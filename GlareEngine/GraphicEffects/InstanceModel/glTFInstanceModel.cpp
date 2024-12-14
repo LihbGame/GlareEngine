@@ -61,6 +61,10 @@ enum ModelPSO:int
 };
 
 
+void glTFInstanceModel::InitMaterial()
+{
+}
+
 void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
 {
     std::lock_guard<std::mutex> LockGuard(m_PSOMutex);

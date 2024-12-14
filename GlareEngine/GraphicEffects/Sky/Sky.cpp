@@ -8,8 +8,6 @@
 #include "CompiledShaders/SkyVS.h"
 #include "CompiledShaders/SkyPS.h"
 
-GraphicsPSO CSky::mPSO;
-
 #define  HDR_SKY L"HDRSky\\SKY_HDR"
 #define  LDR_SKY L"HDRSky\\SKY_LDR"
 
@@ -23,6 +21,8 @@ CSky::CSky(ID3D12GraphicsCommandList* CommandList,
 	BuildSkySRV(CommandList);
 	//world mat
 	XMStoreFloat4x4(&mWorld, XMMatrixScaling(50.0f, 50.0f, 50.0f));
+	//Init Material
+	InitMaterial();
 }
 
 CSky::~CSky()
@@ -121,7 +121,7 @@ void CSky::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 	}
 	else
 	{
-		Context.SetPipelineState(mPSO);
+		Context.SetPipelineState(mSkyMaterial->GetGraphicsPSO());
 		Context.SetDynamicConstantBufferView((int)RootSignatureType::eCommonConstantBuffer, sizeof(mWorld), &mWorld);
 	}
 	Context.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -134,30 +134,35 @@ void CSky::DrawUI()
 {
 }
 
-void CSky::BuildPSO(const PSOCommonProperty CommonProperty)
+void CSky::InitMaterial()
 {
-	D3D12_RASTERIZER_DESC Rasterizer = RasterizerDefault;
-	if (CommonProperty.IsWireframe)
-	{
-		Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
-		Rasterizer.FillMode = D3D12_FILL_MODE_WIREFRAME;
-	}
-	if (CommonProperty.IsMSAA)
-	{
-		Rasterizer.MultisampleEnable = true;
-	}
+	mSkyMaterial = RenderMaterialManager::GetInstance().GetMaterial("HDR Sky");
+	mSkyMaterial->BindPSOCreateFunc([&](const PSOCommonProperty CommonProperty) {
+		D3D12_RASTERIZER_DESC Rasterizer = RasterizerDefault;
+		if (CommonProperty.IsWireframe)
+		{
+			Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
+			Rasterizer.FillMode = D3D12_FILL_MODE_WIREFRAME;
+		}
+		if (CommonProperty.IsMSAA)
+		{
+			Rasterizer.MultisampleEnable = true;
+		}
 
-	mPSO.SetRootSignature(*CommonProperty.pRootSignature);
-	mPSO.SetRasterizerState(Rasterizer);
-	mPSO.SetBlendState(BlendDisable);
-	mPSO.SetDepthStencilState(DepthStateDisabled);
-	mPSO.SetSampleMask(0xFFFFFFFF);
-	mPSO.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
-	mPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-	mPSO.SetVertexShader(g_pSkyVS, sizeof(g_pSkyVS));
-	mPSO.SetPixelShader(g_pSkyPS, sizeof(g_pSkyPS));
-	mPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
-	mPSO.Finalize();
+		GraphicsPSO& SkyPSO = mSkyMaterial->GetGraphicsPSO();
+
+		SkyPSO.SetRootSignature(*CommonProperty.pRootSignature);
+		SkyPSO.SetRasterizerState(Rasterizer);
+		SkyPSO.SetBlendState(BlendDisable);
+		SkyPSO.SetDepthStencilState(DepthStateDisabled);
+		SkyPSO.SetSampleMask(0xFFFFFFFF);
+		SkyPSO.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
+		SkyPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+		SkyPSO.SetVertexShader(g_pSkyVS, sizeof(g_pSkyVS));
+		SkyPSO.SetPixelShader(g_pSkyPS, sizeof(g_pSkyPS));
+		SkyPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
+		SkyPSO.Finalize();
+		});
 }
 
 void CSky::Update(float dt, GraphicsContext* Context)

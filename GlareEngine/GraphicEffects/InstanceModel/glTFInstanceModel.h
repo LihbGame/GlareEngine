@@ -15,6 +15,8 @@ public:
 
 	virtual void DrawUI() {}
 
+	virtual void InitMaterial();
+
 	static void BuildPSO(const PSOCommonProperty CommonProperty);
 
 	static uint8_t GetPSO(uint16_t psoFlags);

@@ -18,6 +18,8 @@ public:
 
 	virtual void DrawUI() {}
 
+	virtual void InitMaterial();
+
 	static void BuildPSO(const PSOCommonProperty CommonProperty);
 
 #if USE_RUNTIME_PSO
