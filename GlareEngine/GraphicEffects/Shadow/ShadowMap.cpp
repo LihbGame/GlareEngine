@@ -7,8 +7,6 @@
 
 using namespace GlareEngine;
 
-GraphicsPSO ShadowMap::mShadowPSO;
-GraphicsPSO ShadowMap::mMaskShadowPSO;
 DXGI_FORMAT ShadowMap::mFormat = DXGI_FORMAT_D32_FLOAT;
 
 ShadowMap::ShadowMap(XMFLOAT3 LightDirection, UINT width, UINT height)
@@ -31,6 +29,8 @@ ShadowMap::ShadowMap(XMFLOAT3 LightDirection, UINT width, UINT height)
 	//通常，您需要遍历每个世界空间顶点位置并计算边界球体;
 	mSceneBounds.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	mSceneBounds.Radius = 700.0f;
+
+	InitMaterial();
 }
 
 
@@ -91,16 +91,6 @@ void ShadowMap::Update(float DeltaTime)
 	}
 }
 
-#if USE_RUNTIME_PSO
-void ShadowMap::InitRuntimePSO()
-{
-	RuntimePSOManager::Get().RegisterPSO(&mShadowPSO, GET_SHADER_PATH("Shadow/ModelShadowVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&mMaskShadowPSO, GET_SHADER_PATH("Shadow/ModelShadowVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&mMaskShadowPSO, GET_SHADER_PATH("Shadow/ModelShadowPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
-}
-#endif
-
-
 UINT ShadowMap::Width()const
 {
 	return mWidth;
@@ -139,11 +129,11 @@ void ShadowMap::Draw(GraphicsContext& Context,vector<RenderObject*> RenderObject
 			Context.PIXBeginEvent(object->GetName().c_str());
 			if(object->GetMaskFlag())
 			{
-				object->DrawShadow(Context, &mMaskShadowPSO);
+				object->DrawShadow(Context, &mMaskShadowMaterial->GetGraphicsPSO());
 			}
 			else
 			{
-				object->DrawShadow(Context, &mShadowPSO);
+				object->DrawShadow(Context, &mShadowMaterial->GetGraphicsPSO());
 			}
 			Context.PIXEndEvent();
 		}
@@ -151,22 +141,51 @@ void ShadowMap::Draw(GraphicsContext& Context,vector<RenderObject*> RenderObject
 	Context.TransitionResource(mShadowBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
 }
 
+void ShadowMap::InitMaterial()
+{
+	mShadowMaterial= RenderMaterialManager::GetInstance().GetMaterial("Shadow Material");
+	mMaskShadowMaterial = RenderMaterialManager::GetInstance().GetMaterial("Mask Shadow Material");
+	if (!mShadowMaterial->IsInitialized)
+	{
+		mShadowMaterial->BindPSOCreateFunc([&](const PSOCommonProperty CommonProperty) {
+			GraphicsPSO& ShadowMaterialPSO = mShadowMaterial->GetGraphicsPSO();
+			ShadowMaterialPSO.SetRootSignature(*CommonProperty.pRootSignature);
+			ShadowMaterialPSO.SetRasterizerState(RasterizerShadowCW);
+			ShadowMaterialPSO.SetBlendState(BlendDisable);
+			ShadowMaterialPSO.SetDepthStencilState(DepthStateReadWrite);
+			ShadowMaterialPSO.SetSampleMask(0xFFFFFFFF);
+			ShadowMaterialPSO.SetInputLayout((UINT)InputLayout::PosNormalTangentTexc.size(), InputLayout::PosNormalTangentTexc.data());
+			ShadowMaterialPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+			ShadowMaterialPSO.SetVertexShader(g_pModelShadowVS, sizeof(g_pModelShadowVS));
+			ShadowMaterialPSO.SetPixelShader(g_pModelShadowPS, sizeof(g_pModelShadowPS));
+			ShadowMaterialPSO.SetRenderTargetFormats(0, &DefaultHDRColorFormat, DXGI_FORMAT_D32_FLOAT);
+			ShadowMaterialPSO.Finalize();
+			});
+
+		mShadowMaterial->BindPSORuntimeModifyFunc([&]() {
+			RuntimePSOManager::Get().RegisterPSO(&mShadowMaterial->GetGraphicsPSO(), GET_SHADER_PATH("Shadow/ModelShadowVS.hlsl"), D3D12_SHVER_VERTEX_SHADER); });
+	}
+
+	if (!mMaskShadowMaterial->IsInitialized)
+	{
+		mMaskShadowMaterial->BindPSOCreateFunc([&](const PSOCommonProperty CommonProperty) {
+			GraphicsPSO& MaskShadowMaterialPSO = mMaskShadowMaterial->GetGraphicsPSO();
+			MaskShadowMaterialPSO.RuntimePSOCopy(mShadowMaterial->GetGraphicsPSO());
+			MaskShadowMaterialPSO.Finalize();
+			});
+
+		mShadowMaterial->BindPSORuntimeModifyFunc([&]() {
+			RuntimePSOManager::Get().RegisterPSO(&mMaskShadowMaterial->GetGraphicsPSO(), GET_SHADER_PATH("Shadow/ModelShadowVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+			RuntimePSOManager::Get().RegisterPSO(&mMaskShadowMaterial->GetGraphicsPSO(), GET_SHADER_PATH("Shadow/ModelShadowPS.hlsl"), D3D12_SHVER_PIXEL_SHADER); });
+	}
+
+	mShadowMaterial->IsInitialized = true;
+	mMaskShadowMaterial->IsInitialized = true;
+}
+
 void ShadowMap::BuildPSO(const PSOCommonProperty CommonProperty)
 {
-	mShadowPSO.SetRootSignature(*CommonProperty.pRootSignature);
-	mShadowPSO.SetRasterizerState(RasterizerShadowCW);
-	mShadowPSO.SetBlendState(BlendDisable);
-	mShadowPSO.SetDepthStencilState(DepthStateReadWrite);
-	mShadowPSO.SetSampleMask(0xFFFFFFFF);
-	mShadowPSO.SetInputLayout((UINT)InputLayout::PosNormalTangentTexc.size(), InputLayout::PosNormalTangentTexc.data());
-	mShadowPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-	mShadowPSO.SetVertexShader(g_pModelShadowVS, sizeof(g_pModelShadowVS));
-	mShadowPSO.SetRenderTargetFormats(0,&DefaultHDRColorFormat, DXGI_FORMAT_D32_FLOAT);
-	mShadowPSO.Finalize();
-
-	mMaskShadowPSO.RuntimePSOCopy(mShadowPSO);
-	mShadowPSO.SetPixelShader(g_pModelShadowPS, sizeof(g_pModelShadowPS));
-	mMaskShadowPSO.Finalize();
+	
 }
 
 void ShadowMap::OnResize(UINT newWidth, UINT newHeight)

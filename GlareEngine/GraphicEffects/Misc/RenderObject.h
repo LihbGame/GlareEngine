@@ -53,11 +53,11 @@ public:
 	void SetVisible(bool isVisible) { mIsVisible = isVisible; }
 	bool GetVisible()const { return mIsVisible; }
 
-	virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr) = 0;
-	virtual void DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificShadowPSO = nullptr) = 0;
-	virtual void Update(float DeltaTime, GraphicsContext* Context = nullptr) = 0;
-	virtual void DrawUI() = 0;
-	virtual void InitMaterial() = 0;
+	virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr) {};
+	virtual void DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificShadowPSO = nullptr) {};
+	virtual void Update(float DeltaTime, GraphicsContext* Context = nullptr) {};
+	virtual void DrawUI() {};
+	virtual void InitMaterial() {};
 
 public:
 	ObjectType mObjectType = ObjectType::None;

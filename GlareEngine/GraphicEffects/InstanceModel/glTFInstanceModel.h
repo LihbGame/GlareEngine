@@ -9,10 +9,6 @@ public:
 	glTFInstanceModel(unique_ptr<ModelInstance> model) :mModel(std::move(model)) { mObjectType = ObjectType::Model; };
 	~glTFInstanceModel() {};
 
-	virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr) {};
-
-	virtual void DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificShadowPSO = nullptr) {};
-
 	virtual void DrawUI() {}
 
 	virtual void InitMaterial();

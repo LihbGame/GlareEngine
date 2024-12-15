@@ -2,6 +2,7 @@
 #include "Engine/EngineUtility.h"
 #include "Graphics/ShadowBuffer.h"
 #include "Misc/RenderObject.h"
+#include "Engine/RenderMaterial.h"
 
 struct ShadowConstantBuffer 
 {
@@ -10,6 +11,7 @@ struct ShadowConstantBuffer
 
 
 class ShadowMap
+	: public RenderObject
 {
 public:
 	ShadowMap(XMFLOAT3 LightDirection, UINT width, UINT height);
@@ -18,10 +20,6 @@ public:
 	ShadowMap& operator=(const ShadowMap& rhs) = delete;
 	~ShadowMap() = default;
 
-#if USE_RUNTIME_PSO
-	static void InitRuntimePSO();
-#endif
-
 	UINT Width()const;
 	UINT Height()const;
 	D3D12_VIEWPORT Viewport()const;
@@ -29,7 +27,9 @@ public:
 
 	void Draw(GraphicsContext& Context, vector<RenderObject*> RenderObjects);
 
-	void DrawUI() {}
+	virtual void DrawUI() {}
+
+	virtual void InitMaterial();
 
 	static void BuildPSO(const PSOCommonProperty CommonProperty);
 
@@ -40,7 +40,7 @@ public:
 
 	int GetShadowMapIndex() { return mShadowMapIndex; }
 
-	void Update(float DeltaTime);
+	virtual void Update(float DeltaTime);
 
 	XMFLOAT3 GetShadowedLightDir()const { return mBaseLightDirection; }
 
@@ -61,9 +61,8 @@ public:
 	static DXGI_FORMAT mFormat;
 
 private:
-	//PSO
-	static GraphicsPSO mShadowPSO;
-	static GraphicsPSO mMaskShadowPSO;
+	RenderMaterial* mShadowMaterial = nullptr;
+	RenderMaterial* mMaskShadowMaterial = nullptr;
 
 	D3D12_VIEWPORT mViewport;
 	D3D12_RECT mScissorRect;

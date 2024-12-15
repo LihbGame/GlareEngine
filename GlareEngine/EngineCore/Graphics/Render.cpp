@@ -81,7 +81,6 @@ namespace GlareEngine
 
 		PRTManager::InitRuntimePSO();
 		Lighting::InitRuntimePSO();
-		ShadowMap::InitRuntimePSO();
 #endif
 		for (UINT index = 0; index < MAX_TEXTURE_HEAP_DESCRIPTORS; index++)
 		{
@@ -330,7 +329,6 @@ namespace GlareEngine
 		PRTManager::BuildPSO(gCommonProperty);
 		Lighting::BuildPSO(gCommonProperty);
 		glTFInstanceModel::BuildPSO(gCommonProperty);
-		ShadowMap::BuildPSO(gCommonProperty);
 		IBL::BuildPSOs(gCommonProperty);
 		Terrain::BuildPSO(gCommonProperty);
 		ScreenProcessing::BuildPSO(gCommonProperty);
