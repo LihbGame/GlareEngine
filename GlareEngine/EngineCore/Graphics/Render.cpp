@@ -58,8 +58,9 @@ namespace GlareEngine
 
 		D3D12_CPU_DESCRIPTOR_HANDLE g_GBufferSRV[GBUFFER_Count];
 
-		RenderMaterial DeferredLightingMaterial(L"Deferred Light CS");
-		RenderMaterial WireFrameMaterial(L"Deferred WireFrame CS");
+		RenderMaterial* DeferredLightingMaterial = nullptr;
+		RenderMaterial* WireFrameMaterial = nullptr;
+
 	}
 
 	void Render::Initialize(ID3D12GraphicsCommandList* CommandList,const Camera& camera)
@@ -67,15 +68,17 @@ namespace GlareEngine
 		if (s_Initialized)
 			return;
 
+		Lighting::InitializeResources(camera);
+		ScreenProcessing::Initialize(CommandList);
+
 		BuildRootSignature();
 		BuildCommonPSOs(gCommonProperty);
 		BuildPSOs();
 
 #if USE_RUNTIME_PSO
 		//After build PSOs
-		RenderMaterialManager::GetInstance().InitRuntimePSO();
+		BuildRuntimePSOs();
 
-		InstanceModel::InitRuntimePSO();
 		PRTManager::InitRuntimePSO();
 		Lighting::InitRuntimePSO();
 		ShadowMap::InitRuntimePSO();
@@ -88,14 +91,10 @@ namespace GlareEngine
 		gTextureHeap.Create(L"Scene Texture Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, MAX_TEXTURE_HEAP_DESCRIPTORS);
 
 		gSamplerHeap.Create(L"Scene Sampler Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 2048);
-		
-		Lighting::InitializeResources(camera);
-
-		ScreenProcessing::Initialize(CommandList);
 
 #if	USE_RUNTIME_PSO
-		RuntimePSOManager::Get().RegisterPSO(&DeferredLightingMaterial.GetComputePSO(), GET_SHADER_PATH("Lighting/LightingPassCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-		RuntimePSOManager::Get().RegisterPSO(&WireFrameMaterial.GetComputePSO(), GET_SHADER_PATH("Misc/WireframeCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+		RuntimePSOManager::Get().RegisterPSO(&DeferredLightingMaterial->GetComputePSO(), GET_SHADER_PATH("Lighting/LightingPassCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+		RuntimePSOManager::Get().RegisterPSO(&WireFrameMaterial->GetComputePSO(), GET_SHADER_PATH("Misc/WireframeCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
 #endif
 
 		SSAO::Initialize();
@@ -164,8 +163,10 @@ namespace GlareEngine
 
 	void Render::BuildCommonPSOs(const PSOCommonProperty CommonProperty)
 	{
-		InitComputeMaterial(gRootSignature, DeferredLightingMaterial, g_pLightingPassCS);
-		InitComputeMaterial(gRootSignature, WireFrameMaterial, g_pWireframeCS);
+		DeferredLightingMaterial = RenderMaterialManager::GetInstance().GetMaterial("Deferred Light CS",MaterialPipelineType::Compute);
+		WireFrameMaterial = RenderMaterialManager::GetInstance().GetMaterial("Deferred WireFrame CS", MaterialPipelineType::Compute);
+		InitComputeMaterial(gRootSignature, (*DeferredLightingMaterial), g_pLightingPassCS);
+		InitComputeMaterial(gRootSignature, (*WireFrameMaterial), g_pWireframeCS);
 
 		//assert(gCommonPSOs.size() == 0);
 
@@ -256,11 +257,11 @@ namespace GlareEngine
 		Context.SetRootSignature(gRootSignature);
 		if (EngineGlobal::gCurrentScene->IsWireFrame)
 		{
-			Context.SetPipelineState(GET_PSO(WireFrameMaterial.GetComputePSO()));
+			Context.SetPipelineState(WireFrameMaterial->GetRuntimePSO());
 		}
 		else
 		{
-			Context.SetPipelineState(GET_PSO(DeferredLightingMaterial.GetComputePSO()));
+			Context.SetPipelineState(DeferredLightingMaterial->GetRuntimePSO());
 		}
 		//set descriptor heap 
 		Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gTextureHeap.GetHeapPointer());
@@ -326,7 +327,6 @@ namespace GlareEngine
 	{
 		RenderMaterialManager::GetInstance().BuildMaterialsPSO(gCommonProperty);
 
-		InstanceModel::BuildPSO(gCommonProperty);
 		PRTManager::BuildPSO(gCommonProperty);
 		Lighting::BuildPSO(gCommonProperty);
 		glTFInstanceModel::BuildPSO(gCommonProperty);
@@ -334,6 +334,11 @@ namespace GlareEngine
 		IBL::BuildPSOs(gCommonProperty);
 		Terrain::BuildPSO(gCommonProperty);
 		ScreenProcessing::BuildPSO(gCommonProperty);
+	}
+
+	void Render::BuildRuntimePSOs()
+	{
+		RenderMaterialManager::GetInstance().InitRuntimePSO();
 	}
 
 }

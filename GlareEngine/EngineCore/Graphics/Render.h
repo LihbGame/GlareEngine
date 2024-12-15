@@ -91,6 +91,7 @@ namespace GlareEngine
 		uint8_t GetPSO(uint16_t psoFlags);
 		void BuildRootSignature();
 		void BuildPSOs();
+		void BuildRuntimePSOs();
 		void BuildCommonPSOs(const PSOCommonProperty CommonProperty);
 		void CopyTextureHeap();
 		void CopyBufferDescriptors(const D3D12_CPU_DESCRIPTOR_HANDLE* pSrcDescriptors, uint32_t Size, const D3D12_CPU_DESCRIPTOR_HANDLE* pDestDescriptors);

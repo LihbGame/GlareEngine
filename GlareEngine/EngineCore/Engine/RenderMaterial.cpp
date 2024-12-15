@@ -15,12 +15,18 @@ void RenderMaterial::BeginInitializeComputeMaterial(const RootSignature& rootSig
 
 void RenderMaterial::BuildMaterialPSO(const PSOCommonProperty CommonProperty)
 {
-	mBuildPSOFunction(CommonProperty);
+	if (bool(mBuildPSOFunction) != false)
+	{
+		mBuildPSOFunction(CommonProperty);
+	}
 }
 
 void RenderMaterial::InitRuntimePSO()
 {
-	mRuntimeModifyPSOFunction();
+	if (bool(mRuntimeModifyPSOFunction) != false)
+	{
+		mRuntimeModifyPSOFunction();
+	}
 }
 
 PSO& RenderMaterial::GetRuntimePSO()
@@ -35,11 +41,11 @@ PSO& RenderMaterial::GetRuntimePSO()
 	}
 }
 
-RenderMaterial* RenderMaterialManager::GetMaterial(string MaterialName)
+RenderMaterial* RenderMaterialManager::GetMaterial(string MaterialName, MaterialPipelineType PipelineType)
 {
 	if (mRenderMaterialMap.find(MaterialName) == mRenderMaterialMap.end())
 	{
-		mRenderMaterialMap[MaterialName] = RenderMaterial(StringToWString(MaterialName));
+		mRenderMaterialMap[MaterialName] = RenderMaterial(StringToWString(MaterialName), PipelineType);
 	}
 	return &mRenderMaterialMap[MaterialName];
 }

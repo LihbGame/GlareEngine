@@ -161,18 +161,18 @@ namespace GlareEngine
 		RootSignature m_FillLightRootSig;
 
 		//Four tiled light types
-		RenderMaterial m_FillLightGridCS_8(L"Fill Light Grid 8 CS");
-		RenderMaterial m_FillLightGridCS_16(L"Fill Light Grid 16 CS");
-		RenderMaterial m_FillLightGridCS_24(L"Fill Light Grid 24 CS");
-		RenderMaterial m_FillLightGridCS_32(L"Fill Light Grid 36 CS");
+		RenderMaterial* m_FillLightGridCS_8 = nullptr;
+		RenderMaterial* m_FillLightGridCS_16 = nullptr;
+		RenderMaterial* m_FillLightGridCS_24 = nullptr;
+		RenderMaterial* m_FillLightGridCS_32 = nullptr;
 
 		//Cluster Material
-		RenderMaterial m_BuildClusterCS(L"Build Cluster CS");
-		RenderMaterial m_MaskUnUsedClusterCS(L"Mask UnUsed Cluster");
-		RenderMaterial m_ClusterLightCullCS(L"Cluster Light Cull");
+		RenderMaterial* m_BuildClusterCS = nullptr;
+		RenderMaterial* m_MaskUnUsedClusterCS = nullptr;
+		RenderMaterial* m_ClusterLightCullCS = nullptr;
 
 		//AreaLight Material
-		RenderMaterial AreaLightMaterial(L"Area Light Material");
+		RenderMaterial* AreaLightMaterial = nullptr;
 
 		LightData m_LightData[MaxLights];
 		RectAreaLightData m_RectAreaLightData[MaxAreaLights];
@@ -226,13 +226,24 @@ void Lighting::InitializeResources(const Camera& camera)
 	m_FillLightRootSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 5);
 	m_FillLightRootSig.Finalize(L"FillLightRS");
 
-	InitComputeMaterial(m_FillLightRootSig, m_FillLightGridCS_8, g_pFillLightGrid_8_CS);
-	InitComputeMaterial(m_FillLightRootSig, m_FillLightGridCS_16, g_pFillLightGrid_16_CS);
-	InitComputeMaterial(m_FillLightRootSig, m_FillLightGridCS_24, g_pFillLightGrid_24_CS);
-	InitComputeMaterial(m_FillLightRootSig, m_FillLightGridCS_32, g_pFillLightGrid_32_CS);
-	InitComputeMaterial(m_FillLightRootSig, m_BuildClusterCS, g_pBuildClusterCS);
-	InitComputeMaterial(m_FillLightRootSig, m_MaskUnUsedClusterCS, g_pMaskUnUsedClusterCS);
-	InitComputeMaterial(m_FillLightRootSig, m_ClusterLightCullCS, g_pClusterLightCullCS);
+	m_FillLightGridCS_8 = RenderMaterialManager::GetInstance().GetMaterial("Fill Light Grid 8 CS", MaterialPipelineType::Compute);
+	m_FillLightGridCS_16 = RenderMaterialManager::GetInstance().GetMaterial("Fill Light Grid 16 CS", MaterialPipelineType::Compute);
+	m_FillLightGridCS_24 = RenderMaterialManager::GetInstance().GetMaterial("Fill Light Grid 24 CS", MaterialPipelineType::Compute);
+	m_FillLightGridCS_32 = RenderMaterialManager::GetInstance().GetMaterial("Fill Light Grid 36 CS", MaterialPipelineType::Compute);
+	
+	m_BuildClusterCS = RenderMaterialManager::GetInstance().GetMaterial("Build Cluster CS", MaterialPipelineType::Compute);
+	m_MaskUnUsedClusterCS = RenderMaterialManager::GetInstance().GetMaterial("Mask UnUsed Cluster", MaterialPipelineType::Compute);
+	m_ClusterLightCullCS = RenderMaterialManager::GetInstance().GetMaterial("Cluster Light Cull", MaterialPipelineType::Compute);
+
+	AreaLightMaterial = RenderMaterialManager::GetInstance().GetMaterial("Area Light Material");
+
+	InitComputeMaterial(m_FillLightRootSig, (*m_FillLightGridCS_8), g_pFillLightGrid_8_CS);
+	InitComputeMaterial(m_FillLightRootSig, (*m_FillLightGridCS_16), g_pFillLightGrid_16_CS);
+	InitComputeMaterial(m_FillLightRootSig, (*m_FillLightGridCS_24), g_pFillLightGrid_24_CS);
+	InitComputeMaterial(m_FillLightRootSig, (*m_FillLightGridCS_32), g_pFillLightGrid_32_CS);
+	InitComputeMaterial(m_FillLightRootSig, (*m_BuildClusterCS), g_pBuildClusterCS);
+	InitComputeMaterial(m_FillLightRootSig, (*m_MaskUnUsedClusterCS), g_pMaskUnUsedClusterCS);
+	InitComputeMaterial(m_FillLightRootSig, (*m_ClusterLightCullCS), g_pClusterLightCullCS);
 
 	ClusterTileSize = XMFLOAT2(LightClusterGridDimension, LightClusterGridDimension);
 
@@ -467,10 +478,10 @@ void Lighting::FillLightGrid_Internal(GraphicsContext& gfxContext, const Camera&
 
 	switch ((int)LightGridDimension)
 	{
-	case  8: Context.SetPipelineState(m_FillLightGridCS_8.GetComputePSO()); break;
-	case 16: Context.SetPipelineState(m_FillLightGridCS_16.GetComputePSO()); break;
-	case 24: Context.SetPipelineState(m_FillLightGridCS_24.GetComputePSO()); break;
-	case 32: Context.SetPipelineState(m_FillLightGridCS_32.GetComputePSO()); break;
+	case  8: Context.SetPipelineState(m_FillLightGridCS_8->GetComputePSO()); break;
+	case 16: Context.SetPipelineState(m_FillLightGridCS_16->GetComputePSO()); break;
+	case 24: Context.SetPipelineState(m_FillLightGridCS_24->GetComputePSO()); break;
+	case 32: Context.SetPipelineState(m_FillLightGridCS_32->GetComputePSO()); break;
 	default: assert(false); break;
 	}
 
@@ -526,8 +537,8 @@ void Lighting::BuildCluster(GraphicsContext& gfxContext, const MainConstants& ma
 		csConstants.ScreenHeight = g_SceneColorBuffer.GetHeight();
 		csConstants.farPlane = mainConstants.FarZ;
 
-		Context.SetRootSignature(*m_BuildClusterCS.GetRootSignature());
-		Context.SetPipelineState(m_BuildClusterCS.GetComputePSO());
+		Context.SetRootSignature(*m_BuildClusterCS->GetRootSignature());
+		Context.SetPipelineState(m_BuildClusterCS->GetComputePSO());
 		Context.SetDynamicConstantBufferView(0, sizeof(ClusterBuildConstants), &csConstants);
 		Context.SetDynamicDescriptor(2, 0, m_LightCluster.GetUAV());
 
@@ -551,8 +562,8 @@ void Lighting::MaskUnUsedCluster(GraphicsContext& gfxContext, const MainConstant
 	csConstants.ScreenWidth = g_SceneColorBuffer.GetWidth();
 	csConstants.tileSizes = ClusterTiles;
 
-	Context.SetRootSignature(*m_MaskUnUsedClusterCS.GetRootSignature());
-	Context.SetPipelineState(m_MaskUnUsedClusterCS.GetComputePSO());
+	Context.SetRootSignature(*m_MaskUnUsedClusterCS->GetRootSignature());
+	Context.SetPipelineState(m_MaskUnUsedClusterCS->GetComputePSO());
 	Context.SetDynamicConstantBufferView(0, sizeof(UnUsedClusterMaskConstant), &csConstants);
 	Context.SetDynamicDescriptor(2, 0, m_UnusedClusterMask.GetUAV());
 	Context.SetDynamicDescriptor(1, 0, ScreenProcessing::GetLinearDepthBuffer()->GetSRV());
@@ -564,8 +575,8 @@ void Lighting::ClusterLightingCulling(GraphicsContext& gfxContext)
 	ScopedTimer _prof(L"Cluster Light Culling", gfxContext);
 	ComputeContext& Context = gfxContext.GetComputeContext();
 
-	Context.SetRootSignature(*m_ClusterLightCullCS.GetRootSignature());
-	Context.SetPipelineState(m_ClusterLightCullCS.GetComputePSO());
+	Context.SetRootSignature(*m_ClusterLightCullCS->GetRootSignature());
+	Context.SetPipelineState(m_ClusterLightCullCS->GetComputePSO());
 
 	ClusterCulling csConstants;
 	csConstants.TileSizes = ClusterTiles;
@@ -672,7 +683,7 @@ void Lighting::RenderAreaLightMesh(GraphicsContext& context)
 	//context.SetDynamicSRV((int)RootSignatureType::eMaterialConstantData, sizeof(MaterialConstant) * MaterialData.size(), MaterialData.data());
 	context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 	context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
-	mQuadAreaLightModel->Draw(context, &AreaLightMaterial.GetGraphicsPSO());
+	mQuadAreaLightModel->Draw(context, &AreaLightMaterial->GetGraphicsPSO());
 }
 
 void Lighting::BuildPSO(const PSOCommonProperty CommonProperty)
@@ -680,7 +691,7 @@ void Lighting::BuildPSO(const PSOCommonProperty CommonProperty)
 	D3D12_RASTERIZER_DESC Rasterizer = RasterizerTwoSidedCw;
 	D3D12_BLEND_DESC Blend = BlendDisable;
 
-	GraphicsPSO& AreaLightPSO = AreaLightMaterial.GetGraphicsPSO();
+	GraphicsPSO& AreaLightPSO = AreaLightMaterial->GetGraphicsPSO();
 
 	if (CommonProperty.IsWireframe)
 	{
@@ -724,7 +735,7 @@ void Lighting::BuildPSO(const PSOCommonProperty CommonProperty)
 #if USE_RUNTIME_PSO
 void Lighting::InitRuntimePSO()
 {
-	RuntimePSOManager::Get().RegisterPSO(&AreaLightMaterial.GetGraphicsPSO(), GET_SHADER_PATH("Lighting/AreaLightMeshVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&AreaLightMaterial.GetGraphicsPSO(), GET_SHADER_PATH("Lighting/AreaLightMeshPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&AreaLightMaterial->GetGraphicsPSO(), GET_SHADER_PATH("Lighting/AreaLightMeshVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&AreaLightMaterial->GetGraphicsPSO(), GET_SHADER_PATH("Lighting/AreaLightMeshPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
 }
 #endif

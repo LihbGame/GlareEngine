@@ -464,6 +464,15 @@ void Scene::ForwardRendering(RenderPipelineType ForwardRenderPipeline)
 {
 	if (LoadingFinish)
 	{
+		//Flush pso after loading
+		static bool flushPSO = true;
+		if (flushPSO)
+		{
+			Render::BuildPSOs();
+			Render::BuildRuntimePSOs();
+			flushPSO = false;
+		}
+
 		Render::SetCommonSRVHeapOffset(GBUFFER_TEXTURE_REGISTER_COUNT);
 
 		if (ForwardRenderPipeline == RenderPipelineType::FR)
@@ -664,6 +673,15 @@ void Scene::DeferredRendering(RenderPipelineType DeferredRenderPipeline)
 {
 	if (LoadingFinish)
 	{
+		//Flush pso after loading
+		static bool flushPSO = true;
+		if (flushPSO)
+		{
+			Render::BuildPSOs();
+			Render::BuildRuntimePSOs();
+			flushPSO = false;
+		}
+
 		GraphicsContext& Context = GraphicsContext::Begin(L"Scene Render");
 
 		Render::SetCommonSRVHeapOffset(GBUFFER_TEXTURE_REGISTER_COUNT);
@@ -722,15 +740,6 @@ void Scene::DeferredRendering(RenderPipelineType DeferredRenderPipeline)
 
 			CopyBufferDescriptors(&g_SSAOFullScreen.GetSRV(), 1, &gTextureHeap[Render::GetCommonSRVHeapOffset()]);
 			Render::SetCommonSRVHeapOffset(Render::GetCommonSRVHeapOffset() + 1);
-		}
-
-
-		//Flush pso after loading
-		static bool flushPSO = true;
-		if (flushPSO)
-		{
-			Render::BuildPSOs();
-			flushPSO = false;
 		}
 
 		if (DeferredRenderPipeline == RenderPipelineType::TBDR)

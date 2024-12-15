@@ -24,9 +24,9 @@ namespace TemporalAA
 
 	bool TriggerReset = false;
 
-	RenderMaterial TemporalAAMaterial(L"Temporal AA CS");
-	RenderMaterial ResolveTAAMaterial(L"Sharpen TAA CS");
-	RenderMaterial SharpenTAAMaterial(L"Resolve TAA CS");
+	RenderMaterial* TemporalAAMaterial = nullptr;
+	RenderMaterial* ResolveTAAMaterial = nullptr;
+	RenderMaterial* SharpenTAAMaterial = nullptr;
 
 	uint32_t mFrameIndex = 0;
 	uint32_t mFrameIndexMod2 = 0;
@@ -149,7 +149,7 @@ void TemporalAA::ApplyTemporalAA(ComputeContext& Context,ColorBuffer& scenecolor
 
 	Context.SetRootSignature(ScreenProcessing::GetRootSignature());
 
-	Context.SetPipelineState(GET_PSO(TemporalAAMaterial.GetComputePSO()));
+	Context.SetPipelineState(GET_PSO(TemporalAAMaterial->GetComputePSO()));
 
 	Context.SetDynamicConstantBufferView(3, sizeof(TemporalAA::TAAConstant), &TemporalAAConstant);
 
@@ -171,14 +171,17 @@ void TemporalAA::ApplyTemporalAA(ComputeContext& Context,ColorBuffer& scenecolor
 
 void TemporalAA::Initialize(void)
 {
-	InitComputeMaterial(ScreenProcessing::GetRootSignature(), TemporalAAMaterial, g_pTemporalAACS);
-	InitComputeMaterial(ScreenProcessing::GetRootSignature(), SharpenTAAMaterial, g_pSharpenTAACS);
-	InitComputeMaterial(ScreenProcessing::GetRootSignature(), ResolveTAAMaterial, g_pResolveTAACS);
+	TemporalAAMaterial = RenderMaterialManager::GetInstance().GetMaterial("Temporal AA CS", MaterialPipelineType::Compute);
+	ResolveTAAMaterial = RenderMaterialManager::GetInstance().GetMaterial("Resolve TAA CS", MaterialPipelineType::Compute);
+	SharpenTAAMaterial = RenderMaterialManager::GetInstance().GetMaterial("Sharpen TAA CS", MaterialPipelineType::Compute);
+	InitComputeMaterial(ScreenProcessing::GetRootSignature(), (*TemporalAAMaterial), g_pTemporalAACS);
+	InitComputeMaterial(ScreenProcessing::GetRootSignature(), (*SharpenTAAMaterial), g_pSharpenTAACS);
+	InitComputeMaterial(ScreenProcessing::GetRootSignature(), (*ResolveTAAMaterial), g_pResolveTAACS);
 
 #if	USE_RUNTIME_PSO
-	RuntimePSOManager::Get().RegisterPSO(&ResolveTAAMaterial.GetComputePSO(), GET_SHADER_PATH("PostProcessing/ResolveTAACS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&SharpenTAAMaterial.GetComputePSO(), GET_SHADER_PATH("PostProcessing/SharpenTAACS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&TemporalAAMaterial.GetComputePSO(), GET_SHADER_PATH("PostProcessing/TemporalAACS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&ResolveTAAMaterial->GetComputePSO(), GET_SHADER_PATH("PostProcessing/ResolveTAACS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&SharpenTAAMaterial->GetComputePSO(), GET_SHADER_PATH("PostProcessing/SharpenTAACS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+	RuntimePSOManager::Get().RegisterPSO(&TemporalAAMaterial->GetComputePSO(), GET_SHADER_PATH("PostProcessing/TemporalAACS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
 #endif
 }
 
@@ -273,7 +276,7 @@ void TemporalAA::SharpenImage(ComputeContext& Context, ColorBuffer& TemporalColo
 	else
 		Sharpness= TAASharpness;
 
-	Context.SetPipelineState(Sharpness >= 0.001f ? GET_PSO(SharpenTAAMaterial.GetComputePSO()) : GET_PSO(ResolveTAAMaterial.GetComputePSO()));
+	Context.SetPipelineState(Sharpness >= 0.001f ? GET_PSO(SharpenTAAMaterial->GetComputePSO()) : GET_PSO(ResolveTAAMaterial->GetComputePSO()));
 	Context.SetConstants(0, 1.0f + Sharpness, 0.25f * Sharpness);
 	Context.SetDynamicDescriptor(2, 0, TemporalColor.GetSRV());
 	Context.SetDynamicDescriptor(1, 0, g_SceneColorBuffer.GetUAV());

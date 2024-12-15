@@ -24,6 +24,8 @@ namespace GlareEngine
 		Compute
 	};
 
+
+
 	class RenderMaterial
 	{
 	public:
@@ -66,12 +68,12 @@ namespace GlareEngine
 		const RootSignature* m_pRootSignature = nullptr;
 		//Material Parameters
 		MaterialShaderType mMaterialType = MaterialShaderType::DefaultLight;
-	
 	};
 
 
 	class RenderMaterialManager
 	{
+		friend class RenderMaterial;
 	public:
 		static RenderMaterialManager& GetInstance()
 		{
@@ -79,10 +81,11 @@ namespace GlareEngine
 			return renderMaterialManager;
 		}
 
-		RenderMaterial* GetMaterial(string MaterialName);
+		RenderMaterial* GetMaterial(string MaterialName, MaterialPipelineType PipelineType = MaterialPipelineType::Graphics);
 
 		void BuildMaterialsPSO(const PSOCommonProperty CommonProperty);
 		void InitRuntimePSO();
+
 	private:
 		RenderMaterialManager() {};
 		unordered_map<string, RenderMaterial> mRenderMaterialMap;

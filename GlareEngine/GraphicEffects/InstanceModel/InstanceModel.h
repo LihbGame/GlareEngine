@@ -4,6 +4,7 @@
 #include "Engine/GeometryGenerator.h"
 #include "Engine/Vertex.h"
 #include "Misc/RenderObject.h"
+#include "Engine/RenderMaterial.h"
 
 class InstanceModel 
 	:public RenderObject
@@ -20,16 +21,10 @@ public:
 
 	virtual void InitMaterial();
 
-	static void BuildPSO(const PSOCommonProperty CommonProperty);
-
-#if USE_RUNTIME_PSO
-	static void InitRuntimePSO();
-#endif
-
 	void Update(float dt, GraphicsContext* Context = nullptr) {}
+
 private:
-	//PSO
-	static GraphicsPSO mPSO;
+	RenderMaterial* mInstanceModelMaterial = nullptr;
 
 	InstanceRenderData mInstanceData;
 };
