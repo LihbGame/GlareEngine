@@ -226,24 +226,8 @@ void Lighting::InitializeResources(const Camera& camera)
 	m_FillLightRootSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 5);
 	m_FillLightRootSig.Finalize(L"FillLightRS");
 
-	m_FillLightGridCS_8 = RenderMaterialManager::GetInstance().GetMaterial("Fill Light Grid 8 CS", MaterialPipelineType::Compute);
-	m_FillLightGridCS_16 = RenderMaterialManager::GetInstance().GetMaterial("Fill Light Grid 16 CS", MaterialPipelineType::Compute);
-	m_FillLightGridCS_24 = RenderMaterialManager::GetInstance().GetMaterial("Fill Light Grid 24 CS", MaterialPipelineType::Compute);
-	m_FillLightGridCS_32 = RenderMaterialManager::GetInstance().GetMaterial("Fill Light Grid 36 CS", MaterialPipelineType::Compute);
-	
-	m_BuildClusterCS = RenderMaterialManager::GetInstance().GetMaterial("Build Cluster CS", MaterialPipelineType::Compute);
-	m_MaskUnUsedClusterCS = RenderMaterialManager::GetInstance().GetMaterial("Mask UnUsed Cluster", MaterialPipelineType::Compute);
-	m_ClusterLightCullCS = RenderMaterialManager::GetInstance().GetMaterial("Cluster Light Cull", MaterialPipelineType::Compute);
-
-	AreaLightMaterial = RenderMaterialManager::GetInstance().GetMaterial("Area Light Material");
-
-	InitComputeMaterial(m_FillLightRootSig, (*m_FillLightGridCS_8), g_pFillLightGrid_8_CS);
-	InitComputeMaterial(m_FillLightRootSig, (*m_FillLightGridCS_16), g_pFillLightGrid_16_CS);
-	InitComputeMaterial(m_FillLightRootSig, (*m_FillLightGridCS_24), g_pFillLightGrid_24_CS);
-	InitComputeMaterial(m_FillLightRootSig, (*m_FillLightGridCS_32), g_pFillLightGrid_32_CS);
-	InitComputeMaterial(m_FillLightRootSig, (*m_BuildClusterCS), g_pBuildClusterCS);
-	InitComputeMaterial(m_FillLightRootSig, (*m_MaskUnUsedClusterCS), g_pMaskUnUsedClusterCS);
-	InitComputeMaterial(m_FillLightRootSig, (*m_ClusterLightCullCS), g_pClusterLightCullCS);
+	//init shader
+	InitMaterial();
 
 	ClusterTileSize = XMFLOAT2(LightClusterGridDimension, LightClusterGridDimension);
 
@@ -674,6 +658,81 @@ void Lighting::Shutdown(void)
 	m_UnusedClusterMask.Destroy();
 }
 
+void Lighting::InitMaterial()
+{
+	m_FillLightGridCS_8 = RenderMaterialManager::GetInstance().GetMaterial("Fill Light Grid 8 CS", MaterialPipelineType::Compute);
+	m_FillLightGridCS_16 = RenderMaterialManager::GetInstance().GetMaterial("Fill Light Grid 16 CS", MaterialPipelineType::Compute);
+	m_FillLightGridCS_24 = RenderMaterialManager::GetInstance().GetMaterial("Fill Light Grid 24 CS", MaterialPipelineType::Compute);
+	m_FillLightGridCS_32 = RenderMaterialManager::GetInstance().GetMaterial("Fill Light Grid 36 CS", MaterialPipelineType::Compute);
+
+	m_BuildClusterCS = RenderMaterialManager::GetInstance().GetMaterial("Build Cluster CS", MaterialPipelineType::Compute);
+	m_MaskUnUsedClusterCS = RenderMaterialManager::GetInstance().GetMaterial("Mask UnUsed Cluster", MaterialPipelineType::Compute);
+	m_ClusterLightCullCS = RenderMaterialManager::GetInstance().GetMaterial("Cluster Light Cull", MaterialPipelineType::Compute);
+
+	InitComputeMaterial(m_FillLightRootSig, (*m_FillLightGridCS_8), g_pFillLightGrid_8_CS);
+	InitComputeMaterial(m_FillLightRootSig, (*m_FillLightGridCS_16), g_pFillLightGrid_16_CS);
+	InitComputeMaterial(m_FillLightRootSig, (*m_FillLightGridCS_24), g_pFillLightGrid_24_CS);
+	InitComputeMaterial(m_FillLightRootSig, (*m_FillLightGridCS_32), g_pFillLightGrid_32_CS);
+	InitComputeMaterial(m_FillLightRootSig, (*m_BuildClusterCS), g_pBuildClusterCS);
+	InitComputeMaterial(m_FillLightRootSig, (*m_MaskUnUsedClusterCS), g_pMaskUnUsedClusterCS);
+	InitComputeMaterial(m_FillLightRootSig, (*m_ClusterLightCullCS), g_pClusterLightCullCS);
+
+	AreaLightMaterial = RenderMaterialManager::GetInstance().GetMaterial("Area Light Material");
+	if (!AreaLightMaterial->IsInitialized)
+	{
+		AreaLightMaterial->BindPSOCreateFunc([&](const PSOCommonProperty CommonProperty) {
+			D3D12_RASTERIZER_DESC Rasterizer = RasterizerTwoSidedCw;
+			D3D12_BLEND_DESC Blend = BlendDisable;
+
+			GraphicsPSO& AreaLightPSO = AreaLightMaterial->GetGraphicsPSO();
+
+			if (CommonProperty.IsWireframe)
+			{
+				Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
+				Rasterizer.FillMode = D3D12_FILL_MODE_WIREFRAME;
+			}
+			if (CommonProperty.IsMSAA)
+			{
+				Rasterizer.MultisampleEnable = true;
+				Blend.AlphaToCoverageEnable = true;
+			}
+			AreaLightPSO.SetRootSignature(*CommonProperty.pRootSignature);
+			AreaLightPSO.SetRasterizerState(Rasterizer);
+			AreaLightPSO.SetBlendState(Blend);
+			if (REVERSE_Z)
+			{
+				AreaLightPSO.SetDepthStencilState(DepthStateReadWriteReversed);
+			}
+			else
+			{
+				AreaLightPSO.SetDepthStencilState(DepthStateReadWrite);
+			}
+
+			AreaLightPSO.SetSampleMask(0xFFFFFFFF);
+			AreaLightPSO.SetInputLayout((UINT)InputLayout::InstancePosNormalTangentTexc.size(), InputLayout::InstancePosNormalTangentTexc.data());
+			AreaLightPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+			if (CommonProperty.IsWireframe)
+			{
+				AreaLightPSO.SetPixelShader(g_pWireframePS, sizeof(g_pWireframePS));
+				AreaLightPSO.SetDepthStencilState(DepthStateDisabled);
+			}
+			else
+			{
+				AreaLightPSO.SetVertexShader(g_pAreaLightMeshVS, sizeof(g_pAreaLightMeshVS));
+				AreaLightPSO.SetPixelShader(g_pAreaLightMeshPS, sizeof(g_pAreaLightMeshPS));
+			}
+			AreaLightPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
+			AreaLightPSO.Finalize();
+			});
+
+		AreaLightMaterial->BindPSORuntimeModifyFunc([&]() {
+			RuntimePSOManager::Get().RegisterPSO(&AreaLightMaterial->GetGraphicsPSO(), GET_SHADER_PATH("Lighting/AreaLightMeshVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+			RuntimePSOManager::Get().RegisterPSO(&AreaLightMaterial->GetGraphicsPSO(), GET_SHADER_PATH("Lighting/AreaLightMeshPS.hlsl"), D3D12_SHVER_PIXEL_SHADER); });
+
+		AreaLightMaterial->IsInitialized = true;
+	}
+}
+
 void Lighting::RenderAreaLightMesh(GraphicsContext& context)
 {
 	ScopedTimer AreaLightScope(L"Area Light Mesh", context);
@@ -685,57 +744,3 @@ void Lighting::RenderAreaLightMesh(GraphicsContext& context)
 	context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
 	mQuadAreaLightModel->Draw(context, &AreaLightMaterial->GetGraphicsPSO());
 }
-
-void Lighting::BuildPSO(const PSOCommonProperty CommonProperty)
-{
-	D3D12_RASTERIZER_DESC Rasterizer = RasterizerTwoSidedCw;
-	D3D12_BLEND_DESC Blend = BlendDisable;
-
-	GraphicsPSO& AreaLightPSO = AreaLightMaterial->GetGraphicsPSO();
-
-	if (CommonProperty.IsWireframe)
-	{
-		Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
-		Rasterizer.FillMode = D3D12_FILL_MODE_WIREFRAME;
-	}
-	if (CommonProperty.IsMSAA)
-	{
-		Rasterizer.MultisampleEnable = true;
-		Blend.AlphaToCoverageEnable = true;
-	}
-	AreaLightPSO.SetRootSignature(*CommonProperty.pRootSignature);
-	AreaLightPSO.SetRasterizerState(Rasterizer);
-	AreaLightPSO.SetBlendState(Blend);
-	if (REVERSE_Z)
-	{
-		AreaLightPSO.SetDepthStencilState(DepthStateReadWriteReversed);
-	}
-	else
-	{
-		AreaLightPSO.SetDepthStencilState(DepthStateReadWrite);
-	}
-
-	AreaLightPSO.SetSampleMask(0xFFFFFFFF);
-	AreaLightPSO.SetInputLayout((UINT)InputLayout::InstancePosNormalTangentTexc.size(), InputLayout::InstancePosNormalTangentTexc.data());
-	AreaLightPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-	if (CommonProperty.IsWireframe)
-	{
-		AreaLightPSO.SetPixelShader(g_pWireframePS, sizeof(g_pWireframePS));
-		AreaLightPSO.SetDepthStencilState(DepthStateDisabled);
-	}
-	else
-	{
-		AreaLightPSO.SetVertexShader(g_pAreaLightMeshVS, sizeof(g_pAreaLightMeshVS));
-		AreaLightPSO.SetPixelShader(g_pAreaLightMeshPS, sizeof(g_pAreaLightMeshPS));
-	}
-	AreaLightPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
-	AreaLightPSO.Finalize();
-}
-
-#if USE_RUNTIME_PSO
-void Lighting::InitRuntimePSO()
-{
-	RuntimePSOManager::Get().RegisterPSO(&AreaLightMaterial->GetGraphicsPSO(), GET_SHADER_PATH("Lighting/AreaLightMeshVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&AreaLightMaterial->GetGraphicsPSO(), GET_SHADER_PATH("Lighting/AreaLightMeshPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
-}
-#endif

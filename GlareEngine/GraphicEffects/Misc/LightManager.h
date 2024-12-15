@@ -72,14 +72,11 @@ namespace GlareEngine
 		void UpdateViewSpacePosition(Camera& camera);
 		void UpdateLightingDataChange(bool IsChanged);
 
-#if USE_RUNTIME_PSO
-		void InitRuntimePSO();
-#endif
-		void BuildPSO(const PSOCommonProperty CommonProperty);
-
 		void RenderAreaLightMesh(GraphicsContext& context);
 
 		void Shutdown(void);
+
+		void InitMaterial();
 	}
 }
 

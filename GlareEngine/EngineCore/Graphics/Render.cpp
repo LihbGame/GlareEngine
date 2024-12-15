@@ -70,6 +70,7 @@ namespace GlareEngine
 
 		Lighting::InitializeResources(camera);
 		ScreenProcessing::Initialize(CommandList);
+		SSAO::Initialize();
 
 		BuildRootSignature();
 		BuildCommonPSOs(gCommonProperty);
@@ -80,7 +81,6 @@ namespace GlareEngine
 		BuildRuntimePSOs();
 
 		PRTManager::InitRuntimePSO();
-		Lighting::InitRuntimePSO();
 #endif
 		for (UINT index = 0; index < MAX_TEXTURE_HEAP_DESCRIPTORS; index++)
 		{
@@ -95,9 +95,6 @@ namespace GlareEngine
 		RuntimePSOManager::Get().RegisterPSO(&DeferredLightingMaterial->GetComputePSO(), GET_SHADER_PATH("Lighting/LightingPassCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
 		RuntimePSOManager::Get().RegisterPSO(&WireFrameMaterial->GetComputePSO(), GET_SHADER_PATH("Misc/WireframeCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
 #endif
-
-		SSAO::Initialize();
-
 		s_Initialized = true;
 	}
 
@@ -327,7 +324,6 @@ namespace GlareEngine
 		RenderMaterialManager::GetInstance().BuildMaterialsPSO(gCommonProperty);
 
 		PRTManager::BuildPSO(gCommonProperty);
-		Lighting::BuildPSO(gCommonProperty);
 		glTFInstanceModel::BuildPSO(gCommonProperty);
 		IBL::BuildPSOs(gCommonProperty);
 		Terrain::BuildPSO(gCommonProperty);
