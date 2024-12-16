@@ -20,7 +20,7 @@
 #include "CompiledShaders/BufferCopyPS.h"
 
 // 该宏决定是否检测是否有 HDR 显示并启用 HDR10 输出.
-// 目前，在启用 HDR 显示的情况下，像素放大功能被破坏.
+// 目前,在启用 HDR 显示的情况下,像素放大功能被破坏.
 #define CONDITIONALLY_ENABLE_HDR_OUTPUT 1
 
 #define SWAP_CHAIN_BUFFER_COUNT 3

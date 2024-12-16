@@ -482,7 +482,7 @@ namespace GlareEngine
 	{
 		assert(GlareEngine::Math::IsAligned(_Dest, 16));
 
-		register const __m128i Source = _mm_castps_si128(FillVector);
+		const __m128i Source = _mm_castps_si128(FillVector);
 		__m128i* __restrict Dest = (__m128i * __restrict)_Dest;
 
 		switch (((size_t)Dest >> 4) & 3)
