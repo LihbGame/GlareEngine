@@ -86,6 +86,7 @@ namespace GlareEngine
 	{
 		//Initialize Engine Render
 		void Initialize(ID3D12GraphicsCommandList* CommandList, const Camera& camera);
+		void InitializePSO();
 		void ShutDown();
 
 		uint8_t GetPSO(uint16_t psoFlags);

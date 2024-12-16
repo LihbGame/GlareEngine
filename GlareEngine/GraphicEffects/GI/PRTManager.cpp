@@ -13,11 +13,10 @@
 #include "CompiledShaders/SHProbeDebugPS.h"
 #include "CompiledShaders/WireframePS.h"
 
-GraphicsPSO PRTManager::mDebugPSO;
-
 PRTManager::PRTManager()
 	:mCubeTarget(PROBE_TARGET_RESOLUTION, PROBE_TARGET_RESOLUTION)
 {
+	InitMaterial();
 }
 
 PRTManager::~PRTManager()
@@ -50,7 +49,6 @@ void PRTManager::Initialize(AxisAlignedBox ProbeAABB, uint16_t ProbeCellSize, fl
 			}
 		}
 	}
-
 	CreateDebugModel();
 }
 
@@ -125,58 +123,64 @@ void PRTManager::DebugVisual(GraphicsContext& context)
 		context.SetDynamicSRV((int)RootSignatureType::eMaterialConstantData, sizeof(MaterialConstant) * MaterialData.size(), MaterialData.data());
 		context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
-		mDebugModel->Draw(context, &mDebugPSO);
+		mDebugModel->Draw(context, &mDebugMaterial->GetGraphicsPSO());
 	} 
 }
 
-void PRTManager::BuildPSO(const PSOCommonProperty CommonProperty)
+void PRTManager::InitMaterial()
 {
-	D3D12_RASTERIZER_DESC Rasterizer = RasterizerDefaultCw;
-	D3D12_BLEND_DESC Blend = BlendDisable;
-	if (CommonProperty.IsWireframe)
+	mDebugMaterial = RenderMaterialManager::GetInstance().GetMaterial("PRT Debug Material");
+	if (!mDebugMaterial->IsInitialized)
 	{
-		Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
-		Rasterizer.FillMode = D3D12_FILL_MODE_WIREFRAME;
-	}
-	if (CommonProperty.IsMSAA)
-	{
-		Rasterizer.MultisampleEnable = true;
-		Blend.AlphaToCoverageEnable = true;
-	}
-	mDebugPSO.SetRootSignature(*CommonProperty.pRootSignature);
-	mDebugPSO.SetRasterizerState(Rasterizer);
-	mDebugPSO.SetBlendState(Blend);
-	if (REVERSE_Z)
-	{
-		mDebugPSO.SetDepthStencilState(DepthStateReadWriteReversed);
-	}
-	else
-	{
-		mDebugPSO.SetDepthStencilState(DepthStateReadWrite);
-	}
+		mDebugMaterial->BindPSOCreateFunc([&](const PSOCommonProperty CommonProperty) {
+			D3D12_RASTERIZER_DESC Rasterizer = RasterizerDefaultCw;
+			D3D12_BLEND_DESC Blend = BlendDisable;
+			if (CommonProperty.IsWireframe)
+			{
+				Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
+				Rasterizer.FillMode = D3D12_FILL_MODE_WIREFRAME;
+			}
+			if (CommonProperty.IsMSAA)
+			{
+				Rasterizer.MultisampleEnable = true;
+				Blend.AlphaToCoverageEnable = true;
+			}
 
-	mDebugPSO.SetSampleMask(0xFFFFFFFF);
-	mDebugPSO.SetInputLayout((UINT)InputLayout::InstancePosNormalTangentTexc.size(), InputLayout::InstancePosNormalTangentTexc.data());
-	mDebugPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-	if (CommonProperty.IsWireframe)
-	{
-		mDebugPSO.SetPixelShader(g_pWireframePS, sizeof(g_pWireframePS));
-		mDebugPSO.SetDepthStencilState(DepthStateDisabled);
+			GraphicsPSO& DebugPSO = mDebugMaterial->GetGraphicsPSO();
+
+			DebugPSO.SetRootSignature(*CommonProperty.pRootSignature);
+			DebugPSO.SetRasterizerState(Rasterizer);
+			DebugPSO.SetBlendState(Blend);
+			if (REVERSE_Z)
+			{
+				DebugPSO.SetDepthStencilState(DepthStateReadWriteReversed);
+			}
+			else
+			{
+				DebugPSO.SetDepthStencilState(DepthStateReadWrite);
+			}
+
+			DebugPSO.SetSampleMask(0xFFFFFFFF);
+			DebugPSO.SetInputLayout((UINT)InputLayout::InstancePosNormalTangentTexc.size(), InputLayout::InstancePosNormalTangentTexc.data());
+			DebugPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+			if (CommonProperty.IsWireframe)
+			{
+				DebugPSO.SetPixelShader(g_pWireframePS, sizeof(g_pWireframePS));
+				DebugPSO.SetDepthStencilState(DepthStateDisabled);
+			}
+			else
+			{
+				DebugPSO.SetVertexShader(g_pSHProbeDebugVS, sizeof(g_pSHProbeDebugVS));
+				DebugPSO.SetPixelShader(g_pSHProbeDebugPS, sizeof(g_pSHProbeDebugPS));
+			}
+			DebugPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
+			DebugPSO.Finalize();
+			});
+
+		mDebugMaterial->BindPSORuntimeModifyFunc([&]() {
+			RuntimePSOManager::Get().RegisterPSO(&mDebugMaterial->GetGraphicsPSO(), GET_SHADER_PATH("GI/SHProbeDebugVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+			RuntimePSOManager::Get().RegisterPSO(&mDebugMaterial->GetGraphicsPSO(), GET_SHADER_PATH("GI/SHProbeDebugPS.hlsl"), D3D12_SHVER_PIXEL_SHADER); });
+
+		mDebugMaterial->IsInitialized = true;
 	}
-	else
-	{
-		mDebugPSO.SetVertexShader(g_pSHProbeDebugVS, sizeof(g_pSHProbeDebugVS));
-		mDebugPSO.SetPixelShader(g_pSHProbeDebugPS, sizeof(g_pSHProbeDebugPS));
-	}
-	mDebugPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
-	mDebugPSO.Finalize();
 }
-
-
-#if USE_RUNTIME_PSO
-void PRTManager::InitRuntimePSO()
-{
-	RuntimePSOManager::Get().RegisterPSO(&mDebugPSO, GET_SHADER_PATH("GI/SHProbeDebugVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&mDebugPSO, GET_SHADER_PATH("GI/SHProbeDebugPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
-}
-#endif

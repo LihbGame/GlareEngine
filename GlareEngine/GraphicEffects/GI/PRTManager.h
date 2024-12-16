@@ -3,6 +3,7 @@
 #include "InstanceModel/InstanceModel.h"
 
 class PRTManager
+	:public RenderObject
 {
 public:
 	PRTManager();
@@ -17,11 +18,7 @@ public:
 
 	void DebugVisual(GraphicsContext& context);
 
-	static void BuildPSO(const PSOCommonProperty CommonProperty);
-
-#if USE_RUNTIME_PSO
-	static void InitRuntimePSO();
-#endif
+	virtual void InitMaterial();
 
 private:
 	AxisAlignedBox mProbeAABB;
@@ -32,7 +29,7 @@ private:
 	ModelRenderData* mSphereMesh = nullptr;
 	unique_ptr<InstanceModel> mDebugModel = nullptr;
 	vector<InstanceRenderConstants> mIRC;
-	//PSO
-	static GraphicsPSO mDebugPSO;
+	//Material
+	RenderMaterial* mDebugMaterial = nullptr;
 };
 

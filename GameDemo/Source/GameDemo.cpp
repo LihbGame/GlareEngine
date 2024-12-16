@@ -132,7 +132,6 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	mShadowMap = make_unique<ShadowMap>(XMFLOAT3(0.05f, -0.335f, 0.12f), SHADOWMAPSIZE, SHADOWMAPSIZE);
 	//Create PBR Materials
 	SimpleModelGenerator::GetInstance(CommandList)->CreatePBRMaterials();
-
 	//Initialize Render
 	Render::Initialize(CommandList, mCamera.get());
 
@@ -156,8 +155,10 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 		gScenes.push_back(mSceneManager->CreateScene("Flight Helmet"));
 		gScenes.push_back(mSceneManager->CreateScene("Blue Tree"));
 
-
 		mEngineUI->SetScenes(gScenes);
+
+		//Initialize all material PSO
+		Render::InitializePSO();
 
 		//set global scene
 		EngineGlobal::gCurrentScene = gScenes[0];
@@ -170,6 +171,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			scene->SetSceneUI(mEngineUI.get());
 			//set camera
 			scene->SetCamera(mCamera.get());
+
 			//set scene lights
 			if (scene->GetName() == "Sponza")
 			{
@@ -250,9 +252,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 
 			//Copy Descriptors Texture Heap
 			Render::CopyTextureHeap();
-
 		});
-
 
 		//Copy Descriptors Texture Heap
 		Render::CopyTextureHeap();

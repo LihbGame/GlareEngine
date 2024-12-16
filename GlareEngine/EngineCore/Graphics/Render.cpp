@@ -73,15 +73,7 @@ namespace GlareEngine
 		SSAO::Initialize();
 
 		BuildRootSignature();
-		BuildCommonPSOs(gCommonProperty);
-		BuildPSOs();
 
-#if USE_RUNTIME_PSO
-		//After build PSOs
-		BuildRuntimePSOs();
-
-		PRTManager::InitRuntimePSO();
-#endif
 		for (UINT index = 0; index < MAX_TEXTURE_HEAP_DESCRIPTORS; index++)
 		{
 			CopyDescriptorsRangesSize[index] = 1;
@@ -91,11 +83,18 @@ namespace GlareEngine
 
 		gSamplerHeap.Create(L"Scene Sampler Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 2048);
 
-#if	USE_RUNTIME_PSO
-		RuntimePSOManager::Get().RegisterPSO(&DeferredLightingMaterial->GetComputePSO(), GET_SHADER_PATH("Lighting/LightingPassCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-		RuntimePSOManager::Get().RegisterPSO(&WireFrameMaterial->GetComputePSO(), GET_SHADER_PATH("Misc/WireframeCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-#endif
 		s_Initialized = true;
+	}
+
+	void Render::InitializePSO()
+	{
+		BuildCommonPSOs(gCommonProperty);
+		BuildPSOs();
+
+#if USE_RUNTIME_PSO
+		//After build PSOs
+		BuildRuntimePSOs();
+#endif
 	}
 
 	void Render::ShutDown()
@@ -163,6 +162,11 @@ namespace GlareEngine
 		WireFrameMaterial = RenderMaterialManager::GetInstance().GetMaterial("Deferred WireFrame CS", MaterialPipelineType::Compute);
 		InitComputeMaterial(gRootSignature, (*DeferredLightingMaterial), g_pLightingPassCS);
 		InitComputeMaterial(gRootSignature, (*WireFrameMaterial), g_pWireframeCS);
+
+#if USE_RUNTIME_PSO
+		RuntimePSOManager::Get().RegisterPSO(&DeferredLightingMaterial->GetComputePSO(), GET_SHADER_PATH("Lighting/LightingPassCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+		RuntimePSOManager::Get().RegisterPSO(&WireFrameMaterial->GetComputePSO(), GET_SHADER_PATH("Misc/WireframeCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
+#endif
 
 		//assert(gCommonPSOs.size() == 0);
 
@@ -323,7 +327,6 @@ namespace GlareEngine
 	{
 		RenderMaterialManager::GetInstance().BuildMaterialsPSO(gCommonProperty);
 
-		PRTManager::BuildPSO(gCommonProperty);
 		glTFInstanceModel::BuildPSO(gCommonProperty);
 		IBL::BuildPSOs(gCommonProperty);
 		Terrain::BuildPSO(gCommonProperty);
