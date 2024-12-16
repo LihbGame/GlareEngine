@@ -9,7 +9,7 @@ GlareEngine::RenderMaterial::RenderMaterial(wstring MaterialName,MaterialPipelin
 void RenderMaterial::BeginInitializeComputeMaterial(const RootSignature& rootSignature)
 {
 	m_pRootSignature = &rootSignature;
-	mComputePSO = ComputePSO(mMaterialName);
+	mComputePSO = RenderMaterialManager::GetInstance().GetMaterial(WStringToString(mMaterialName))->GetComputePSO();
 	mComputePSO.SetRootSignature(rootSignature);
 }
 

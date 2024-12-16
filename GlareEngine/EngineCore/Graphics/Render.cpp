@@ -160,13 +160,30 @@ namespace GlareEngine
 	{
 		DeferredLightingMaterial = RenderMaterialManager::GetInstance().GetMaterial("Deferred Light CS",MaterialPipelineType::Compute);
 		WireFrameMaterial = RenderMaterialManager::GetInstance().GetMaterial("Deferred WireFrame CS", MaterialPipelineType::Compute);
-		InitComputeMaterial(gRootSignature, (*DeferredLightingMaterial), g_pLightingPassCS);
-		InitComputeMaterial(gRootSignature, (*WireFrameMaterial), g_pWireframeCS);
+		
+		if (!DeferredLightingMaterial->IsInitialized)
+		{
+			DeferredLightingMaterial->BindPSOCreateFunc([&](const PSOCommonProperty CommonProperty) {
+				InitComputeMaterial(gRootSignature, (*DeferredLightingMaterial), g_pLightingPassCS);
+				});
 
-#if USE_RUNTIME_PSO
-		RuntimePSOManager::Get().RegisterPSO(&DeferredLightingMaterial->GetComputePSO(), GET_SHADER_PATH("Lighting/LightingPassCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-		RuntimePSOManager::Get().RegisterPSO(&WireFrameMaterial->GetComputePSO(), GET_SHADER_PATH("Misc/WireframeCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-#endif
+			DeferredLightingMaterial->BindPSORuntimeModifyFunc([&]() {
+				RuntimePSOManager::Get().RegisterPSO(&DeferredLightingMaterial->GetComputePSO(), GET_SHADER_PATH("Lighting/LightingPassCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER); });
+
+			DeferredLightingMaterial->IsInitialized = true;
+		}
+
+		if (!WireFrameMaterial->IsInitialized)
+		{
+			WireFrameMaterial->BindPSOCreateFunc([&](const PSOCommonProperty CommonProperty) {
+				InitComputeMaterial(gRootSignature, (*WireFrameMaterial), g_pWireframeCS);
+				});
+
+			WireFrameMaterial->BindPSORuntimeModifyFunc([&]() {
+				RuntimePSOManager::Get().RegisterPSO(&WireFrameMaterial->GetComputePSO(), GET_SHADER_PATH("Misc/WireframeCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER); });
+
+			WireFrameMaterial->IsInitialized = true;
+		}
 
 		//assert(gCommonPSOs.size() == 0);
 

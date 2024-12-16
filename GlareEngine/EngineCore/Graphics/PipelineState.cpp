@@ -184,7 +184,9 @@ void ComputePSO::Finalize()
 			PSORef = gComputePSOHashMap[HashCode].GetAddressOf();
 		}
 		else
+		{
 			PSORef = iter->second.GetAddressOf();
+		}
 	}
 
 	if (firstCompile)
