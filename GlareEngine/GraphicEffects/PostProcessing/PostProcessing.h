@@ -19,8 +19,6 @@ namespace ScreenProcessing
 
     void Update(float dt, MainConstants& RenderData,Camera& camera);
 
-    void BuildPSO(const PSOCommonProperty CommonProperty);
-
     void UpsampleBlurBuffer(ComputeContext&, ColorBuffer buffer[2], const ColorBuffer& LowerResBuffer, float UpSampleBlendFactor = 0.0f);
 
     void BlurBuffer(ComputeContext&, ColorBuffer& SourceBuffer, ColorBuffer& TargetBuffer);

@@ -170,7 +170,16 @@ void ShadowMap::InitMaterial()
 	{
 		mMaskShadowMaterial->BindPSOCreateFunc([&](const PSOCommonProperty CommonProperty) {
 			GraphicsPSO& MaskShadowMaterialPSO = mMaskShadowMaterial->GetGraphicsPSO();
-			MaskShadowMaterialPSO.RuntimePSOCopy(mShadowMaterial->GetGraphicsPSO());
+			MaskShadowMaterialPSO.SetRootSignature(*CommonProperty.pRootSignature);
+			MaskShadowMaterialPSO.SetRasterizerState(RasterizerShadowCW);
+			MaskShadowMaterialPSO.SetBlendState(BlendDisable);
+			MaskShadowMaterialPSO.SetDepthStencilState(DepthStateReadWrite);
+			MaskShadowMaterialPSO.SetSampleMask(0xFFFFFFFF);
+			MaskShadowMaterialPSO.SetInputLayout((UINT)InputLayout::PosNormalTangentTexc.size(), InputLayout::PosNormalTangentTexc.data());
+			MaskShadowMaterialPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+			MaskShadowMaterialPSO.SetVertexShader(g_pModelShadowVS, sizeof(g_pModelShadowVS));
+			MaskShadowMaterialPSO.SetPixelShader(g_pModelShadowPS, sizeof(g_pModelShadowPS));
+			MaskShadowMaterialPSO.SetRenderTargetFormats(0, &DefaultHDRColorFormat, DXGI_FORMAT_D32_FLOAT);
 			MaskShadowMaterialPSO.Finalize();
 			});
 

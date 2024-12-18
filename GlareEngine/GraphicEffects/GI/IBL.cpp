@@ -1,5 +1,7 @@
 #include "GI/IBL.h"
 #include "Sky/Sky.h"
+#include "Engine/EngineLog.h"
+#include "Graphics/Render.h"
 
 //shader
 #include "CompiledShaders/BakingEnvDiffusePS.h"
@@ -7,8 +9,6 @@
 #include "CompiledShaders/PreFilteredEnvironmentMapPS.h"
 #include "CompiledShaders/ScreenQuadVS.h"
 #include "CompiledShaders/BakingBRDFPS.h"
-#include "Engine/EngineLog.h"
-#include "Graphics/Render.h"
 
 //1024 
 #define  MaxMipLevels 11

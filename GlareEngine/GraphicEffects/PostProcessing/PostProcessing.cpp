@@ -128,70 +128,69 @@ namespace ScreenProcessing
 	StructuredBuffer g_Exposure;
 
 	RootSignature PostEffectsRS;
-	GraphicsPSO mPSO(L"FBM Post PS");
+
+	RenderMaterial* mFBMMaterial = nullptr;
 
 	MainConstants* gMainConstants = nullptr;
 
 	ColorBuffer* CurrentLinearDepth = nullptr;
 
-	ComputePSO* Shaders[BlurShaderType::Count];
+	RenderMaterial* ShaderMaterials[BlurShaderType::Count] = {nullptr};
 
 	//Bloom
-	ComputePSO DownsampleBloom2CS(L"DownSample Bloom 2 CS");
-	ComputePSO DownsampleBloom4CS(L"DownSample Bloom 4 CS");
-	ComputePSO BloomExtractAndDownsampleHDRCS(L"Bloom Extract and DownSample HDR CS");
+	RenderMaterial* DownsampleBloom2CS = nullptr;
+	RenderMaterial* DownsampleBloom4CS = nullptr;
+	RenderMaterial* BloomExtractAndDownsampleHDRCS = nullptr;
 
-
-	ComputePSO ToneMapCS(L"Tone Map  CS");
-	ComputePSO ToneMapHDRCS(L"Tone Map HDR CS");
+	RenderMaterial* ToneMapCS = nullptr;
+	RenderMaterial* ToneMapHDRCS = nullptr;
 	
-	ComputePSO DebugLuminanceHDRCS(L"Debug Luminance HDR CS");
-	ComputePSO DebugLuminanceLDRCS(L"Debug Luminance LDR CS");
-	ComputePSO GenerateLuminanceHistogramCS(L"Generate Luminance Histogram CS");
+	RenderMaterial* DebugLuminanceHDRCS = nullptr;
+	RenderMaterial* DebugLuminanceLDRCS = nullptr;
+	RenderMaterial* GenerateLuminanceHistogramCS = nullptr;
 
-
-	ComputePSO DrawHistogramCS(L"Draw Histogram CS");
-	ComputePSO AdaptExposureCS(L"Adapt Exposure CS");
+	RenderMaterial* DrawHistogramCS = nullptr;
+	RenderMaterial* AdaptExposureCS = nullptr;
 
 	//Blur
-	ComputePSO UpsampleBlurCS(L"UpSample and Blur CS");
-	ComputePSO BlurCS(L"Blur CS");
+	RenderMaterial* UpsampleBlurCS = nullptr;
+	RenderMaterial* BlurCS = nullptr;
 
-	ComputePSO ExtractLuminanceCS(L"Extract Luminance CS");
-	ComputePSO AverageLumaCS(L"Average Luminance CS");
-	ComputePSO CopyBackBufferForNotHDRUAVSupportCS(L"Copy Back Post Buffer CS For Not HDR UAV Support");
+	RenderMaterial* ExtractLuminanceCS = nullptr;
+	RenderMaterial* AverageLumaCS = nullptr;
+	RenderMaterial* CopyBackBufferForNotHDRUAVSupportCS = nullptr;
 
 	//Linear Depth PSO
-	ComputePSO LinearizeDepthCS(L"Linearize Depth CS");
-
+	RenderMaterial* LinearizeDepthCS = nullptr;
 
 	//Blur PSO
-	ComputePSO BilateralBlurFloat1CS(L"Bilateral Blur Float1 CS");
-	ComputePSO BilateralBlurFloat3CS(L"Bilateral Blur Float3 CS");
-	ComputePSO BilateralBlurFloat4CS(L"Bilateral Blur Float4 CS");
-	ComputePSO BilateralBlurUnorm1CS(L"Bilateral Blur Unorm1 CS");
-	ComputePSO BilateralBlurUnorm4CS(L"Bilateral Blur Unorm4 CS");
-	ComputePSO BilateralBlurWideFloat1CS(L"Bilateral Blur Wide Float1 CS");
-	ComputePSO BilateralBlurWideFloat3CS(L"Bilateral Blur Wide Float3 CS");
-	ComputePSO BilateralBlurWideFloat4CS(L"Bilateral Blur Wide Float4 CS");
-	ComputePSO BilateralBlurWideUnorm1CS(L"Bilateral Blur Wide Unorm1 CS");
-	ComputePSO BilateralBlurWideUnorm4CS(L"Bilateral Blur Wide Unorm4 CS");
-	ComputePSO GaussianBlurFloat1CS(L"Gaussian Blur Float1 CS");
-	ComputePSO GaussianBlurFloat3CS(L"Gaussian Blur Float3 CS");
-	ComputePSO GaussianBlurFloat4CS(L"Gaussian Blur Float4 CS");
-	ComputePSO GaussianBlurUnorm1CS(L"Gaussian Blur Unorm1 CS");
-	ComputePSO GaussianBlurUnorm4CS(L"Gaussian Blur Unorm4 CS");
-	ComputePSO GaussianBlurWideFloat1CS(L"Gaussian Blur Wide Float1 CS");
-	ComputePSO GaussianBlurWideFloat3CS(L"Gaussian Blur Wide Float3 CS");
-	ComputePSO GaussianBlurWideFloat4CS(L"Gaussian Blur Wide Float4 CS");
-	ComputePSO GaussianBlurWideUnorm1CS(L"Gaussian Blur Wide Unorm1 CS");
-	ComputePSO GaussianBlurWideUnorm4CS(L"Gaussian Blur Wide Unorm4 CS");
+	RenderMaterial* BilateralBlurFloat1CS = nullptr;
+	RenderMaterial* BilateralBlurFloat3CS = nullptr;
+	RenderMaterial* BilateralBlurFloat4CS = nullptr;
+	RenderMaterial* BilateralBlurUnorm1CS = nullptr;
+	RenderMaterial* BilateralBlurUnorm4CS = nullptr;
+	RenderMaterial* BilateralBlurWideFloat1CS = nullptr;
+	RenderMaterial* BilateralBlurWideFloat3CS = nullptr;
+	RenderMaterial* BilateralBlurWideFloat4CS = nullptr;
+	RenderMaterial* BilateralBlurWideUnorm1CS = nullptr;
+	RenderMaterial* BilateralBlurWideUnorm4CS = nullptr;
+	RenderMaterial* GaussianBlurFloat1CS = nullptr;
+	RenderMaterial* GaussianBlurFloat3CS = nullptr;
+	RenderMaterial* GaussianBlurFloat4CS = nullptr;
+	RenderMaterial* GaussianBlurUnorm1CS = nullptr;
+	RenderMaterial* GaussianBlurUnorm4CS = nullptr;
+	RenderMaterial* GaussianBlurWideFloat1CS = nullptr;
+	RenderMaterial* GaussianBlurWideFloat3CS = nullptr;
+	RenderMaterial* GaussianBlurWideFloat4CS = nullptr;
+	RenderMaterial* GaussianBlurWideUnorm1CS = nullptr;
+	RenderMaterial* GaussianBlurWideUnorm4CS = nullptr;
 
 	void GenerateBloom(ComputeContext& Context);
 	void ExtractLuminance(ComputeContext& Context);
 	void CopyBackBufferForNotHDRUAVSupport(ComputeContext& Context);
 	void ToneMappingHDR(ComputeContext& Context);
 	void Adaptation(ComputeContext& Context);
+	void InitMaterial();
 }
 
 
@@ -206,81 +205,7 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	PostEffectsRS[3].InitAsConstantBuffer(1);
 	PostEffectsRS.Finalize(L"Post Effects");
 
-	//Create Compute PSO Macro
-#define CreatePSO( ObjName, ShaderByteCode ) \
-    ObjName.SetRootSignature(PostEffectsRS); \
-    ObjName.SetComputeShader(ShaderByteCode, sizeof(ShaderByteCode) ); \
-    ObjName.Finalize();
-
-	if (g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
-	{
-		CreatePSO(ToneMapCS, g_pToneMap2CS);
-		CreatePSO(ToneMapHDRCS, g_pToneMapHDR2CS);
-	}
-	else
-	{
-		CreatePSO(ToneMapCS, g_pToneMapCS);
-		CreatePSO(ToneMapHDRCS, g_pToneMapHDRCS);
-	}
-
-	CreatePSO(GenerateLuminanceHistogramCS, g_pGenerateLuminanceHistogramCS);
-	CreatePSO(UpsampleBlurCS, g_pUpsampleBlurCS);
-	CreatePSO(BlurCS, g_pBlurCS);
-	CreatePSO(DownsampleBloom2CS, g_pBloomDownSample2CS);
-	CreatePSO(DownsampleBloom4CS, g_pBloomDownSample4CS);
-	CreatePSO(BloomExtractAndDownsampleHDRCS, g_pBloomExtractAndDownSampleHDRCS);
-	CreatePSO(ExtractLuminanceCS, g_pExtractLuminanceCS);
-	CreatePSO(CopyBackBufferForNotHDRUAVSupportCS, g_pCopyPostBufferHDRCS);
-	CreatePSO(AdaptExposureCS, g_pAdaptExposureCS);
-	CreatePSO(DrawHistogramCS, g_pDrawHistogramCS);
-	CreatePSO(LinearizeDepthCS, g_pLinearizeDepthCS);
-
-	CreatePSO(BilateralBlurFloat1CS, g_pBilateralBlurFloat1CS);
-	CreatePSO(BilateralBlurFloat3CS, g_pBilateralBlurFloat3CS);
-	CreatePSO(BilateralBlurFloat4CS, g_pBilateralBlurFloat4CS);
-	CreatePSO(BilateralBlurUnorm1CS, g_pBilateralBlurUnorm1CS);
-	CreatePSO(BilateralBlurUnorm4CS, g_pBilateralBlurUnorm4CS);
-	CreatePSO(BilateralBlurWideFloat1CS, g_pBilateralBlurWideFloat1CS);
-	CreatePSO(BilateralBlurWideFloat3CS, g_pBilateralBlurWideFloat3CS);
-	CreatePSO(BilateralBlurWideFloat4CS, g_pBilateralBlurWideFloat4CS);
-	CreatePSO(BilateralBlurWideUnorm1CS, g_pBilateralBlurWideUnorm1CS);
-	CreatePSO(BilateralBlurWideUnorm4CS, g_pBilateralBlurWideUnorm4CS);
-	CreatePSO(GaussianBlurFloat1CS, g_pGaussianBlurFloat1CS);
-	CreatePSO(GaussianBlurFloat3CS, g_pGaussianBlurFloat3CS);
-	CreatePSO(GaussianBlurFloat4CS, g_pGaussianBlurFloat4CS);
-	CreatePSO(GaussianBlurUnorm1CS, g_pGaussianBlurUnorm1CS);
-	CreatePSO(GaussianBlurUnorm4CS, g_pGaussianBlurUnorm4CS);
-	CreatePSO(GaussianBlurWideFloat1CS, g_pGaussianBlurWideFloat1CS);
-	CreatePSO(GaussianBlurWideFloat3CS, g_pGaussianBlurWideFloat3CS);
-	CreatePSO(GaussianBlurWideFloat4CS, g_pGaussianBlurWideFloat4CS);
-	CreatePSO(GaussianBlurWideUnorm1CS, g_pGaussianBlurWideUnorm1CS);
-	CreatePSO(GaussianBlurWideUnorm4CS, g_pGaussianBlurWideUnorm4CS);
-
-#undef CreatePSO
-
-	Shaders[BilateralBlurFloat1] = &BilateralBlurFloat1CS;
-	Shaders[BilateralBlurFloat3] = &BilateralBlurFloat3CS;
-	Shaders[BilateralBlurFloat4] = &BilateralBlurFloat4CS;
-	Shaders[BilateralBlurUnorm1] = &BilateralBlurUnorm1CS;
-	Shaders[BilateralBlurUnorm4] = &BilateralBlurUnorm4CS;
-
-	Shaders[BilateralBlurWideFloat1] = &BilateralBlurWideFloat1CS;
-	Shaders[BilateralBlurWideFloat3] = &BilateralBlurWideFloat3CS;
-	Shaders[BilateralBlurWideFloat4] = &BilateralBlurWideFloat4CS;
-	Shaders[BilateralBlurWideUnorm1] = &BilateralBlurWideUnorm1CS;
-	Shaders[BilateralBlurWideUnorm4] = &BilateralBlurWideUnorm4CS;
-
-	Shaders[GaussianBlurFloat1] = &GaussianBlurFloat1CS;
-	Shaders[GaussianBlurFloat3] = &GaussianBlurFloat3CS;
-	Shaders[GaussianBlurFloat4] = &GaussianBlurFloat4CS;
-	Shaders[GaussianBlurUnorm1] = &GaussianBlurUnorm1CS;
-	Shaders[GaussianBlurUnorm4] = &GaussianBlurUnorm4CS;
-
-	Shaders[GaussianBlurWideFloat1] = &GaussianBlurWideFloat1CS;
-	Shaders[GaussianBlurWideFloat3] = &GaussianBlurWideFloat3CS;
-	Shaders[GaussianBlurWideFloat4] = &GaussianBlurWideFloat4CS;
-	Shaders[GaussianBlurWideUnorm1] = &GaussianBlurWideUnorm1CS;
-	Shaders[GaussianBlurWideUnorm4] = &GaussianBlurWideUnorm4CS;
+	InitMaterial();
 
 	mAntiAliasingName += string("MSAA") + '\0';
 	mAntiAliasingName += string("FXAA") + '\0';
@@ -304,44 +229,6 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 
 	//TemporalAA Initialize
 	TemporalAA::Initialize();
-
-#if	USE_RUNTIME_PSO
-	RuntimePSOManager::Get().RegisterPSO(&ToneMapCS, GET_SHADER_PATH("PostProcessing/ToneMapping/ToneMap2CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&ToneMapHDRCS, GET_SHADER_PATH("PostProcessing/ToneMapping/ToneMapHDR2CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&GenerateLuminanceHistogramCS, GET_SHADER_PATH("PostProcessing/GenerateLuminanceHistogramCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&UpsampleBlurCS, GET_SHADER_PATH("PostProcessing/UpsampleBlurCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&BlurCS, GET_SHADER_PATH("PostProcessing/BlurCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&DownsampleBloom2CS, GET_SHADER_PATH("PostProcessing/Bloom/BloomDownSample2CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&DownsampleBloom4CS, GET_SHADER_PATH("PostProcessing/Bloom/BloomDownSample4CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&BloomExtractAndDownsampleHDRCS, GET_SHADER_PATH("PostProcessing/Bloom/BloomExtractAndDownSampleHDRCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&ExtractLuminanceCS, GET_SHADER_PATH("PostProcessing/ExtractLuminanceCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&CopyBackBufferForNotHDRUAVSupportCS, GET_SHADER_PATH("PostProcessing/CopyPostBufferHDRCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&AdaptExposureCS, GET_SHADER_PATH("PostProcessing/AdaptExposureCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&DrawHistogramCS, GET_SHADER_PATH("PostProcessing/DrawHistogramCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&LinearizeDepthCS, GET_SHADER_PATH("Misc/LinearizeDepthCS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	
-	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurFloat1CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurFloat1CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurFloat3CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurFloat3CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurFloat4CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurFloat4CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurUnorm1CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurUnorm1CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurUnorm4CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurUnorm4CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurWideFloat1CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurWideFloat1CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurWideFloat3CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurWideFloat3CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurWideFloat4CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurWideFloat4CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurWideUnorm1CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurWideUnorm1CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&BilateralBlurWideUnorm4CS, GET_SHADER_PATH("PostProcessing/Blur/BilateralBlurWideUnorm4CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurFloat1CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurFloat1CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurFloat3CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurFloat3CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurFloat4CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurFloat4CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurUnorm1CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurUnorm1CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurUnorm4CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurUnorm4CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurWideFloat1CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurWideFloat1CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurWideFloat3CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurWideFloat3CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurWideFloat4CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurWideFloat4CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurWideUnorm1CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurWideUnorm1CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-	RuntimePSOManager::Get().RegisterPSO(&GaussianBlurWideUnorm4CS, GET_SHADER_PATH("PostProcessing/Blur/GaussianBlurWideUnorm4CS.hlsl"), D3D12_SHVER_COMPUTE_SHADER);
-#endif
-
 }
 
 void ScreenProcessing::BuildSRV(ID3D12GraphicsCommandList* CommandList)
@@ -356,7 +243,7 @@ void ScreenProcessing::RenderFBM(GraphicsContext& Context, GraphicsPSO* Specific
 	}
 	else
 	{
-		Context.SetPipelineState(GET_PSO(mPSO));
+		Context.SetPipelineState(mFBMMaterial->GetRuntimePSO());
 	}
 	Context.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	Context.Draw(3);
@@ -378,7 +265,7 @@ void ScreenProcessing::ToneMappingHDR(ComputeContext& Context)
 	Context.TransitionResource(g_LumaBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	Context.TransitionResource(g_Exposure, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
-	Context.SetPipelineState(Display::g_bEnableHDROutput ? GET_PSO(ToneMapHDRCS) : GET_PSO(ToneMapCS));
+	Context.SetPipelineState(Display::g_bEnableHDROutput ? ToneMapHDRCS->GetRuntimePSO() : ToneMapCS->GetRuntimePSO());
 
 	// Set constants
 	Context.SetConstants(0, 1.0f / g_SceneColorBuffer.GetWidth(), 1.0f / g_SceneColorBuffer.GetHeight(),(float)BloomStrength);
@@ -414,7 +301,7 @@ void ScreenProcessing::Adaptation(ComputeContext& Context)
 	Context.TransitionResource(g_LumaBloom, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	Context.SetDynamicDescriptor(1, 0, g_Histogram.GetUAV());
 	Context.SetDynamicDescriptor(2, 0, g_LumaBloom.GetSRV());
-	Context.SetPipelineState(GET_PSO(GenerateLuminanceHistogramCS));
+	Context.SetPipelineState(GenerateLuminanceHistogramCS->GetRuntimePSO());
 	Context.Dispatch2D(g_LumaBloom.GetWidth(), g_LumaBloom.GetHeight(), 16, 16);
 	
 	AdaptationConstants AdaptationData = {
@@ -427,9 +314,132 @@ void ScreenProcessing::Adaptation(ComputeContext& Context)
 	Context.SetDynamicDescriptor(1, 0, g_Exposure.GetUAV());
 	Context.SetDynamicDescriptor(2, 0, g_Histogram.GetSRV());
 	Context.SetDynamicConstantBufferView(3, sizeof(AdaptationConstants), &AdaptationData);
-	Context.SetPipelineState(GET_PSO(AdaptExposureCS));
+	Context.SetPipelineState(AdaptExposureCS->GetRuntimePSO());
 	Context.Dispatch();
 	Context.TransitionResource(g_Exposure, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+}
+
+void ScreenProcessing::InitMaterial()
+{
+	mFBMMaterial = RenderMaterialManager::GetInstance().GetMaterial("FBM Material");
+
+	if (!mFBMMaterial->IsInitialized)
+	{
+		mFBMMaterial->BindPSOCreateFunc([&](const PSOCommonProperty CommonProperty) {
+			D3D12_RASTERIZER_DESC Rasterizer = RasterizerDefault;
+			if (CommonProperty.IsWireframe)
+			{
+				Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
+				Rasterizer.FillMode = D3D12_FILL_MODE_WIREFRAME;
+			}
+
+			GraphicsPSO& pso = mFBMMaterial->GetGraphicsPSO();
+
+			pso.SetRootSignature(*CommonProperty.pRootSignature);
+			pso.SetRasterizerState(Rasterizer);
+			pso.SetBlendState(BlendDisable);
+			pso.SetDepthStencilState(DepthStateDisabled);
+			pso.SetSampleMask(0xFFFFFFFF);
+			pso.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
+			pso.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+			pso.SetVertexShader(g_pScreenQuadVS, sizeof(g_pScreenQuadVS));
+			pso.SetPixelShader(g_pFbmPostPS, sizeof(g_pFbmPostPS));
+			pso.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
+			pso.Finalize();
+			});
+
+		mFBMMaterial->BindPSORuntimeModifyFunc([&]() {
+			RuntimePSOManager::Get().RegisterPSO(&mFBMMaterial->GetGraphicsPSO(), GET_SHADER_PATH("PostProcessing/FbmPostPS.hlsl"), D3D12_SHVER_PIXEL_SHADER); });
+
+		mFBMMaterial->IsInitialized = true;
+	}
+
+#define InitPostProcessMaterial(shaderMaterial,materialName,shaderPath,CodeBinary)\
+	shaderMaterial=RenderMaterialManager::GetInstance().GetMaterial(materialName,MaterialPipelineType::Compute);\
+	if (!shaderMaterial->IsInitialized)\
+{\
+	shaderMaterial->BindPSOCreateFunc([&](const PSOCommonProperty CommonProperty) {\
+		shaderMaterial->GetComputePSO().SetRootSignature(PostEffectsRS);\
+		shaderMaterial->GetComputePSO().SetComputeShader(CodeBinary, sizeof(CodeBinary));\
+		shaderMaterial->GetComputePSO().Finalize();\
+		});\
+	shaderMaterial->BindPSORuntimeModifyFunc([&]() {\
+		RuntimePSOManager::Get().RegisterPSO(&shaderMaterial->GetComputePSO(), GET_SHADER_PATH(shaderPath), D3D12_SHVER_COMPUTE_SHADER);\
+		});\
+	shaderMaterial->IsInitialized = true;\
+}
+
+	if (g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
+	{
+		InitPostProcessMaterial(ToneMapCS, "Tone Map CS", "PostProcessing/ToneMapping/ToneMap2CS.hlsl", g_pToneMap2CS);
+		InitPostProcessMaterial(ToneMapHDRCS, "Tone Map HDR CS", "PostProcessing/ToneMapping/ToneMapHDR2CS.hlsl", g_pToneMapHDR2CS);
+	}
+	else
+	{
+		InitPostProcessMaterial(ToneMapCS, "Tone Map CS", "PostProcessing/ToneMapping/ToneMapCS.hlsl", g_pToneMapCS);
+		InitPostProcessMaterial(ToneMapHDRCS, "Tone Map HDR CS", "PostProcessing/ToneMapping/ToneMapHDRCS.hlsl", g_pToneMapHDRCS);
+	}
+
+	InitPostProcessMaterial(GenerateLuminanceHistogramCS, "Generate Luminance Histogram CS", "PostProcessing/GenerateLuminanceHistogramCS.hlsl", g_pGenerateLuminanceHistogramCS);
+	InitPostProcessMaterial(UpsampleBlurCS, "UpSample and Blur CS", "PostProcessing/UpsampleBlurCS.hlsl", g_pUpsampleBlurCS);
+	InitPostProcessMaterial(BlurCS, "Blur CS", "PostProcessing/BlurCS.hlsl", g_pBlurCS);
+
+	InitPostProcessMaterial(DownsampleBloom2CS, "DownSample Bloom 2 CS", "PostProcessing/Bloom/BloomDownSample2CS.hlsl", g_pBloomDownSample2CS);
+	InitPostProcessMaterial(DownsampleBloom4CS, "DownSample Bloom 4 CS", "PostProcessing/Bloom/BloomDownSample4CS.hlsl", g_pBloomDownSample4CS);
+	InitPostProcessMaterial(BloomExtractAndDownsampleHDRCS, "Bloom Extract and DownSample HDR CS", "PostProcessing/Bloom/BloomExtractAndDownSampleHDRCS.hlsl", g_pBloomExtractAndDownSampleHDRCS);
+
+	InitPostProcessMaterial(ExtractLuminanceCS, "Extract Luminance CS", "PostProcessing/ExtractLuminanceCS.hlsl", g_pExtractLuminanceCS);
+	InitPostProcessMaterial(CopyBackBufferForNotHDRUAVSupportCS, "Copy Back Post Buffer CS For Not HDR UAV Support", "PostProcessing/CopyPostBufferHDRCS.hlsl", g_pCopyPostBufferHDRCS);
+	InitPostProcessMaterial(AdaptExposureCS, "Adapt Exposure CS", "PostProcessing/AdaptExposureCS.hlsl", g_pAdaptExposureCS);
+	InitPostProcessMaterial(DrawHistogramCS, "Draw Histogram CS", "PostProcessing/DrawHistogramCS.hlsl", g_pDrawHistogramCS);
+	InitPostProcessMaterial(LinearizeDepthCS, "Linearize Depth CS", "Misc/LinearizeDepthCS.hlsl", g_pLinearizeDepthCS);
+
+	InitPostProcessMaterial(BilateralBlurFloat1CS, "Bilateral Blur Float1 CS", "PostProcessing/Blur/BilateralBlurFloat1CS.hlsl", g_pBilateralBlurFloat1CS);
+	InitPostProcessMaterial(BilateralBlurFloat3CS, "Bilateral Blur Float3 CS", "PostProcessing/Blur/BilateralBlurFloat3CS.hlsl", g_pBilateralBlurFloat3CS);
+	InitPostProcessMaterial(BilateralBlurFloat4CS, "Bilateral Blur Float4 CS", "PostProcessing/Blur/BilateralBlurFloat4CS.hlsl", g_pBilateralBlurFloat4CS);
+	InitPostProcessMaterial(BilateralBlurUnorm1CS, "Bilateral Blur Unorm1 CS", "PostProcessing/Blur/BilateralBlurUnorm1CS.hlsl", g_pBilateralBlurUnorm1CS);
+	InitPostProcessMaterial(BilateralBlurUnorm4CS, "Bilateral Blur Unorm4 CS", "PostProcessing/Blur/BilateralBlurUnorm4CS.hlsl", g_pBilateralBlurUnorm4CS);
+	InitPostProcessMaterial(BilateralBlurWideFloat1CS, "Bilateral Blur Wide Float1 CS", "PostProcessing/Blur/BilateralBlurWideFloat1CS.hlsl", g_pBilateralBlurWideFloat1CS);
+	InitPostProcessMaterial(BilateralBlurWideFloat3CS, "Bilateral Blur Wide Float3 CS", "PostProcessing/Blur/BilateralBlurWideFloat3CS.hlsl", g_pBilateralBlurWideFloat3CS);
+	InitPostProcessMaterial(BilateralBlurWideFloat4CS, "Bilateral Blur Wide Float4 CS", "PostProcessing/Blur/BilateralBlurWideFloat4CS.hlsl", g_pBilateralBlurWideFloat4CS);
+	InitPostProcessMaterial(BilateralBlurWideUnorm1CS, "Bilateral Blur Wide Unorm1 CS", "PostProcessing/Blur/BilateralBlurWideUnorm1CS.hlsl", g_pBilateralBlurWideUnorm1CS);
+	InitPostProcessMaterial(BilateralBlurWideUnorm4CS, "Bilateral Blur Wide Unorm4 CS", "PostProcessing/Blur/BilateralBlurWideUnorm4CS.hlsl", g_pBilateralBlurWideUnorm4CS);
+	InitPostProcessMaterial(GaussianBlurFloat1CS, "Gaussian Blur Float1 CS", "PostProcessing/Blur/GaussianBlurFloat1CS.hlsl", g_pGaussianBlurFloat1CS);
+	InitPostProcessMaterial(GaussianBlurFloat3CS, "Gaussian Blur Float3 CS", "PostProcessing/Blur/GaussianBlurFloat3CS.hlsl", g_pGaussianBlurFloat3CS);
+	InitPostProcessMaterial(GaussianBlurFloat4CS, "Gaussian Blur Float4 CS", "PostProcessing/Blur/GaussianBlurFloat4CS.hlsl", g_pGaussianBlurFloat4CS);
+	InitPostProcessMaterial(GaussianBlurUnorm1CS, "Gaussian Blur Unorm1 CS", "PostProcessing/Blur/GaussianBlurUnorm1CS.hlsl", g_pGaussianBlurUnorm1CS);
+	InitPostProcessMaterial(GaussianBlurUnorm4CS, "Gaussian Blur Unorm4 CS", "PostProcessing/Blur/GaussianBlurUnorm4CS.hlsl", g_pGaussianBlurUnorm4CS);
+	InitPostProcessMaterial(GaussianBlurWideFloat1CS, "Gaussian Blur Wide Float1 CS", "PostProcessing/Blur/GaussianBlurWideFloat1CS.hlsl", g_pGaussianBlurWideFloat1CS);
+	InitPostProcessMaterial(GaussianBlurWideFloat3CS, "Gaussian Blur Wide Float3 CS", "PostProcessing/Blur/GaussianBlurWideFloat3CS.hlsl", g_pGaussianBlurWideFloat3CS);
+	InitPostProcessMaterial(GaussianBlurWideFloat4CS, "Gaussian Blur Wide Float4 CS", "PostProcessing/Blur/GaussianBlurWideFloat4CS.hlsl", g_pGaussianBlurWideFloat4CS);
+	InitPostProcessMaterial(GaussianBlurWideUnorm1CS, "Gaussian Blur Wide Unorm1 CS", "PostProcessing/Blur/GaussianBlurWideUnorm1CS.hlsl", g_pGaussianBlurWideUnorm1CS);
+	InitPostProcessMaterial(GaussianBlurWideUnorm4CS, "Gaussian Blur Wide Unorm4 CS", "PostProcessing/Blur/GaussianBlurWideUnorm4CS.hlsl", g_pGaussianBlurWideUnorm4CS);
+
+#undef CreatePSO
+
+	ShaderMaterials[BilateralBlurFloat1] = BilateralBlurFloat1CS;
+	ShaderMaterials[BilateralBlurFloat3] = BilateralBlurFloat3CS;
+	ShaderMaterials[BilateralBlurFloat4] = BilateralBlurFloat4CS;
+	ShaderMaterials[BilateralBlurUnorm1] = BilateralBlurUnorm1CS;
+	ShaderMaterials[BilateralBlurUnorm4] = BilateralBlurUnorm4CS;
+
+	ShaderMaterials[BilateralBlurWideFloat1] = BilateralBlurWideFloat1CS;
+	ShaderMaterials[BilateralBlurWideFloat3] = BilateralBlurWideFloat3CS;
+	ShaderMaterials[BilateralBlurWideFloat4] = BilateralBlurWideFloat4CS;
+	ShaderMaterials[BilateralBlurWideUnorm1] = BilateralBlurWideUnorm1CS;
+	ShaderMaterials[BilateralBlurWideUnorm4] = BilateralBlurWideUnorm4CS;
+
+	ShaderMaterials[GaussianBlurFloat1] = GaussianBlurFloat1CS;
+	ShaderMaterials[GaussianBlurFloat3] = GaussianBlurFloat3CS;
+	ShaderMaterials[GaussianBlurFloat4] = GaussianBlurFloat4CS;
+	ShaderMaterials[GaussianBlurUnorm1] = GaussianBlurUnorm1CS;
+	ShaderMaterials[GaussianBlurUnorm4] = GaussianBlurUnorm4CS;
+
+	ShaderMaterials[GaussianBlurWideFloat1] = GaussianBlurWideFloat1CS;
+	ShaderMaterials[GaussianBlurWideFloat3] = GaussianBlurWideFloat3CS;
+	ShaderMaterials[GaussianBlurWideFloat4] = GaussianBlurWideFloat4CS;
+	ShaderMaterials[GaussianBlurWideUnorm1] = GaussianBlurWideUnorm1CS;
+	ShaderMaterials[GaussianBlurWideUnorm4] = GaussianBlurWideUnorm4CS;
 }
 
 
@@ -504,7 +514,7 @@ void ScreenProcessing::Render(const Camera& camera)
 	{
 		ScopedTimer Scope(L"Draw Debug Histogram", Context);
 		Context.SetRootSignature(PostEffectsRS);
-		Context.SetPipelineState(GET_PSO(DrawHistogramCS));
+		Context.SetPipelineState(DrawHistogramCS->GetRuntimePSO());
 		Context.InsertUAVBarrier(*LastPostprocessRT);
 		Context.TransitionResource(g_Histogram, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 		Context.TransitionResource(g_Exposure, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -640,28 +650,6 @@ void ScreenProcessing::Update(float dt, MainConstants& RenderData, Camera& camer
 	}
 }
 
-void ScreenProcessing::BuildPSO(const PSOCommonProperty CommonProperty)
-{
-	D3D12_RASTERIZER_DESC Rasterizer = RasterizerDefault;
-	if (CommonProperty.IsWireframe)
-	{
-		Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
-		Rasterizer.FillMode = D3D12_FILL_MODE_WIREFRAME;
-	}
-
-	mPSO.SetRootSignature(*CommonProperty.pRootSignature);
-	mPSO.SetRasterizerState(Rasterizer);
-	mPSO.SetBlendState(BlendDisable);
-	mPSO.SetDepthStencilState(DepthStateDisabled);
-	mPSO.SetSampleMask(0xFFFFFFFF);
-	mPSO.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
-	mPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-	mPSO.SetVertexShader(g_pScreenQuadVS, sizeof(g_pScreenQuadVS));
-	mPSO.SetPixelShader(g_pFbmPostPS, sizeof(g_pFbmPostPS));
-	mPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
-	mPSO.Finalize();
-}
-
 void ScreenProcessing::UpsampleBlurBuffer(ComputeContext& Context, ColorBuffer buffer[2], const ColorBuffer& LowerResBuffer, float UpSampleBlendFactor)
 {
 	// Set the shader constants
@@ -676,7 +664,7 @@ void ScreenProcessing::UpsampleBlurBuffer(ComputeContext& Context, ColorBuffer b
 	Context.SetDynamicDescriptors(2, 0, 2, SRVs);
 
 	// Set the shader: Up-Sample and blur
-	Context.SetPipelineState(GET_PSO(UpsampleBlurCS));
+	Context.SetPipelineState(UpsampleBlurCS->GetRuntimePSO());
 
 	// Dispatch the compute shader with default 8x8 thread groups
 	Context.Dispatch2D(bufferWidth, bufferHeight);
@@ -697,7 +685,7 @@ void ScreenProcessing::BlurBuffer(ComputeContext& Context, ColorBuffer& SourceBu
 	Context.SetDynamicDescriptor(2, 0, SourceBuffer.GetSRV());
 
 	// Set the shader
-	Context.SetPipelineState(GET_PSO(BlurCS));
+	Context.SetPipelineState(BlurCS->GetRuntimePSO());
 
 	// Dispatch the compute shader with default 8x8 thread groups
 	Context.Dispatch2D(bufferWidth, bufferHeight);
@@ -756,8 +744,7 @@ void ScreenProcessing::GaussianBlur(ComputeContext& Context, ColorBuffer& Source
 		break;
 	}
 
-	ComputePSO& BlurPSO = *Shaders[GaussianBlurShaderIndex];
-	Context.SetPipelineState(GET_PSO(BlurPSO));
+	Context.SetPipelineState(ShaderMaterials[GaussianBlurShaderIndex]->GetRuntimePSO());
 
 	//Horizontal Blur
 	Context.Dispatch2D(ConstantData.Dimensions.x, ConstantData.Dimensions.y, 256, 1);
@@ -828,8 +815,7 @@ void ScreenProcessing::BilateralBlur(ComputeContext& Context, ColorBuffer& Sourc
 		break;
 	}
 
-	ComputePSO& BlurPSO = *Shaders[BilateralBlurShaderIndex];
-	Context.SetPipelineState(BlurPSO);
+	Context.SetPipelineState(ShaderMaterials[BilateralBlurShaderIndex]->GetRuntimePSO());
 
 	//Horizontal Blur
 	Context.Dispatch2D(ConstantData.Dimensions.x, ConstantData.Dimensions.y, 256, 1);
@@ -882,7 +868,7 @@ void ScreenProcessing::LinearizeZ(ComputeContext& Context, DepthBuffer& Depth, C
 
 	Context.SetDynamicDescriptors(1, 0, 1, &LinearDepth.GetUAV());
 
-	Context.SetPipelineState(GET_PSO(LinearizeDepthCS));
+	Context.SetPipelineState(LinearizeDepthCS->GetRuntimePSO());
 
 	Context.Dispatch2D(LinearDepth.GetWidth(), LinearDepth.GetHeight(), 16, 16);
 
@@ -943,7 +929,7 @@ void ScreenProcessing::GenerateBloom(ComputeContext& Context)
 	Context.SetDynamicDescriptor(2, 1, g_Exposure.GetSRV());
 
 	//Bloom Extract
-	Context.SetPipelineState(GET_PSO(BloomExtractAndDownsampleHDRCS));
+	Context.SetPipelineState(BloomExtractAndDownsampleHDRCS->GetRuntimePSO());
 	Context.Dispatch2D(BloomWidth, BloomHeight);
 
 	Context.TransitionResource(g_aBloomUAV1[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -964,7 +950,7 @@ void ScreenProcessing::GenerateBloom(ComputeContext& Context)
 		Context.SetDynamicDescriptors(1, 0, 4, UAVs);
 
 		// Each dispatch group is 8x8 threads,Each dispatch group is 8x8 threads, Each thread reads in 2x2 source Texels use bilinear filter.
-		Context.SetPipelineState(GET_PSO(DownsampleBloom4CS));
+		Context.SetPipelineState(DownsampleBloom4CS->GetRuntimePSO());
 		Context.Dispatch2D(BloomWidth / 2, BloomHeight / 2);
 
 		Context.TransitionResource(g_aBloomUAV2[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -987,7 +973,7 @@ void ScreenProcessing::GenerateBloom(ComputeContext& Context)
 		D3D12_CPU_DESCRIPTOR_HANDLE UAVs[2] = { g_aBloomUAV3[0].GetUAV(), g_aBloomUAV5[0].GetUAV() };
 		Context.SetDynamicDescriptors(1, 0, 2, UAVs);
 
-		Context.SetPipelineState(GET_PSO(DownsampleBloom2CS));
+		Context.SetPipelineState(DownsampleBloom2CS->GetRuntimePSO());
 		Context.Dispatch2D(BloomWidth / 2, BloomHeight / 2);
 
 		Context.TransitionResource(g_aBloomUAV3[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -1010,7 +996,7 @@ void ScreenProcessing::ExtractLuminance(ComputeContext& Context)
 	Context.SetDynamicDescriptor(1, 0, g_LumaBloom.GetUAV());
 	Context.SetDynamicDescriptor(2, 0, g_SceneColorBuffer.GetSRV());
 	Context.SetDynamicDescriptor(2, 1, g_Exposure.GetSRV());
-	Context.SetPipelineState(GET_PSO(ExtractLuminanceCS));
+	Context.SetPipelineState(ExtractLuminanceCS->GetRuntimePSO());
 	Context.Dispatch2D(g_LumaBloom.GetWidth(), g_LumaBloom.GetHeight());
 }
 
@@ -1019,7 +1005,7 @@ void ScreenProcessing::CopyBackBufferForNotHDRUAVSupport(ComputeContext& Context
 {
 	ScopedTimer Scope(L"Copy Post back to Scene For Not HDR UAV Support", Context);
 	Context.SetRootSignature(PostEffectsRS);
-	Context.SetPipelineState(GET_PSO(CopyBackBufferForNotHDRUAVSupportCS));
+	Context.SetPipelineState(CopyBackBufferForNotHDRUAVSupportCS->GetRuntimePSO());
 	Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	Context.TransitionResource(g_PostEffectsBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	Context.SetDynamicDescriptor(1, 0, g_SceneColorBuffer.GetUAV());

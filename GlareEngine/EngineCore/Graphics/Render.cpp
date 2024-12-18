@@ -347,7 +347,6 @@ namespace GlareEngine
 		glTFInstanceModel::BuildPSO(gCommonProperty);
 		IBL::BuildPSOs(gCommonProperty);
 		Terrain::BuildPSO(gCommonProperty);
-		ScreenProcessing::BuildPSO(gCommonProperty);
 	}
 
 	void Render::BuildRuntimePSOs()
