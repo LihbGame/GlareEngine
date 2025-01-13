@@ -117,7 +117,8 @@ void CSky::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 {
 	if (SpecificPSO)
 	{
-		Context.SetPipelineState(*SpecificPSO);
+		PSO& specificPSO = (*SpecificPSO);
+		Context.SetPipelineState(GET_PSO(specificPSO));
 	}
 	else
 	{

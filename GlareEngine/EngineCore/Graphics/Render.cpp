@@ -343,9 +343,7 @@ namespace GlareEngine
 	void Render::BuildPSOs()
 	{
 		RenderMaterialManager::GetInstance().BuildMaterialsPSO(gCommonProperty);
-
 		glTFInstanceModel::BuildPSO(gCommonProperty);
-		IBL::BuildPSOs(gCommonProperty);
 		Terrain::BuildPSO(gCommonProperty);
 	}
 

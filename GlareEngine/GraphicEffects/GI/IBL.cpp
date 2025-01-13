@@ -13,15 +13,12 @@
 //1024 
 #define  MaxMipLevels 11
 
-GraphicsPSO IBL::mIndirectDiffusePSO;
-GraphicsPSO IBL::mPreFilteredEnvMapPSO;
-GraphicsPSO IBL::mBRDFPSO;
-
 RootSignature* IBL::m_pRootSignature = nullptr;
 
 
 IBL::IBL()
 {
+	InitMaterial();
 }
 
 IBL::~IBL()
@@ -56,7 +53,7 @@ void IBL::BakingEnvironmentDiffuse(GraphicsContext& Context)
 		Context.SetRenderTarget(mIndirectDiffuseCube->RTV(i));
 		CubeMapConstants constants = mIndirectDiffuseCube->GetCubeCameraCBV(i);
 		Context.SetDynamicConstantBufferView((int)RootSignatureType::eCommonConstantBuffer, sizeof(mIndirectDiffuseCube->GetCubeCameraCBV(i)), &constants);
-		m_pSky->Draw(Context, &mIndirectDiffusePSO);
+		m_pSky->Draw(Context, &mIndirectDiffuseMaterial->GetGraphicsPSO());
 	}
 	Context.TransitionResource(mIndirectDiffuseCube->Resource(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
 	Context.PIXEndEvent();
@@ -82,7 +79,7 @@ void IBL::BakingPreFilteredEnvironment(GraphicsContext& Context)
 			auto ConstantBuffer = mPreFilteredEnvCube->GetCubeCameraCBV(i);
 			ConstantBuffer.mRoughness = Roughness;
 			Context.SetDynamicConstantBufferView((int)RootSignatureType::eCommonConstantBuffer, sizeof(ConstantBuffer), &ConstantBuffer);
-			m_pSky->Draw(Context, &mPreFilteredEnvMapPSO);
+			m_pSky->Draw(Context, &mPreFilteredEnvMapMaterial->GetGraphicsPSO());
 		}
 	}
 	Context.TransitionResource(mPreFilteredEnvCube->Resource(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
@@ -94,7 +91,7 @@ void IBL::BakingBRDF(GraphicsContext& Context)
 	assert(m_pRootSignature);
 	Context.PIXBeginEvent(L"Integration BRDF");
 	Context.SetRootSignature(*m_pRootSignature);
-	Context.SetPipelineState(mBRDFPSO);
+	Context.SetPipelineState(mBRDFMaterial->GetRuntimePSO());
 	Context.TransitionResource(mBRDFLUT, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 	Context.SetRenderTarget(mBRDFLUT.GetRTV());
 	Context.SetViewportAndScissor(0, 0, BAKECUBESIZE / 2, BAKECUBESIZE / 2);
@@ -110,37 +107,6 @@ void IBL::SaveBakingDataToFiles(GraphicsContext& Context)
 	mIndirectDiffuseCube->Resource().ExportToFile(TextureManager::GetTextureRootFilePath() + L"IndirectDiffuse.dds", true);
 	mBRDFLUT.ExportToFile(TextureManager::GetTextureRootFilePath() + L"IntegrationBRDF.dds");
 	mPreFilteredEnvCube->Resource().ExportToFile(TextureManager::GetTextureRootFilePath() + L"PreFilteredEnvironment.dds", true);
-}
-
-void IBL::BuildPSOs(const PSOCommonProperty CommonProperty)
-{
-	m_pRootSignature = CommonProperty.pRootSignature;
-
-	//Baking Environment Diffuse PSO
-	mIndirectDiffusePSO.SetRootSignature(*CommonProperty.pRootSignature);
-	mIndirectDiffusePSO.SetRasterizerState(RasterizerDefault);
-	mIndirectDiffusePSO.SetBlendState(BlendDisable);
-	mIndirectDiffusePSO.SetDepthStencilState(DepthStateDisabled);
-	mIndirectDiffusePSO.SetSampleMask(0xFFFFFFFF);
-	mIndirectDiffusePSO.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
-	mIndirectDiffusePSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-	mIndirectDiffusePSO.SetVertexShader(g_pBakingEnvDiffuseVS, sizeof(g_pBakingEnvDiffuseVS));
-	mIndirectDiffusePSO.SetPixelShader(g_pBakingEnvDiffusePS, sizeof(g_pBakingEnvDiffusePS));
-	mIndirectDiffusePSO.SetRenderTargetFormat(DefaultHDRColorFormat, DXGI_FORMAT_D32_FLOAT);
-	mIndirectDiffusePSO.Finalize();
-
-	//Pre_Filtered Environment Map PSO
-	mPreFilteredEnvMapPSO = mIndirectDiffusePSO;
-	mPreFilteredEnvMapPSO.SetPixelShader(g_pPreFilteredEnvironmentMapPS, sizeof(g_pPreFilteredEnvironmentMapPS));
-	mPreFilteredEnvMapPSO.Finalize();
-
-	//Integration BRDF
-	mBRDFPSO = mIndirectDiffusePSO;
-	mBRDFPSO.SetVertexShader(g_pScreenQuadVS, sizeof(g_pScreenQuadVS));
-	mBRDFPSO.SetPixelShader(g_pBakingBRDFPS, sizeof(g_pBakingBRDFPS));
-	mBRDFPSO.SetRenderTargetFormat(DXGI_FORMAT_R16G16_FLOAT, DXGI_FORMAT_D32_FLOAT);
-	mBRDFPSO.Finalize();
-
 }
 
 void IBL::PreBakeGIData(GraphicsContext& Context, RenderObject* Object)
@@ -198,6 +164,88 @@ void IBL::PreBakeGIData(GraphicsContext& Context, RenderObject* Object)
 	}
 }
 
+void IBL::InitMaterial()
+{
+	mIndirectDiffuseMaterial = RenderMaterialManager::GetInstance().GetMaterial("IBL Indirect Diffuse");
+	mPreFilteredEnvMapMaterial = RenderMaterialManager::GetInstance().GetMaterial("IBL PreFiltered EnvMap");
+	mBRDFMaterial = RenderMaterialManager::GetInstance().GetMaterial("IBL BRDF");
 
+	if (!mIndirectDiffuseMaterial->IsInitialized)
+	{
+		mIndirectDiffuseMaterial->BindPSOCreateFunc([&](const PSOCommonProperty CommonProperty) {
+			m_pRootSignature = CommonProperty.pRootSignature;
+			GraphicsPSO& IndirectDiffusePSO = mIndirectDiffuseMaterial->GetGraphicsPSO();
 
+			//Baking Environment Diffuse PSO
+			IndirectDiffusePSO.SetRootSignature(*CommonProperty.pRootSignature);
+			IndirectDiffusePSO.SetRasterizerState(RasterizerDefault);
+			IndirectDiffusePSO.SetBlendState(BlendDisable);
+			IndirectDiffusePSO.SetDepthStencilState(DepthStateDisabled);
+			IndirectDiffusePSO.SetSampleMask(0xFFFFFFFF);
+			IndirectDiffusePSO.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
+			IndirectDiffusePSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+			IndirectDiffusePSO.SetVertexShader(g_pBakingEnvDiffuseVS, sizeof(g_pBakingEnvDiffuseVS));
+			IndirectDiffusePSO.SetPixelShader(g_pBakingEnvDiffusePS, sizeof(g_pBakingEnvDiffusePS));
+			IndirectDiffusePSO.SetRenderTargetFormat(DefaultHDRColorFormat, DXGI_FORMAT_D32_FLOAT);
+			IndirectDiffusePSO.Finalize();
+			});
 
+		mIndirectDiffuseMaterial->BindPSORuntimeModifyFunc([&]() {
+			RuntimePSOManager::Get().RegisterPSO(&mIndirectDiffuseMaterial->GetGraphicsPSO(), GET_SHADER_PATH("GI/BakingEnvDiffuseVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+			RuntimePSOManager::Get().RegisterPSO(&mIndirectDiffuseMaterial->GetGraphicsPSO(), GET_SHADER_PATH("GI/BakingEnvDiffusePS.hlsl"), D3D12_SHVER_PIXEL_SHADER); });
+
+		mIndirectDiffuseMaterial->IsInitialized = true;
+	}
+
+	if (!mPreFilteredEnvMapMaterial->IsInitialized)
+	{
+		mPreFilteredEnvMapMaterial->BindPSOCreateFunc([&](const PSOCommonProperty CommonProperty) {
+			GraphicsPSO& PreFilteredEnvMapPSO = mPreFilteredEnvMapMaterial->GetGraphicsPSO();
+
+			//Pre_Filtered Environment Map PSO
+			PreFilteredEnvMapPSO.SetRootSignature(*CommonProperty.pRootSignature);
+			PreFilteredEnvMapPSO.SetRasterizerState(RasterizerDefault);
+			PreFilteredEnvMapPSO.SetBlendState(BlendDisable);
+			PreFilteredEnvMapPSO.SetDepthStencilState(DepthStateDisabled);
+			PreFilteredEnvMapPSO.SetSampleMask(0xFFFFFFFF);
+			PreFilteredEnvMapPSO.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
+			PreFilteredEnvMapPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+			PreFilteredEnvMapPSO.SetVertexShader(g_pBakingEnvDiffuseVS, sizeof(g_pBakingEnvDiffuseVS));
+			PreFilteredEnvMapPSO.SetPixelShader(g_pPreFilteredEnvironmentMapPS, sizeof(g_pPreFilteredEnvironmentMapPS));
+			PreFilteredEnvMapPSO.SetRenderTargetFormat(DefaultHDRColorFormat, DXGI_FORMAT_D32_FLOAT);
+			PreFilteredEnvMapPSO.Finalize();
+			});
+
+		mPreFilteredEnvMapMaterial->BindPSORuntimeModifyFunc([&]() {
+			RuntimePSOManager::Get().RegisterPSO(&mPreFilteredEnvMapMaterial->GetGraphicsPSO(), GET_SHADER_PATH("GI/BakingEnvDiffuseVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+			RuntimePSOManager::Get().RegisterPSO(&mPreFilteredEnvMapMaterial->GetGraphicsPSO(), GET_SHADER_PATH("GI/PreFilteredEnvironmentMapPS.hlsl"), D3D12_SHVER_PIXEL_SHADER); });
+
+		mPreFilteredEnvMapMaterial->IsInitialized = true;
+	}
+
+	if (!mBRDFMaterial->IsInitialized)
+	{
+		mBRDFMaterial->BindPSOCreateFunc([&](const PSOCommonProperty CommonProperty) {
+			GraphicsPSO& BRDFPSO = mBRDFMaterial->GetGraphicsPSO();
+
+			//Integration BRDF
+			BRDFPSO.SetRootSignature(*CommonProperty.pRootSignature);
+			BRDFPSO.SetRasterizerState(RasterizerDefault);
+			BRDFPSO.SetBlendState(BlendDisable);
+			BRDFPSO.SetDepthStencilState(DepthStateDisabled);
+			BRDFPSO.SetSampleMask(0xFFFFFFFF);
+			BRDFPSO.SetInputLayout((UINT)InputLayout::Pos.size(), InputLayout::Pos.data());
+			BRDFPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+			BRDFPSO.SetVertexShader(g_pScreenQuadVS, sizeof(g_pScreenQuadVS));
+			BRDFPSO.SetPixelShader(g_pBakingBRDFPS, sizeof(g_pBakingBRDFPS));
+			BRDFPSO.SetRenderTargetFormat(DXGI_FORMAT_R16G16_FLOAT, DXGI_FORMAT_D32_FLOAT);
+			BRDFPSO.Finalize();
+			});
+
+		mBRDFMaterial->BindPSORuntimeModifyFunc([&]() {
+			RuntimePSOManager::Get().RegisterPSO(&mBRDFMaterial->GetGraphicsPSO(), GET_SHADER_PATH("Misc/ScreenQuadVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+			RuntimePSOManager::Get().RegisterPSO(&mBRDFMaterial->GetGraphicsPSO(), GET_SHADER_PATH("GI/BakingBRDFPS.hlsl"), D3D12_SHVER_PIXEL_SHADER); });
+
+		mBRDFMaterial->IsInitialized = true;
+	}
+}

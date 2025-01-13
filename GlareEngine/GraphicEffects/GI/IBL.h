@@ -1,6 +1,7 @@
 #pragma once
 #include "Misc/CubeRenderTarget.h"
 #include "Misc/RenderObject.h"
+#include "Engine/RenderMaterial.h"
 
 // Preview:
 // 1.Baking Environment Diffuse reflection
@@ -8,7 +9,8 @@
 
 #define BAKECUBESIZE 1024
 
-class IBL
+class IBL:
+	public RenderObject
 {
 public:
 	IBL();
@@ -18,7 +20,7 @@ public:
 public:
 	void PreBakeGIData(GraphicsContext& Context, RenderObject* Object);
 	void Initialize();
-	static void BuildPSOs(const PSOCommonProperty CommonProperty);
+	virtual void InitMaterial();
 private:
 	void BakingEnvironmentDiffuse(GraphicsContext& Context);
 	void BakingPreFilteredEnvironment(GraphicsContext& Context);
@@ -29,13 +31,11 @@ private:
 	unique_ptr<CubeRenderTarget> mPreFilteredEnvCube;
 	ColorBuffer mBRDFLUT;
 
-
 	RenderObject* m_pSky = nullptr;
 
-
 	static RootSignature* m_pRootSignature;
-	static GraphicsPSO mIndirectDiffusePSO;
-	static GraphicsPSO mPreFilteredEnvMapPSO;
-	static GraphicsPSO mBRDFPSO;
+	RenderMaterial* mIndirectDiffuseMaterial = nullptr;
+	RenderMaterial* mPreFilteredEnvMapMaterial = nullptr;
+	RenderMaterial* mBRDFMaterial = nullptr;
 };
 
