@@ -28,6 +28,8 @@ public:
 
 	void Update(float dt);
 
+	virtual void InitMaterial();
+
 	virtual void DrawUI();
 	virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO /* = nullptr */);
 
@@ -37,7 +39,6 @@ public:
 	float GetDepth()const;
 	float GetHeight(float x, float z)const;
 
-	static void BuildPSO(const PSOCommonProperty CommonProperty);
 private:
 	void CreateMaterials();
 	void LoadHeightMapAsset();

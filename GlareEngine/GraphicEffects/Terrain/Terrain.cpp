@@ -55,6 +55,8 @@ Terrain::Terrain(ID3D12GraphicsCommandList* CommandList,TerrainInitInfo TerrainI
 	BuildQuadPatchGeometry(m_pCommandList);
 	//build terrain transform
 	BuildTerrainTransform();
+	//Init Material
+	InitMaterial();
 }
 
 
@@ -66,6 +68,10 @@ void Terrain::Update(float dt)
 {
 	UpdateTerrainConstantBuffer();
 
+}
+
+void Terrain::InitMaterial()
+{
 }
 
 void Terrain::DrawUI()
