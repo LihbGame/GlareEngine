@@ -102,13 +102,6 @@ float Terrain::GetHeight(float x, float z) const
 	return 0.0f;
 }
 
-void Terrain::BuildPSO(const PSOCommonProperty CommonProperty)
-{
-
-
-
-}
-
 void Terrain::CreateMaterials()
 {
 	int MaterialNum = sizeof(mTerrainInfo.LayerMapFilename) / sizeof(string);
