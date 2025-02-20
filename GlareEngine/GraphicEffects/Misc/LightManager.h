@@ -59,7 +59,7 @@ namespace GlareEngine
 		extern Camera ConeShadowCamera[MaxShadowedLights];
 
 		void InitializeResources(const Camera& camera);
-		void CreateAreaLightRenderData();
+		void CreateLightRenderData();
 		void CreateRandomLights(const Vector3 minBound, const Vector3 maxBound, const Vector3 offset);
 		void FillLightGrid(GraphicsContext& gfxContext, const Camera& camera);
 		void FillLightGrid_Internal(GraphicsContext& gfxContext, const Camera& camera,ColorBuffer& SceneColor,DepthBuffer& SceneDepth);

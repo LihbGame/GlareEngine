@@ -132,11 +132,11 @@ __declspec(align(16)) struct TileConstants
 	uint32_t TileCount;
 };
 
-struct AreaLightRenderConstants
+struct LightRenderConstants
 {
 	XMFLOAT4X4		mWorldTransform = MathHelper::Identity4x4();
 	XMFLOAT4X4		mTexTransform = MathHelper::Identity4x4();
-	XMFLOAT3        mAreaLightColor;
+	XMFLOAT3        mLightColor;
 	int				mMaterialIndex;
 };
 
@@ -210,16 +210,19 @@ namespace GlareEngine
 
 		int m_LightRadius = 50;
 		int m_QuadAreaLightSize = 50;
-		int m_AreaLightSizeScale = 1;
+		float m_AreaLightSizeScale = 1;
+		float m_PointLightSizeScale = 0.1;
 		int m_AreaLightIntensityScale = 5;
 		unique_ptr<InstanceModel> mQuadAreaLightModel = nullptr;
+		unique_ptr<InstanceModel> mQuadPointLightModel = nullptr;
 
-		vector<AreaLightRenderConstants> mIRC;
+		vector<LightRenderConstants> mAreaLightIRC;
+		vector<LightRenderConstants> mPointLightIRC;
 
 		//DirectionalLights
 		DirectionalLight mDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 
-		bool bEnablePointLight = true;
+		bool bEnablePointLight = false;
 		bool bEnableAreaLight = true;
 		bool bEnableConeLight = true;
 	}
@@ -391,7 +394,7 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 			m_RectAreaLightData[AreaLightIndex].PositionCenter = position / 1.5f;
 			m_RectAreaLightData[AreaLightIndex].LightDir = LightDir;
 			m_RectAreaLightData[AreaLightIndex].RadiusSquare = lightRadius * lightRadius;
-			m_RectAreaLightData[AreaLightIndex].Color = color* m_AreaLightIntensityScale;
+			m_RectAreaLightData[AreaLightIndex].Color = color;
 
 			AreaLightIndex++;
 		}
@@ -417,40 +420,69 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 
 	CommandContext::InitializeBuffer(m_LightBuffer, m_LightData, MaxLights * sizeof(LightData));
 
-	CreateAreaLightRenderData();
+	CreateLightRenderData();
 }
 
 
-void Lighting::CreateAreaLightRenderData()
+void Lighting::CreateLightRenderData()
 {
-	GraphicsContext& Context = GraphicsContext::Begin(L"Init Area Light Render data");
-	const ModelRenderData* ModelData = SimpleModelGenerator::GetInstance(Context.GetCommandList())->CreateGridRanderData("AreaLight", m_QuadAreaLightSize, m_QuadAreaLightSize, 2, 2);
-	InstanceRenderData InstanceData;
-	InstanceData.mModelData = ModelData;
-	InstanceData.mInstanceConstants.resize(ModelData->mSubModels.size());
-	for (int SubMeshIndex = 0; SubMeshIndex < ModelData->mSubModels.size(); SubMeshIndex++)
+	GraphicsContext& Context = GraphicsContext::Begin(L"Init Light Render data");
+	//area light mesh
 	{
-		for (int LightIndex = 0; LightIndex < MaxAreaLights; ++LightIndex)
+		const ModelRenderData* ModelData = SimpleModelGenerator::GetInstance(Context.GetCommandList())->CreateGridRanderData("AreaLight", m_QuadAreaLightSize, m_QuadAreaLightSize, 2, 2);
+		InstanceRenderData InstanceData;
+		InstanceData.mModelData = ModelData;
+		InstanceData.mInstanceConstants.resize(ModelData->mSubModels.size());
+		for (int SubMeshIndex = 0; SubMeshIndex < ModelData->mSubModels.size(); SubMeshIndex++)
 		{
-			AreaLightRenderConstants IRC;
-			Vector3 rotAxis = Vector3(XMVector3Cross(Vector3(0, 1, 0), m_RectAreaLightData[LightIndex].LightDir));
-			float rotAngle=std::acosf(Vector3(XMVector3Dot(Vector3(0, 1, 0), m_RectAreaLightData[LightIndex].LightDir)).GetX());
-			Matrix3 RotMatrix = Quaternion(rotAxis, rotAngle);
-			Matrix4 LightTransform = Matrix4(Vector4(RotMatrix.GetX()), Vector4(RotMatrix.GetY()), Vector4(RotMatrix.GetZ()), Vector4(0, 0, 0, 1));
-			IRC.mAreaLightColor = XMFLOAT3(m_RectAreaLightData[LightIndex].Color);
-			XMFLOAT3 position = XMFLOAT3(m_RectAreaLightData[LightIndex].PositionCenter);
-			XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMATRIX(LightTransform)*XMMatrixScaling(m_AreaLightSizeScale, m_AreaLightSizeScale, m_AreaLightSizeScale) * XMMatrixTranslation(position.x, position.y, position.z)));
-			mIRC.push_back(IRC);
+			for (int LightIndex = 0; LightIndex < MaxAreaLights; ++LightIndex)
+			{
+				LightRenderConstants IRC;
+				Vector3 rotAxis = Vector3(XMVector3Cross(Vector3(0, 1, 0), m_RectAreaLightData[LightIndex].LightDir));
+				float rotAngle = std::acosf(Vector3(XMVector3Dot(Vector3(0, 1, 0), m_RectAreaLightData[LightIndex].LightDir)).GetX());
+				Matrix3 RotMatrix = Quaternion(rotAxis, rotAngle);
+				Matrix4 LightTransform = Matrix4(Vector4(RotMatrix.GetX()), Vector4(RotMatrix.GetY()), Vector4(RotMatrix.GetZ()), Vector4(0, 0, 0, 1));
+				IRC.mLightColor = XMFLOAT3(m_RectAreaLightData[LightIndex].Color);
+				XMFLOAT3 position = XMFLOAT3(m_RectAreaLightData[LightIndex].PositionCenter);
+				XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMATRIX(LightTransform) * XMMatrixScaling(m_AreaLightSizeScale, m_AreaLightSizeScale, m_AreaLightSizeScale) * XMMatrixTranslation(position.x, position.y, position.z)));
+				mAreaLightIRC.push_back(IRC);
+			}
+			InstanceConstants IC;
+			IC.mDataPtr = mAreaLightIRC.data();
+			IC.mDataNum = mAreaLightIRC.size();
+			IC.mDataSize = sizeof(LightRenderConstants);
+			InstanceData.mInstanceConstants[SubMeshIndex] = IC;
 		}
-		InstanceConstants IC;
-		IC.mDataPtr = mIRC.data();
-		IC.mDataNum = mIRC.size();
-		IC.mDataSize = sizeof(AreaLightRenderConstants);
-		InstanceData.mInstanceConstants[SubMeshIndex] = IC;
+		mQuadAreaLightModel = make_unique<InstanceModel>(StringToWString("Area Light"), InstanceData);
+		mQuadAreaLightModel->SetShadowFlag(false);
 	}
-	mQuadAreaLightModel = make_unique<InstanceModel>(StringToWString("Area Light"), InstanceData);
-	mQuadAreaLightModel->SetShadowFlag(false);
 
+	//Point light mesh
+	{
+		const ModelRenderData* ModelData = SimpleModelGenerator::GetInstance(Context.GetCommandList())->CreateSimpleModelRanderData("PointLight", SimpleModelType::Sphere);
+		InstanceRenderData InstanceData;
+		InstanceData.mModelData = ModelData;
+		InstanceData.mInstanceConstants.resize(ModelData->mSubModels.size());
+		int pointLightCount = (MaxLights - MaxShadowedLights - MaxAreaLights) / 2;
+		for (int SubMeshIndex = 0; SubMeshIndex < ModelData->mSubModels.size(); SubMeshIndex++)
+		{
+			for (int LightIndex = 0; LightIndex < pointLightCount; ++LightIndex)
+			{
+				LightRenderConstants IRC;
+				IRC.mLightColor = XMFLOAT3(m_LightData[LightIndex].Color);
+				XMFLOAT3 position = XMFLOAT3(m_LightData[LightIndex].PositionWS);
+				XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMatrixScaling(m_PointLightSizeScale, m_PointLightSizeScale, m_PointLightSizeScale) * XMMatrixTranslation(position.x, position.y, position.z)));
+				mPointLightIRC.push_back(IRC);
+			}
+			InstanceConstants IC;
+			IC.mDataPtr = mPointLightIRC.data();
+			IC.mDataNum = mPointLightIRC.size();
+			IC.mDataSize = sizeof(LightRenderConstants);
+			InstanceData.mInstanceConstants[SubMeshIndex] = IC;
+		}
+		mQuadPointLightModel = make_unique<InstanceModel>(StringToWString("Point Light"), InstanceData);
+		mQuadPointLightModel->SetShadowFlag(false);
+	}
 	Context.Finish();
 }
 
@@ -754,6 +786,14 @@ void Lighting::RenderAreaLightMesh(GraphicsContext& context)
 		context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
 		mQuadAreaLightModel->Draw(context, &AreaLightMaterial->GetGraphicsPSO());
+	}
+
+	if (bEnablePointLight)
+	{
+		ScopedTimer PointLightScope(L"Point Light Mesh", context);
+		context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+		context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
+		mQuadPointLightModel->Draw(context, &AreaLightMaterial->GetGraphicsPSO());
 	}
 }
 
