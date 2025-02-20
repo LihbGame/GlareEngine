@@ -14,6 +14,8 @@
 #include "PostProcessing/PostProcessing.h"
 #include "InstanceModel/SimpleModelGenerator.h"
 #include "InstanceModel/InstanceModel.h"
+#include "EngineGUI.h"
+
 
 //shaders
 #include "CompiledShaders/FillLightGrid_8_CS.h"
@@ -213,6 +215,13 @@ namespace GlareEngine
 		unique_ptr<InstanceModel> mQuadAreaLightModel = nullptr;
 
 		vector<AreaLightRenderConstants> mIRC;
+
+		//DirectionalLights
+		DirectionalLight mDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
+
+		bool bEnablePointLight = true;
+		bool bEnableAreaLight = true;
+		bool bEnableConeLight = true;
 	}
 }
 
@@ -735,12 +744,27 @@ void Lighting::InitMaterial()
 
 void Lighting::RenderAreaLightMesh(GraphicsContext& context)
 {
-	ScopedTimer AreaLightScope(L"Area Light Mesh", context);
+	if (bEnableAreaLight)
+	{
+		ScopedTimer AreaLightScope(L"Area Light Mesh", context);
 
-	//Set Material Data
-	//const vector<MaterialConstant>& MaterialData = MaterialManager::GetMaterialInstance()->GetMaterialsConstantBuffer();
-	//context.SetDynamicSRV((int)RootSignatureType::eMaterialConstantData, sizeof(MaterialConstant) * MaterialData.size(), MaterialData.data());
-	context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-	context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
-	mQuadAreaLightModel->Draw(context, &AreaLightMaterial->GetGraphicsPSO());
+		//Set Material Data
+		//const vector<MaterialConstant>& MaterialData = MaterialManager::GetMaterialInstance()->GetMaterialsConstantBuffer();
+		//context.SetDynamicSRV((int)RootSignatureType::eMaterialConstantData, sizeof(MaterialConstant) * MaterialData.size(), MaterialData.data());
+		context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+		context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
+		mQuadAreaLightModel->Draw(context, &AreaLightMaterial->GetGraphicsPSO());
+	}
+}
+
+void Lighting::DrawUI()
+{
+	ImGuiIO& io = ImGui::GetIO();
+
+	if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Checkbox("Point Light", &bEnablePointLight);
+		ImGui::Checkbox("Area Light", &bEnableAreaLight);
+		ImGui::Checkbox("Cone Light", &bEnableConeLight);
+	}
 }

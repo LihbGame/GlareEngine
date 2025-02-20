@@ -77,6 +77,9 @@ namespace GlareEngine
 		void Shutdown(void);
 
 		void InitMaterial();
+
+		void DrawUI();
+
 	}
 }
 

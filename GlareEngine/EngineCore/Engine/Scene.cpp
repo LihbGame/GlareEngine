@@ -242,6 +242,8 @@ void Scene::DrawUI()
 
 	//Post Processing UI
 	ScreenProcessing::DrawUI();
+	//Lighting UI
+	Lighting::DrawUI();
 
 	m_pGUI->EndDraw(RenderContext.GetCommandList());
 	RenderContext.TransitionResource(Display::GetCurrentBuffer(), D3D12_RESOURCE_STATE_PRESENT, true);
