@@ -557,7 +557,7 @@ void ScreenProcessing::DrawUI()
 {
 	ImGuiIO& io = ImGui::GetIO();
 
-	if (ImGui::CollapsingHeader("Anti-aliasing", ImGuiTreeNodeFlags_DefaultOpen))
+	if (ImGui::CollapsingHeader("Anti-aliasing", ImGuiTreeNodeFlags_None))
 	{
 		ImGui::Combo("Anti Aliasing", &mAntiAliasingIndex, mAntiAliasingName.c_str());
 
@@ -599,7 +599,7 @@ void ScreenProcessing::DrawUI()
 		}
 	}
 
-	if (ImGui::CollapsingHeader("Post Processing", ImGuiTreeNodeFlags_DefaultOpen))
+	if (ImGui::CollapsingHeader("Post Processing", ImGuiTreeNodeFlags_None))
 	{
 		if (ImGui::TreeNodeEx("SSAO", ImGuiTreeNodeFlags_DefaultOpen))
 		{

@@ -9,6 +9,7 @@ enum class SimpleModelType
 	Box,
 	Sphere,
 	Cylinder,
+	Cone,
 	Grid,
 	ScreenQuad,
 };

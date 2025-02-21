@@ -210,20 +210,25 @@ namespace GlareEngine
 
 		int m_LightRadius = 50;
 		int m_QuadAreaLightSize = 50;
+		int m_AreaLightIntensityScale = 5;
+
 		float m_AreaLightSizeScale = 1;
 		float m_PointLightSizeScale = 0.1;
-		int m_AreaLightIntensityScale = 5;
+		float m_ConeLightSizeScale = 0.1;
+
 		unique_ptr<InstanceModel> mQuadAreaLightModel = nullptr;
 		unique_ptr<InstanceModel> mQuadPointLightModel = nullptr;
+		unique_ptr<InstanceModel> mQuadConeLightModel = nullptr;
 
 		vector<LightRenderConstants> mAreaLightIRC;
 		vector<LightRenderConstants> mPointLightIRC;
+		vector<LightRenderConstants> mConeLightIRC;
 
 		//DirectionalLights
 		DirectionalLight mDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 
-		bool bEnablePointLight = false;
-		bool bEnableAreaLight = true;
+		bool bEnablePointLight = true;
+		bool bEnableAreaLight = false;
 		bool bEnableConeLight = true;
 	}
 }
@@ -482,6 +487,40 @@ void Lighting::CreateLightRenderData()
 		}
 		mQuadPointLightModel = make_unique<InstanceModel>(StringToWString("Point Light"), InstanceData);
 		mQuadPointLightModel->SetShadowFlag(false);
+	}
+
+	//Cone light mesh
+	{
+		const ModelRenderData* ModelData = SimpleModelGenerator::GetInstance(Context.GetCommandList())->CreateSimpleModelRanderData("ConeLight", SimpleModelType::Cone);
+		InstanceRenderData InstanceData;
+		InstanceData.mModelData = ModelData;
+		InstanceData.mInstanceConstants.resize(ModelData->mSubModels.size());
+		int pointLightBegine = (MaxLights - MaxShadowedLights - MaxAreaLights) / 2;
+		int pointLightEnd = pointLightBegine * 2 + MaxShadowedLights;
+
+		for (int SubMeshIndex = 0; SubMeshIndex < ModelData->mSubModels.size(); SubMeshIndex++)
+		{
+			for (int LightIndex = pointLightBegine; LightIndex < pointLightEnd; ++LightIndex)
+			{
+				LightRenderConstants IRC;
+				IRC.mLightColor = XMFLOAT3(m_LightData[LightIndex].Color);
+				XMFLOAT3 position = XMFLOAT3(m_LightData[LightIndex].PositionWS);
+				Vector3 ConeDir = Vector3(m_LightData[LightIndex].ConeDir[0], m_LightData[LightIndex].ConeDir[1], m_LightData[LightIndex].ConeDir[2]);
+				Vector3 rotAxis = Vector3(XMVector3Cross(Vector3(0, 1, 0), ConeDir));
+				float rotAngle = std::acosf(Vector3(XMVector3Dot(Vector3(0, 1, 0), ConeDir)).GetX());
+				Matrix3 RotMatrix = Quaternion(rotAxis, rotAngle);
+				Matrix4 LightTransform = Matrix4(Vector4(RotMatrix.GetX()), Vector4(RotMatrix.GetY()), Vector4(RotMatrix.GetZ()), Vector4(0, 0, 0, 1));
+				XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMATRIX(LightTransform) * XMMatrixScaling(m_ConeLightSizeScale, m_ConeLightSizeScale, m_ConeLightSizeScale) * XMMatrixTranslation(position.x, position.y, position.z)));
+				mConeLightIRC.push_back(IRC);
+			}
+			InstanceConstants IC;
+			IC.mDataPtr = mConeLightIRC.data();
+			IC.mDataNum = mConeLightIRC.size();
+			IC.mDataSize = sizeof(LightRenderConstants);
+			InstanceData.mInstanceConstants[SubMeshIndex] = IC;
+		}
+		mQuadConeLightModel = make_unique<InstanceModel>(StringToWString("Cone light"), InstanceData);
+		mQuadConeLightModel->SetShadowFlag(false);
 	}
 	Context.Finish();
 }
@@ -795,6 +834,15 @@ void Lighting::RenderAreaLightMesh(GraphicsContext& context)
 		context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
 		mQuadPointLightModel->Draw(context, &AreaLightMaterial->GetGraphicsPSO());
 	}
+
+	if (bEnableConeLight)
+	{
+		ScopedTimer PointLightScope(L"Cone Light Mesh", context);
+		context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+		context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
+		mQuadConeLightModel->Draw(context, &AreaLightMaterial->GetGraphicsPSO());
+	}
+
 }
 
 void Lighting::DrawUI()

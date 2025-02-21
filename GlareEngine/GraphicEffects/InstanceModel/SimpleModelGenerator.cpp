@@ -56,8 +56,14 @@ ModelRenderData* SimpleModelGenerator::CreateSimpleModelRanderData(string ModelN
 		}
 		case SimpleModelType::Cylinder:
 		{
-			lMeshData = mGeometryGenerator.CreateCylinder(20.0f, 5.0f, 50.0f, 30, 30);
+			lMeshData = mGeometryGenerator.CreateCylinder(20.0f, 20.0f, 50.0f, 30, 30);
 			MeshName = (char*)"Cylinder";
+			break;
+		}
+		case SimpleModelType::Cone:
+		{
+			lMeshData = mGeometryGenerator.CreateCylinder(0.1f, 20.0f, 50.0f, 30, 30);
+			MeshName = (char*)"Cone";
 			break;
 		}
 		case SimpleModelType::Grid:

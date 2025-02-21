@@ -232,6 +232,9 @@ void Scene::DrawUI()
 	RenderContext.TransitionResource(Display::GetCurrentBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 	m_pGUI->BeginDraw(RenderContext.GetCommandList());
 
+	//Lighting UI
+	Lighting::DrawUI();
+
 	for (auto& RenderObject : m_pRenderObjects)
 	{
 		if (RenderObject->GetVisible())
@@ -242,8 +245,6 @@ void Scene::DrawUI()
 
 	//Post Processing UI
 	ScreenProcessing::DrawUI();
-	//Lighting UI
-	Lighting::DrawUI();
 
 	m_pGUI->EndDraw(RenderContext.GetCommandList());
 	RenderContext.TransitionResource(Display::GetCurrentBuffer(), D3D12_RESOURCE_STATE_PRESENT, true);
