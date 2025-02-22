@@ -208,9 +208,9 @@ namespace GlareEngine
 
 		bool bLightDataChanged = true;
 
-		int m_LightRadius = 50;
-		int m_QuadAreaLightSize = 50;
-		int m_AreaLightIntensityScale = 5;
+		float m_LightRadius = 50;
+		float m_QuadAreaLightSize = 20;
+		float m_AreaLightIntensityScale = 5;
 
 		float m_AreaLightSizeScale = 1;
 		float m_PointLightSizeScale = 0.1;
@@ -322,7 +322,6 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 	};
 
 	int pointLightCount = (MaxLights - MaxShadowedLights- MaxAreaLights) / 2;
-	int AreaLightExtent = m_LightRadius;
 
 	for (uint32_t lightIndex = 0; lightIndex < MaxLights; lightIndex++)
 	{
@@ -394,7 +393,7 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 		else
 		{
 			static int AreaLightIndex = 0;
-			lightRadius *= 2;
+			lightRadius = m_QuadAreaLightSize*3.0f;
 
 			m_RectAreaLightData[AreaLightIndex].PositionCenter = position / 1.5f;
 			m_RectAreaLightData[AreaLightIndex].LightDir = LightDir;
