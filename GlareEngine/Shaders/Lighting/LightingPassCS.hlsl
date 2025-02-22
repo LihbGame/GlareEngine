@@ -47,24 +47,24 @@ void main( uint3 DTid : SV_DispatchThreadID )
         float ssao = gSsaoTex[pixelPos];
 
         Surface.ao = min(Surface.ao, ssao);
+
+        if (gIsRenderTiledBaseLighting)
+        {
+            if (!gIsClusterBaseLighting)
+            {
+                //Shading each light using Tiled Base
+                color += ComputeTiledLighting(pixelPos, Surface);
+            }
+            else
+            {
+                //Shading each light using Cluster Base
+                float viewZ = (1.0 / (gZMagic * DepthTexture[pixelPos] + 1.0)) * gFarZ;
+                color += ComputeClusterLighting(pixelPos, viewZ, Surface);
+            }
+        }
         
         if (gIsIndoorScene)
         {
-            if (gIsRenderTiledBaseLighting)
-            {
-                if (!gIsClusterBaseLighting)
-                {
-                    //Shading each light using Tiled Base
-                    color += ComputeTiledLighting(pixelPos, Surface);
-                }
-                else
-                {
-                    //Shading each light using Cluster Base
-                    float viewZ = (1.0 / (gZMagic * DepthTexture[pixelPos] + 1.0)) * gFarZ;
-                    color += ComputeClusterLighting(pixelPos, viewZ, Surface);
-
-                }
-            }
             //Indoor environment light(local environment light)
             color += baseColorAndAO.rgb * gAmbientLight.rgb * Surface.ao;
         }
