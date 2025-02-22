@@ -313,6 +313,11 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 	mSceneView.mMainConstants.FirstLightIndex[0] = Lighting::m_FirstConeLight;
 	mSceneView.mMainConstants.FirstLightIndex[1] = Lighting::m_FirstConeShadowedLight;
 
+	mSceneView.mMainConstants.bEnableAreaLight=Lighting::bEnableAreaLight;
+	mSceneView.mMainConstants.bEnableConeLight=Lighting::bEnableConeLight;
+	mSceneView.mMainConstants.bEnablePointLight=Lighting::bEnablePointLight;
+	mSceneView.mMainConstants.bEnableDirectionalLight=Lighting::bEnableDirectionalLight;
+	
 	//Shadow Map 
 	mSceneView.mMainConstants.mShadowMapIndex = m_pShadowMap->GetShadowMapIndex();
 

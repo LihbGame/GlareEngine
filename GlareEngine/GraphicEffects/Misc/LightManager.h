@@ -40,6 +40,11 @@ namespace GlareEngine
 			AreaLight
 		};
 
+		extern bool bEnablePointLight;
+		extern bool bEnableAreaLight;
+		extern bool bEnableConeLight;
+		extern bool bEnableDirectionalLight;
+		
 		extern StructuredBuffer m_LightBuffer;
 		extern StructuredBuffer m_LightGrid;
 

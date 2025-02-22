@@ -138,6 +138,11 @@ __declspec(align(16))struct MainConstants
 
 	XMFLOAT3    gTileSizes						= { 0.0f, 0.0f, 0.0f };
 	int			IsRenderTiledBaseLighting		= 1;
+
+	int			bEnablePointLight;
+	int 		bEnableAreaLight;
+	int 		bEnableConeLight;
+	int 		bEnableDirectionalLight;
 };
 
 struct TerrainConstants

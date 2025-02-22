@@ -121,6 +121,11 @@ cbuffer MainPass : register(b0)
     
     float3      gTileSizes;
     int         gIsRenderTiledBaseLighting;
+
+    int			gEnablePointLight;
+    int 		gEnableAreaLight;
+    int 		gEnableConeLight;
+    int 		gEnableDirectionalLight;
 };
 
 struct AreaLightInstanceData
@@ -370,7 +375,7 @@ float3 WorldSpaceToTBN(float3 WorldSpaceVector, float3 unitNormalW, float3 tange
 }
 
 
-//视差遮挡映射
+//Parallax Occlusion Mapping
 float2 ParallaxMapping(uint HeightMapIndex, float2 texCoords, float3 viewDir, float height_scale)
 {
     // number of depth layers
@@ -416,28 +421,28 @@ float2 ParallaxMapping(uint HeightMapIndex, float2 texCoords, float3 viewDir, fl
 
 
 
-// 如果框完全位于平面的后面(负半空间),则返回true。
+//Returns true if the box is completely behind the plane (negative half-space).
 bool AABBBehindPlaneTest(float3 center, float3 extents, float4 plane)
 {
     float3 n = abs(plane.xyz);
 
     // This is always positive.
     float r = dot(extents, n);
-    //从中心点到平面的正负距离。
+    //The positive and negative distance from the center point to the plane.
     float s = dot(float4(center, 1.0f), plane);
 
-    //如果框的中心点在平面后面等于e或更大（在这种情况下s为负，
-    //因为它在平面后面），则框完全位于平面的负半空间中。
+    //If the center point of the box is behind the plane by an amount equal to e or greater (in this case s is negative because it is behind the plane), 
+    //then the box is entirely in the negative half-space of the plane.
     return (s + r) < 0.0f;
 }
 
 
-//如果该框完全位于平截头体之外，返回true。
+//Returns true if the box is completely outside the frustum.
 bool AABBOutsideFrustumTest(float3 center, float3 extents, float4 frustumPlanes[6])
 {
     for (int i = 0; i < 6; ++i)
     {
-        // 如果盒子完全位于任何一个视锥平面的后面，那么它就在视锥之外。
+        //If the box is completely behind any of the frustum planes, then it is outside the frustum.
         if (AABBBehindPlaneTest(center, extents, frustumPlanes[i]))
         {
             return true;

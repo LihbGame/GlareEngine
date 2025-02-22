@@ -223,13 +223,11 @@ namespace GlareEngine
 		vector<LightRenderConstants> mAreaLightIRC;
 		vector<LightRenderConstants> mPointLightIRC;
 		vector<LightRenderConstants> mConeLightIRC;
-
-		//DirectionalLights
-		DirectionalLight mDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
-
+		
 		bool bEnablePointLight = true;
 		bool bEnableAreaLight = false;
 		bool bEnableConeLight = true;
+		bool bEnableDirectionalLight = true;
 	}
 }
 
@@ -853,5 +851,6 @@ void Lighting::DrawUI()
 		ImGui::Checkbox("Point Light", &bEnablePointLight);
 		ImGui::Checkbox("Area Light", &bEnableAreaLight);
 		ImGui::Checkbox("Cone Light", &bEnableConeLight);
+		ImGui::Checkbox("Directional Light", &bEnableDirectionalLight);
 	}
 }

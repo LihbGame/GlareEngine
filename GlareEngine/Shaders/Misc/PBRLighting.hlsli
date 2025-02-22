@@ -1,5 +1,5 @@
-#include "../Misc/CommonResource.hlsli"
 #include "../Lighting/LightGrid.hlsli"
+#include "../Misc/CommonResource.hlsli"
 
 Texture2D<float> gSsaoTex                           : register(t6);
 StructuredBuffer<uint> gLightGridData               : register(t7);
@@ -331,7 +331,7 @@ float3 ComputeLighting(in DirectionalLight lights[MAX_DIR_LIGHTS], in SurfacePro
 
     int i = 0;
     
-    if (gDirectionalLightsCount > 0)
+    if (gDirectionalLightsCount > 0 && gEnableDirectionalLight)
     {
         for (i = 0; i < gDirectionalLightsCount; ++i)
         {
@@ -439,17 +439,26 @@ float3 ComputeLighting_Internal(uint LightCount, uint LightOffset, in SurfacePro
         {
             case 0: //Point light
                 {
-                    lightColor += ComputePointLight(lightData, Surface);
+                    if (gEnablePointLight)
+                    {
+                        lightColor += ComputePointLight(lightData, Surface);
+                    }
                     break;
                 }
             case 1: //Cone Light
                 {
-                    lightColor += ComputeConeLight(lightData, Surface);
+                    if (gEnableConeLight)
+                    {
+                        lightColor += ComputeConeLight(lightData, Surface);
+                    }
                     break;
                 }
             case 2: //Shadowed Cone Light 
                 {
-                    lightColor += ComputeConeShadowLight(lightData, Surface);
+                    if (gEnableConeLight)
+                    {
+                        lightColor += ComputeConeShadowLight(lightData, Surface);
+                    }
                     break;
                 }
             default:
