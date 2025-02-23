@@ -235,6 +235,8 @@ void Scene::DrawUI()
 	//Lighting UI
 	Lighting::DrawUI();
 
+	mPRTManager.DrawUI();
+	
 	for (auto& RenderObject : m_pRenderObjects)
 	{
 		if (RenderObject->GetVisible())

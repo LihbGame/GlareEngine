@@ -19,10 +19,12 @@ public:
 	void DebugVisual(GraphicsContext& context);
 
 	virtual void InitMaterial();
-
+	
+	void DrawUI() override;
 private:
 	AxisAlignedBox mProbeAABB;
 	CubeRenderTarget mCubeTarget;
+	bool bPRTVisualization = true;
 	float mProbeCellSize;
 	float mProbeDensityScale;
 	vector<SHProbe> mSHProbes;

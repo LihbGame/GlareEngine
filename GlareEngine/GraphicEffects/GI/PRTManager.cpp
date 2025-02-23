@@ -54,7 +54,7 @@ void PRTManager::Initialize(AxisAlignedBox ProbeAABB, uint16_t ProbeCellSize, fl
 
 void PRTManager::GenerateSHProbes(Scene& scene)
 {
-	if (mSHProbes.size() > 0)
+	if (mSHProbes.size() > 0&& bPRTVisualization)
 	{
 		RenderPipelineType NewRenderPipelineType = (Render::RenderPipelineType)scene.m_pGUI->GetRenderPipelineIndex();
 
@@ -114,7 +114,7 @@ void PRTManager::CreateDebugModel(float ModelScale)
 
 void PRTManager::DebugVisual(GraphicsContext& context)
 {
-	if (mSHProbes.size() > 0 && mDebugModel != nullptr)
+	if (mSHProbes.size() > 0 && mDebugModel != nullptr && bPRTVisualization)
 	{
 		ScopedTimer DebugVisualScope(L"SH Probe Debug Visual", context);
 
@@ -124,7 +124,7 @@ void PRTManager::DebugVisual(GraphicsContext& context)
 		context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
 		mDebugModel->Draw(context, &mDebugMaterial->GetGraphicsPSO());
-	} 
+	}
 }
 
 void PRTManager::InitMaterial()
@@ -182,5 +182,15 @@ void PRTManager::InitMaterial()
 			RuntimePSOManager::Get().RegisterPSO(&mDebugMaterial->GetGraphicsPSO(), GET_SHADER_PATH("GI/SHProbeDebugPS.hlsl"), D3D12_SHVER_PIXEL_SHADER); });
 
 		mDebugMaterial->IsInitialized = true;
+	}
+}
+
+void PRTManager::DrawUI()
+{
+	ImGuiIO& io = ImGui::GetIO();
+
+	if (ImGui::CollapsingHeader("PRT", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Checkbox("Show PRT Visualization", &bPRTVisualization);
 	}
 }
