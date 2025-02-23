@@ -51,7 +51,7 @@ void Scene::Update(float DeltaTime)
 	//update Render Pipeline Type
 	if (LoadingFinish)
 	{
-		RenderPipelineType NewRenderPipelineType = (RenderPipelineType)m_pGUI->GetRenderPipelineIndex();
+		RenderPipelineType NewRenderPipelineType = static_cast<RenderPipelineType>(m_pGUI->GetRenderPipelineIndex());
 
 		if (NewRenderPipelineType != Render::gRenderPipelineType && !gCommonProperty.IsWireframe)
 		{

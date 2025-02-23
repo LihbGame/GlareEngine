@@ -47,13 +47,11 @@ namespace GlareEngine
 
 		LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
-			//转发hwnd因为我们可以在CreateWindow返回之前获取消息(例如，WM_CREATE)。
 			return GameApp::GetApp()->MsgProc(hwnd, msg, wParam, lParam);
 		}
 
 		void InitializeWindow(HINSTANCE hand, const wchar_t* className)
 		{
-			//当前所调用该函数的程序实例句柄
 			HINSTANCE hInst = hand;
 
 			gCursor = LoadCursorFromFileA(CURSOR_NAME);
@@ -191,8 +189,7 @@ namespace GlareEngine
 
 			Microsoft::WRL::Wrappers::RoInitializeWrapper InitializeWinRT(RO_INIT_MULTITHREADED);
 			ThrowIfFailed(InitializeWinRT);
-
-			//初始化
+			
 			InitializeWindow(hand, className);
 			InitializeApplication(app);
 			PreRender(app);
@@ -324,7 +321,7 @@ namespace GlareEngine
 							mMaximized = false;
 							EngineGUI::mWindowMaxSize = false;
 						}
-						else if (mResizing)//正在调整大小
+						else if (mResizing)
 						{
 						}
 						else // API call such as SetWindowPos or mSwapChain->SetFullscreenState.
