@@ -53,10 +53,7 @@ public:
 	int		GetSceneIndex() const { return mSceneIndex; }
 	int		GetRenderPipelineIndex() const { return mRenderPipelineIndex; }
 	void	SetRenderPipelineIndex(int NewRenderPipelineIndex)  { mRenderPipelineIndex= NewRenderPipelineIndex; }
-
-
-	bool    IsRenderTiledBaseLighting()const { return mbTiledBaseLighting; }
-
+	
 	XMFLOAT2 GetEngineLogoSize();
 
 	void	SetCameraPosition(const XMFLOAT3& position) { mCameraPosition = position; }
@@ -116,8 +113,6 @@ private:
 	float mWaterTransparent		= 100.0f;
 
 	bool mWireframe				= false;
-
-	bool mbTiledBaseLighting	= true;
 
 	int mSceneIndex				= 0;
 	int mRenderPipelineIndex	= 1;

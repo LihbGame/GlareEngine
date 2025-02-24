@@ -332,7 +332,7 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 	mSceneView.mMainConstants.mBakingDiffuseCubeIndex = GlobleSRVIndex::gBakingDiffuseCubeIndex;
 	mSceneView.mMainConstants.gBakingPreFilteredEnvIndex = GlobleSRVIndex::gBakingPreFilteredEnvIndex;
 	mSceneView.mMainConstants.gBakingIntegrationBRDFIndex = GlobleSRVIndex::gBakingIntegrationBRDFIndex;
-	mSceneView.mMainConstants.IsRenderTiledBaseLighting = m_pGUI->IsRenderTiledBaseLighting() ? 1 : 0;
+	mSceneView.mMainConstants.IsRenderTiledBaseLighting = Lighting::bEnableTiledBaseLight;
 
 	//Lights constant buffer
 	{

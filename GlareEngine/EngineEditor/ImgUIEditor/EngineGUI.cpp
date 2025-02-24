@@ -300,7 +300,6 @@ void EngineGUI::DrawControlPanel(float IconWindowHigh)
 		ImGui::Checkbox("Model", &show_model);
 		ImGui::Checkbox("Sky", &show_sky);
 		ImGui::Checkbox("Terrain", &show_HeightMapTerrain);
-		ImGui::Checkbox("Tiled Base Lighting", &mbTiledBaseLighting);
 	}
 
 	//if (ImGui::CollapsingHeader("Water", ImGuiTreeNodeFlags_DefaultOpen))
@@ -367,7 +366,7 @@ void EngineGUI::DrawDebugWindow()
 		ImGui::Text((">>" + WStringToString(e)).c_str());
 	}
 
-	//½«¹ö¶¯Ìõ»¬µ¹×îºóÒ»Ìõlog
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½log
 	int LogSize = (int)mLogs.size();
 	if (LogSize != mLogSize)
 	{

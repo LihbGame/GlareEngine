@@ -39,7 +39,7 @@ namespace GlareEngine
 			ShadowedConeLight,
 			AreaLight
 		};
-
+		extern bool bEnableTiledBaseLight;
 		extern bool bEnablePointLight;
 		extern bool bEnableAreaLight;
 		extern bool bEnableConeLight;

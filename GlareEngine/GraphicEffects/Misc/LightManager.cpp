@@ -223,7 +223,8 @@ namespace GlareEngine
 		vector<LightRenderConstants> mAreaLightIRC;
 		vector<LightRenderConstants> mPointLightIRC;
 		vector<LightRenderConstants> mConeLightIRC;
-		
+
+		bool bEnableTiledBaseLight=true;
 		bool bEnablePointLight = true;
 		bool bEnableAreaLight = false;
 		bool bEnableConeLight = true;
@@ -812,34 +813,36 @@ void Lighting::InitMaterial()
 
 void Lighting::RenderAreaLightMesh(GraphicsContext& context)
 {
-	if (bEnableAreaLight)
+	if (bEnableTiledBaseLight)
 	{
-		ScopedTimer AreaLightScope(L"Area Light Mesh", context);
+		if (bEnableAreaLight)
+		{
+			ScopedTimer AreaLightScope(L"Area Light Mesh", context);
 
-		//Set Material Data
-		//const vector<MaterialConstant>& MaterialData = MaterialManager::GetMaterialInstance()->GetMaterialsConstantBuffer();
-		//context.SetDynamicSRV((int)RootSignatureType::eMaterialConstantData, sizeof(MaterialConstant) * MaterialData.size(), MaterialData.data());
-		context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-		context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
-		mQuadAreaLightModel->Draw(context, &AreaLightMaterial->GetGraphicsPSO());
+			//Set Material Data
+			//const vector<MaterialConstant>& MaterialData = MaterialManager::GetMaterialInstance()->GetMaterialsConstantBuffer();
+			//context.SetDynamicSRV((int)RootSignatureType::eMaterialConstantData, sizeof(MaterialConstant) * MaterialData.size(), MaterialData.data());
+			context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+			context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
+			mQuadAreaLightModel->Draw(context, &AreaLightMaterial->GetGraphicsPSO());
+		}
+
+		if (bEnablePointLight)
+		{
+			ScopedTimer PointLightScope(L"Point Light Mesh", context);
+			context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+			context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
+			mQuadPointLightModel->Draw(context, &AreaLightMaterial->GetGraphicsPSO());
+		}
+
+		if (bEnableConeLight)
+		{
+			ScopedTimer PointLightScope(L"Cone Light Mesh", context);
+			context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+			context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
+			mQuadConeLightModel->Draw(context, &AreaLightMaterial->GetGraphicsPSO());
+		}
 	}
-
-	if (bEnablePointLight)
-	{
-		ScopedTimer PointLightScope(L"Point Light Mesh", context);
-		context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-		context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
-		mQuadPointLightModel->Draw(context, &AreaLightMaterial->GetGraphicsPSO());
-	}
-
-	if (bEnableConeLight)
-	{
-		ScopedTimer PointLightScope(L"Cone Light Mesh", context);
-		context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-		context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
-		mQuadConeLightModel->Draw(context, &AreaLightMaterial->GetGraphicsPSO());
-	}
-
 }
 
 void Lighting::DrawUI()
@@ -848,9 +851,13 @@ void Lighting::DrawUI()
 
 	if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		ImGui::Checkbox("Point Light", &bEnablePointLight);
-		ImGui::Checkbox("Area Light", &bEnableAreaLight);
-		ImGui::Checkbox("Cone Light", &bEnableConeLight);
 		ImGui::Checkbox("Directional Light", &bEnableDirectionalLight);
+		ImGui::Checkbox("Tiled Base Light", &bEnableTiledBaseLight);
+		if (bEnableTiledBaseLight)
+		{
+			ImGui::Checkbox("Point Light", &bEnablePointLight);
+			ImGui::Checkbox("Area Light", &bEnableAreaLight);
+			ImGui::Checkbox("Cone Light", &bEnableConeLight);
+		}
 	}
 }
