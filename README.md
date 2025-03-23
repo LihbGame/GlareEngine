@@ -28,6 +28,7 @@ TIPS:
 ## Examples
 
 Editor
+![demo](ScreenShot/LightingVisual.png)
 ![demo](ScreenShot/Editor.jpg)
 
 Forward Plus (2.5d Tiled Base Forward)
