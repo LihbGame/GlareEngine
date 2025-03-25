@@ -143,6 +143,9 @@ __declspec(align(16))struct MainConstants
 	int 		bEnableAreaLight;
 	int 		bEnableConeLight;
 	int 		bEnableDirectionalLight;
+
+	int			gAreaLightLTC1SRVIndex;
+	int			gAreaLightLTC2SRVIndex;
 };
 
 struct TerrainConstants

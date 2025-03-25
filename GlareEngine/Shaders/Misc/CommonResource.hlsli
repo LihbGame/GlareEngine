@@ -126,6 +126,9 @@ cbuffer MainPass : register(b0)
     int 		gEnableAreaLight;
     int 		gEnableConeLight;
     int 		gEnableDirectionalLight;
+
+    int			gAreaLightLTC1SRVIndex;
+    int			gAreaLightLTC2SRVIndex;
 };
 
 struct AreaLightInstanceData
