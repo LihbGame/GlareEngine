@@ -229,6 +229,9 @@ namespace GlareEngine
 		bool bEnableAreaLight = false;
 		bool bEnableConeLight = true;
 		bool bEnableDirectionalLight = true;
+
+		uint32_t AreaLightLTC1SRVIndex;
+		uint32_t AreaLightLTC2SRVIndex;
 	}
 }
 
@@ -430,6 +433,28 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 void Lighting::CreateLightRenderData()
 {
 	GraphicsContext& Context = GraphicsContext::Begin(L"Init Light Render data");
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+	srvDesc.TextureCube.MostDetailedMip = 0;
+	srvDesc.TextureCube.MipLevels = 1;
+	srvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
+
+	// Area Light LTC
+	D3D12_CPU_DESCRIPTOR_HANDLE AreaLightLTC1Srv = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	ID3D12Resource* AreaLightLTC1Resource = TextureManager::GetInstance(Context.GetCommandList())->GetTexture(L"Lighting/ltc_1", false)->Resource.Get();
+	srvDesc.Format = AreaLightLTC1Resource->GetDesc().Format;
+	g_Device->CreateShaderResourceView(AreaLightLTC1Resource, &srvDesc, AreaLightLTC1Srv);
+	AreaLightLTC1SRVIndex = AddToGlobalCubeSRVDescriptor(AreaLightLTC1Srv);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE AreaLightLTC2Srv = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	ID3D12Resource* AreaLightLTC2Resource = TextureManager::GetInstance(Context.GetCommandList())->GetTexture(L"Lighting/ltc_2", false)->Resource.Get();
+	srvDesc.Format = AreaLightLTC2Resource->GetDesc().Format;
+	g_Device->CreateShaderResourceView(AreaLightLTC2Resource, &srvDesc, AreaLightLTC2Srv);
+	AreaLightLTC2SRVIndex = AddToGlobalCubeSRVDescriptor(AreaLightLTC2Srv);
+	
 	//area light mesh
 	{
 		const ModelRenderData* ModelData = SimpleModelGenerator::GetInstance(Context.GetCommandList())->CreateGridRanderData("AreaLight", m_QuadAreaLightSize, m_QuadAreaLightSize, 2, 2);

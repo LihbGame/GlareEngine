@@ -61,6 +61,9 @@ namespace GlareEngine
 		extern StructuredBuffer m_GlobalLightIndexList;
 		extern StructuredBuffer m_GlobalIndexOffset;
 
+		extern uint32_t AreaLightLTC1SRVIndex;
+		extern uint32_t AreaLightLTC2SRVIndex;
+		
 		extern Camera ConeShadowCamera[MaxShadowedLights];
 
 		void InitializeResources(const Camera& camera);
