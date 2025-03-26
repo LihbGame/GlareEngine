@@ -187,6 +187,7 @@ namespace GlareEngine
 		StructuredBuffer m_UnusedClusterMask;
 		StructuredBuffer m_GlobalLightIndexList;
 		StructuredBuffer m_GlobalIndexOffset;
+		StructuredBuffer m_GlobalRectAreaLightData;
 
 		uint32_t m_FirstConeLight;
 		uint32_t m_FirstConeShadowedLight;
@@ -265,6 +266,8 @@ void Lighting::InitializeResources(const Camera& camera)
 	m_LightBuffer.Create(L"Light Buffer", MaxLights, sizeof(LightData));
 
 	m_GlobalIndexOffset.Create(L"Global Index Offset", sizeof(ClusterLightOffset), sizeof(uint32_t), mClusterLightOffset.LightOffset);
+
+	m_GlobalRectAreaLightData.Create(L"Global Rect Area Light Data", MaxAreaLights, sizeof(RectAreaLightData));
 }
 
 void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound,const Vector3 offset)
@@ -425,7 +428,7 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 	FirstUpdateViewSpace = true;
 
 	CommandContext::InitializeBuffer(m_LightBuffer, m_LightData, MaxLights * sizeof(LightData));
-
+	CommandContext::InitializeBuffer(m_GlobalRectAreaLightData, m_RectAreaLightData, MaxAreaLights * sizeof(RectAreaLightData));
 	CreateLightRenderData();
 }
 
@@ -742,6 +745,7 @@ void Lighting::UpdateViewSpacePosition(Camera& camera)
 			}
 		}
 		CommandContext::InitializeBuffer(m_LightBuffer, m_LightData, MaxLights * sizeof(LightData));
+		CommandContext::InitializeBuffer(m_GlobalRectAreaLightData, m_RectAreaLightData, MaxAreaLights * sizeof(RectAreaLightData));
 	}
 }
 
@@ -759,6 +763,7 @@ void Lighting::Shutdown(void)
 	m_LightCluster.Destroy();
 	m_ClusterLightGrid.Destroy();
 	m_UnusedClusterMask.Destroy();
+	m_GlobalRectAreaLightData.Destroy();
 }
 
 void Lighting::InitMaterial()

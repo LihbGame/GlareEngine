@@ -1,13 +1,25 @@
 #include "../Lighting/LightGrid.hlsli"
 #include "../Misc/CommonResource.hlsli"
 
-Texture2D<float> gSsaoTex                           : register(t6);
-StructuredBuffer<uint> gLightGridData               : register(t7);
-StructuredBuffer<TileLightData> gLightBuffer        : register(t8);
-Texture2DArray<float> gLightShadowArrayTex          : register(t9);
-//lighting cluster data
-StructuredBuffer<LightGrid> LightGridList           : register(t10);
-StructuredBuffer<uint> GlobalLightIndexList         : register(t11);
+struct RectAreaLightData
+{
+    float3 PositionWS[4];
+    float3 PositionVS[4];
+    float3 PositionCenter;
+    float3 LightDir;
+    float3 Color;
+    float RadiusSquare;
+};
+
+Texture2D<float> gSsaoTex                                           : register(t6);
+StructuredBuffer<uint> gLightGridData                               : register(t7);
+StructuredBuffer<TileLightData> gLightBuffer                        : register(t8);
+Texture2DArray<float> gLightShadowArrayTex                          : register(t9);
+//lighting cluster data             
+StructuredBuffer<LightGrid> LightGridList                           : register(t10);
+StructuredBuffer<uint> GlobalLightIndexList                         : register(t11);
+
+StructuredBuffer<RectAreaLightData> GlobalRectAreaLightData         : register(t12);
 
 //BRDF-F
 float3 fresnelSchlick(float cosTheta, float3 F0)

@@ -60,6 +60,7 @@ namespace GlareEngine
 		extern StructuredBuffer m_UnusedClusterMask;
 		extern StructuredBuffer m_GlobalLightIndexList;
 		extern StructuredBuffer m_GlobalIndexOffset;
+		extern StructuredBuffer m_GlobalRectAreaLightData;
 
 		extern uint32_t AreaLightLTC1SRVIndex;
 		extern uint32_t AreaLightLTC2SRVIndex;

@@ -591,7 +591,8 @@ void Scene::ForwardRendering(RenderPipelineType ForwardRenderPipeline)
 				Lighting::m_LightBuffer.GetSRV(),
 				Lighting::m_LightShadowArray.GetSRV(),
 				Lighting::m_ClusterLightGrid.GetSRV(),
-				Lighting::m_GlobalLightIndexList.GetSRV()
+				Lighting::m_GlobalLightIndexList.GetSRV(),
+				Lighting::m_GlobalRectAreaLightData.GetSRV()
 			};
 
 			CopyBufferDescriptors(PBR_SRV, ArraySize(PBR_SRV), &gTextureHeap[Render::GetCommonSRVHeapOffset()]);
