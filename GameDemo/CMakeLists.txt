@@ -33,6 +33,9 @@ add_custom_command(TARGET ${TARGET_NAME} COMMAND ${CMAKE_COMMAND} -E copy_direct
 
 add_custom_command(TARGET ${TARGET_NAME} COMMAND ${CMAKE_COMMAND} -E copy_directory ${GLAREENGINE_ROOT_DIR}/Resource
                                       ${GLAREENGINE_ROOT_DIR}/bin/Resource)
+
+add_custom_command(TARGET ${TARGET_NAME} COMMAND ${CMAKE_COMMAND} -E copy_directory ${GLAREENGINE_ROOT_DIR}/Resource
+                                      ${GLAREENGINE_ROOT_DIR}/build/${TARGET_NAME}/Resource)                                     
                                    
 target_link_libraries(${TARGET_NAME} ${LIB_SET})
 
@@ -90,7 +93,16 @@ target_include_directories(
   ${TARGET_NAME}
   PUBLIC $<BUILD_INTERFACE:${ENGINE_ROOT_DIR}/GraphicEffects>)
 
-file(COPY ${DLL_FILES} DESTINATION ${GLAREENGINE_ROOT_DIR}/build/${TARGET_NAME})
+# 遍历所有配置类型（如 Debug, Release 等）
+foreach(CONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER ${CONFIG_TYPE} CONFIG_TYPE_UPPER)
+    set(CONFIG_DIR "${GLAREENGINE_ROOT_DIR}/build/${TARGET_NAME}/${CONFIG_TYPE}")
+
+    # 将 DLL 文件复制到对应的配置目录
+    file(COPY ${DLL_FILES} DESTINATION ${CONFIG_DIR})
+endforeach()
+
+#file(COPY ${DLL_FILES} DESTINATION ${GLAREENGINE_ROOT_DIR}/build/${TARGET_NAME}/$<$<CONFIG:Release>:Release>$<$<CONFIG:Debug>:Debug>)
 file(COPY ${DLL_FILES} DESTINATION ${GLAREENGINE_ROOT_DIR}/bin/${TARGET_NAME})
 file(COPY ${RESOURCE_FILES} DESTINATION ${GLAREENGINE_ROOT_DIR}/build/${TARGET_NAME}/Resource)
 
