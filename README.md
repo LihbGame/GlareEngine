@@ -1,7 +1,7 @@
 # Glare Engine
 Glare Rendering Engine  use DirectX12
 
-Suggest Environment : Win11 VS2022 or JetBrains Rider
+Suggest Environment : Win11 VS2022 or JetBrains Rider/CLion
 
 TIPS: 
 

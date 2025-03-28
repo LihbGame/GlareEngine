@@ -1,10 +1,8 @@
-#include "Engine/EngineUtility.h"
+﻿#include "Engine/EngineUtility.h"
 #include "CommandContext.h"
 #include "ColorBuffer.h"
 #include "DepthBuffer.h"
 #include "GraphicsCore.h"
-#include "DescriptorHeap.h"
-#include "Engine/EngineProfiling.h"
 #include "ReadbackBuffer.h"
 #include "UploadBuffer.h"
 
