@@ -72,7 +72,7 @@ float PCF(float4 shadowPosH)
 
 
 
-//ÕÚµ²ÎïÆ½¾ùÉî¶ÈµÄ¼ÆËã
+//é®æŒ¡ç‰©å¹³å‡æ·±åº¦çš„è®¡ç®—
 float findBlocker(Texture2D shadowMap, DiskSamples diskSamples, float texelSize, float2 uv, float zReceiver)
 {
     float totalDepth = 0.0;
@@ -86,11 +86,11 @@ float findBlocker(Texture2D shadowMap, DiskSamples diskSamples, float texelSize,
             blockCount += 1;
         }
     }
-    //Ã»ÓĞÕÚµ²
+    //æ²¡æœ‰é®æŒ¡
     if (blockCount == 0) {
         return -1.0;
     }
-    //ÍêÈ«ÕÚµ²
+    //å®Œå…¨é®æŒ¡
     if (blockCount == NUM_SAMPLES) {
         return 2.0;
     }
@@ -109,7 +109,7 @@ float PCF_Internal(Texture2D shadowMap, DiskSamples diskSamples, float texelSize
 }
 
 
-//ÀûÓÃÏàËÆÈı½ÇĞÎ¼ÆËã°ëÓ°Ö±¾¶²¢´«µİ¸ø PCF º¯ÊıÒÔµ÷ÕûÆäÂË²¨ºË´óĞ¡
+//åˆ©ç”¨ç›¸ä¼¼ä¸‰è§’å½¢è®¡ç®—åŠå½±ç›´å¾„å¹¶ä¼ é€’ç»™ PCF å‡½æ•°ä»¥è°ƒæ•´å…¶æ»¤æ³¢æ ¸å¤§å°
 float PCSS(Texture2D shadowMap, float4 coords) 
 {
     coords.xyz /= coords.w;
@@ -123,9 +123,9 @@ float PCSS(Texture2D shadowMap, float4 coords)
     // Texel size.
     float dx = 1.0f / (float)width;
 
-    // STEP 1: avgblocker depth Æ½¾ùÕÚµ²Éî¶È
+    // STEP 1: avgblocker depth å¹³å‡é®æŒ¡æ·±åº¦
     float zBlocker = findBlocker(shadowMap, poissonDisk, dx, coords.xy, coords.z);
-    if (zBlocker < EPS) {//Ã»ÓĞ±»ÕÚµ²
+    if (zBlocker < EPS) {//æ²¡æœ‰è¢«é®æŒ¡
         return 1.0;
     }
 
@@ -133,11 +133,11 @@ float PCSS(Texture2D shadowMap, float4 coords)
         return 0.0;
     }
 
-    // STEP 2: penumbra size È·¶¨°ëÓ°µÄ´óĞ¡
+    // STEP 2: penumbra size ç¡®å®šåŠå½±çš„å¤§å°
     float penumbraScale = (coords.z - zBlocker) / zBlocker;
 
 
-    // STEP 3: filtering  ¹ıÂË
+    // STEP 3: filtering  è¿‡æ»¤
     return PCF_Internal(shadowMap, poissonDisk, dx, coords.xy, coords.z, penumbraScale* lightSize);
 
 }

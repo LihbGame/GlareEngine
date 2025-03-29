@@ -12,7 +12,7 @@ float4 main(PosNorTanTexOut pin) : SV_Target
     MaterialData matData = gMaterialData[pin.MatIndex];
 
     float2 UV = pin.TexC;
-//ÊÓ²îÕÚµ²Ó³Éä
+
     if (matData.mHeightScale>0.0f)
     {
         float3 ModeSpacetoEye = WorldSpaceToTBN(toEyeW, pin.NormalW, pin.TangentW);

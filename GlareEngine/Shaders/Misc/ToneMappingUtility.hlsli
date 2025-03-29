@@ -24,15 +24,15 @@ float3 ITM_Reinhard(float3 sdr, float k = 1.0)
 // Reinhard-Squared
 //
 
-//����һЩ�ܺõ����ԣ����ԸĽ������� Reinhard�� 
-//���ȣ�����һ������ֺ������Ư������������������ǿ�˺ڰ��еĶԱȶȺ�ɫ�ʱ��Ͷȡ� 
-//��Σ�����һ�����粿�������ڸ߹⴦�ṩ����ϸ�ڣ�������Ҫ������ʱ��ȥ���͡� 
-//���ǿ���ģ������ŵ� HDR ��ʾ�����������ڿ��ơ�
+//这有一些很好的属性，可以改进基本的 Reinhard。 
+//首先，它有一个“脚趾”——漂亮的抛物线上升，增强了黑暗中的对比度和色彩饱和度。 
+//其次，它有一个长肩部，可以在高光处提供更多细节，并且需要更长的时间去饱和。 
+//它是可逆的，可缩放到 HDR 显示器，并且易于控制。
 //
-//ѡ��Ĭ�ϳ��� 0.25 ������ԭ�� ���� Reinhard ��Ч���ǳ��ӽ�������Ϊ 1.0�� 
-//���ҳ���Ϊ 0.25���� 0.25 ����һ���յ㣬�������� y=x �Ӵ���Ȼ��ʼ�粿��
+//选择默认常数 0.25 有两个原因。 它与 Reinhard 的效果非常接近，常数为 1.0。 
+//并且常数为 0.25，在 0.25 处有一个拐点，曲线与线 y=x 接触，然后开始肩部。
 //
-// Note:  �������ǰ����ʹ�� ACES �������� 0.6 ����Ԥ���ţ���ô k=0.30 ��Ϊ������������������������κ�����������
+// Note:  如果您当前正在使用 ACES 并且您按 0.6 进行预缩放，那么 k=0.30 作为替代方案看起来不错，无需任何其他调整。
 float3 TM_ReinhardSq(float3 hdr, float k = 0.25)
 {
     float3 reinhard = hdr / (hdr + k);
@@ -48,8 +48,8 @@ float3 ITM_ReinhardSq(float3 sdr, float k = 0.25)
 // Stanard (New)
 //
 
-// This is the new tone operator.  �������෽�������� ACES����ʹ�� ALU �����������򵥡� 
-//�� Reinhard-Squared ��ȣ�����һ�������Ǽ粿����ر�Ϊ��ɫ����Ϊͼ���ṩ���ߵ��������ȺͶԱȶȡ�
+// This is the new tone operator.  它在许多方面类似于 ACES，但使用 ALU 进行评估更简单。 
+//与 Reinhard-Squared 相比，它的一个优势是肩部更快地变为白色，并为图像提供更高的整体亮度和对比度。
 
 float3 TM_Stanard(float3 hdr)
 {
@@ -65,12 +65,12 @@ float3 ITM_Stanard(float3 sdr)
 // Stanard (Old)
 //
 
-//���������� HemiEngine �� MiniEngine ��ʹ�õľ� tone operators�� 
-//���򵥡���Ч�����棬���ṩ�˲����Ľ��������û�н�ֺ�����Ҽ粿�ܿ�ͻ��ס�
+//这是首先在 HemiEngine 和 MiniEngine 中使用的旧 tone operators。 
+//它简单、高效、可逆，并提供了不错的结果，但它没有脚趾，而且肩部很快就会变白。
 //
-//��ע�⣬��ɾ����ɫ��ӳ�� RGB ��ɫ��ӳ�� Luma ֮������� 
-//����ѧ�Ͻ�����ͬ���ڱ���ɫ����ͬʱ���Խ���������ӳ�䵽����ʾֵ���뷨�� 
-//������������һ��������ɫͨ�����ձ� 1.0 �����������õ����⡣
+//请注意，我删除了色调映射 RGB 和色调映射 Luma 之间的区别。 
+//从哲学上讲，我同意在保留色调的同时尝试将亮度重新映射到可显示值的想法。 
+//但是您会遇到一个或多个颜色通道最终比 1.0 更亮并被剪裁的问题。
 
 float3 ToneMap(float3 hdr)
 {
@@ -96,7 +96,7 @@ float InverseToneMapLuma(float luma)
 // ACES
 //
 
-//��һ����Ӱ tone operators.
+//下一代电影 tone operators.
 
 float3 ToneMapACES(float3 hdr)
 {

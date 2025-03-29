@@ -1,7 +1,7 @@
 #include "../Misc/CommonResource.hlsli"
 
 
-//曝光参数
+//鏇濆厜鍙傛暟
 #define exposure 1.0f
 
 
@@ -9,10 +9,10 @@ float4 main(PosVSOut pin) : SV_Target
 {
     float4 litColor = gCubeMaps[gSkyCubeIndex].Sample(gSamplerLinearWrap, pin.PosL);
 
-	// Reinhard色调映射
+	// Reinhard鑹茶皟鏄犲皠
 	//litColor.rgb = litColor.rgb / (litColor.rgb + float3(1.0f, 1.0f, 1.0f));
 
-	// 曝光色调映射
+	// 鏇濆厜鑹茶皟鏄犲皠
     //litColor.rgb = float3(1.0f, 1.0f, 1.0f) - exp(-litColor.rgb * exposure);
 
     return litColor;

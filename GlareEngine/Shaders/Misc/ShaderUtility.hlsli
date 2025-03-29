@@ -5,13 +5,13 @@
 
 #pragma warning( disable : 3571 )
 
-//±àÂëÆ½»¬µÄ¶ÔÊıÌİ¶È£¬ÒÔÊµÏÖÊÓ¾õ×ÔÈ»¾«¶ÈµÄ¾ùÔÈ·Ö²¼
+//ç¼–ç å¹³æ»‘çš„å¯¹æ•°æ¢¯åº¦ï¼Œä»¥å®ç°è§†è§‰è‡ªç„¶ç²¾åº¦çš„å‡åŒ€åˆ†å¸ƒ
 float LinearToLogLuminance(float x, float gamma = 4.0)
 {
     return log2(lerp(1, exp2(gamma), x)) / gamma;
 }
 
-//Õâ¼Ù¶¨ÔÚ sRGB ºÍ REC709 ÖĞÕÒµ½Ä¬ÈÏÉ«Óò¡£ Ô­É«¾ö¶¨ÁËÕâĞ©ÏµÊı¡£ Çë×¢Òâ£¬ÕâÊÊÓÃÓÚÏßĞÔÖµ£¬¶ø²»ÊÇÙ¤Âí¿Õ¼ä¡£ 
+//è¿™å‡å®šåœ¨ sRGB å’Œ REC709 ä¸­æ‰¾åˆ°é»˜è®¤è‰²åŸŸã€‚ åŸè‰²å†³å®šäº†è¿™äº›ç³»æ•°ã€‚ è¯·æ³¨æ„ï¼Œè¿™é€‚ç”¨äºçº¿æ€§å€¼ï¼Œè€Œä¸æ˜¯ä¼½é©¬ç©ºé—´ã€‚ 
 float RGBToLuminance(float3 x)
 {
     return dot(x, float3(0.212671, 0.715160, 0.072169)); // Defined by sRGB/Rec.709 gamut
@@ -22,13 +22,13 @@ float MaxChannel(float3 x)
     return max(x.x, max(x.y, x.z));
 }
 
-//ÕâÓëÉÏÃæÏàÍ¬£¬µ«½«ÏßĞÔÁÁ¶ÈÖµ×ª»»Îª¸üÖ÷¹ÛµÄ¡°¸ĞÖªÁÁ¶È¡±£¬¿ÉÒÔ³ÆÎª¶ÔÊıÁÁ¶È¡£ 
+//è¿™ä¸ä¸Šé¢ç›¸åŒï¼Œä½†å°†çº¿æ€§äº®åº¦å€¼è½¬æ¢ä¸ºæ›´ä¸»è§‚çš„â€œæ„ŸçŸ¥äº®åº¦â€ï¼Œå¯ä»¥ç§°ä¸ºå¯¹æ•°äº®åº¦ã€‚ 
 float RGBToLogLuminance(float3 x, float gamma = 4.0)
 {
     return LinearToLogLuminance(RGBToLuminance(x), gamma);
 }
 
-//±£ÁôÑÕÉ«µÄ¿ìËÙ¿ÉÄæÉ«µ÷ÌùÍ¼ (Reinhard) 
+//ä¿ç•™é¢œè‰²çš„å¿«é€Ÿå¯é€†è‰²è°ƒè´´å›¾ (Reinhard) 
 float3 TM(float3 rgb)
 {
     return rgb / (1 + RGBToLuminance(rgb));

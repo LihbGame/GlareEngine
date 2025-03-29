@@ -18,9 +18,9 @@ PosVSOut main(float3 PosL : POSITION)
 {
     PosVSOut vout;
 
-	// Ê¹ÓÃ¾Ö²¿¶¥µãÎ»ÖÃ×÷ÎªÁ¢·½ÌåÌùÍ¼²ÉÑùÏòÁ¿¡£
+	// ä½¿ç”¨å±€éƒ¨é¡¶ç‚¹ä½ç½®ä½œä¸ºç«‹æ–¹ä½“è´´å›¾é‡‡æ ·å‘é‡ã€‚
     vout.PosL = PosL;
-	// ÉèÖÃz = w£¬ÒÔÊ¹z / w = 1£¨¼´£¬Ììñ·Ê¼ÖÕÎ»ÓÚÔ¶Æ½ÃæÉÏ£©¡£
+	// è®¾ç½®z = wï¼Œä»¥ä½¿z / w = 1ï¼ˆå³ï¼Œå¤©ç©¹å§‹ç»ˆä½äºŽè¿œå¹³é¢ä¸Šï¼‰ã€‚
     vout.PosH = mul(float4(PosL,1.0f), ViewProj).xyww;
 
     return vout;

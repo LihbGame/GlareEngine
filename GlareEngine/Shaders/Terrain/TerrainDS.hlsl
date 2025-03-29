@@ -11,7 +11,7 @@
 //	float2 Tex      : TEXCOORD0;
 //	float2 TiledTex : TEXCOORD1;
 //	float FogFactor : TEXCOORD2;
-//	float ClipValue : SV_ClipDistance0;//²Ã¼ôÖµ¹Ø¼ü×Ö
+//	float ClipValue : SV_ClipDistance0;//è£å‰ªå€¼å…³é”®å­—
 //};
 //
 //struct PatchTess
@@ -26,7 +26,7 @@
 //	float2 Tex      : TEXCOORD;
 //};
 //
-//// Ï¸·ÖÆ÷´´½¨µÄÃ¿¸ö¶¥µã¶¼»áµ÷ÓÃÓò×ÅÉ«Æ÷¡£ ¾ÍÏñÏ¸·ÖºóµÄ¶¥µã×ÅÉ«Æ÷Ò»Ñù¡£
+//// ç»†åˆ†å™¨åˆ›å»ºçš„æ¯ä¸ªé¡¶ç‚¹éƒ½ä¼šè°ƒç”¨åŸŸç€è‰²å™¨ã€‚ å°±åƒç»†åˆ†åçš„é¡¶ç‚¹ç€è‰²å™¨ä¸€æ ·ã€‚
 //[domain("quad")]
 //DomainOut DS(PatchTess patchTess,
 //	float2 uv : SV_DomainLocation,
@@ -54,7 +54,7 @@
 //	float height = gSRVMap[mHeightMapIndex].SampleLevel(gsamLinearClamp, dout.Tex, 0).r;
 //
 //	//dout.PosW += gSRVMap[mRGBNoiseMapIndex].SampleLevel(gsamLinearWrap, dout.Tex, 0).rgb * 200;
-//	//ÔÚÊÀ½ç¿Õ¼ä£¬¶ÔÓÚ³ËÒÔ²Ã¼ôÃæĞ¡ÓÚÁãµÄ½øĞĞ²Ã¼ô£¬²Ã¼ô²»Âú×ãÌõ¼şµÄ¼¸ºÎÌå²¿·Ö
+//	//åœ¨ä¸–ç•Œç©ºé—´ï¼Œå¯¹äºä¹˜ä»¥è£å‰ªé¢å°äºé›¶çš„è¿›è¡Œè£å‰ªï¼Œè£å‰ªä¸æ»¡è¶³æ¡ä»¶çš„å‡ ä½•ä½“éƒ¨åˆ†
 //	if (isReflection)
 //	{
 //		dout.PosW.y = -height;
@@ -71,9 +71,9 @@
 //	// Generate projective tex-coords to project shadow map onto scene.
 //	dout.ShadowPosH = mul(float4(dout.PosW, 1.0f), gShadowTransform);
 //
-//	// NOTE:ÎÒÃÇ³¢ÊÔÊ¹ÓÃÓĞÏŞ²î·ÖÀ´¼ÆËã×ÅÉ«Æ÷ÖĞµÄ·¨Ïß£¬
-//	//µ«¶¥µã»áÁ¬Ğø²»¶ÏµØ·ÖÊıÒÆ¶¯£¬ÉõÖÁ»áËæ×Å·¨ÏßµÄ±ä»¯¶ø²úÉúÃ÷ÏÔµÄÉÁ¹âĞ§¹û¡£
-//	//Òò´Ë£¬ÎÒÃÇ½«¼ÆËãÒÆÖÁÏñËØ×ÅÉ«Æ÷¡£
+//	// NOTE:æˆ‘ä»¬å°è¯•ä½¿ç”¨æœ‰é™å·®åˆ†æ¥è®¡ç®—ç€è‰²å™¨ä¸­çš„æ³•çº¿ï¼Œ
+//	//ä½†é¡¶ç‚¹ä¼šè¿ç»­ä¸æ–­åœ°åˆ†æ•°ç§»åŠ¨ï¼Œç”šè‡³ä¼šéšç€æ³•çº¿çš„å˜åŒ–è€Œäº§ç”Ÿæ˜æ˜¾çš„é—ªå…‰æ•ˆæœã€‚
+//	//å› æ­¤ï¼Œæˆ‘ä»¬å°†è®¡ç®—ç§»è‡³åƒç´ ç€è‰²å™¨ã€‚
 //
 //	// Project to homogeneous clip space.
 //	dout.PosH = mul(float4(dout.PosW, 1.0f), gViewProj);
