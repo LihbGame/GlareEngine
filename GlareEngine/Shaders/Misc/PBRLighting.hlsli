@@ -1,7 +1,7 @@
 #include "../Lighting/LightGrid.hlsli"
 #include "../Misc/CommonResource.hlsli"
 
-struct RectAreaLightData
+struct AreaLightData
 {
     float3 PositionWS[4];
     float3 PositionVS[4];
@@ -19,7 +19,11 @@ Texture2DArray<float> gLightShadowArrayTex                          : register(t
 StructuredBuffer<LightGrid> LightGridList                           : register(t10);
 StructuredBuffer<uint> GlobalLightIndexList                         : register(t11);
 
-StructuredBuffer<RectAreaLightData> GlobalRectAreaLightData         : register(t12);
+StructuredBuffer<AreaLightData> GlobalRectAreaLightData             : register(t12);
+
+const float LUT_SIZE  = 64.0;
+const float LUT_SCALE = (LUT_SIZE - 1.0)/LUT_SIZE;
+const float LUT_BIAS  = 0.5/LUT_SIZE;
 
 //BRDF-F
 float3 fresnelSchlick(float cosTheta, float3 F0)
@@ -522,4 +526,28 @@ float3 IBL_Specular(SurfaceProperties Surface)
     return PrefilteredColor * (F * BRDF.x + BRDF.y) * Surface.ao;
 }
 
+// Area lighting calculation
+float3 ComputeAreaLighting(in AreaLightData lightData, in SurfaceProperties Surface)
+{
+    float2 UV = float2(Surface.roughness, sqrt(1.0-Surface.NdotV));
+    UV=UV*LUT_SCALE+LUT_BIAS;
+    float4 T1 = gSRVMap[gAreaLightLTC1SRVIndex].SampleLevel(gSamplerLinearClamp, UV, 0);
+    float4 T2 = gSRVMap[gAreaLightLTC2SRVIndex].SampleLevel(gSamplerLinearClamp, UV, 0);
+
+     float3x3 ltcMat= float3x3(
+         float3(T1.x,0,T1.y),
+         float3(0,1,0),
+         float3(T1.z,0,T1.w));
+    
+    return float3(0.0, 0.0, 0.0);
+}
+
+// Linearly Transformed Cosines
+float3 LTC_Evaluate(float3 N, float3 V, float3 P, float3x3 ltcMat, float3 points[4], bool twoSided)
+{
+    
+
+
+    return float3(0.0, 0.0, 0.0);
+}
 
