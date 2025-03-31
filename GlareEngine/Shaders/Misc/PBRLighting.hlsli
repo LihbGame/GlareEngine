@@ -21,9 +21,29 @@ StructuredBuffer<uint> GlobalLightIndexList                         : register(t
 
 StructuredBuffer<AreaLightData> GlobalRectAreaLightData             : register(t12);
 
-const float LUT_SIZE  = 64.0;
-const float LUT_SCALE = (LUT_SIZE - 1.0)/LUT_SIZE;
-const float LUT_BIAS  = 0.5/LUT_SIZE;
+static const float LUT_SIZE  = 64.0;
+static const float LUT_SCALE = (LUT_SIZE - 1.0)/LUT_SIZE;
+static const float LUT_BIAS  = 0.5/LUT_SIZE;
+
+float3 IntegrateEdgeVec(float3 v1, float3 v2)
+{
+    float x = dot(v1, v2);
+    float y = abs(x);
+
+    float a = 0.8543985 + (0.4965155 + 0.0145206*y)*y;
+    float b = 3.4175940 + (4.1616724 + y)*y;
+    float v = a / b;
+
+    float theta_sintheta = (x > 0.0) ? v : 0.5*rsqrt(max(1.0 - x*x, 1e-7)) - v;
+
+    return cross(v1, v2)*theta_sintheta;
+}
+
+float IntegrateEdge(float3 v1, float3 v2)
+{
+    return IntegrateEdgeVec(v1, v2).z;
+}
+
 
 //BRDF-F
 float3 fresnelSchlick(float cosTheta, float3 F0)
@@ -526,28 +546,82 @@ float3 IBL_Specular(SurfaceProperties Surface)
     return PrefilteredColor * (F * BRDF.x + BRDF.y) * Surface.ao;
 }
 
-// Area lighting calculation
-float3 ComputeAreaLighting(in AreaLightData lightData, in SurfaceProperties Surface)
-{
-    float2 UV = float2(Surface.roughness, sqrt(1.0-Surface.NdotV));
-    UV=UV*LUT_SCALE+LUT_BIAS;
-    float4 T1 = gSRVMap[gAreaLightLTC1SRVIndex].SampleLevel(gSamplerLinearClamp, UV, 0);
-    float4 T2 = gSRVMap[gAreaLightLTC2SRVIndex].SampleLevel(gSamplerLinearClamp, UV, 0);
-
-     float3x3 ltcMat= float3x3(
-         float3(T1.x,0,T1.y),
-         float3(0,1,0),
-         float3(T1.z,0,T1.w));
-    
-    return float3(0.0, 0.0, 0.0);
-}
-
 // Linearly Transformed Cosines
 float3 LTC_Evaluate(float3 N, float3 V, float3 P, float3x3 ltcMat, float3 points[4], bool twoSided)
 {
+    // construct orthonormal basis around N
+    float3 T1, T2;
+    T1 = normalize(V - N*dot(V, N));
+    T2 = cross(N, T1);
+
+    // rotate area light in (T1, T2, N) basis
+    ltcMat = mul(transpose(float3x3(T1, T2, N)), ltcMat);
+
+    // polygon (allocate 5 vertices for clipping)
+    float3 L[5];
+    L[0] = mul(points[0] - P,ltcMat);
+    L[1] = mul(points[1] - P,ltcMat);
+    L[2] = mul(points[2] - P,ltcMat);
+    L[3] = mul(points[3] - P,ltcMat);
+
+    // integrate
+    float sum = 0.0;
+
+    // float3 dir = points[0].xyz - P;
+    // float3 lightNormal = cross(points[1] - points[0], points[3] - points[0]);
+    // bool behind = (dot(dir, lightNormal) < 0.0);
+    //
+    // L[0] = normalize(L[0]);
+    // L[1] = normalize(L[1]);
+    // L[2] = normalize(L[2]);
+    // L[3] = normalize(L[3]);
+    //
+    // float3 vsum = float3(0.0,0.0,0.0);
+    //
+    // vsum += IntegrateEdgeVec(L[0], L[1]);
+    // vsum += IntegrateEdgeVec(L[1], L[2]);
+    // vsum += IntegrateEdgeVec(L[2], L[3]);
+    // vsum += IntegrateEdgeVec(L[3], L[0]);
+    //
+    // float len = length(vsum);
+    // float z = vsum.z/len;
+    //
+    // if (behind)
+    //     z = -z;
+    //
+    // float2 uv = float2(z*0.5 + 0.5, len);
+    // uv = uv*LUT_SCALE + LUT_BIAS;
+    //
+    // float scale = gSRVMap[gAreaLightLTC2SRVIndex].SampleLevel(gSamplerLinearClamp, uv, 0);
+    //
+    // sum = len*scale;
+    //
+    // if (behind && !twoSided)
+    //     sum = 0.0;
+
     
-
-
     return float3(0.0, 0.0, 0.0);
 }
+
+// Area lighting calculation
+float3 ComputeAreaLighting(in AreaLightData lightData, in SurfaceProperties Surface)
+{
+    float2 UV = float2(Surface.roughness, 1.0-sqrt(1.0-Surface.NdotV));
+    UV=UV*LUT_SCALE+LUT_BIAS;
+    
+    float4 T1 = gSRVMap[gAreaLightLTC1SRVIndex].SampleLevel(gSamplerLinearClamp, UV, 0);
+    float4 T2 = gSRVMap[gAreaLightLTC2SRVIndex].SampleLevel(gSamplerLinearClamp, UV, 0);
+
+    float3x3 ltcMat= float3x3(
+        float3(T1.x,0,T1.y),
+        float3(0,1,0),
+        float3(T1.z,0,T1.w));
+
+    float3 spec = LTC_Evaluate(Surface.N, Surface.V, Surface.worldPos, ltcMat, lightData.PositionWS, gAreaLightTwoSide);
+
+    
+    return float3(0.0, 0.0, 0.0);
+}
+
+
 

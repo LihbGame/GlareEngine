@@ -129,6 +129,7 @@ cbuffer MainPass : register(b0)
 
     int			gAreaLightLTC1SRVIndex;
     int			gAreaLightLTC2SRVIndex;
+    int         gAreaLightTwoSide;
 };
 
 struct AreaLightInstanceData

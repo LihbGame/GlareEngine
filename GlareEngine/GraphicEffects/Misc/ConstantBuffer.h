@@ -146,6 +146,7 @@ __declspec(align(16))struct MainConstants
 
 	int			gAreaLightLTC1SRVIndex;
 	int			gAreaLightLTC2SRVIndex;
+	int         gAreaLightTwoSide;
 };
 
 struct TerrainConstants
