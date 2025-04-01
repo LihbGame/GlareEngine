@@ -773,11 +773,12 @@ void Scene::DeferredRendering(RenderPipelineType DeferredRenderPipeline)
 		//Copy PBR SRV
 		D3D12_CPU_DESCRIPTOR_HANDLE PBR_SRV[] =
 		{
-		Lighting::m_LightGrid.GetSRV(),
-		Lighting::m_LightBuffer.GetSRV(),
-		Lighting::m_LightShadowArray.GetSRV(),
-		Lighting::m_ClusterLightGrid.GetSRV(),
-		Lighting::m_GlobalLightIndexList.GetSRV()
+			Lighting::m_LightGrid.GetSRV(),
+			Lighting::m_LightBuffer.GetSRV(),
+			Lighting::m_LightShadowArray.GetSRV(),
+			Lighting::m_ClusterLightGrid.GetSRV(),
+			Lighting::m_GlobalLightIndexList.GetSRV(),
+			Lighting::m_GlobalRectAreaLightData.GetSRV()
 		};
 
 		CopyBufferDescriptors(PBR_SRV, ArraySize(PBR_SRV), &gTextureHeap[Render::GetCommonSRVHeapOffset()]);

@@ -15,6 +15,19 @@
 // Numeric constants
 static const float3 DielectricSpecular = float3(0.04, 0.04, 0.04);
 
+static const float4x4 IdentityMatrix4x4 = {
+    {1, 0, 0, 0},
+    {0, 1, 0, 0},
+    {0, 0, 1, 0},
+    {0, 0, 0, 1}
+};
+
+static const float3x3 IdentityMatrix3x3 = {
+    {1, 0, 0},
+    {0, 1, 0},
+    {0, 0, 1}
+};
+
 #define MAX_DIR_LIGHTS 16
 #define NUM_DIR_LIGHTS 3
 

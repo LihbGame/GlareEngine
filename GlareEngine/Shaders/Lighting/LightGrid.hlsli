@@ -30,7 +30,8 @@ struct TileLightData
 
     float3 ConeDir;
     float2 ConeAngles; // x = 1.0f / (cos(coneInner) - cos(coneOuter)), y = cos(coneOuter)
-
+    uint AreaLightIndex;
+    
     float4x4 ShadowTextureMatrix;
 };
 

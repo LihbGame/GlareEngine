@@ -452,6 +452,90 @@ float3 ComputeConeShadowLight(in TileLightData LightData, in SurfaceProperties S
     return lightColor* shadowFactor;
 }
 
+// Linearly Transformed Cosines
+float3 LTC_Evaluate(float3 N, float3 V, float3 P, float3x3 ltcMat, float3 points[4], bool twoSided)
+{
+    // construct orthonormal basis around N
+    float3 T1, T2;
+    T1 = normalize(V - N*dot(V, N));
+    T2 = cross(N, T1);
+
+    // rotate area light in (T1, T2, N) basis
+    ltcMat = mul(transpose(float3x3(T1, T2, N)), ltcMat);
+
+    // polygon (allocate 5 vertices for clipping)
+    float3 L[5];
+    L[0] = mul(points[0] - P,ltcMat);
+    L[1] = mul(points[1] - P,ltcMat);
+    L[2] = mul(points[2] - P,ltcMat);
+    L[3] = mul(points[3] - P,ltcMat);
+
+    // integrate
+    float sum = 0.0;
+
+    float3 dir = points[0].xyz - P;
+    float3 lightNormal = cross(points[3] - points[0],points[1] - points[0]);
+    bool behind = (dot(dir, lightNormal) < 0.0);
+    
+    L[0] = normalize(L[0]);
+    L[1] = normalize(L[1]);
+    L[2] = normalize(L[2]);
+    L[3] = normalize(L[3]);
+    
+    float3 vsum = float3(0.0,0.0,0.0);
+    
+    vsum += IntegrateEdgeVec(L[0], L[1]);
+    vsum += IntegrateEdgeVec(L[1], L[2]);
+    vsum += IntegrateEdgeVec(L[2], L[3]);
+    vsum += IntegrateEdgeVec(L[3], L[0]);
+    
+    float len = length(vsum);
+    float z = vsum.z/len;
+    
+    if (behind)
+        z = -z;
+    
+    float2 uv = float2(z*0.5 + 0.5, len);
+    uv = uv*LUT_SCALE + LUT_BIAS;
+    
+    float scale = gSRVMap[gAreaLightLTC2SRVIndex].SampleLevel(gSamplerLinearClamp, uv, 0).w;
+    
+    sum = len*scale;
+    
+    if (behind && !twoSided)
+        sum = 0.0;
+    
+    return float3(sum, sum, sum);
+}
+
+// Area lighting calculation
+float3 ComputeAreaLighting(in AreaLightData lightData, in SurfaceProperties Surface)
+{
+    float2 UV = float2(Surface.roughness, 1.0-sqrt(1.0-Surface.NdotV));
+    UV=UV*LUT_SCALE+LUT_BIAS;
+    
+    float4 T1 = gSRVMap[gAreaLightLTC1SRVIndex].SampleLevel(gSamplerLinearClamp, UV, 0);
+    float4 T2 = gSRVMap[gAreaLightLTC2SRVIndex].SampleLevel(gSamplerLinearClamp, UV, 0);
+
+    float3x3 ltcMat= float3x3(
+        float3(T1.x,0,T1.y),
+        float3(0,1,0),
+        float3(T1.z,0,T1.w));
+    
+    float3 specular  = LTC_Evaluate(Surface.N, Surface.V, Surface.worldPos, ltcMat, lightData.PositionWS, gAreaLightTwoSide);
+    float3 diffuse = LTC_Evaluate(Surface.N, Surface.V, Surface.worldPos, IdentityMatrix3x3, lightData.PositionWS, gAreaLightTwoSide);
+
+    // GGX BRDF shadowing and Fresnel
+    // T2.x: shadowedF90 (F90 normally it should be 1.0)
+    // T2.y: Smith function for Geometric Attenuation Term, it is dot(V or L, H).
+    specular *= Surface.c_spec*T2.x + (1.0f - Surface.c_spec) * T2.y;
+
+    float3 color = lightData.Color*(specular + Surface.c_diff *diffuse);
+    
+    return color;
+    
+}
+
 float3 ComputeLighting_Internal(uint LightCount, uint LightOffset, in SurfaceProperties Surface)
 {
     float3 lightColor = float3(0, 0, 0);
@@ -473,32 +557,40 @@ float3 ComputeLighting_Internal(uint LightCount, uint LightOffset, in SurfacePro
 
         switch (lightData.Type)
         {
-            case 0: //Point light
+        case 0: //Point light
+            {
+                if (gEnablePointLight)
                 {
-                    if (gEnablePointLight)
-                    {
-                        lightColor += ComputePointLight(lightData, Surface);
-                    }
-                    break;
+                    lightColor += ComputePointLight(lightData, Surface);
                 }
-            case 1: //Cone Light
-                {
-                    if (gEnableConeLight)
-                    {
-                        lightColor += ComputeConeLight(lightData, Surface);
-                    }
-                    break;
-                }
-            case 2: //Shadowed Cone Light 
-                {
-                    if (gEnableConeLight)
-                    {
-                        lightColor += ComputeConeShadowLight(lightData, Surface);
-                    }
-                    break;
-                }
-            default:
                 break;
+            }
+        case 1: //Cone Light
+            {
+                if (gEnableConeLight)
+                {
+                    lightColor += ComputeConeLight(lightData, Surface);
+                }
+                break;
+            }
+        case 2: //Shadowed Cone Light 
+            {
+                if (gEnableConeLight)
+                {
+                    lightColor += ComputeConeShadowLight(lightData, Surface);
+                }
+                break;
+            }
+        case 3: //Area Light 
+            {
+                if (gEnableAreaLight)
+                {
+                    lightColor +=ComputeAreaLighting(GlobalRectAreaLightData[lightData.AreaLightIndex], Surface);
+                }
+                break;
+            }
+        default:
+            break;
         }
     }
     return lightColor;
@@ -546,82 +638,7 @@ float3 IBL_Specular(SurfaceProperties Surface)
     return PrefilteredColor * (F * BRDF.x + BRDF.y) * Surface.ao;
 }
 
-// Linearly Transformed Cosines
-float3 LTC_Evaluate(float3 N, float3 V, float3 P, float3x3 ltcMat, float3 points[4], bool twoSided)
-{
-    // construct orthonormal basis around N
-    float3 T1, T2;
-    T1 = normalize(V - N*dot(V, N));
-    T2 = cross(N, T1);
 
-    // rotate area light in (T1, T2, N) basis
-    ltcMat = mul(transpose(float3x3(T1, T2, N)), ltcMat);
-
-    // polygon (allocate 5 vertices for clipping)
-    float3 L[5];
-    L[0] = mul(points[0] - P,ltcMat);
-    L[1] = mul(points[1] - P,ltcMat);
-    L[2] = mul(points[2] - P,ltcMat);
-    L[3] = mul(points[3] - P,ltcMat);
-
-    // integrate
-    float sum = 0.0;
-
-    // float3 dir = points[0].xyz - P;
-    // float3 lightNormal = cross(points[1] - points[0], points[3] - points[0]);
-    // bool behind = (dot(dir, lightNormal) < 0.0);
-    //
-    // L[0] = normalize(L[0]);
-    // L[1] = normalize(L[1]);
-    // L[2] = normalize(L[2]);
-    // L[3] = normalize(L[3]);
-    //
-    // float3 vsum = float3(0.0,0.0,0.0);
-    //
-    // vsum += IntegrateEdgeVec(L[0], L[1]);
-    // vsum += IntegrateEdgeVec(L[1], L[2]);
-    // vsum += IntegrateEdgeVec(L[2], L[3]);
-    // vsum += IntegrateEdgeVec(L[3], L[0]);
-    //
-    // float len = length(vsum);
-    // float z = vsum.z/len;
-    //
-    // if (behind)
-    //     z = -z;
-    //
-    // float2 uv = float2(z*0.5 + 0.5, len);
-    // uv = uv*LUT_SCALE + LUT_BIAS;
-    //
-    // float scale = gSRVMap[gAreaLightLTC2SRVIndex].SampleLevel(gSamplerLinearClamp, uv, 0);
-    //
-    // sum = len*scale;
-    //
-    // if (behind && !twoSided)
-    //     sum = 0.0;
-
-    
-    return float3(0.0, 0.0, 0.0);
-}
-
-// Area lighting calculation
-float3 ComputeAreaLighting(in AreaLightData lightData, in SurfaceProperties Surface)
-{
-    float2 UV = float2(Surface.roughness, 1.0-sqrt(1.0-Surface.NdotV));
-    UV=UV*LUT_SCALE+LUT_BIAS;
-    
-    float4 T1 = gSRVMap[gAreaLightLTC1SRVIndex].SampleLevel(gSamplerLinearClamp, UV, 0);
-    float4 T2 = gSRVMap[gAreaLightLTC2SRVIndex].SampleLevel(gSamplerLinearClamp, UV, 0);
-
-    float3x3 ltcMat= float3x3(
-        float3(T1.x,0,T1.y),
-        float3(0,1,0),
-        float3(T1.z,0,T1.w));
-
-    float3 spec = LTC_Evaluate(Surface.N, Surface.V, Surface.worldPos, ltcMat, lightData.PositionWS, gAreaLightTwoSide);
-
-    
-    return float3(0.0, 0.0, 0.0);
-}
 
 
 

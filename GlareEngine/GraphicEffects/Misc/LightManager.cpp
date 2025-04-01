@@ -48,17 +48,18 @@ struct LightData
 
 	float ConeDir[3];
 	float ConeAngles[2];
+	uint32_t AreaLightIndex;
 
 	float ShadowTextureMatrix[16];
 };
 
 struct RectAreaLightData
 {
-	Vector3 PositionWS[4];
-	Vector3 PositionVS[4];
-	Vector3 PositionCenter;
-	Vector3 LightDir;
-	Vector3 Color;
+	XMFLOAT3 PositionWS[4];
+	XMFLOAT3 PositionVS[4];
+	XMFLOAT3 PositionCenter;
+	XMFLOAT3 LightDir;
+	XMFLOAT3 Color;
 	float RadiusSquare;
 };
 
@@ -352,61 +353,60 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 		float coneInner = RandFloat() * 0.2f * MathHelper::Pi;
 		float coneOuter = coneInner + RandFloat() * 0.3f * MathHelper::Pi;
 
-		if (type != LightType::AreaLight)
+		if (type == LightType::PointLight)
 		{
-			if (type == LightType::PointLight)
-			{
-				color = color * 2;
-			}
-			else
-			{
-				// emphasize cone lights
-				lightRadius *= 2;
-				color = color * coneInner;
-			}
-
-			Matrix4 shadowTextureMatrix;
-			if (type == LightType::ShadowedConeLight)
-			{
-				static int shadowLightIndex = 0;
-				ConeShadowCamera[shadowLightIndex].LookAt(position, position + LightDir, Vector3(0, 1, 0));
-				ConeShadowCamera[shadowLightIndex].SetLens(coneOuter * 2, 1.0f, lightRadius * 0.01f, lightRadius * 1);
-				ConeShadowCamera[shadowLightIndex].UpdateViewMatrix();
-				XMFLOAT4X4 ViewProj;
-				XMStoreFloat4x4(&ViewProj, XMMatrixTranspose(ConeShadowCamera[shadowLightIndex].GetViewProjection()));
-				m_LightShadowMatrix[shadowLightIndex] = (Matrix4)ViewProj;
-				m_LightData[lightIndex].ShadowConeIndex = shadowLightIndex;
-				shadowTextureMatrix = m_LightShadowMatrix[shadowLightIndex] * Matrix4(AffineTransform(Matrix3::MakeScale(0.5f, -0.5f, 1.0f), Vector3(0.5f, 0.5f, 0.0f)));
-				shadowLightIndex++;
-			}
-
-			m_LightData[lightIndex].PositionWS[0] = position.GetX();
-			m_LightData[lightIndex].PositionWS[1] = position.GetY();
-			m_LightData[lightIndex].PositionWS[2] = position.GetZ();
-			m_LightData[lightIndex].RadiusSquare = lightRadius * lightRadius;
-			m_LightData[lightIndex].Color[0] = color.GetX();
-			m_LightData[lightIndex].Color[1] = color.GetY();
-			m_LightData[lightIndex].Color[2] = color.GetZ();
-			m_LightData[lightIndex].Type = (uint32_t)type;
-			m_LightData[lightIndex].ConeDir[0] = LightDir.GetX();
-			m_LightData[lightIndex].ConeDir[1] = LightDir.GetY();
-			m_LightData[lightIndex].ConeDir[2] = LightDir.GetZ();
-			m_LightData[lightIndex].ConeAngles[0] = 1.0f / (cosf(coneInner) - cosf(coneOuter));
-			m_LightData[lightIndex].ConeAngles[1] = cosf(coneOuter);
-			std::memcpy(m_LightData[lightIndex].ShadowTextureMatrix, &shadowTextureMatrix, sizeof(shadowTextureMatrix));
+			color = color * 2;
 		}
 		else
+		{
+			// emphasize cone lights
+			lightRadius *= 2;
+			color = color * coneInner;
+		}
+
+		Matrix4 shadowTextureMatrix;
+		if (type == LightType::ShadowedConeLight)
+		{
+			static int shadowLightIndex = 0;
+			ConeShadowCamera[shadowLightIndex].LookAt(position, position + LightDir, Vector3(0, 1, 0));
+			ConeShadowCamera[shadowLightIndex].SetLens(coneOuter * 2, 1.0f, lightRadius * 0.01f, lightRadius * 1);
+			ConeShadowCamera[shadowLightIndex].UpdateViewMatrix();
+			XMFLOAT4X4 ViewProj;
+			XMStoreFloat4x4(&ViewProj, XMMatrixTranspose(ConeShadowCamera[shadowLightIndex].GetViewProjection()));
+			m_LightShadowMatrix[shadowLightIndex] = (Matrix4)ViewProj;
+			m_LightData[lightIndex].ShadowConeIndex = shadowLightIndex;
+			shadowTextureMatrix = m_LightShadowMatrix[shadowLightIndex] * Matrix4(AffineTransform(Matrix3::MakeScale(0.5f, -0.5f, 1.0f), Vector3(0.5f, 0.5f, 0.0f)));
+			shadowLightIndex++;
+		}
+		else if (type == LightType::AreaLight)
 		{
 			static int AreaLightIndex = 0;
 			lightRadius = m_QuadAreaLightSize*3.0f;
 
-			m_RectAreaLightData[AreaLightIndex].PositionCenter = position / 1.5f;
-			m_RectAreaLightData[AreaLightIndex].LightDir = LightDir;
+			m_RectAreaLightData[AreaLightIndex].PositionCenter = XMFLOAT3(position / 1.5f);
+			m_RectAreaLightData[AreaLightIndex].LightDir = XMFLOAT3(LightDir);
 			m_RectAreaLightData[AreaLightIndex].RadiusSquare = lightRadius * lightRadius;
-			m_RectAreaLightData[AreaLightIndex].Color = color;
-
+			m_RectAreaLightData[AreaLightIndex].Color = XMFLOAT3(color);
+			position=m_RectAreaLightData[AreaLightIndex].PositionCenter;
+			m_LightData[lightIndex].AreaLightIndex=AreaLightIndex;
 			AreaLightIndex++;
 		}
+		
+		m_LightData[lightIndex].PositionWS[0] = position.GetX();
+		m_LightData[lightIndex].PositionWS[1] = position.GetY();
+		m_LightData[lightIndex].PositionWS[2] = position.GetZ();
+		m_LightData[lightIndex].RadiusSquare = lightRadius * lightRadius;
+		m_LightData[lightIndex].Color[0] = color.GetX();
+		m_LightData[lightIndex].Color[1] = color.GetY();
+		m_LightData[lightIndex].Color[2] = color.GetZ();
+		m_LightData[lightIndex].Type = (uint32_t)type;
+		m_LightData[lightIndex].ConeDir[0] = LightDir.GetX();
+		m_LightData[lightIndex].ConeDir[1] = LightDir.GetY();
+		m_LightData[lightIndex].ConeDir[2] = LightDir.GetZ();
+		m_LightData[lightIndex].ConeAngles[0] = 1.0f / (cosf(coneInner) - cosf(coneOuter));
+		m_LightData[lightIndex].ConeAngles[1] = cosf(coneOuter);
+		std::memcpy(m_LightData[lightIndex].ShadowTextureMatrix, &shadowTextureMatrix, sizeof(shadowTextureMatrix));
+		
 	}
 
 	for (uint32_t n = 0; n < MaxLights; n++)
@@ -469,8 +469,8 @@ void Lighting::CreateLightRenderData()
 			for (int LightIndex = 0; LightIndex < MaxAreaLights; ++LightIndex)
 			{
 				LightRenderConstants IRC;
-				Vector3 rotAxis = Vector3(XMVector3Cross(Vector3(0, 1, 0), m_RectAreaLightData[LightIndex].LightDir));
-				float rotAngle = std::acosf(Vector3(XMVector3Dot(Vector3(0, 1, 0), m_RectAreaLightData[LightIndex].LightDir)).GetX());
+				Vector3 rotAxis = Vector3(XMVector3Cross(Vector3(0, 1, 0), Vector3(m_RectAreaLightData[LightIndex].LightDir)));
+				float rotAngle = std::acosf(Vector3(XMVector3Dot(Vector3(0, 1, 0), Vector3(m_RectAreaLightData[LightIndex].LightDir))).GetX());
 				Matrix3 RotMatrix = Quaternion(rotAxis, rotAngle);
 				Matrix4 LightTransform = Matrix4(Vector4(RotMatrix.GetX()), Vector4(RotMatrix.GetY()), Vector4(RotMatrix.GetZ()), Vector4(0, 0, 0, 1));
 				IRC.mLightColor = XMFLOAT3(m_RectAreaLightData[LightIndex].Color);
@@ -741,7 +741,7 @@ void Lighting::UpdateViewSpacePosition(Camera& camera)
 			{
 				Vector4 positionWS = Vector4(m_RectAreaLightData[i].PositionWS[numVert], 1.0f);
 				Vector4 positionVS = positionWS * (Matrix4)camera.GetView();
-				m_RectAreaLightData[i].PositionVS[numVert] = Vector3(positionVS);
+				m_RectAreaLightData[i].PositionVS[numVert] = XMFLOAT3(Vector3(positionVS));
 			}
 		}
 		CommandContext::InitializeBuffer(m_LightBuffer, m_LightData, MaxLights * sizeof(LightData));
