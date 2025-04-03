@@ -495,7 +495,7 @@ float3 LTC_Evaluate(float3 N, float3 V, float3 P, float3x3 ltcMat, float3 points
     if (behind)
         z = -z;
     
-    float2 uv = float2(z*0.5 + 0.5, len);
+    float2 uv = float2(z*0.5 + 0.5, 1-len);
     uv = uv*LUT_SCALE + LUT_BIAS;
     
     float scale = gSRVMap[gAreaLightLTC2SRVIndex].SampleLevel(gSamplerLinearClamp, uv, 0).w;
@@ -511,7 +511,7 @@ float3 LTC_Evaluate(float3 N, float3 V, float3 P, float3x3 ltcMat, float3 points
 // Area lighting calculation
 float3 ComputeAreaLighting(in AreaLightData lightData, in SurfaceProperties Surface)
 {
-    float2 UV = float2(Surface.roughness, 1.0-sqrt(1.0-Surface.NdotV));
+    float2 UV = float2(Surface.roughness, 1.0f-sqrt(1.0-Surface.NdotV));
     UV=UV*LUT_SCALE+LUT_BIAS;
     
     float4 T1 = gSRVMap[gAreaLightLTC1SRVIndex].SampleLevel(gSamplerLinearClamp, UV, 0);
@@ -522,7 +522,7 @@ float3 ComputeAreaLighting(in AreaLightData lightData, in SurfaceProperties Surf
         float3(0,1,0),
         float3(T1.z,0,T1.w));
     
-    float3 specular  = LTC_Evaluate(Surface.N, Surface.V, Surface.worldPos, ltcMat, lightData.PositionWS, gAreaLightTwoSide);
+    float3 specular = LTC_Evaluate(Surface.N, Surface.V, Surface.worldPos, ltcMat, lightData.PositionWS, gAreaLightTwoSide);
     float3 diffuse = LTC_Evaluate(Surface.N, Surface.V, Surface.worldPos, IdentityMatrix3x3, lightData.PositionWS, gAreaLightTwoSide);
 
     // GGX BRDF shadowing and Fresnel
@@ -530,7 +530,7 @@ float3 ComputeAreaLighting(in AreaLightData lightData, in SurfaceProperties Surf
     // T2.y: Smith function for Geometric Attenuation Term, it is dot(V or L, H).
     specular *= Surface.c_spec*T2.x + (1.0f - Surface.c_spec) * T2.y;
 
-    float3 color = lightData.Color*(specular + Surface.c_diff *diffuse);
+    float3 color = lightData.Color*(specular+diffuse*Surface.c_diff);
     
     return color;
     

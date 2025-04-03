@@ -7,9 +7,7 @@ namespace GlareEngine
 	namespace Math
 	{
 		class Vector4;
-
-		//����δָ���ĵ��ķ�����3������ ���������ĵĲ�ͬ��W����Ϊ0��1���������߶�����ʽ�ġ�
-		//��������ԭ��δ������ĸ������ʵ��ֵ��
+		
 		class Vector3
 		{
 		public:

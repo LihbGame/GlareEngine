@@ -116,7 +116,6 @@ __declspec(align(16))struct MainConstants
 
 	float		InvTileDim[4];
 	int			TileCount[4];
-	uint32_t	FirstLightIndex[4];
 
 	//ShadowMap Index
 	int			mShadowMapIndex					= 0;

@@ -14,6 +14,8 @@ namespace GlareEngine
 	public:
 		MeshGeometry mMeshGeo;
 		string pModelMeshName;
+
+		MeshData& GetMeshData() { return mMeshData; }
 	private:
 		void SetupMesh(ID3D12GraphicsCommandList* CommandList, const char* name);
 	

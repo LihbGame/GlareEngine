@@ -312,8 +312,6 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 	mSceneView.mMainConstants.InvTileDim[1] = 1.0f / Lighting::LightGridDimension;
 	mSceneView.mMainConstants.TileCount[0] = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), Lighting::LightGridDimension);
 	mSceneView.mMainConstants.TileCount[1] = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), Lighting::LightGridDimension);
-	mSceneView.mMainConstants.FirstLightIndex[0] = Lighting::m_FirstConeLight;
-	mSceneView.mMainConstants.FirstLightIndex[1] = Lighting::m_FirstConeShadowedLight;
 
 	mSceneView.mMainConstants.bEnableAreaLight=Lighting::bEnableAreaLight;
 	mSceneView.mMainConstants.bEnableConeLight=Lighting::bEnableConeLight;
@@ -336,7 +334,7 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 	mSceneView.mMainConstants.gBakingPreFilteredEnvIndex = GlobleSRVIndex::gBakingPreFilteredEnvIndex;
 	mSceneView.mMainConstants.gBakingIntegrationBRDFIndex = GlobleSRVIndex::gBakingIntegrationBRDFIndex;
 	mSceneView.mMainConstants.IsRenderTiledBaseLighting = Lighting::bEnableTiledBaseLight;
-
+	mSceneView.mMainConstants.gAreaLightTwoSide = Lighting::bEnableAreaLightTwoSide;
 	//Lights constant buffer
 	{
 		mSceneView.mMainConstants.gAmbientLight = { 0.05f, 0.05f, 0.05f, 1.0f };

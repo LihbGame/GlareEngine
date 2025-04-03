@@ -113,7 +113,6 @@ cbuffer MainPass : register(b0)
 
     float4      gInvTileDimension;
     uint4       gTileCount;
-    uint4       gFirstLightIndex;
 
     int         gShadowMapIndex;
     int         gSkyCubeIndex;

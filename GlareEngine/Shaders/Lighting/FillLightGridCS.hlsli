@@ -33,12 +33,7 @@ groupshared AABB GroupAABB;			// frustum AABB around min-max depth in View Space
 #endif
 
 groupshared uint tileLightCountSphere;
-groupshared uint tileLightCountCone;
-groupshared uint tileLightCountConeShadowed;
-
 groupshared uint tileLightIndicesSphere[MAX_LIGHTS];
-groupshared uint tileLightIndicesCone[MAX_LIGHTS];
-groupshared uint tileLightIndicesConeShadowed[MAX_LIGHTS];
 
 // Now build the frustum planes from the view space points
 groupshared Frustum frustum;
@@ -139,8 +134,6 @@ void main(
     if (GI == 0)
     {
         tileLightCountSphere = 0;
-        tileLightCountCone = 0;
-        tileLightCountConeShadowed = 0;
         minDepthUInt = 0xffffffff;
         maxDepthUInt = 0;
     }
@@ -333,33 +326,16 @@ void main(
 
 
         uint slot;
-
-        switch (lightData.Type)
-        {
-        case 0: // sphere
-            InterlockedAdd(tileLightCountSphere, 1, slot);
-            tileLightIndicesSphere[slot] = lightIndex;
-            break;
-
-        case 1: // cone
-            InterlockedAdd(tileLightCountCone, 1, slot);
-            tileLightIndicesCone[slot] = lightIndex;
-            break;
-
-        case 2: // cone w/ shadow map
-            InterlockedAdd(tileLightCountConeShadowed, 1, slot);
-            tileLightIndicesConeShadowed[slot] = lightIndex;
-            break;
-        }
+        InterlockedAdd(tileLightCountSphere, 1, slot);
+        tileLightIndicesSphere[slot] = lightIndex;   
+        
     }
 
     GroupMemoryBarrierWithGroupSync();
 
     if (GI == 0)
     {
-        uint lightCount = tileLightCountSphere + tileLightCountCone + tileLightCountConeShadowed;
-
-        lightGrid[tileOffset] = lightCount;
+        lightGrid[tileOffset] = tileLightCountSphere;
 
         uint storeOffset = tileOffset + 1;
 
@@ -369,16 +345,5 @@ void main(
             lightGrid[storeOffset] = tileLightIndicesSphere[n];
             storeOffset += 1;
         }
-        for (n = 0; n < tileLightCountCone; n++)
-        {
-            lightGrid[storeOffset] = tileLightIndicesCone[n];
-            storeOffset += 1;
-        }
-        for (n = 0; n < tileLightCountConeShadowed; n++)
-        {
-            lightGrid[storeOffset] = tileLightIndicesConeShadowed[n];
-            storeOffset += 1;
-        }
-
     }
 }

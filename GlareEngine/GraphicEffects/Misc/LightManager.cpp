@@ -231,6 +231,7 @@ namespace GlareEngine
 		bool bEnableAreaLight = false;
 		bool bEnableConeLight = true;
 		bool bEnableDirectionalLight = true;
+		bool bEnableAreaLightTwoSide = true;
 
 		uint32_t AreaLightLTC1SRVIndex;
 		uint32_t AreaLightLTC2SRVIndex;
@@ -353,7 +354,7 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 		float coneInner = RandFloat() * 0.2f * MathHelper::Pi;
 		float coneOuter = coneInner + RandFloat() * 0.3f * MathHelper::Pi;
 
-		if (type == LightType::PointLight)
+		if (type == LightType::PointLight|| type == LightType::AreaLight)
 		{
 			color = color * 2;
 		}
@@ -381,7 +382,7 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 		else if (type == LightType::AreaLight)
 		{
 			static int AreaLightIndex = 0;
-			lightRadius = m_QuadAreaLightSize*3.0f;
+			lightRadius = m_QuadAreaLightSize*100.0f;
 
 			m_RectAreaLightData[AreaLightIndex].PositionCenter = XMFLOAT3(position / 1.5f);
 			m_RectAreaLightData[AreaLightIndex].LightDir = XMFLOAT3(LightDir);
@@ -406,25 +407,8 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 		m_LightData[lightIndex].ConeAngles[0] = 1.0f / (cosf(coneInner) - cosf(coneOuter));
 		m_LightData[lightIndex].ConeAngles[1] = cosf(coneOuter);
 		std::memcpy(m_LightData[lightIndex].ShadowTextureMatrix, &shadowTextureMatrix, sizeof(shadowTextureMatrix));
-		
 	}
-
-	for (uint32_t n = 0; n < MaxLights; n++)
-	{
-		if (m_LightData[n].Type == LightType::ConeLight)
-		{
-			m_FirstConeLight = n;
-			break;
-		}
-	}
-	for (uint32_t n = 0; n < MaxLights; n++)
-	{
-		if (m_LightData[n].Type == LightType::ShadowedConeLight)
-		{
-			m_FirstConeShadowedLight = n;
-			break;
-		}
-	}
+	
 	FirstUpdateViewSpace = true;
 
 	CommandContext::InitializeBuffer(m_LightBuffer, m_LightData, MaxLights * sizeof(LightData));
@@ -440,10 +424,11 @@ void Lighting::CreateLightRenderData()
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
-	srvDesc.TextureCube.MostDetailedMip = 0;
-	srvDesc.TextureCube.MipLevels = 1;
-	srvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+	srvDesc.Texture2D.PlaneSlice = 0;
 
 	// Area Light LTC
 	D3D12_CPU_DESCRIPTOR_HANDLE AreaLightLTC1Srv = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -460,13 +445,13 @@ void Lighting::CreateLightRenderData()
 	
 	//area light mesh
 	{
-		const ModelRenderData* ModelData = SimpleModelGenerator::GetInstance(Context.GetCommandList())->CreateGridRanderData("AreaLight", m_QuadAreaLightSize, m_QuadAreaLightSize, 2, 2);
+		ModelRenderData* ModelData = SimpleModelGenerator::GetInstance(Context.GetCommandList())->CreateGridRanderData("AreaLight", m_QuadAreaLightSize, m_QuadAreaLightSize, 2, 2);
 		InstanceRenderData InstanceData;
 		InstanceData.mModelData = ModelData;
 		InstanceData.mInstanceConstants.resize(ModelData->mSubModels.size());
 		for (int SubMeshIndex = 0; SubMeshIndex < ModelData->mSubModels.size(); SubMeshIndex++)
 		{
-			for (int LightIndex = 0; LightIndex < MaxAreaLights; ++LightIndex)
+			for (int LightIndex = 0; LightIndex < MaxAreaLights; LightIndex++)
 			{
 				LightRenderConstants IRC;
 				Vector3 rotAxis = Vector3(XMVector3Cross(Vector3(0, 1, 0), Vector3(m_RectAreaLightData[LightIndex].LightDir)));
@@ -477,6 +462,12 @@ void Lighting::CreateLightRenderData()
 				XMFLOAT3 position = XMFLOAT3(m_RectAreaLightData[LightIndex].PositionCenter);
 				XMStoreFloat4x4(&IRC.mWorldTransform, XMMatrixTranspose(XMMATRIX(LightTransform) * XMMatrixScaling(m_AreaLightSizeScale, m_AreaLightSizeScale, m_AreaLightSizeScale) * XMMatrixTranslation(position.x, position.y, position.z)));
 				mAreaLightIRC.push_back(IRC);
+				
+				MeshData meshData=ModelData->mSubModels[SubMeshIndex].mMeshData.GetMeshData();
+				m_RectAreaLightData[LightIndex].PositionWS[0]=XMFLOAT3(Vector3(meshData.Vertices[0].Position)*RotMatrix+m_RectAreaLightData[LightIndex].PositionCenter);
+				m_RectAreaLightData[LightIndex].PositionWS[1]=XMFLOAT3(Vector3(meshData.Vertices[2].Position)*RotMatrix+m_RectAreaLightData[LightIndex].PositionCenter);
+				m_RectAreaLightData[LightIndex].PositionWS[2]=XMFLOAT3(Vector3(meshData.Vertices[3].Position)*RotMatrix+m_RectAreaLightData[LightIndex].PositionCenter);
+				m_RectAreaLightData[LightIndex].PositionWS[3]=XMFLOAT3(Vector3(meshData.Vertices[1].Position)*RotMatrix+m_RectAreaLightData[LightIndex].PositionCenter);
 			}
 			InstanceConstants IC;
 			IC.mDataPtr = mAreaLightIRC.data();
@@ -726,7 +717,7 @@ void Lighting::UpdateViewSpacePosition(Camera& camera)
 	{
 		FirstUpdateViewSpace = false;
 		bLightDataChanged = false;
-		for (size_t i = 0; i < MaxLights-MaxAreaLights; i++)
+		for (size_t i = 0; i < MaxLights; i++)
 		{
 			Vector4 positionWS = Vector4(m_LightData[i].PositionWS[0], m_LightData[i].PositionWS[1], m_LightData[i].PositionWS[2], 1.0f);
 			Vector4 positionVS = positionWS * (Matrix4)camera.GetView();
@@ -887,6 +878,7 @@ void Lighting::DrawUI()
 		{
 			ImGui::Checkbox("Point Light", &bEnablePointLight);
 			ImGui::Checkbox("Area Light", &bEnableAreaLight);
+			ImGui::Checkbox("Area Light Two Side", &bEnableAreaLightTwoSide);
 			ImGui::Checkbox("Cone Light", &bEnableConeLight);
 		}
 	}
