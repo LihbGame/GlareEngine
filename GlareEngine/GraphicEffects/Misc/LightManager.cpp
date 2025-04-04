@@ -211,8 +211,8 @@ namespace GlareEngine
 		bool bLightDataChanged = true;
 
 		float m_LightRadius = 50;
-		float m_QuadAreaLightSize = 20;
-		float m_AreaLightIntensityScale = 5;
+		float m_QuadAreaLightSize = 40;
+		float m_AreaLightIntensityScale = 1.5f;
 
 		float m_AreaLightSizeScale = 1;
 		float m_PointLightSizeScale = 0.1;
@@ -354,7 +354,7 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 		float coneInner = RandFloat() * 0.2f * MathHelper::Pi;
 		float coneOuter = coneInner + RandFloat() * 0.3f * MathHelper::Pi;
 
-		if (type == LightType::PointLight|| type == LightType::AreaLight)
+		if (type == LightType::PointLight)
 		{
 			color = color * 2;
 		}
@@ -382,12 +382,12 @@ void Lighting::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound
 		else if (type == LightType::AreaLight)
 		{
 			static int AreaLightIndex = 0;
-			lightRadius = m_QuadAreaLightSize*100.0f;
+			lightRadius = m_QuadAreaLightSize*5.0f;
 
-			m_RectAreaLightData[AreaLightIndex].PositionCenter = XMFLOAT3(position / 1.5f);
+			m_RectAreaLightData[AreaLightIndex].PositionCenter = XMFLOAT3(position/2);
 			m_RectAreaLightData[AreaLightIndex].LightDir = XMFLOAT3(LightDir);
 			m_RectAreaLightData[AreaLightIndex].RadiusSquare = lightRadius * lightRadius;
-			m_RectAreaLightData[AreaLightIndex].Color = XMFLOAT3(color);
+			m_RectAreaLightData[AreaLightIndex].Color = XMFLOAT3(color * m_AreaLightIntensityScale);
 			position=m_RectAreaLightData[AreaLightIndex].PositionCenter;
 			m_LightData[lightIndex].AreaLightIndex=AreaLightIndex;
 			AreaLightIndex++;

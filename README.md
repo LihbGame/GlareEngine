@@ -30,7 +30,8 @@ TIPS:
 Editor
 ![demo](ScreenShot/LightingVisual.png)
 ![demo](ScreenShot/Editor.jpg)
-
+Area light
+![demo](ScreenShot/AreaLightingVisual.png)
 Forward Plus (2.5d Tiled Base Forward)
 ![demo](ScreenShot/ForwardPlus.jpg)
 

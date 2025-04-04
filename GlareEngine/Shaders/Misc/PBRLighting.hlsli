@@ -477,6 +477,11 @@ float3 LTC_Evaluate(float3 N, float3 V, float3 P, float3x3 ltcMat, float3 points
     float3 lightNormal = cross(points[1] - points[0],points[3] - points[0]);
     bool behind = (dot(dir, lightNormal) < 0.0);
     
+    if (behind && !twoSided)
+    {
+        return float3(0, 0, 0);
+    }
+        
     L[0] = normalize(L[0]);
     L[1] = normalize(L[1]);
     L[2] = normalize(L[2]);
@@ -495,12 +500,12 @@ float3 LTC_Evaluate(float3 N, float3 V, float3 P, float3x3 ltcMat, float3 points
     if (behind)
         z = -z;
     
-    float2 uv = float2(z*0.5 + 0.5, 1-len);
+    float2 uv = float2(z * 0.5 + 0.5, len);
     uv = uv*LUT_SCALE + LUT_BIAS;
     
     float scale = gSRVMap[gAreaLightLTC2SRVIndex].SampleLevel(gSamplerLinearClamp, uv, 0).w;
     
-    sum = len*scale;
+    sum = len * scale;
     
     if (behind && !twoSided)
         sum = 0.0;
@@ -511,7 +516,7 @@ float3 LTC_Evaluate(float3 N, float3 V, float3 P, float3x3 ltcMat, float3 points
 // Area lighting calculation
 float3 ComputeAreaLighting(in AreaLightData lightData, in SurfaceProperties Surface)
 {
-    float2 UV = float2(Surface.roughness, 1.0f-sqrt(1.0-Surface.NdotV));
+    float2 UV = float2(Surface.roughness, sqrt(1.0-Surface.NdotV));
     UV=UV*LUT_SCALE+LUT_BIAS;
     
     float4 T1 = gSRVMap[gAreaLightLTC1SRVIndex].SampleLevel(gSamplerLinearClamp, UV, 0);
@@ -530,7 +535,15 @@ float3 ComputeAreaLighting(in AreaLightData lightData, in SurfaceProperties Surf
     // T2.y: Smith function for Geometric Attenuation Term, it is dot(V or L, H).
     specular *= Surface.c_spec*T2.x + (1.0f - Surface.c_spec) * T2.y;
 
-    float3 color = lightData.Color * (specular + Surface.c_diff * diffuse);
+    float3 lightDir = lightData.PositionCenter - Surface.worldPos;
+    float lightDistSq = dot(lightDir, lightDir);
+    float invLightDist = rsqrt(lightDistSq);
+    // modify 1/d^2 * R^2 to fall off at a fixed radius
+    // (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
+    float distanceFalloff = lightData.RadiusSquare * (invLightDist * invLightDist);
+    distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
+    
+    float3 color = distanceFalloff * lightData.Color * (specular + Surface.c_diff * diffuse);
     
     return color;
     

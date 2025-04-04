@@ -22,7 +22,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
         float4 baseColorAndAO = GBUFFER_BaseColor[pixelPos];
         float3 worldPos = Reconstruct_Position(pixelPos * gInvRenderTargetSize, DepthTexture[pixelPos], gInvViewProj);
         float3 sunShadowCoord = mul(float4(worldPos, 1.0), gShadowTransform).xyz;
-    
+
         SurfaceProperties Surface;
         Surface.N = normalize(normal);
         Surface.V = normalize(gEyePosW - worldPos);
