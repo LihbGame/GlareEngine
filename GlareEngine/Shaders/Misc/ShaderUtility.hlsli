@@ -5,13 +5,13 @@
 
 #pragma warning( disable : 3571 )
 
-//编码平滑的对数梯度，以实现视觉自然精度的均匀分布
+//Encoding smooth logarithmic gradients to achieve uniform distribution of visually natural accuracy
 float LinearToLogLuminance(float x, float gamma = 4.0)
 {
     return log2(lerp(1, exp2(gamma), x)) / gamma;
 }
 
-//这假定在 sRGB 和 REC709 中找到默认色域。 原色决定了这些系数。 请注意，这适用于线性值，而不是伽马空间。 
+//This assumes the default color gamut found in sRGB and REC709. The primaries determine these coefficients. Note that this works on linear values, not gamma space. 
 float RGBToLuminance(float3 x)
 {
     return dot(x, float3(0.212671, 0.715160, 0.072169)); // Defined by sRGB/Rec.709 gamut
@@ -22,13 +22,13 @@ float MaxChannel(float3 x)
     return max(x.x, max(x.y, x.z));
 }
 
-//这与上面相同，但将线性亮度值转换为更主观的“感知亮度”，可以称为对数亮度。 
+//This is the same as above, but converts the linear brightness value to a more subjective "perceived brightness", which can be called logarithmic brightness.
 float RGBToLogLuminance(float3 x, float gamma = 4.0)
 {
     return LinearToLogLuminance(RGBToLuminance(x), gamma);
 }
 
-//保留颜色的快速可逆色调贴图 (Reinhard) 
+//Fast reversible tone mapping that preserves color (Reinhard)
 float3 TM(float3 rgb)
 {
     return rgb / (1 + RGBToLuminance(rgb));

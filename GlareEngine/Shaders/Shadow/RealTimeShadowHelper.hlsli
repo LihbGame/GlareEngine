@@ -1,7 +1,6 @@
 #include "../Misc/PBRLighting.hlsli"
 
 
-
 //---------------------------------------------------------------------------------------
 // PCF for shadow mapping.
 //---------------------------------------------------------------------------------------
@@ -70,9 +69,7 @@ float PCF(float4 shadowPosH)
     return visibility / float(NUM_SAMPLES);
 }
 
-
-
-//遮挡物平均深度的计算
+//Calculation of average depth of occluders
 float findBlocker(Texture2D shadowMap, DiskSamples diskSamples, float texelSize, float2 uv, float zReceiver)
 {
     float totalDepth = 0.0;
@@ -86,11 +83,11 @@ float findBlocker(Texture2D shadowMap, DiskSamples diskSamples, float texelSize,
             blockCount += 1;
         }
     }
-    //没有遮挡
+    //No Occlusion
     if (blockCount == 0) {
         return -1.0;
     }
-    //完全遮挡
+    //Fully Occlusion
     if (blockCount == NUM_SAMPLES) {
         return 2.0;
     }
@@ -109,7 +106,7 @@ float PCF_Internal(Texture2D shadowMap, DiskSamples diskSamples, float texelSize
 }
 
 
-//利用相似三角形计算半影直径并传递给 PCF 函数以调整其滤波核大小
+//The penumbra diameter is calculated using similar triangles and passed to the PCF function to adjust its filter kernel size.
 float PCSS(Texture2D shadowMap, float4 coords) 
 {
     coords.xyz /= coords.w;
@@ -123,9 +120,10 @@ float PCSS(Texture2D shadowMap, float4 coords)
     // Texel size.
     float dx = 1.0f / (float)width;
 
-    // STEP 1: avgblocker depth 平均遮挡深度
+    // STEP 1: avg blocker depth
     float zBlocker = findBlocker(shadowMap, poissonDisk, dx, coords.xy, coords.z);
-    if (zBlocker < EPS) {//没有被遮挡
+    if (zBlocker < EPS)
+    { //No Occlusion   
         return 1.0;
     }
 
@@ -133,11 +131,11 @@ float PCSS(Texture2D shadowMap, float4 coords)
         return 0.0;
     }
 
-    // STEP 2: penumbra size 确定半影的大小
+    // STEP 2: penumbra size 
     float penumbraScale = (coords.z - zBlocker) / zBlocker;
 
 
-    // STEP 3: filtering  过滤
+    // STEP 3: filtering  
     return PCF_Internal(shadowMap, poissonDisk, dx, coords.xy, coords.z, penumbraScale* lightSize);
 
 }

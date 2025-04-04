@@ -1,4 +1,4 @@
-#include "../Shadow/RealTimeShadowHelper.hlsli"
+#include "../Shadow/RealtimeShadowHelper.hlsli"
 
 float4 main(PosNorTanTexOut pin) : SV_Target
 {

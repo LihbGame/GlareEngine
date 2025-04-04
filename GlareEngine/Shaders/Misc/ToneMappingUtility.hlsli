@@ -24,15 +24,15 @@ float3 ITM_Reinhard(float3 sdr, float k = 1.0)
 // Reinhard-Squared
 //
 
-//这有一些很好的属性，可以改进基本的 Reinhard。 
-//首先，它有一个“脚趾”——漂亮的抛物线上升，增强了黑暗中的对比度和色彩饱和度。 
-//其次，它有一个长肩部，可以在高光处提供更多细节，并且需要更长的时间去饱和。 
-//它是可逆的，可缩放到 HDR 显示器，并且易于控制。
+//This has some nice properties that improve upon the basic Reinhard.
+//First, it has a "toe" - nice parabolic rise that enhances contrast and color saturation in darks.
+//Second, it has a long shoulder that gives more detail in the highlights and takes longer to desaturate.
+//It's reversible, scales to HDR displays, and is easy to control.
 //
-//选择默认常数 0.25 有两个原因。 它与 Reinhard 的效果非常接近，常数为 1.0。 
-//并且常数为 0.25，在 0.25 处有一个拐点，曲线与线 y=x 接触，然后开始肩部。
+//The default constant of 0.25 was chosen for two reasons. It's very close to the effect of Reinhard, with a constant of 1.0.
+//And with a constant of 0.25, there's an inflection point at 0.25 where the curve touches the line y=x and then the shoulder begins.
 //
-// Note:  如果您当前正在使用 ACES 并且您按 0.6 进行预缩放，那么 k=0.30 作为替代方案看起来不错，无需任何其他调整。
+// Note: If you're currently using ACES and you prescale by 0.6, then k=0.30 looks good as an alternative without any other adjustments.
 float3 TM_ReinhardSq(float3 hdr, float k = 0.25)
 {
     float3 reinhard = hdr / (hdr + k);
@@ -48,9 +48,8 @@ float3 ITM_ReinhardSq(float3 sdr, float k = 0.25)
 // Stanard (New)
 //
 
-// This is the new tone operator.  它在许多方面类似于 ACES，但使用 ALU 进行评估更简单。 
-//与 Reinhard-Squared 相比，它的一个优势是肩部更快地变为白色，并为图像提供更高的整体亮度和对比度。
-
+// This is the new tone operator. It is similar to ACES in many ways, but is simpler to evaluate using the ALU.
+// One advantage over Reinhard-Squared is that the shoulders turn to white sooner, giving the image higher overall brightness and contrast.
 float3 TM_Stanard(float3 hdr)
 {
     return TM_Reinhard(hdr * sqrt(hdr), sqrt(4.0 / 27.0));
@@ -65,12 +64,12 @@ float3 ITM_Stanard(float3 sdr)
 // Stanard (Old)
 //
 
-//这是首先在 HemiEngine 和 MiniEngine 中使用的旧 tone operators。 
-//它简单、高效、可逆，并提供了不错的结果，但它没有脚趾，而且肩部很快就会变白。
+//This is the old tone operator first used in HemiEngine and MiniEngine.
+//It's simple, efficient, reversible, and gives decent results, but it has no toe and the shoulders quickly turn white.
 //
-//请注意，我删除了色调映射 RGB 和色调映射 Luma 之间的区别。 
-//从哲学上讲，我同意在保留色调的同时尝试将亮度重新映射到可显示值的想法。 
-//但是您会遇到一个或多个颜色通道最终比 1.0 更亮并被剪裁的问题。
+//Note that I removed the distinction between tone-mapped RGB and tone-mapped Luma.
+//Philosophically, I agree with the idea of ​​trying to remap brightness to displayable values ​​while preserving hue.
+//But you'll run into the problem of one or more color channels ending up brighter than 1.0 and getting clipped.
 
 float3 ToneMap(float3 hdr)
 {
@@ -96,7 +95,7 @@ float InverseToneMapLuma(float luma)
 // ACES
 //
 
-//下一代电影 tone operators.
+//Next Generation Movies tone operators.
 
 float3 ToneMapACES(float3 hdr)
 {

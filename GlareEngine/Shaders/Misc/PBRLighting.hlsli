@@ -77,10 +77,10 @@ float DistributionGGX(float3 N, float3 H, float roughness)
 
 float3 ImportanceSampleGGX(float2 Xi, float3 N, float roughness)
 {
-    float a = roughness * roughness;
-
+    double a = pow(roughness, 4);
+    double cosS = (1.0 - Xi.y) / (1.0 + (a - 1.0) * Xi.y);
     float phi = 2.0 * PI * Xi.x;
-    float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a * a - 1.0) * Xi.y));
+    float cosTheta = sqrt(float(cosS));
     float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
 
     // from spherical coordinates to cartesian coordinates
@@ -474,7 +474,7 @@ float3 LTC_Evaluate(float3 N, float3 V, float3 P, float3x3 ltcMat, float3 points
     float sum = 0.0;
 
     float3 dir = points[0].xyz - P;
-    float3 lightNormal = cross(points[3] - points[0],points[1] - points[0]);
+    float3 lightNormal = cross(points[1] - points[0],points[3] - points[0]);
     bool behind = (dot(dir, lightNormal) < 0.0);
     
     L[0] = normalize(L[0]);
@@ -530,7 +530,7 @@ float3 ComputeAreaLighting(in AreaLightData lightData, in SurfaceProperties Surf
     // T2.y: Smith function for Geometric Attenuation Term, it is dot(V or L, H).
     specular *= Surface.c_spec*T2.x + (1.0f - Surface.c_spec) * T2.y;
 
-    float3 color = lightData.Color*(specular+diffuse*Surface.c_diff);
+    float3 color = lightData.Color * (specular + Surface.c_diff * diffuse);
     
     return color;
     

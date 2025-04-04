@@ -18,9 +18,9 @@ PosVSOut main(float3 PosL : POSITION)
 {
     PosVSOut vout;
 
-	// 使用局部顶点位置作为立方体贴图采样向量。
+	//Use the local vertex position as the cubemap sample vector.
     vout.PosL = PosL;
-	// 设置z = w，以使z / w = 1（即，天穹始终位于远平面上）。
+	//Set z = w so that z / w = 1 (i.e. the skydome is always on the far plane).
     vout.PosH = mul(float4(PosL,1.0f), ViewProj).xyww;
 
     return vout;
