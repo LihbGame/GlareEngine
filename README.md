@@ -14,7 +14,7 @@ TIPS:
 - Cook-Torrance microfacet specular BRDF
 - Metallic workflow
 - Normal mapping
-- Point lights, spot lights, directional light
+- Area light, Point lights, Spot lights, Directional light
 - PCSS, PCF shadows
 - Screen-space ambient occlusion
 - HDR bloom
