@@ -21,6 +21,14 @@ namespace GlareEngine
 
 	namespace Render
 	{
+		enum RenderPipeline :int
+		{
+			Rasterization,
+			RayTracing,
+			Hybrid
+		};
+
+		
 		enum  AntiAliasingType :int
 		{
 			MSAA,
@@ -30,7 +38,7 @@ namespace GlareEngine
 			NOAA
 		};
 
-		enum  RenderPipelineType :int
+		enum  RasterRenderPipelineType :int
 		{
 			TBFR,		//Tiled Based Forward Rendering
 			TBDR,		//Tiled Based Deferred Rendering
@@ -78,7 +86,7 @@ namespace GlareEngine
 
 		extern BoolVar SeparateZPass;
 
-		extern RenderPipelineType gRenderPipelineType;
+		extern RasterRenderPipelineType gRasterRenderPipelineType;
 	}
 
 

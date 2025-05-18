@@ -396,11 +396,11 @@ void App::RenderScene(void)
 {
 	if (EngineGlobal::gCurrentScene->GetName() == "Blue Tree")
 	{
-		EngineGlobal::gCurrentScene->RenderScene(RenderPipelineType::FR);
+		EngineGlobal::gCurrentScene->RenderScene(RasterRenderPipelineType::FR);
 	}
 	else
 	{
-		EngineGlobal::gCurrentScene->RenderScene(Render::gRenderPipelineType);
+		EngineGlobal::gCurrentScene->RenderScene(Render::gRasterRenderPipelineType);
 	}
 }
 

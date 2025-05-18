@@ -51,8 +51,9 @@ public:
 	float	GetGrassMinWind()const { return GrassMinWind; }
 	float	GetGrassMaxWind()const { return GrassMaxWind; }
 	int		GetSceneIndex() const { return mSceneIndex; }
+	int		GetRasterRenderPipelineIndex() const { return mRasterRenderPipelineIndex; }
 	int		GetRenderPipelineIndex() const { return mRenderPipelineIndex; }
-	void	SetRenderPipelineIndex(int NewRenderPipelineIndex)  { mRenderPipelineIndex= NewRenderPipelineIndex; }
+	void	SetRenderPipelineIndex(int NewRenderPipelineIndex)  { mRasterRenderPipelineIndex= NewRenderPipelineIndex; }
 	
 	XMFLOAT2 GetEngineLogoSize();
 
@@ -71,10 +72,18 @@ public:
 	static bool mWindowMaxSize;
 
 	static void AddRenderPassVisualizeTexture(string FeatureGroup, string TextureName, float TextureHeight, float TextureWidth, D3D12_CPU_DESCRIPTOR_HANDLE TexDescriptor, Vector4 ColorScale = Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+	static void AddRayTracingRenderPassVisualizeTexture(string FeatureGroup, string TextureName, float TextureHeight, float TextureWidth, D3D12_CPU_DESCRIPTOR_HANDLE TexDescriptor, Vector4 ColorScale = Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+	
 	static void ClearRenderPassVisualizeTexture() 
 	{ 
 		mCurrentDescriptorOffset = mUISystemDescriptorOffset;
 		mRenderPassDebugInfo.clear(); 
+	}
+
+	static void ClearRayTracingRenderPassVisualizeTexture() 
+	{ 
+		mCurrentDescriptorOffset = mUISystemDescriptorOffset;
+		mRayTracingRenderPassDebugInfo.clear(); 
 	}
 private:
 	void InitGUI();
@@ -115,7 +124,8 @@ private:
 	bool mWireframe				= false;
 
 	int mSceneIndex				= 0;
-	int mRenderPipelineIndex	= 1;
+	int mRenderPipelineIndex	= 0;
+	int mRasterRenderPipelineIndex	= 1;
 	string mSceneName;
 
 	float mGrassColor[3]		= { 0.39f,0.196f,0.0f };
@@ -136,6 +146,7 @@ private:
 	CD3DX12_GPU_DESCRIPTOR_HANDLE mEngineCloseTexDescriptor;
 
 	static unordered_map<string, vector<RenderPassDebugInfo>> mRenderPassDebugInfo;
+	static unordered_map<string, vector<RenderPassDebugInfo>> mRayTracingRenderPassDebugInfo;
 
 	ImGuiContext* g		= nullptr;
 	bool isUIShow		= true;

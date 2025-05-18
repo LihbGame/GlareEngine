@@ -51,20 +51,20 @@ void Scene::Update(float DeltaTime)
 	//update Render Pipeline Type
 	if (LoadingFinish)
 	{
-		RenderPipelineType NewRenderPipelineType = static_cast<RenderPipelineType>(m_pGUI->GetRenderPipelineIndex());
+		RasterRenderPipelineType NewRasterRenderPipelineType = static_cast<RasterRenderPipelineType>(m_pGUI->GetRasterRenderPipelineIndex());
 
-		if (NewRenderPipelineType != Render::gRenderPipelineType && !gCommonProperty.IsWireframe)
+		if (NewRasterRenderPipelineType != Render::gRasterRenderPipelineType && !gCommonProperty.IsWireframe)
 		{
-			Render::gRenderPipelineType = NewRenderPipelineType;
+			Render::gRasterRenderPipelineType = NewRasterRenderPipelineType;
 			Render::BuildPSOs();
 		}
 	}
 
 	if (gCommonProperty.IsWireframe)
 	{
-		if (Render::gRenderPipelineType != RenderPipelineType::TBFR)
+		if (Render::gRasterRenderPipelineType != RasterRenderPipelineType::TBFR)
 		{
-			Render::gRenderPipelineType = RenderPipelineType::TBFR;
+			Render::gRasterRenderPipelineType = RasterRenderPipelineType::TBFR;
 			Render::BuildPSOs();
 		}
 	}
@@ -180,7 +180,7 @@ void Scene::AddGLTFModelToScene(RenderObject* Object)
 	mSceneAABB.AddBoundingBox(model->GetAxisAlignedBox());
 }
 
-void Scene::RenderScene(RenderPipelineType Type)
+void Scene::RenderScene(RasterRenderPipelineType Type)
 {
 	if (LoadingFinish)
 	{
@@ -191,29 +191,29 @@ void Scene::RenderScene(RenderPipelineType Type)
 
 	switch (Type)
 	{
-	case RenderPipelineType::FR:
+	case RasterRenderPipelineType::FR:
 	{
-		ForwardRendering(RenderPipelineType::FR);
+		ForwardRendering(RasterRenderPipelineType::FR);
 		break;
 	}
-	case RenderPipelineType::TBFR:
+	case RasterRenderPipelineType::TBFR:
 	{
-		ForwardRendering(RenderPipelineType::TBFR);
+		ForwardRendering(RasterRenderPipelineType::TBFR);
 		break;
 	}
-	case RenderPipelineType::CBFR:
+	case RasterRenderPipelineType::CBFR:
 	{
-		ForwardRendering(RenderPipelineType::CBFR);
+		ForwardRendering(RasterRenderPipelineType::CBFR);
 		break;
 	}
-	case RenderPipelineType::TBDR:
+	case RasterRenderPipelineType::TBDR:
 	{
-		DeferredRendering(RenderPipelineType::TBDR);
+		DeferredRendering(RasterRenderPipelineType::TBDR);
 		break;
 	}
-	case RenderPipelineType::CBDR:
+	case RasterRenderPipelineType::CBDR:
 	{
-		DeferredRendering(RenderPipelineType::CBDR);
+		DeferredRendering(RasterRenderPipelineType::CBDR);
 		break;
 	}
 	default:
@@ -231,23 +231,31 @@ void Scene::DrawUI()
 	RenderContext.SetRenderTarget(Display::GetCurrentBuffer().GetRTV());
 	RenderContext.TransitionResource(Display::GetCurrentBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 	m_pGUI->BeginDraw(RenderContext.GetCommandList());
-
-	//Lighting UI
-	Lighting::DrawUI();
-
-	mPRTManager.DrawUI();
 	
-	for (auto& RenderObject : m_pRenderObjects)
+	if (m_pGUI->GetRenderPipelineIndex()==RenderPipeline::Rasterization
+		|| m_pGUI->GetRenderPipelineIndex()==RenderPipeline::Hybrid)
 	{
-		if (RenderObject->GetVisible())
+		//Lighting UI
+		Lighting::DrawUI();
+
+		mPRTManager.DrawUI();
+	
+		for (auto& RenderObject : m_pRenderObjects)
 		{
-			RenderObject->DrawUI();
+			if (RenderObject->GetVisible())
+			{
+				RenderObject->DrawUI();
+			}
 		}
+
+		//Post Processing UI
+		ScreenProcessing::DrawUI();
 	}
-
-	//Post Processing UI
-	ScreenProcessing::DrawUI();
-
+	else // RenderPipeline::RayTracing
+	{
+		
+	}
+	
 	m_pGUI->EndDraw(RenderContext.GetCommandList());
 	RenderContext.TransitionResource(Display::GetCurrentBuffer(), D3D12_RESOURCE_STATE_PRESENT, true);
 	RenderContext.Finish();
@@ -302,7 +310,7 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 	mSceneView.mMainConstants.FarZ = mSceneView.m_pCamera->GetFarZ();
 	mSceneView.mMainConstants.TotalTime = GameTimer::TotalTime();
 	mSceneView.mMainConstants.DeltaTime = DeltaTime;
-	mSceneView.mMainConstants.gIsClusterBaseLighting = (gRenderPipelineType == RenderPipelineType::CBDR || gRenderPipelineType == RenderPipelineType::CBFR) ? 1 : 0;
+	mSceneView.mMainConstants.gIsClusterBaseLighting = (gRasterRenderPipelineType == RasterRenderPipelineType::CBDR || gRasterRenderPipelineType == RasterRenderPipelineType::CBFR) ? 1 : 0;
 
 	mSceneView.mMainConstants.gTemporalJitter = TemporalAA::GetJitterOffset();
 	mSceneView.mMainConstants.ZMagic= (mSceneView.mMainConstants.FarZ - mSceneView.mMainConstants.NearZ) / mSceneView.mMainConstants.NearZ;
@@ -471,7 +479,7 @@ void Scene::ForwardRendering()
 	Context.Finish();
 }
 
-void Scene::ForwardRendering(RenderPipelineType ForwardRenderPipeline)
+void Scene::ForwardRendering(RasterRenderPipelineType ForwardRenderPipeline)
 {
 	if (LoadingFinish)
 	{
@@ -486,7 +494,7 @@ void Scene::ForwardRendering(RenderPipelineType ForwardRenderPipeline)
 
 		Render::SetCommonSRVHeapOffset(GBUFFER_TEXTURE_REGISTER_COUNT);
 
-		if (ForwardRenderPipeline == RenderPipelineType::FR)
+		if (ForwardRenderPipeline == RasterRenderPipelineType::FR)
 		{
 			ForwardRendering();
 		}
@@ -569,12 +577,12 @@ void Scene::ForwardRendering(RenderPipelineType ForwardRenderPipeline)
 				Render::SetCommonSRVHeapOffset(Render::GetCommonSRVHeapOffset() + 1);
 			}
 
-			if (ForwardRenderPipeline == RenderPipelineType::TBFR)
+			if (ForwardRenderPipeline == RasterRenderPipelineType::TBFR)
 			{
 				//Light Culling
 				Lighting::FillLightGrid(Context, *mSceneView.m_pCamera);
 			}
-			else if (ForwardRenderPipeline == RenderPipelineType::CBFR)
+			else if (ForwardRenderPipeline == RasterRenderPipelineType::CBFR)
 			{
 				//Light Culling
 				Lighting::BuildCluster(Context, mSceneView.mMainConstants);
@@ -681,7 +689,7 @@ void Scene::ForwardRendering(RenderPipelineType ForwardRenderPipeline)
 }
 
 
-void Scene::DeferredRendering(RenderPipelineType DeferredRenderPipeline)
+void Scene::DeferredRendering(RasterRenderPipelineType DeferredRenderPipeline)
 {
 	if (LoadingFinish)
 	{
@@ -754,12 +762,12 @@ void Scene::DeferredRendering(RenderPipelineType DeferredRenderPipeline)
 			Render::SetCommonSRVHeapOffset(Render::GetCommonSRVHeapOffset() + 1);
 		}
 
-		if (DeferredRenderPipeline == RenderPipelineType::TBDR)
+		if (DeferredRenderPipeline == RasterRenderPipelineType::TBDR)
 		{
 			//Light Culling
 			Lighting::FillLightGrid(Context, *mSceneView.m_pCamera);
 		}
-		else if (DeferredRenderPipeline == RenderPipelineType::CBDR)
+		else if (DeferredRenderPipeline == RasterRenderPipelineType::CBDR)
 		{
 			ScopedTimer _prof(L"Fill Cluster Grid", Context);
 			//Light Culling

@@ -11,9 +11,12 @@
 
 using Microsoft::WRL::ComPtr;
 using namespace GlareEngine::GameCore;
+using namespace  GlareEngine::Render;
 bool gFullSreenMode = false;
 bool EngineGUI::mWindowMaxSize = false;
+
 unordered_map<string,vector<RenderPassDebugInfo>> EngineGUI::mRenderPassDebugInfo;
+unordered_map<string, vector<RenderPassDebugInfo>> EngineGUI::mRayTracingRenderPassDebugInfo;
 
 DescriptorHeap EngineGUI::mGUISrvDescriptorHeap;
 UINT EngineGUI::mCurrentDescriptorOffset = 0;
@@ -53,6 +56,18 @@ void EngineGUI::AddRenderPassVisualizeTexture(string FeatureGroup, string Textur
 		destCount, &TexDescriptor, &destCount, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	RenderPassDebugInfo renderInfo = RenderPassDebugInfo{ TextureName, Rate,TextureWidth,TextureHeight,ColorScale,CD3DX12_GPU_DESCRIPTOR_HANDLE(D3D12_GPU_DESCRIPTOR_HANDLE(mGUISrvDescriptorHeap[mCurrentDescriptorOffset])) };
 	mRenderPassDebugInfo[FeatureGroup].push_back(renderInfo);
+	mCurrentDescriptorOffset++;
+}
+
+void EngineGUI::AddRayTracingRenderPassVisualizeTexture(string FeatureGroup, string TextureName, float TextureHeight, float TextureWidth, D3D12_CPU_DESCRIPTOR_HANDLE TexDescriptor, Vector4 ColorScale)
+{
+	float Rate = TextureHeight / TextureWidth;
+
+	UINT destCount = 1;
+	g_Device->CopyDescriptors(1, &mGUISrvDescriptorHeap[mCurrentDescriptorOffset], &destCount,
+		destCount, &TexDescriptor, &destCount, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	RenderPassDebugInfo renderInfo = RenderPassDebugInfo{ TextureName, Rate,TextureWidth,TextureHeight,ColorScale,CD3DX12_GPU_DESCRIPTOR_HANDLE(D3D12_GPU_DESCRIPTOR_HANDLE(mGUISrvDescriptorHeap[mCurrentDescriptorOffset])) };
+	mRayTracingRenderPassDebugInfo[FeatureGroup].push_back(renderInfo);
 	mCurrentDescriptorOffset++;
 }
 
@@ -214,7 +229,7 @@ void EngineGUI::SetWindowStyles()
 	ImGuiStyle& style = ImGui::GetStyle();
 	ImVec4* colors = style.Colors;
 
-	colors[ImGuiCol_Text] = ImVec4(0.5f, 0.5f, 0.5f, 1.00f);
+	colors[ImGuiCol_Text] = ImVec4(0.6f, 0.6f, 0.6f, 1.00f);
 	colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
 	colors[ImGuiCol_WindowBg] = ImVec4(0.22f, 0.22f, 0.22f, 0.94f);
 	colors[ImGuiCol_ChildBg] = ImVec4(0.1f, 0.1f, 0.1f, 0.00f);
@@ -282,26 +297,37 @@ void EngineGUI::DrawControlPanel(float IconWindowHigh)
 
 	ImGui::Begin("Control Panel", &isUIShow, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 
-	ImGui::Text("Camera Move Speed");
-	ImGui::SliderFloat("   ", &CameraMoveSpeed, 0.0f, 10.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+	ImGui::Text("Render Pipeline");
+	ImGui::Combo(" ", &mRenderPipelineIndex, "Rasterization\0RayTracing\0Hybrid\0");
 
 	ImGui::Separator();
-	ImGui::Text("Render Pipeline");
-	ImGui::Combo(" ", &mRenderPipelineIndex, "TBFR\0TBDR\0CBDR\0");
-
+	ImGui::Text("Camera Move Speed");
+	ImGui::SliderFloat("   ", &CameraMoveSpeed, 0.0f, 10.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+	
+	if (mRenderPipelineIndex==RenderPipeline::Rasterization
+		||mRenderPipelineIndex==RenderPipeline::Hybrid)
+	{
+		ImGui::Separator();
+		ImGui::Text("Rasterization Render Pipeline");
+		ImGui::Combo(" ", &mRasterRenderPipelineIndex, "TBFR\0TBDR\0CBDR\0");
+	}
 
 	ImGui::Separator();
 	ImGui::Text("Choose Scene");
 	ImGui::Combo("", &mSceneIndex, mSceneName.c_str());
 
-	if (ImGui::CollapsingHeader("Scene Setting", ImGuiTreeNodeFlags_DefaultOpen))
+	if (mRenderPipelineIndex==RenderPipeline::Rasterization
+		||mRenderPipelineIndex==RenderPipeline::Hybrid)
 	{
-		ImGui::Checkbox("Shadow", &show_shadow);
-		ImGui::Checkbox("Model", &show_model);
-		ImGui::Checkbox("Sky", &show_sky);
-		ImGui::Checkbox("Terrain", &show_HeightMapTerrain);
+		if (ImGui::CollapsingHeader("Scene Setting", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Checkbox("Shadow", &show_shadow);
+			ImGui::Checkbox("Model", &show_model);
+			ImGui::Checkbox("Sky", &show_sky);
+			ImGui::Checkbox("Terrain", &show_HeightMapTerrain);
+		}
 	}
-
+	
 	//if (ImGui::CollapsingHeader("Water", ImGuiTreeNodeFlags_DefaultOpen))
 	//{
 	//	ImGui::Checkbox("Water Rendering", &show_water);
@@ -453,7 +479,15 @@ void EngineGUI::DrawRenderDebugWindow()
 	int textureWidth = windowSize.x - 30;
 	g = ImGui::GetCurrentContext();
 	g->Style.Alpha = 1.0f;
-	for (auto& Feature : mRenderPassDebugInfo)
+
+	unordered_map<string, vector<RenderPassDebugInfo>>& RenderPassDebugInfo=mRenderPassDebugInfo;
+
+	if (mRenderPipelineIndex==RenderPipeline::RayTracing)
+	{
+		RenderPassDebugInfo=mRayTracingRenderPassDebugInfo;
+	}
+	
+	for (auto& Feature : RenderPassDebugInfo)
 	{
 		if (ImGui::CollapsingHeader(Feature.first.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 		{

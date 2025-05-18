@@ -6,7 +6,7 @@
 class ShadowMap;
 class EngineGUI;
 
-using Render::RenderPipelineType;
+using Render::RasterRenderPipelineType;
 
 typedef void (*BuildPSO)(PSOCommonProperty);
 
@@ -46,7 +46,7 @@ public:
 	void AddObjectToScene(RenderObject* Object);
 	void AddGLTFModelToScene(RenderObject* Object);
 	//Render Scene
-	void RenderScene(RenderPipelineType Type);
+	void RenderScene(RasterRenderPipelineType Type);
 	//Draw UI
 	void DrawUI();
 	//Release Scene
@@ -98,8 +98,8 @@ public:
 private:
 	void UpdateMainConstantBuffer(float DeltaTime);
 	void ForwardRendering();
-	void ForwardRendering(RenderPipelineType renderPipeline);
-	void DeferredRendering(RenderPipelineType renderPipeline);
+	void ForwardRendering(RasterRenderPipelineType renderPipeline);
+	void DeferredRendering(RasterRenderPipelineType renderPipeline);
 	void CreateTileConeShadowMap(GraphicsContext& Context);
 private:
 	ID3D12GraphicsCommandList* m_pCommandList = nullptr;

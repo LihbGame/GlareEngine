@@ -256,9 +256,9 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                         gModelPSOs[PSOEqualDepthIndex].SetVertexShader(g_pModelSkinVS, sizeof(g_pModelSkinVS));
                         gModelPSOs[PSOReadWriteDepthIndex].SetVertexShader(g_pModelSkinVS, sizeof(g_pModelSkinVS));
 
-                        if (Render::gRenderPipelineType == RenderPipelineType::TBFR ||
-                            Render::gRenderPipelineType == RenderPipelineType::CBFR ||
-                            Render::gRenderPipelineType == RenderPipelineType::FR)
+                        if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBFR ||
+                            Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBFR ||
+                            Render::gRasterRenderPipelineType == RasterRenderPipelineType::FR)
                         {
                             gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
                             gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
@@ -266,8 +266,8 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                             mShaderNames[PSOFlagIndex].PSName = GET_SHADER_PATH("PBRInstanceModel/ModelPS.hlsl");
 #endif
                         }
-                        else if (Render::gRenderPipelineType == RenderPipelineType::TBDR||
-                                 Render::gRenderPipelineType == RenderPipelineType::CBDR)
+                        else if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBDR||
+                                 Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBDR)
                         {
                             gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pDeferredModelPS, sizeof(g_pDeferredModelPS));
                             gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pDeferredModelPS, sizeof(g_pDeferredModelPS));
@@ -281,9 +281,9 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                         gModelPSOs[PSOEqualDepthIndex].SetVertexShader(g_pModelNoUV1SkinVS, sizeof(g_pModelNoUV1SkinVS));
                         gModelPSOs[PSOReadWriteDepthIndex].SetVertexShader(g_pModelNoUV1SkinVS, sizeof(g_pModelNoUV1SkinVS));
 
-                        if (Render::gRenderPipelineType == RenderPipelineType::TBFR ||
-                            Render::gRenderPipelineType == RenderPipelineType::CBFR ||
-                            Render::gRenderPipelineType == RenderPipelineType::FR)
+                        if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBFR ||
+                            Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBFR ||
+                            Render::gRasterRenderPipelineType == RasterRenderPipelineType::FR)
                         {
                             gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelNoUV1PS, sizeof(g_pModelNoUV1PS));
                             gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelNoUV1PS, sizeof(g_pModelNoUV1PS));
@@ -291,8 +291,8 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                             mShaderNames[PSOFlagIndex].PSName = GET_SHADER_PATH("PBRInstanceModel/ModelNoUV1PS.hlsl");
 #endif
                         }
-						else if (Render::gRenderPipelineType == RenderPipelineType::TBDR ||
-							Render::gRenderPipelineType == RenderPipelineType::CBDR)
+						else if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBDR ||
+							Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBDR)
                         {
                             gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pDeferredModelNoUV1PS, sizeof(g_pDeferredModelNoUV1PS));
                             gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pDeferredModelNoUV1PS, sizeof(g_pDeferredModelNoUV1PS));
@@ -320,15 +320,15 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                         gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelNoTangentNoUV1PS, sizeof(g_pModelNoTangentNoUV1PS));
                     }
 
-                    if (Render::gRenderPipelineType == RenderPipelineType::TBFR ||
-                        Render::gRenderPipelineType == RenderPipelineType::CBFR ||
-                        Render::gRenderPipelineType == RenderPipelineType::FR)
+                    if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBFR ||
+                        Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBFR ||
+                        Render::gRasterRenderPipelineType == RasterRenderPipelineType::FR)
                     {
                         gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
                         gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
                     }
-					else if (Render::gRenderPipelineType == RenderPipelineType::TBDR ||
-						Render::gRenderPipelineType == RenderPipelineType::CBDR)
+					else if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBDR ||
+						Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBDR)
                     {
                         gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pDeferredModelPS, sizeof(g_pDeferredModelPS));
                         gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pDeferredModelPS, sizeof(g_pDeferredModelPS));
@@ -344,9 +344,9 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                         gModelPSOs[PSOEqualDepthIndex].SetVertexShader(g_pModelVS, sizeof(g_pModelVS));
                         gModelPSOs[PSOReadWriteDepthIndex].SetVertexShader(g_pModelVS, sizeof(g_pModelVS));
 
-                        if (Render::gRenderPipelineType == RenderPipelineType::TBFR ||
-                            Render::gRenderPipelineType == RenderPipelineType::CBFR ||
-                            Render::gRenderPipelineType == RenderPipelineType::FR)
+                        if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBFR ||
+                            Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBFR ||
+                            Render::gRasterRenderPipelineType == RasterRenderPipelineType::FR)
                         {
                             gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
                             gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
@@ -354,8 +354,8 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                             mShaderNames[PSOFlagIndex].PSName = GET_SHADER_PATH("PBRInstanceModel/ModelPS.hlsl");
 #endif
                         }
-                        else if (Render::gRenderPipelineType == RenderPipelineType::TBDR ||
-                            Render::gRenderPipelineType == RenderPipelineType::CBDR)
+                        else if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBDR ||
+                            Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBDR)
                         {
                             gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pDeferredModelPS, sizeof(g_pDeferredModelPS));
                             gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pDeferredModelPS, sizeof(g_pDeferredModelPS));
@@ -370,9 +370,9 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                         gModelPSOs[PSOEqualDepthIndex].SetVertexShader(g_pModelNoUV1VS, sizeof(g_pModelNoUV1VS));
                         gModelPSOs[PSOReadWriteDepthIndex].SetVertexShader(g_pModelNoUV1VS, sizeof(g_pModelNoUV1VS));
 
-                        if (Render::gRenderPipelineType == RenderPipelineType::TBFR ||
-                            Render::gRenderPipelineType == RenderPipelineType::CBFR ||
-                            Render::gRenderPipelineType == RenderPipelineType::FR)
+                        if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBFR ||
+                            Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBFR ||
+                            Render::gRasterRenderPipelineType == RasterRenderPipelineType::FR)
                         {
                             gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelNoUV1PS, sizeof(g_pModelNoUV1PS));
                             gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelNoUV1PS, sizeof(g_pModelNoUV1PS));
@@ -380,8 +380,8 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                             mShaderNames[PSOFlagIndex].PSName = GET_SHADER_PATH("PBRInstanceModel/ModelNoUV1PS.hlsl");
 #endif
                         }
-						else if (Render::gRenderPipelineType == RenderPipelineType::TBDR ||
-							Render::gRenderPipelineType == RenderPipelineType::CBDR)
+						else if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBDR ||
+							Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBDR)
                         {
                             if (!(mPSOFlags[PSOFlagIndex] & eAlphaBlend))
                             {
@@ -419,15 +419,15 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                         gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelNoTangentNoUV1PS, sizeof(g_pModelNoTangentNoUV1PS));
                     }
 
-                    if (Render::gRenderPipelineType == RenderPipelineType::TBFR ||
-                        Render::gRenderPipelineType == RenderPipelineType::CBFR ||
-                        Render::gRenderPipelineType == RenderPipelineType::FR)
+                    if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBFR ||
+                        Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBFR ||
+                        Render::gRasterRenderPipelineType == RasterRenderPipelineType::FR)
                     {
                         gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
                         gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pModelPS, sizeof(g_pModelPS));
                     }
-					else if (Render::gRenderPipelineType == RenderPipelineType::TBDR ||
-						Render::gRenderPipelineType == RenderPipelineType::CBDR)
+					else if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBDR ||
+						Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBDR)
                     {
                         gModelPSOs[PSOEqualDepthIndex].SetPixelShader(g_pDeferredModelPS, sizeof(g_pDeferredModelPS));
                         gModelPSOs[PSOReadWriteDepthIndex].SetPixelShader(g_pDeferredModelPS, sizeof(g_pDeferredModelPS));
@@ -435,15 +435,15 @@ void glTFInstanceModel::BuildPSO(const PSOCommonProperty CommonProperty)
                 }
             }
 
-            if (Render::gRenderPipelineType == RenderPipelineType::TBFR ||
-                Render::gRenderPipelineType == RenderPipelineType::CBFR ||
-                Render::gRenderPipelineType == RenderPipelineType::FR)
+            if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBFR ||
+                Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBFR ||
+                Render::gRasterRenderPipelineType == RasterRenderPipelineType::FR)
             {
                 gModelPSOs[PSOReadWriteDepthIndex].SetRenderTargetFormats(1, &DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
                 gModelPSOs[PSOEqualDepthIndex].SetRenderTargetFormats(1, &DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
             }
-			else if (Render::gRenderPipelineType == RenderPipelineType::TBDR ||
-				Render::gRenderPipelineType == RenderPipelineType::CBDR)
+			else if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBDR ||
+				Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBDR)
             {
                 gModelPSOs[PSOReadWriteDepthIndex].SetRenderTargetFormats(GBufferType::GBUFFER_Count, Render::GBufferFormat, g_SceneDepthBuffer.GetFormat());
                 gModelPSOs[PSOEqualDepthIndex].SetRenderTargetFormats(GBufferType::GBUFFER_Count, Render::GBufferFormat, g_SceneDepthBuffer.GetFormat());

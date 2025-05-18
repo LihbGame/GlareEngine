@@ -56,11 +56,11 @@ void PRTManager::GenerateSHProbes(Scene& scene)
 {
 	if (mSHProbes.size() > 0&& bPRTVisualization)
 	{
-		RenderPipelineType NewRenderPipelineType = (Render::RenderPipelineType)scene.m_pGUI->GetRenderPipelineIndex();
+		RasterRenderPipelineType NewRasterRenderPipelineType = (Render::RasterRenderPipelineType)scene.m_pGUI->GetRasterRenderPipelineIndex();
 
-		if (NewRenderPipelineType != RenderPipelineType::TBFR)
+		if (NewRasterRenderPipelineType != RasterRenderPipelineType::TBFR)
 		{
-			Render::gRenderPipelineType = RenderPipelineType::TBFR;
+			Render::gRasterRenderPipelineType = RasterRenderPipelineType::TBFR;
 			Render::BuildPSOs();
 		}
 		GraphicsContext& Context = GraphicsContext::Begin(L"Generate SH Probes");

@@ -179,11 +179,11 @@ void MeshRenderPass::RenderMeshes(DrawPass pass, GraphicsContext& context, MainC
 				{
 					context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_READ);
 					context.TransitionResource(*m_RTV[0], D3D12_RESOURCE_STATE_RENDER_TARGET);
-					if (Render::gRenderPipelineType == TBFR || Render::gRenderPipelineType == CBFR)
+					if (Render::gRasterRenderPipelineType == TBFR || Render::gRasterRenderPipelineType == CBFR)
 					{
 						context.SetRenderTarget(m_RTV_Descrptor[0], m_DSV->GetDSV_DepthReadOnly());
 					}
-					else if (Render::gRenderPipelineType == TBDR || Render::gRenderPipelineType == CBDR)
+					else if (Render::gRasterRenderPipelineType == TBDR || Render::gRasterRenderPipelineType == CBDR)
 					{
 						context.SetRenderTargets(Render::GBUFFER_Count, Render::GetGBufferRTV(context), m_DSV->GetDSV_DepthReadOnly());
 					}
@@ -194,11 +194,11 @@ void MeshRenderPass::RenderMeshes(DrawPass pass, GraphicsContext& context, MainC
 					context.TransitionResource(*m_RTV[0], D3D12_RESOURCE_STATE_RENDER_TARGET);
 					context.SetRenderTarget(m_RTV_Descrptor[0], m_DSV->GetDSV());
 
-					if (Render::gRenderPipelineType == TBFR || Render::gRenderPipelineType == CBFR)
+					if (Render::gRasterRenderPipelineType == TBFR || Render::gRasterRenderPipelineType == CBFR)
 					{
 						context.SetRenderTarget(m_RTV_Descrptor[0], m_DSV->GetDSV());
 					}
-					else if (Render::gRenderPipelineType == TBDR || Render::gRenderPipelineType == CBDR)
+					else if (Render::gRasterRenderPipelineType == TBDR || Render::gRasterRenderPipelineType == CBDR)
 					{
 						context.SetRenderTargets(Render::GBUFFER_Count, Render::GetGBufferRTV(context), m_DSV->GetDSV());
 					}
