@@ -103,7 +103,7 @@ namespace GlareEngine
 		void InitializeApplication(GameApp& Game)
 		{
 			//Core Initialize
-			InitializeGraphics();
+			InitializeGraphics(true);
 			EngineInput::Initialize();
 			EngineAdjust::Initialize();
 			GameTimer::Reset();

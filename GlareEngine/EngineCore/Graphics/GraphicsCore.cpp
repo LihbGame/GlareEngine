@@ -75,7 +75,7 @@ namespace GlareEngine
 
 
 
-	// Check adapter support for DirectX Raytracing.
+	// Check adapter support for DirectX RayTracing.
 	bool IsDirectXRaytracingSupported(ID3D12Device* testDevice)
 	{
 		D3D12_FEATURE_DATA_D3D12_OPTIONS5 featureSupport = {};
@@ -83,7 +83,7 @@ namespace GlareEngine
 		if (FAILED(testDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &featureSupport, sizeof(featureSupport))))
 			return false;
 
-		return featureSupport.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
+		return featureSupport.RaytracingTier == D3D12_RAYTRACING_TIER_1_1;
 	}
 
 	uint32_t GetVendorIdFromDevice(ID3D12Device* pDevice)
@@ -224,8 +224,13 @@ namespace GlareEngine
 
 		if (RequireDXRSupport && !g_Device)
 		{
-			EngineLog::AddLog(L"Unable to find a DXR-capable device. Halting.\n");
+			EngineLog::AddLog(L"Unable to find a DXR Support device. Halting.\n");
 			__debugbreak();
+		}
+
+		if (RequireDXRSupport && g_Device)
+		{
+			EngineLog::AddLog(L"Find a DXR Support device\n");
 		}
 
 		if (g_Device == nullptr)
@@ -259,6 +264,25 @@ namespace GlareEngine
 				g_Device->SetStablePowerState(TRUE);
 		}
 #endif	
+
+		// Check the required shader model
+		D3D12_FEATURE_DATA_SHADER_MODEL shaderModel = { D3D_SHADER_MODEL_6_6 };
+		SUCCEEDED(g_Device->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(shaderModel)));
+		if (shaderModel.HighestShaderModel < D3D_SHADER_MODEL_6_6)
+		{
+			EngineLog::AddLog(L"ERROR: The device does not support the minimum shader model required to run this sample (SM 6.6)");
+		}
+		else
+		{
+			EngineLog::AddLog(L"Shader Model:  SM6.6");
+		}
+		// Check the requires resource binding tier
+		D3D12_FEATURE_DATA_D3D12_OPTIONS features = { };
+		SUCCEEDED(g_Device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &features, sizeof(features)));
+		if (features.ResourceBindingTier < D3D12_RESOURCE_BINDING_TIER_3)
+			EngineLog::AddLog(L"ERROR: The does not support the minimum resource binding tier required to run this sample (D3D12_RESOURCE_BINDING_TIER_3)");
+
+
 #if _DEBUG
 		ID3D12InfoQueue* pInfoQueue = nullptr;
 		if (SUCCEEDED(g_Device->QueryInterface(IID_PPV_ARGS(&pInfoQueue))))

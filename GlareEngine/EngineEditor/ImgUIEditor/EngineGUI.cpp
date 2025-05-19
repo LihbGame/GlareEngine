@@ -309,7 +309,7 @@ void EngineGUI::DrawControlPanel(float IconWindowHigh)
 	{
 		ImGui::Separator();
 		ImGui::Text("Rasterization Render Pipeline");
-		ImGui::Combo(" ", &mRasterRenderPipelineIndex, "TBFR\0TBDR\0CBDR\0");
+		ImGui::Combo("  ", &mRasterRenderPipelineIndex, "TBFR\0TBDR\0CBDR\0");
 	}
 
 	ImGui::Separator();
