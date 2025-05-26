@@ -17,7 +17,7 @@ source_group(TREE "${GLAREENGINE_ROOT_DIR}" FILES ${PACKAGE_FILES})
 set(shaderPath "${ENGINE_ROOT_DIR}/Shaders")
 file(MAKE_DIRECTORY ${shaderPath}/CompiledShaders)
 
-set_source_files_properties(${SHADER_SOURCES} PROPERTIES VS_SHADER_MODEL "6.0")
+set_source_files_properties(${SHADER_SOURCES} PROPERTIES VS_SHADER_MODEL "6.6")
 set_source_files_properties(${SHADER_SOURCES} PROPERTIES VS_SHADER_VARIABLE_NAME "g_p%(Filename)")
 set_source_files_properties(${SHADER_SOURCES} PROPERTIES VS_SHADER_OUTPUT_HEADER_FILE "${shaderPath}\\CompiledShaders\\%(Filename).h")
 set_source_files_properties(${SHADER_SOURCES} PROPERTIES VS_SHADER_FLAGS "/Zi -Qembed_debug /Od")

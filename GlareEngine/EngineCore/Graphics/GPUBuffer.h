@@ -128,6 +128,15 @@ namespace GlareEngine
 		ByteAddressBuffer m_CounterBuffer;
 	};
 
+	class RayTracingStructuredBuffer : public StructuredBuffer
+	{
+	public:
+		RayTracingStructuredBuffer() {};
+		~RayTracingStructuredBuffer() {};
+
+		uint32_t SRV = uint32_t(-1);
+	};
+
 	class TypedBuffer : public GPUBuffer
 	{
 	public:
