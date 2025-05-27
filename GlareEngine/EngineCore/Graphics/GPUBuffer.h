@@ -134,6 +134,10 @@ namespace GlareEngine
 		RayTracingStructuredBuffer() {};
 		~RayTracingStructuredBuffer() {};
 
+
+		virtual void CreateDerivedViews(void) override;
+
+	public:
 		uint32_t SRV = uint32_t(-1);
 	};
 

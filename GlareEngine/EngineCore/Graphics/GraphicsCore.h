@@ -34,4 +34,8 @@ namespace GlareEngine
 
 	extern vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_CubeSRV;
 	int AddToGlobalCubeSRVDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes);
+
+	extern vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_RayTracingBuffer;
+	int AddToGlobalRayTracingDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes);
+
 }

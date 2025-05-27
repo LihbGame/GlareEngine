@@ -238,3 +238,10 @@ void TypedBuffer::CreateDerivedViews(void)
 		m_UAV = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	g_Device->CreateUnorderedAccessView(m_pResource.Get(), nullptr, &UAVDesc, m_UAV);
 }
+
+void RayTracingStructuredBuffer::CreateDerivedViews(void)
+{
+
+
+
+}

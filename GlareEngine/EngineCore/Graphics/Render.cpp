@@ -44,6 +44,8 @@ namespace GlareEngine
 		vector<GraphicsPSO> gCommonPSOs;
 		//include UAV AND SRV
 		DescriptorHeap gTextureHeap;
+		//include UAV AND SRV for RayTracing
+		DescriptorHeap gRayTracingBufferHeap;
 
 		DescriptorHeap gSamplerHeap;
 
@@ -226,6 +228,20 @@ namespace GlareEngine
 		}
 		g_Device->CopyDescriptors(1, &gTextureHeap[MAXCUBESRVSIZE+ COMMONSRVSIZE+ COMMONUAVSIZE], &Texture2DSize,
 			Texture2DSize, Texture2DSRV, Texture2DSrcSize, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	}
+
+	void Render::CopyRayTracingBufferHeap()
+	{
+		UINT Texture2DSize = g_RayTracingBuffer.size();
+		D3D12_CPU_DESCRIPTOR_HANDLE RayTracingBuffer[MAX2DSRVSIZE];
+		UINT BufferSrcSize[MAX2DSRVSIZE];
+		for (size_t RayTracingBufferIndex = 0; RayTracingBufferIndex < Texture2DSize; RayTracingBufferIndex++)
+		{
+			RayTracingBuffer[RayTracingBufferIndex] = g_RayTracingBuffer[RayTracingBufferIndex];
+			BufferSrcSize[RayTracingBufferIndex] = 1;
+		}
+		g_Device->CopyDescriptors(1, &gRayTracingBufferHeap[0], &Texture2DSize,
+			Texture2DSize, RayTracingBuffer, BufferSrcSize, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	}
 
 	uint32_t Render::GetCommonSRVHeapOffset()

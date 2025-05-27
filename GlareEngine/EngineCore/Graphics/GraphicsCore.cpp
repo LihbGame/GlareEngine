@@ -73,7 +73,7 @@ namespace GlareEngine
 	vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_TextureSRV;
 	vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_CubeSRV;
 
-
+	vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_RayTracingBuffer;
 
 	// Check adapter support for DirectX RayTracing.
 	bool IsDirectXRaytracingSupported(ID3D12Device* testDevice)
@@ -406,9 +406,16 @@ namespace GlareEngine
 		g_TextureSRV.push_back(SRVdes);
 		return int(g_TextureSRV.size() - 1);
 	}
+
 	int AddToGlobalCubeSRVDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes)
 	{
 		g_CubeSRV.push_back(SRVdes);
+		return int(g_CubeSRV.size() - 1);
+	}
+
+	int AddToGlobalRayTracingDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes)
+	{
+		g_RayTracingBuffer.push_back(SRVdes);
 		return int(g_CubeSRV.size() - 1);
 	}
 }

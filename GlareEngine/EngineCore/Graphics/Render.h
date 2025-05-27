@@ -103,6 +103,7 @@ namespace GlareEngine
 		void BuildRuntimePSOs();
 		void BuildCommonPSOs(const PSOCommonProperty CommonProperty);
 		void CopyTextureHeap();
+		void CopyRayTracingBufferHeap();
 		void CopyBufferDescriptors(const D3D12_CPU_DESCRIPTOR_HANDLE* pSrcDescriptors, uint32_t Size, const D3D12_CPU_DESCRIPTOR_HANDLE* pDestDescriptors);
 
 		//Deferred rendering
