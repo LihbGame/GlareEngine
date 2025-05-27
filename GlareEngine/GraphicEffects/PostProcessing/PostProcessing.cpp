@@ -221,6 +221,8 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 
 	BuildSRV(CommandList);
 
+	Render::SetAntiAliasingType(Render::AntiAliasingType(mAntiAliasingIndex));
+
 	//FXAA Initialize
 	FXAA::Initialize();
 
