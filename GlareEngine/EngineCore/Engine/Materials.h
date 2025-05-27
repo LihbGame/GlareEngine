@@ -22,6 +22,8 @@ namespace GlareEngine
 		DirectX::XMFLOAT4X4                     MatTransform = MathHelper::Identity4x4();
 		//Texture SRV Index
 		vector<int>								mDescriptorsIndex;
+		//Texture SRV RayTracing Index
+		vector<int>								mRayTracingDescriptorsIndex;
 	};
 
 

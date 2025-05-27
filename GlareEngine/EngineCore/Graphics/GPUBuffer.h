@@ -138,7 +138,7 @@ namespace GlareEngine
 		virtual void CreateDerivedViews(void) override;
 
 	public:
-		uint32_t SRV = uint32_t(-1);
+		uint32_t m_SRVIndex = uint32_t(-1);
 	};
 
 	class TypedBuffer : public GPUBuffer

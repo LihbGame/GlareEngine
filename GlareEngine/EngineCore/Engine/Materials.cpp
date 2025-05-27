@@ -93,6 +93,9 @@ namespace GlareEngine
 			}
 			int TextureSrvIndex = AddToGlobalTextureSRVDescriptor(Descriptor);
 			Mat->mDescriptorsIndex.push_back(TextureSrvIndex);
+
+			TextureSrvIndex = AddToGlobalRayTracingDescriptor(Descriptor);
+			Mat->mRayTracingDescriptorsIndex.push_back(TextureSrvIndex);
 		}
 	}
 }
