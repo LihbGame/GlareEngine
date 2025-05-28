@@ -26,16 +26,13 @@ namespace GlareEngine
 	extern DescriptorAllocator g_DescriptorAllocator[];
 	D3D12_CPU_DESCRIPTOR_HANDLE AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE Type, UINT Count = 1);
 
-
 	//SRV Descriptors Manager ,return Descriptor index
 	extern vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_TextureSRV;
 	int AddToGlobalTextureSRVDescriptor(const D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes);
-
 
 	extern vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_CubeSRV;
 	int AddToGlobalCubeSRVDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes);
 
 	extern vector<D3D12_CPU_DESCRIPTOR_HANDLE> g_RayTracingBuffer;
 	int AddToGlobalRayTracingDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes);
-
 }

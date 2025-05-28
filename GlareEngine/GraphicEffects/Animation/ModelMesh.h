@@ -18,7 +18,7 @@ namespace GlareEngine
 		MeshData& GetMeshData() { return mMeshData; }
 	private:
 		void SetupMesh(ID3D12GraphicsCommandList* CommandList, const char* name);
-	
+		void CreateDerivedViews(void);
 	private:
 
 		MeshData mMeshData;

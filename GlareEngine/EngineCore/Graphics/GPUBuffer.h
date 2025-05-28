@@ -98,6 +98,8 @@ namespace GlareEngine
 	{
 	public:
 		virtual void CreateDerivedViews(void) override;
+	public:
+		uint32_t m_SRVIndex = uint32_t(-1);
 	};
 
 	class IndirectArgsBuffer : public ByteAddressBuffer
@@ -126,19 +128,6 @@ namespace GlareEngine
 
 	private:
 		ByteAddressBuffer m_CounterBuffer;
-	};
-
-	class RayTracingStructuredBuffer : public StructuredBuffer
-	{
-	public:
-		RayTracingStructuredBuffer() {};
-		~RayTracingStructuredBuffer() {};
-
-
-		virtual void CreateDerivedViews(void) override;
-
-	public:
-		uint32_t m_SRVIndex = uint32_t(-1);
 	};
 
 	class TypedBuffer : public GPUBuffer

@@ -162,6 +162,7 @@ void ByteAddressBuffer::CreateDerivedViews(void)
 	if (m_SRV.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
 		m_SRV = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	g_Device->CreateShaderResourceView(m_pResource.Get(), &SRVDesc, m_SRV);
+	m_SRVIndex = AddToGlobalRayTracingDescriptor(m_SRV);
 
 	D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
 	UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
@@ -237,20 +238,4 @@ void TypedBuffer::CreateDerivedViews(void)
 	if (m_UAV.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
 		m_UAV = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	g_Device->CreateUnorderedAccessView(m_pResource.Get(), nullptr, &UAVDesc, m_UAV);
-}
-
-void RayTracingStructuredBuffer::CreateDerivedViews(void)
-{
-	D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
-	SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-	SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
-	SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	SRVDesc.Buffer.NumElements = m_ElementCount;
-	SRVDesc.Buffer.StructureByteStride = m_ElementSize;
-	SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-
-	if (m_SRV.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
-		m_SRV = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	g_Device->CreateShaderResourceView(m_pResource.Get(), &SRVDesc, m_SRV);
-	m_SRVIndex = AddToGlobalRayTracingDescriptor(m_SRV);
 }

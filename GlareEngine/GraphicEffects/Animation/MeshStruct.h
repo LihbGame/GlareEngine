@@ -38,6 +38,9 @@ namespace GlareEngine
 		Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferUploader = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferUploader = nullptr;
 
+		uint32_t m_VertexSRVIndex = uint32_t(-1);
+		uint32_t m_IndexSRVIndex = uint32_t(-1);
+
 		// Data about the buffers.
 		UINT VertexByteStride = 0;
 		UINT VertexBufferByteSize = 0;
