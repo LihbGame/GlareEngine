@@ -416,7 +416,7 @@ namespace GlareEngine
 	int AddToGlobalRayTracingDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& SRVdes)
 	{
 		g_RayTracingBuffer.push_back(SRVdes);
-		return int(g_CubeSRV.size() - 1);
+		return int(g_RayTracingBuffer.size() - 1);
 	}
 }
 

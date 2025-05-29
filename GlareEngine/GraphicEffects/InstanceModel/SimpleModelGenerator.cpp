@@ -87,7 +87,7 @@ ModelRenderData* SimpleModelGenerator::CreateSimpleModelRanderData(string ModelN
 		default:
 			break;
 		}
-		lModelData.mMeshData = ModelMesh(pCommandList, MeshName, lMeshData.Vertices, lMeshData.Indices32);
+		lModelData.mMeshData = ModelMesh(MeshName, lMeshData.Vertices, lMeshData.Indices32);
 		lModelData.mMaterial = MaterialManager::GetMaterialInstance()->GetMaterial(StringToWString(MaterialName));
 
 		mMeshes[ModelName] = lModelRenderData;
@@ -107,7 +107,7 @@ ModelRenderData* SimpleModelGenerator::CreateGridRanderData(string ModelName, fl
 		lMeshData = mGeometryGenerator.CreateGrid(width, height, m, n);
 		MeshName = (char*)"Grid";
 
-		lModelData.mMeshData = ModelMesh(pCommandList, MeshName, lMeshData.Vertices, lMeshData.Indices32);
+		lModelData.mMeshData = ModelMesh(MeshName, lMeshData.Vertices, lMeshData.Indices32);
 		lModelData.mMaterial = MaterialManager::GetMaterialInstance()->GetMaterial(StringToWString(MaterialName));
 		mMeshes[ModelName] = lModelRenderData;
 	}

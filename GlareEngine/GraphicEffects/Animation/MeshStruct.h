@@ -41,6 +41,9 @@ namespace GlareEngine
 		uint32_t m_VertexSRVIndex = uint32_t(-1);
 		uint32_t m_IndexSRVIndex = uint32_t(-1);
 
+		D3D12_CPU_DESCRIPTOR_HANDLE m_VertexSRV;
+		D3D12_CPU_DESCRIPTOR_HANDLE m_IndexSRV;
+
 		// Data about the buffers.
 		UINT VertexByteStride = 0;
 		UINT VertexBufferByteSize = 0;
