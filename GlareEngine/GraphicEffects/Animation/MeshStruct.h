@@ -93,6 +93,7 @@ namespace GlareEngine
 	{
 		std::vector<Vertices::PosNormalTangentTexc> Vertices;
 		std::vector<uint32> Indices32;
+		AxisAlignedBox Bounds;
 
 		std::vector<uint16>& GetIndices16()
 		{

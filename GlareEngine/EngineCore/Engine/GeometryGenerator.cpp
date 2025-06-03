@@ -93,6 +93,11 @@ MeshData GeometryGenerator::CreateBox(float width, float height, float depth, ui
     for(uint32 i = 0; i < numSubdivisions; ++i)
         Subdivide(meshData);
 
+	Vector3 min = Vector3(-w2, -h2, -d2);
+	Vector3 max = Vector3(w2, h2, d2);
+
+	meshData.Bounds=AxisAlignedBox(min, max);
+
     return meshData;
 }
 
@@ -186,7 +191,10 @@ MeshData GeometryGenerator::CreateSphere(float radius, uint32 sliceCount, uint32
 	// and connects the bottom pole to the bottom ring.
 	//
 
-	
+	Vector3 min = Vector3(-radius, -radius, -radius);
+	Vector3 max = Vector3(radius, radius, radius);
+
+	meshData.Bounds = AxisAlignedBox(min, max);
 
 	return meshData;
 }
