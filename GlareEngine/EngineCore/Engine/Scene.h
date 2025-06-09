@@ -83,8 +83,6 @@ public:
 
 	SceneView GetSceneView() { return mSceneView; }
 
-	void LinearizeZ(GraphicsContext& Context);
-
 	void Finalize();
 public:
 	unique_ptr<ShadowCamera> m_pSunShadowCamera = nullptr;
@@ -101,6 +99,7 @@ private:
 	void ForwardRendering(RasterRenderPipelineType renderPipeline);
 	void DeferredRendering(RasterRenderPipelineType renderPipeline);
 	void CreateTileConeShadowMap(GraphicsContext& Context);
+	void BuildRTAccelerationStructure();
 private:
 	ID3D12GraphicsCommandList* m_pCommandList = nullptr;
 	string mName;

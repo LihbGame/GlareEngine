@@ -900,6 +900,13 @@ void Scene::CreateTileConeShadowMap(GraphicsContext& Context)
 	++shadowIndex;
 }
 
+void Scene::BuildRTAccelerationStructure()
+{
+
+
+
+}
+
 
 
 
