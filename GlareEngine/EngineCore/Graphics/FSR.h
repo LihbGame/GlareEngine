@@ -39,6 +39,7 @@ public:
 
 	static void FSRMsgCallback(uint32_t type, const wchar_t* message);
 
+	float GetMipLODBias() { return m_MipBias; }
 private:
 	enum class FSRScalePreset
 	{
@@ -64,7 +65,7 @@ private:
 	bool m_FrameInterpolationEnabled = false;
 
 	FSRScalePreset  m_ScalePreset = FSRScalePreset::Quality;
-
+	float           m_MipBias = 0;
 
 };
 

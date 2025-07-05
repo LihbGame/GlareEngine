@@ -87,15 +87,15 @@ out float4 GBUFFER_WorldTangent : SV_Target4)
     uint2 pixelPos = uint2(vsOutput.position.xy);
 
     // Load and modulate textures
-    float4 baseColor = baseColorFactor * baseColorTexture.Sample(baseColorSampler, UVSET(BASECOLOR));
-    float2 metallicRoughness = metallicRoughnessTexture.Sample(metallicRoughnessSampler, UVSET(METALLICROUGHNESS)).bg;
-    float occlusion = occlusionTexture.Sample(occlusionSampler, UVSET(OCCLUSION));
-    float3 emissive = emissiveFactor * emissiveTexture.Sample(emissiveSampler, UVSET(EMISSIVE));
+    float4 baseColor = baseColorFactor * baseColorTexture.SampleBias(baseColorSampler, UVSET(BASECOLOR), gMipLodBias);
+    float2 metallicRoughness = metallicRoughnessTexture.SampleBias(metallicRoughnessSampler, UVSET(METALLICROUGHNESS), gMipLodBias).bg;
+    float occlusion = occlusionTexture.SampleBias(occlusionSampler, UVSET(OCCLUSION), gMipLodBias);
+    float3 emissive = emissiveFactor * emissiveTexture.SampleBias(emissiveSampler, UVSET(EMISSIVE), gMipLodBias);
 
     float3 normal = normalize(vsOutput.normal);
 #ifndef NO_TANGENT_FRAME
     // Read normal map and convert to SNORM
-    float3 normalMap = normalTexture.Sample(normalSampler, UVSET(NORMALMAP)) * 2.0 - 1.0;
+    float3 normalMap = normalTexture.SampleBias(normalSampler, UVSET(NORMALMAP), gMipLodBias) * 2.0 - 1.0;
     // glTF spec says to normalize N before and after scaling, but that's excessive
     normalMap = normalize(normalMap * float3(normalTextureScale, normalTextureScale, 1));
     normal = GetNormal(normalMap, normal, vsOutput.tangent);

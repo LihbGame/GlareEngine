@@ -63,6 +63,7 @@ namespace GlareEngine
 		RenderMaterial* DeferredLightingMaterial = nullptr;
 		RenderMaterial* WireFrameMaterial = nullptr;
 
+		float gMipbias = 0.0f;
 	}
 
 	void Render::Initialize(ID3D12GraphicsCommandList* CommandList,const Camera& camera)
@@ -355,6 +356,15 @@ namespace GlareEngine
 		return gAntiAliasingType;
 	}
 
+	void Render::SetMipLODBias(float mipLODBias)
+	{
+		gMipbias = mipLODBias;
+	}
+
+	float Render::GetMipLODBias()
+	{
+		return gMipbias;
+	}
 
 	void Render::BuildPSOs()
 	{

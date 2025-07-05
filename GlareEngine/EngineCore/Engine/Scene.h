@@ -2,6 +2,7 @@
 #include <typeinfo>
 #include "GI/IBL.h"
 #include "GI/PRTManager.h"
+#include "Graphics/FSR.h"
 
 class ShadowMap;
 class EngineGUI;
@@ -123,5 +124,7 @@ private:
 	RootSignature* m_pRootSignature;
 
 	PRTManager mPRTManager;
+
+	FSR mFSR;
 };
 

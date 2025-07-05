@@ -117,5 +117,9 @@ namespace GlareEngine
 		//Render setting
 		void SetAntiAliasingType(AntiAliasingType type);
 		AntiAliasingType GetAntiAliasingType();
+
+		//Sets the global mip LOD bias to use when rendering geometry.
+		void SetMipLODBias(float mipLODBias);
+		float GetMipLODBias();
 	}
 }

@@ -357,6 +357,7 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 		mSceneView.mMainConstants.Lights[2].Strength = mSceneLights[2].Strength;
 	}
 
+	mSceneView.mMainConstants.gMipLODBias = mFSR.GetMipLODBias();
 }
 
 

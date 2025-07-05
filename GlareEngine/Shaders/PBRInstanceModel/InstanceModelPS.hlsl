@@ -20,12 +20,12 @@ float4 main(PosNorTanTexOut pin) : SV_Target
     }
 
 
-    float4 diffuseAlbedo = gSRVMap[matData.mDiffuseMapIndex].Sample(gSamplerAnisoWrap, UV) ;
-    float Roughness = gSRVMap[matData.mRoughnessMapIndex].Sample(gSamplerAnisoWrap, UV).x;
-    float Metallic = gSRVMap[matData.mMetallicMapIndex].Sample(gSamplerAnisoWrap, UV).x;
-    float AO = gSRVMap[matData.mAOMapIndex].Sample(gSamplerAnisoWrap, UV).x;
+    float4 diffuseAlbedo = gSRVMap[matData.mDiffuseMapIndex].SampleBias(gSamplerAnisoWrap, UV, gMipLodBias);
+    float Roughness = gSRVMap[matData.mRoughnessMapIndex].SampleBias(gSamplerAnisoWrap, UV, gMipLodBias).x;
+    float Metallic = gSRVMap[matData.mMetallicMapIndex].SampleBias(gSamplerAnisoWrap, UV, gMipLodBias).x;
+    float AO = gSRVMap[matData.mAOMapIndex].SampleBias(gSamplerAnisoWrap, UV, gMipLodBias).x;
     //Sample normal
-    float3 normalMapSample = gSRVMap[matData.mNormalMapIndex].Sample(gSamplerAnisoWrap, UV).xyz;
+    float3 normalMapSample = gSRVMap[matData.mNormalMapIndex].SampleBias(gSamplerAnisoWrap, UV, gMipLodBias).xyz;
 //tansform normal
     float3 bumpedNormalW = NormalSampleToModelSpace(normalMapSample, pin.NormalW, pin.TangentW);
     bumpedNormalW = normalize(bumpedNormalW);
