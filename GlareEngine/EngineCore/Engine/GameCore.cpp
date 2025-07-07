@@ -306,7 +306,7 @@ namespace GlareEngine
 					else if (wParam == SIZE_RESTORED)
 					{
 						OnResize(mClientWidth, mClientHeight);
-						UpdateApplication(*GameApp::GetApp());
+						//UpdateApplication(*GameApp::GetApp());
 
 						// Restoring from minimized state?
 						if (mMinimized)

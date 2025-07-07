@@ -40,6 +40,10 @@ public:
 	static void FSRMsgCallback(uint32_t type, const wchar_t* message);
 
 	float GetMipLODBias() { return m_MipBias; }
+
+	void  SetMipLODBias(float pBias) { m_MipBias = pBias; }
+
+	float GetUpscaleRatio() { return m_UpscaleRatio; }
 private:
 	enum class FSRScalePreset
 	{
@@ -48,10 +52,10 @@ private:
 		Balanced,           // 1.7f
 		Performance,        // 2.0f
 		UltraPerformance,   // 3.0f
-		Custom              // 1.0f - 3.0f range
+		Count               
 	};
 
-	const float cMipBias[static_cast<uint32_t>(FSRScalePreset::Custom)] = {
+	const float cMipBias[static_cast<uint32_t>(FSRScalePreset::Count)] = {
 	   std::log2f(1.0f / 1.0f) - 1.0f + std::numeric_limits<float>::epsilon(),
 	   std::log2f(1.0f / 1.5f) - 1.0f + std::numeric_limits<float>::epsilon(),
 	   std::log2f(1.0f / 1.7f) - 1.0f + std::numeric_limits<float>::epsilon(),
@@ -59,13 +63,20 @@ private:
 	   std::log2f(1.0f / 3.0f) - 1.0f + std::numeric_limits<float>::epsilon()
 	};
 
+	inline float CalculateMipBias(float upscalerRatio)
+	{
+		return std::log2f(1.f / upscalerRatio) - 1.f + std::numeric_limits<float>::epsilon();
+	}
 
+	void UpdateUpscalerPreset(const int32_t pNewPreset);
 private:
 	bool m_UpscalerEnabled = false;
 	bool m_FrameInterpolationEnabled = false;
 
-	FSRScalePreset  m_ScalePreset = FSRScalePreset::Quality;
+	FSRScalePreset  m_ScalePreset = FSRScalePreset::NativeAA;
+	int32_t			m_NewPreset = 0;
 	float           m_MipBias = 0;
 
+	float           m_UpscaleRatio = 2.0f;
 };
 

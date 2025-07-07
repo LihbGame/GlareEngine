@@ -3,6 +3,7 @@
 #include "CommandContext.h"
 #include "Render.h"
 #include "PostProcessing/TemporalAA.h"
+#include <EngineGUI.h>
 
 
 namespace GlareEngine
@@ -299,6 +300,30 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 	g_GBuffer[GBUFFER_Emissive].Create(L"GBuffer Emissive", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_Emissive]);
 	g_GBuffer[GBUFFER_WorldTangent].Create(L"GBuffer WorldTangent", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_WorldTangent]);
 }
+
+void GlareEngine::ResizeDisplayBuffers(uint32_t NativeWidth, uint32_t NativeHeight)
+{
+	//resize display buffer
+	g_SceneColorBuffer.Create(L"Main Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
+	g_SceneDepthBuffer.Create(L"Scene Depth Buffer", NativeWidth, NativeHeight, DSV_FORMAT, REVERSE_Z);
+	g_PostEffectsBuffer.Create(L"Post Effects Buffer", NativeWidth, NativeWidth, 1, DXGI_FORMAT_R32_UINT);
+
+	//resize  MSAA buffer
+	g_SceneMSAAColorBuffer.Create(L"Main MSAA Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
+	g_SceneMSAADepthBuffer.Create(L"Scene MSAA Depth Buffer", NativeWidth, NativeHeight, MSAACOUNT, DSV_FORMAT, REVERSE_Z);
+
+	g_VelocityBuffer.Create(L"Motion Vectors", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R32_UINT);
+
+	g_MotionPrepBuffer.Create(L"Motion Blur Prep", NativeWidth / 2, NativeHeight / 2, 1, HDR_MOTION_FORMAT);
+
+	//GBuffer Init
+	g_GBuffer[GBUFFER_BaseColor].Create(L"GBuffer BaseColor", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_BaseColor]);
+	g_GBuffer[GBUFFER_Normal].Create(L"GBuffer Normal", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_Normal]);
+	g_GBuffer[GBUFFER_MSR].Create(L"GBuffer MSR", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_MSR]);
+	g_GBuffer[GBUFFER_Emissive].Create(L"GBuffer Emissive", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_Emissive]);
+	g_GBuffer[GBUFFER_WorldTangent].Create(L"GBuffer WorldTangent", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_WorldTangent]);
+}
+
 
 void GlareEngine::DestroyRenderingBuffers()
 {

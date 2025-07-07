@@ -105,6 +105,9 @@ namespace GlareEngine
 
 	void ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t NativeHeight);
 
+	void ResizeDisplayBuffers(uint32_t NativeWidth, uint32_t NativeHeight);
+	
+
 	void DestroyRenderingBuffers();
 
 }// GlareEngine

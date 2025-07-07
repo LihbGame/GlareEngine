@@ -8,6 +8,12 @@ namespace GlareEngine
     {
         extern uint32_t g_DisplayWidth;
         extern uint32_t g_DisplayHeight;
+		extern uint32_t g_RenderWidth;
+		extern uint32_t g_RenderHeight;
+
+		extern float g_UpscaleRatio;
+        extern bool  g_bUpscale;
+
         extern bool g_bEnableHDROutput;
         extern IDXGISwapChain1* s_SwapChain1;
         extern NumVar g_HDRPaperWhite;

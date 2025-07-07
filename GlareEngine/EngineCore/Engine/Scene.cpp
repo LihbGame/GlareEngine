@@ -28,6 +28,13 @@ void Scene::Update(float DeltaTime)
 	//Clear visible buffer for debug
 	EngineGUI::ClearRenderPassVisualizeTexture();
 
+	if (Display::g_bUpscale)
+	{
+		g_CommandManager.IdleGPU();
+		ResizeDisplayDependentBuffers(Display::g_DisplayWidth / Display::g_UpscaleRatio, Display::g_DisplayHeight / Display::g_UpscaleRatio);
+		Display::g_bUpscale = false;
+	}
+
 	//Update shadow map
 	m_pShadowMap->Update(DeltaTime);
 
@@ -250,6 +257,8 @@ void Scene::DrawUI()
 
 		//Post Processing UI
 		ScreenProcessing::DrawUI();
+		//FSR UI
+		mFSR.DrawUI();
 	}
 	else // RenderPipeline::RayTracing
 	{
