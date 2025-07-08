@@ -77,6 +77,6 @@ private:
 	int32_t			m_NewPreset = 0;
 	float           m_MipBias = 0;
 
-	float           m_UpscaleRatio = 2.0f;
+	float           m_UpscaleRatio = 1.0f;
 };
 

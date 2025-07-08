@@ -460,8 +460,8 @@ namespace GlareEngine
 
 		g_CommandManager.IdleGPU();
 
-		g_RenderWidth = width/ g_UpscaleRatio;
-		g_RenderHeight = height/ g_UpscaleRatio;
+		g_RenderWidth = width / g_UpscaleRatio;
+		g_RenderHeight = height / g_UpscaleRatio;
 
 		g_DisplayWidth = width;
 		g_DisplayHeight = height;
@@ -472,29 +472,27 @@ namespace GlareEngine
 
 		EngineLog::ReplaceLog(logRenderResolutionIndex - 1, (wchar_t*)L"Changing Render resolution to %ux%u", g_RenderWidth, g_RenderHeight);
 
-		EngineLog::ReplaceLog(logIndex-1, (wchar_t *)L"Changing Display resolution to %ux%u", g_DisplayWidth, g_DisplayHeight);
-		if (!g_bUpscale)
+		EngineLog::ReplaceLog(logIndex - 1, (wchar_t*)L"Changing Display resolution to %ux%u", g_DisplayWidth, g_DisplayHeight);
+
+		//g_PreDisplayBuffer.Create(L"PreDisplay Buffer", width, height, 1, g_SwapChainFormat);
+
+		//Destroy old display buffers
+		for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
+			g_DisplayBuffers[i].Destroy();
+
+		//Resize Swap Chain 
+		ThrowIfFailed(s_SwapChain1->ResizeBuffers(SWAP_CHAIN_BUFFER_COUNT, g_DisplayWidth, g_DisplayHeight, g_SwapChainFormat, 0));
+
+		for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
 		{
-			//g_PreDisplayBuffer.Create(L"PreDisplay Buffer", width, height, 1, g_SwapChainFormat);
-
-			//Destroy old display buffers
-			for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
-				g_DisplayBuffers[i].Destroy();
-
-			//Resize Swap Chain 
-			ThrowIfFailed(s_SwapChain1->ResizeBuffers(SWAP_CHAIN_BUFFER_COUNT, width, height, g_SwapChainFormat, 0));
-
-			for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
-			{
-				ComPtr<ID3D12Resource> DisplayBuffer;
-				ThrowIfFailed(s_SwapChain1->GetBuffer(i, IID_PPV_ARGS(&DisplayBuffer)));
-				g_DisplayBuffers[i].CreateFromSwapChain(L"Primary SwapChain Buffer", DisplayBuffer.Detach());
-			}
-
-			//reset current buffer index
-			g_CurrentBuffer = 0;
-			g_CommandManager.IdleGPU();
+			ComPtr<ID3D12Resource> DisplayBuffer;
+			ThrowIfFailed(s_SwapChain1->GetBuffer(i, IID_PPV_ARGS(&DisplayBuffer)));
+			g_DisplayBuffers[i].CreateFromSwapChain(L"Primary SwapChain Buffer", DisplayBuffer.Detach());
 		}
+
+		//reset current buffer index
+		g_CurrentBuffer = 0;
+		g_CommandManager.IdleGPU();
 
 		ResizeDisplayDependentBuffers(g_RenderWidth, g_RenderHeight);
 	}

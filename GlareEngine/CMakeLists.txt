@@ -46,9 +46,6 @@ add_library(${TARGET_NAME} ${ENGINE_RESOURCE} ${HEADER_FILES} ${SOURCE_FILES} ${
 add_custom_command(TARGET ${TARGET_NAME} COMMAND ${CMAKE_COMMAND} -E copy_directory ${GLAREENGINE_ROOT_DIR}/Resource
                                       ${GLAREENGINE_ROOT_DIR}/build/Resource)
 
-add_custom_command(TARGET ${TARGET_NAME} COMMAND ${CMAKE_COMMAND} -E copy_directory ${GLAREENGINE_ROOT_DIR}/GlareEngine/Dependences/include/ffx-api/Shader
-                                      ${GLAREENGINE_ROOT_DIR}/bin/GameDemo/Shaders)
-
 set_target_properties("${TARGET_NAME}" PROPERTIES FOLDER "Engine")
 
 target_include_directories(
