@@ -14,9 +14,13 @@ namespace GlareEngine
 
 	ColorBuffer				g_SceneColorBuffer;
 
+	ColorBuffer				g_TransparentMaskBuffer(Color(0.0f, 0.0f, 0.0f));
+
+	ColorBuffer				g_ReactiveMaskBuffer(Color(0.0f, 0.0f, 0.0f));
+
 	ColorBuffer				g_PostEffectsBuffer;
 
-	//ping-pong with main scene RT in post process chain
+	//Ping-Pong with main scene RT in post process chain
 	ColorBuffer				g_PostColorBuffer;
 
 	//MSAA Buffer
@@ -124,7 +128,11 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 
 	g_SceneColorBuffer.Create(L"Main Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 	g_SceneDepthBuffer.Create(L"Scene Depth Buffer", NativeWidth, NativeHeight, DSV_FORMAT, REVERSE_Z);
-	g_PostEffectsBuffer.Create(L"Post Effects Buffer", NativeWidth, NativeWidth, 1, DXGI_FORMAT_R32_UINT);
+	g_PostEffectsBuffer.Create(L"Post Effects Buffer", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R32_UINT);
+
+	//Used in FSR
+	g_TransparentMaskBuffer.Create(L"Transparent Mask Buffer", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8_UNORM);
+	g_ReactiveMaskBuffer.Create(L"Reactive Mask Buffer", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8_UNORM);
 
 	//MSAA buffer
 	//g_SceneMSAADepthBuffer
@@ -246,7 +254,11 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 	//resize display buffer
 	g_SceneColorBuffer.Create(L"Main Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 	g_SceneDepthBuffer.Create(L"Scene Depth Buffer", NativeWidth, NativeHeight, DSV_FORMAT, REVERSE_Z);
-	g_PostEffectsBuffer.Create(L"Post Effects Buffer", NativeWidth, NativeWidth, 1, DXGI_FORMAT_R32_UINT);
+	g_PostEffectsBuffer.Create(L"Post Effects Buffer", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R32_UINT);
+
+	//Used in FSR
+	g_TransparentMaskBuffer.Create(L"Transparent Mask Buffer", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8_UNORM);
+	g_ReactiveMaskBuffer.Create(L"Reactive Mask Buffer", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8_UNORM);
 
 	//resize  MSAA buffer
 	g_SceneMSAAColorBuffer.Create(L"Main MSAA Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
@@ -330,6 +342,10 @@ void GlareEngine::DestroyRenderingBuffers()
 	g_SceneDepthBuffer.Destroy();
 
 	g_SceneColorBuffer.Destroy();
+
+	g_TransparentMaskBuffer.Destroy();
+	
+	g_ReactiveMaskBuffer.Destroy();
 
 	g_LinearDepth[0].Destroy();
 	g_LinearDepth[1].Destroy();

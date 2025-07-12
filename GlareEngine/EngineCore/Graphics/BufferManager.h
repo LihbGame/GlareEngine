@@ -32,6 +32,10 @@ namespace GlareEngine
 
 	extern ColorBuffer				g_SceneColorBuffer;				// R11G11B10_FLOAT
 
+	extern ColorBuffer				g_TransparentMaskBuffer;		// R8_UNORM
+
+	extern ColorBuffer				g_ReactiveMaskBuffer;			// R8_UNORM
+
 	extern ColorBuffer				g_PostEffectsBuffer;			// R32_UINT (To support Read-Modify-Write with a UAV)	
 
 	extern ColorBuffer				g_PostColorBuffer;			    //ping-pong with main scene RT in post process chain

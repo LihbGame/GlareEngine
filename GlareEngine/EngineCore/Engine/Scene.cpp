@@ -512,6 +512,16 @@ void Scene::ForwardRendering(RasterRenderPipelineType ForwardRenderPipeline)
 		{
 			GraphicsContext& Context = GraphicsContext::Begin(L"Scene Render");
 
+			{
+				ScopedTimer ClearScope(L"Clear FSR UAV", Context);
+				//Clear FSR Mask
+				Context.TransitionResource(g_TransparentMaskBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+				Context.TransitionResource(g_ReactiveMaskBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+				Context.ClearUAV(g_TransparentMaskBuffer);
+				Context.ClearUAV(g_ReactiveMaskBuffer);
+			}
+
+
 			//default batch
 			MeshRenderPass DefaultMeshPass(MeshRenderPass::eDefault);
 			DefaultMeshPass.SetCamera(*mSceneView.m_pCamera);
@@ -675,8 +685,19 @@ void Scene::ForwardRendering(RasterRenderPipelineType ForwardRenderPipeline)
 
 				}
 
+				Context.Finish(true);
 				//Transparent Pass
-				DefaultMeshPass.RenderMeshes(MeshRenderPass::eTransparent, Context, mSceneView.mMainConstants);
+				{
+					D3D12_CPU_DESCRIPTOR_HANDLE FSRMask_UAV[] =
+					{
+						g_TransparentMaskBuffer.GetUAV(),
+						g_ReactiveMaskBuffer.GetUAV()
+					};
+					CopyBufferDescriptors(FSRMask_UAV, ArraySize(FSRMask_UAV), &gTextureHeap[COMMONSRVSIZE]);
+
+					Context.SetDescriptorTable((int)RootSignatureType::eCommonUAVs, gTextureHeap[COMMONSRVSIZE]);
+					DefaultMeshPass.RenderMeshes(MeshRenderPass::eTransparent, Context, mSceneView.mMainConstants);
+				}
 
 				//Resolve MSAA
 				if (IsMSAA)
@@ -694,6 +715,10 @@ void Scene::ForwardRendering(RasterRenderPipelineType ForwardRenderPipeline)
 			}
 
 			Context.Finish();
+
+#ifdef DEBUG
+			EngineGUI::AddRenderPassVisualizeTexture("FSR Buffer", WStringToString(g_TransparentMaskBuffer.GetName()), g_TransparentMaskBuffer.GetHeight(), g_TransparentMaskBuffer.GetWidth(), g_TransparentMaskBuffer.GetSRV());
+#endif
 		}
 	}
 }
@@ -719,6 +744,11 @@ void Scene::DeferredRendering(RasterRenderPipelineType DeferredRenderPipeline)
 		{
 			ScopedTimer ClearGBufferScope(L"Clear GBuffer", Context);
 			Render::ClearGBuffer(Context);
+			//Clear FSR Mask
+			Context.TransitionResource(g_TransparentMaskBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			Context.TransitionResource(g_ReactiveMaskBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			Context.ClearUAV(g_TransparentMaskBuffer);
+			Context.ClearUAV(g_ReactiveMaskBuffer);
 		}
 
 		//default batch
@@ -862,6 +892,13 @@ void Scene::DeferredRendering(RasterRenderPipelineType DeferredRenderPipeline)
 			//Transparent Pass
 			{
 				ScopedTimer TransparentPassScope(L"Transparent Pass", Context);
+				D3D12_CPU_DESCRIPTOR_HANDLE FSRMask_UAV[] =
+				{
+					g_TransparentMaskBuffer.GetUAV(),
+					g_ReactiveMaskBuffer.GetUAV()
+				};
+				CopyBufferDescriptors(FSRMask_UAV, ArraySize(FSRMask_UAV), &gTextureHeap[COMMONSRVSIZE + 1]);
+				Context.SetDescriptorTable((int)RootSignatureType::eCommonUAVs, gTextureHeap[COMMONSRVSIZE + 1]);
 				DefaultMeshPass.RenderMeshes(MeshRenderPass::eTransparent, Context, mSceneView.mMainConstants);
 			}
 
@@ -874,6 +911,7 @@ void Scene::DeferredRendering(RasterRenderPipelineType DeferredRenderPipeline)
 		EngineGUI::AddRenderPassVisualizeTexture("GBuffer", WStringToString(g_GBuffer[2].GetName()), g_GBuffer[2].GetHeight(), g_GBuffer[2].GetWidth(), g_GBuffer[2].GetSRV());
 		EngineGUI::AddRenderPassVisualizeTexture("GBuffer", WStringToString(g_GBuffer[3].GetName()), g_GBuffer[3].GetHeight(), g_GBuffer[3].GetWidth(), g_GBuffer[3].GetSRV());
 		EngineGUI::AddRenderPassVisualizeTexture("GBuffer", WStringToString(g_GBuffer[4].GetName()), g_GBuffer[4].GetHeight(), g_GBuffer[4].GetWidth(), g_GBuffer[4].GetSRV());
+		EngineGUI::AddRenderPassVisualizeTexture("FSR Buffer", WStringToString(g_TransparentMaskBuffer.GetName()), g_TransparentMaskBuffer.GetHeight(), g_TransparentMaskBuffer.GetWidth(), g_TransparentMaskBuffer.GetSRV());
 #endif // DEBUG
 	}
 }

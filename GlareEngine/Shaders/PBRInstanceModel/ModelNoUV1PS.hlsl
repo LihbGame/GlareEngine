@@ -8,6 +8,10 @@ Texture2D<float3> emissiveTexture           : register(t23);
 Texture2D<float3> normalTexture             : register(t24);
 Texture2D<float3> clearCoatTexture          : register(t25);
 
+//FSR MASK
+RWTexture2D<float> transparentMask          : register(u0);
+RWTexture2D<float> reactiveMask             : register(u1);
+
 SamplerState baseColorSampler               : register(s0);
 SamplerState metallicRoughnessSampler       : register(s1);
 SamplerState occlusionSampler               : register(s2);
@@ -21,6 +25,8 @@ static const uint OCCLUSION = 2;
 static const uint EMISSIVE = 3;
 static const uint NORMALMAP = 4;
 static const uint CLEARCOAT = 5;
+//Material blend mask
+static const uint ALPHABLEND = 7;
 
 //Whether to use second UV
 #ifdef NO_SECOND_UV
@@ -139,5 +145,10 @@ float4 main(VSOutput vsOutput) : SV_Target0
          color += IBL_Specular(Surface);
      }
 
-     return  float4(color, baseColor.a);
+    if ((flags >> ALPHABLEND) & 1)
+    {
+        transparentMask[pixelPos] += (1.0f - transparentMask[pixelPos]) * baseColor.a;
+    }
+    
+    return float4(color, baseColor.a);
 }
