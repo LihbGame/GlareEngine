@@ -21,6 +21,8 @@ Scene::Scene(string name, ID3D12GraphicsCommandList* pCommandList)
 	m_pCommandList(pCommandList)
 {
 	mSceneView.m_pScene = this;
+
+	m_pFSR = FSR::GetInstance();
 }
 
 void Scene::Update(float DeltaTime)
@@ -258,7 +260,7 @@ void Scene::DrawUI()
 		//Post Processing UI
 		ScreenProcessing::DrawUI();
 		//FSR UI
-		mFSR.DrawUI();
+		m_pFSR->DrawUI();
 	}
 	else // RenderPipeline::RayTracing
 	{
@@ -366,7 +368,7 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 		mSceneView.mMainConstants.Lights[2].Strength = mSceneLights[2].Strength;
 	}
 
-	mSceneView.mMainConstants.gMipLODBias = mFSR.GetMipLODBias();
+	mSceneView.mMainConstants.gMipLODBias = m_pFSR->GetMipLODBias();
 }
 
 
@@ -685,7 +687,6 @@ void Scene::ForwardRendering(RasterRenderPipelineType ForwardRenderPipeline)
 
 				}
 
-				Context.Finish(true);
 				//Transparent Pass
 				{
 					D3D12_CPU_DESCRIPTOR_HANDLE FSRMask_UAV[] =

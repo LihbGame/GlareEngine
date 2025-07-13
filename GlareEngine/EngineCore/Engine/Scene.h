@@ -125,7 +125,7 @@ private:
 
 	PRTManager mPRTManager;
 
-	FSR mFSR;
+	FSR* m_pFSR = nullptr;
 
 	GraphicsContext* RenderUIContext=nullptr;
 };

@@ -74,6 +74,7 @@ namespace GlareEngine
 		Lighting::InitializeResources(camera);
 		ScreenProcessing::Initialize(CommandList);
 		SSAO::Initialize();
+		FSR::GetInstance()->Initialize();
 
 		BuildRootSignature();
 
@@ -105,6 +106,7 @@ namespace GlareEngine
 		Lighting::Shutdown();
 		gTextureHeap.Destroy();
 		gSamplerHeap.Destroy();
+		FSR::Shutdown();
 	}
 
 	void Render::BuildRootSignature()

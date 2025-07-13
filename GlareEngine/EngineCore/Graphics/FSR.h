@@ -11,9 +11,8 @@
 class FSR
 {
 public:
-	FSR() {}
-
-	~FSR();
+	static FSR* GetInstance();
+	static void Shutdown();
 
 	void Initialize();
 
@@ -45,6 +44,9 @@ public:
 
 	float GetUpscaleRatio() { return m_UpscaleRatio; }
 private:
+	FSR() {}
+	~FSR();
+
 	enum class FSRScalePreset
 	{
 		NativeAA = 0,       // 1.0f
@@ -53,6 +55,13 @@ private:
 		Performance,        // 2.0f
 		UltraPerformance,   // 3.0f
 		Count               
+	};
+
+	enum FSRDebugCheckerMode
+	{
+		Disabled = 0,
+		EnabledNoMessageCallback,
+		EnabledWithMessageCallback
 	};
 
 	const float cMipBias[static_cast<uint32_t>(FSRScalePreset::Count)] = {
@@ -69,14 +78,29 @@ private:
 	}
 
 	void UpdateUpscalerPreset(const int32_t pNewPreset);
+
+	void SetGlobalDebugCheckerMode(FSRDebugCheckerMode mode, bool recreate);
 private:
+	static FSR* m_pFSRInstance;
+
 	bool m_UpscalerEnabled = false;
 	bool m_FrameInterpolationEnabled = false;
+
+	FSRDebugCheckerMode      m_GlobalDebugCheckerMode = FSRDebugCheckerMode::Disabled;
 
 	FSRScalePreset  m_ScalePreset = FSRScalePreset::NativeAA;
 	int32_t			m_NewPreset = 0;
 	float           m_MipBias = 0;
 
 	float           m_UpscaleRatio = 1.0f;
+
+	bool m_ffxBackendInitialized = false;
+	ffx::Context m_UpscalingContext = nullptr;
+	ffx::Context m_FrameGenContext = nullptr;
+	ffx::Context m_SwapChainContext = nullptr;
+	ffx::ConfigureDescFrameGeneration m_FrameGenerationConfig{};
+
+	uint64_t    m_CurrentUpscaleContextVersionId = 0;
+	const char* m_CurrentUpscaleContextVersionName = nullptr;
 };
 
