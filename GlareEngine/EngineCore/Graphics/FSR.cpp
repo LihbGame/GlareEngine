@@ -1,14 +1,52 @@
 #include "FSR.h"
 #include "Engine/EngineLog.h"
+#include "Engine/EngineProfiling.h"
+#include "Graphics/GraphicsCommon.h"
 #include "Graphics/CommandContext.h"
 #include "imgui.h"
 #include "Engine/GameCore.h"
 #include "BufferManager.h"
 #include "EngineGUI.h"
+#include "Engine/EngineProfiling.h"
+#include "Graphics/GraphicsCommon.h"
+#include "Graphics/SamplerManager.h"
+#include "Graphics/CommandSignature.h"
+#include "Graphics/Display.h"
+#include "EngineGUI.h"
+#include "Engine/Scene.h"
 
 #include "ffx-api/dx12/ffx_api_dx12.hpp"
+#include "PostProcessing/PostProcessing.h"
 
 FSR* FSR::m_pFSRInstance = nullptr;
+
+void FSR::Execute(double deltaTime, ID3D12GraphicsCommandList* pCmdList)
+{
+	ffx::DispatchDescUpscale dispatchUpscale{};
+	dispatchUpscale.commandList = pCmdList;
+
+	dispatchUpscale.color = ffxApiGetResourceDX12(ScreenProcessing::GetLastPostprocessRT()-> GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+	dispatchUpscale.depth = ffxApiGetResourceDX12(g_SceneDepthBuffer.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+	dispatchUpscale.motionVectors = ffxApiGetResourceDX12(g_VelocityBuffer.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+	dispatchUpscale.exposure = ffxApiGetResourceDX12(nullptr, FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+	dispatchUpscale.output = ffxApiGetResourceDX12(ScreenProcessing::GetCurrentPostprocessRT()->GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+
+	if (m_UseMask)
+	{
+		dispatchUpscale.reactive = ffxApiGetResourceDX12(g_ReactiveMaskBuffer.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+		dispatchUpscale.transparencyAndComposition = ffxApiGetResourceDX12(g_TransparentMaskBuffer.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+	}
+	else
+	{
+		dispatchUpscale.reactive = ffxApiGetResourceDX12(nullptr, FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+		dispatchUpscale.transparencyAndComposition = ffxApiGetResourceDX12(nullptr, FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+	}
+
+
+	ColorBuffer* LastPostprocessRT = ScreenProcessing::GetLastPostprocessRT();
+	ColorBuffer* CurrentPostprocessRT = ScreenProcessing::GetCurrentPostprocessRT();
+	std::swap(LastPostprocessRT, CurrentPostprocessRT);
+}
 
 FSR::~FSR()
 {
@@ -80,6 +118,8 @@ void FSR::Initialize()
 
 	EngineLog::AddLog(L"Upscaler Context VersionID 0x%016llx, %S", m_CurrentUpscaleContextVersionId, m_CurrentUpscaleContextVersionName);
 
+	//Debug message for FSR
+	SetGlobalDebugCheckerMode(m_GlobalDebugCheckerMode);
 }
 
 void FSR::DrawUI()
@@ -138,6 +178,23 @@ void FSR::UpdateUpscalerPreset(const int32_t NewPreset)
 	Display::g_bUpscale = true;
 }
 
-void FSR::SetGlobalDebugCheckerMode(FSRDebugCheckerMode mode, bool recreate)
+void FSR::SetGlobalDebugCheckerMode(FSRDebugCheckerMode mode)
 {
+	if (m_UpscalingContext)
+	{
+		ffx::ConfigureDescGlobalDebug1 m_GlobalDebugConfig{};
+		m_GlobalDebugConfig.debugLevel = 0; //not implemented. Value doesn't matter.
+		if (mode == FSRDebugCheckerMode::Disabled || mode == FSRDebugCheckerMode::EnabledNoMessageCallback)
+		{
+			m_GlobalDebugConfig.fpMessage = nullptr;
+		}
+		else if (mode == FSRDebugCheckerMode::EnabledWithMessageCallback)
+		{
+			m_GlobalDebugConfig.fpMessage = &FSR::FSRMsgCallback;
+		}
+
+		ffx::ReturnCode retCode = ffx::Configure(m_UpscalingContext, m_GlobalDebugConfig);
+		//Couldn't configure global debug config on the ffx api upscaling context
+		assert(retCode == ffx::ReturnCode::Ok);
+	}
 }

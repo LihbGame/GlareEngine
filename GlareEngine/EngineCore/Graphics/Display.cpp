@@ -185,6 +185,11 @@ namespace GlareEngine
 	{
 		return g_DisplayBuffers[g_CurrentBuffer];
 	}
+
+	ColorBuffer& Display::GetCurrentSceneColorBufferBuffer()
+	{
+		return *CurrentSceneColorBuffer;
+	}
 	
 
 	void Display::CheckHDRSupport()

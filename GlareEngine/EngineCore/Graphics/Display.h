@@ -38,6 +38,7 @@ namespace GlareEngine
         void PreparePresent();
 
         ColorBuffer& GetCurrentBuffer();
+        ColorBuffer& GetCurrentSceneColorBufferBuffer();
     };
 
 }

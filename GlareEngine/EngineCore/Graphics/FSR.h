@@ -8,6 +8,8 @@
 #include "ffx-api/ffx_upscale.hpp"
 #include "ffx-api/ffx_framegeneration.hpp"
 
+class ID3D12GraphicsCommandList;
+
 class FSR
 {
 public:
@@ -43,6 +45,8 @@ public:
 	void  SetMipLODBias(float pBias) { m_MipBias = pBias; }
 
 	float GetUpscaleRatio() { return m_UpscaleRatio; }
+
+	void Execute(double deltaTime, ID3D12GraphicsCommandList* pCmdList);
 private:
 	FSR() {}
 	~FSR();
@@ -79,14 +83,15 @@ private:
 
 	void UpdateUpscalerPreset(const int32_t pNewPreset);
 
-	void SetGlobalDebugCheckerMode(FSRDebugCheckerMode mode, bool recreate);
+	void SetGlobalDebugCheckerMode(FSRDebugCheckerMode mode);
 private:
 	static FSR* m_pFSRInstance;
 
 	bool m_UpscalerEnabled = false;
 	bool m_FrameInterpolationEnabled = false;
+	bool m_UseMask = true;
 
-	FSRDebugCheckerMode      m_GlobalDebugCheckerMode = FSRDebugCheckerMode::Disabled;
+	FSRDebugCheckerMode      m_GlobalDebugCheckerMode = FSRDebugCheckerMode::EnabledWithMessageCallback;
 
 	FSRScalePreset  m_ScalePreset = FSRScalePreset::NativeAA;
 	int32_t			m_NewPreset = 0;
