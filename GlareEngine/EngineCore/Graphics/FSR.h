@@ -2,7 +2,7 @@
 
 #include <cmath>
 #include <limits> 
-
+#include <DirectXMath.h>
 
 #include "ffx-api/ffx_api.hpp"
 #include "ffx-api/ffx_upscale.hpp"
@@ -47,6 +47,10 @@ public:
 	float GetUpscaleRatio() { return m_UpscaleRatio; }
 
 	void Execute(double deltaTime, ID3D12GraphicsCommandList* pCmdList);
+
+	void GetFSRjitter(DirectX::XMFLOAT2& jitter);
+
+	void ResetJitterIndex() { m_JitterIndex = 0; }
 private:
 	FSR() {}
 	~FSR();
@@ -84,6 +88,7 @@ private:
 	void UpdateUpscalerPreset(const int32_t pNewPreset);
 
 	void SetGlobalDebugCheckerMode(FSRDebugCheckerMode mode);
+
 private:
 	static FSR* m_pFSRInstance;
 
@@ -98,6 +103,11 @@ private:
 	float           m_MipBias = 0;
 
 	float           m_UpscaleRatio = 1.0f;
+	float           m_Sharpness = 0.8f;
+	uint32_t        m_JitterIndex = 0;
+	float           m_JitterX = 0.f;
+	float           m_JitterY = 0.f;
+
 
 	bool m_ffxBackendInitialized = false;
 	ffx::Context m_UpscalingContext = nullptr;

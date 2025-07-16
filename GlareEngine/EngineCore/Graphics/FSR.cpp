@@ -48,6 +48,35 @@ void FSR::Execute(double deltaTime, ID3D12GraphicsCommandList* pCmdList)
 	std::swap(LastPostprocessRT, CurrentPostprocessRT);
 }
 
+void FSR::GetFSRjitter(XMFLOAT2& jitter)
+{
+	// Increment jitter index for frame
+	++m_JitterIndex;
+
+	// Update FSR jitter for built in TAA
+	ffx::ReturnCode                     retCode;
+	int32_t                             jitterPhaseCount;
+	ffx::QueryDescUpscaleGetJitterPhaseCount getJitterPhaseDesc{};
+	getJitterPhaseDesc.displayWidth = Display::g_DisplayWidth;
+	getJitterPhaseDesc.renderWidth = Display::g_RenderWidth;
+	getJitterPhaseDesc.pOutPhaseCount = &jitterPhaseCount;
+
+	retCode = ffx::Query(m_UpscalingContext, getJitterPhaseDesc);
+	assert(retCode == ffx::ReturnCode::Ok);
+
+	ffx::QueryDescUpscaleGetJitterOffset getJitterOffsetDesc{};
+	getJitterOffsetDesc.index = m_JitterIndex;
+	getJitterOffsetDesc.phaseCount = jitterPhaseCount;
+	getJitterOffsetDesc.pOutX = &m_JitterX;
+	getJitterOffsetDesc.pOutY = &m_JitterY;
+
+	retCode = ffx::Query(m_UpscalingContext, getJitterOffsetDesc);
+
+	assert(retCode == ffx::ReturnCode::Ok);
+
+	jitter = XMFLOAT2(-2.f * m_JitterX / Display::g_RenderWidth, 2.f * m_JitterY / Display::g_RenderHeight);
+}
+
 FSR::~FSR()
 {
 	if (m_UpscalingContext)

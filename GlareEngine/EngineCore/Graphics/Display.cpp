@@ -34,6 +34,7 @@
 #endif
 #include <winreg.h>        // To read the registry
 #include <imgui.h>
+#include "FSR.h"
 
 namespace GlareEngine
 {
@@ -462,6 +463,8 @@ namespace GlareEngine
 		// Check for an unneeded resize
 		if (width == g_DisplayWidth && height == g_DisplayHeight)
 			return;
+
+		FSR::GetInstance()->ResetJitterIndex();
 
 		g_CommandManager.IdleGPU();
 
