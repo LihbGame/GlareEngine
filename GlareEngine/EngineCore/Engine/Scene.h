@@ -85,6 +85,8 @@ public:
 	SceneView GetSceneView() { return mSceneView; }
 
 	void Finalize();
+	
+	float GetDeltaTime() { return mDeltaTime; }
 public:
 	unique_ptr<ShadowCamera> m_pSunShadowCamera = nullptr;
 
@@ -128,5 +130,7 @@ private:
 	FSR* m_pFSR = nullptr;
 
 	GraphicsContext* RenderUIContext=nullptr;
+
+	float mDeltaTime = 0;
 };
 

@@ -4,6 +4,7 @@
 #include "Render.h"
 #include "PostProcessing/TemporalAA.h"
 #include <EngineGUI.h>
+#include "FSR.h"
 
 
 namespace GlareEngine
@@ -251,6 +252,10 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 
 void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t NativeHeight)
 {
+	FSR::GetInstance()->UpdateUpscalingContext(false);
+	FSR::GetInstance()->UpdateUpscalingContext(true);
+	FSR::GetInstance()->ResetJitterIndex();
+
 	//resize display buffer
 	g_SceneColorBuffer.Create(L"Main Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 	g_SceneDepthBuffer.Create(L"Scene Depth Buffer", NativeWidth, NativeHeight, DSV_FORMAT, REVERSE_Z);

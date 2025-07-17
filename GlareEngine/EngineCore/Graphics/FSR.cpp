@@ -20,7 +20,7 @@
 
 FSR* FSR::m_pFSRInstance = nullptr;
 
-void FSR::Execute(double deltaTime, ID3D12GraphicsCommandList* pCmdList)
+void FSR::Execute(ID3D12GraphicsCommandList* pCmdList)
 {
 	ffx::DispatchDescUpscale dispatchUpscale{};
 	dispatchUpscale.commandList = pCmdList;
@@ -42,13 +42,43 @@ void FSR::Execute(double deltaTime, ID3D12GraphicsCommandList* pCmdList)
 		dispatchUpscale.transparencyAndComposition = ffxApiGetResourceDX12(nullptr, FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
 	}
 
+	dispatchUpscale.frameTimeDelta = static_cast<float>(EngineGlobal::gCurrentScene->GetDeltaTime() * 1000.f);
+
+	dispatchUpscale.preExposure = 1.0f;
+	dispatchUpscale.renderSize.width = Display::g_RenderWidth;
+	dispatchUpscale.renderSize.height = Display::g_RenderHeight;
+	dispatchUpscale.upscaleSize.width = Display::g_DisplayWidth;
+	dispatchUpscale.upscaleSize.height = Display::g_DisplayHeight;
+
+	Camera* camera=EngineGlobal::gCurrentScene->GetCamera();
+	// Setup camera params as required
+	dispatchUpscale.cameraFovAngleVertical = camera->GetFovY();
+
+	if (REVERSE_Z)
+	{
+		dispatchUpscale.cameraFar = camera->GetNearZ();
+		dispatchUpscale.cameraNear = camera->GetFarZ();
+	}
+	else
+	{
+		dispatchUpscale.cameraFar = camera->GetFarZ();
+		dispatchUpscale.cameraNear = camera->GetNearZ();
+	}
+
+	dispatchUpscale.flags = 0;
+	dispatchUpscale.flags |= m_DrawUpscalerDebugView ? FFX_UPSCALE_FLAG_DRAW_DEBUG_VIEW : 0;
+
+	ffx::ReturnCode retCode = ffx::Dispatch(m_UpscalingContext, dispatchUpscale);
+
+	//check Dispatching FSR upscaling failed
+	assert(!!retCode);
 
 	ColorBuffer* LastPostprocessRT = ScreenProcessing::GetLastPostprocessRT();
 	ColorBuffer* CurrentPostprocessRT = ScreenProcessing::GetCurrentPostprocessRT();
 	std::swap(LastPostprocessRT, CurrentPostprocessRT);
 }
 
-void FSR::GetFSRjitter(XMFLOAT2& jitter)
+XMFLOAT2 FSR::GetFSRjitter()
 {
 	// Increment jitter index for frame
 	++m_JitterIndex;
@@ -74,7 +104,7 @@ void FSR::GetFSRjitter(XMFLOAT2& jitter)
 
 	assert(retCode == ffx::ReturnCode::Ok);
 
-	jitter = XMFLOAT2(-2.f * m_JitterX / Display::g_RenderWidth, 2.f * m_JitterY / Display::g_RenderHeight);
+	return XMFLOAT2(-2.f * m_JitterX / Display::g_RenderWidth, 2.f * m_JitterY / Display::g_RenderHeight);
 }
 
 FSR::~FSR()
@@ -104,51 +134,62 @@ void FSR::Shutdown()
 	}
 }
 
-void FSR::Initialize()
+void FSR::UpdateUpscalingContext(bool enable)
 {
-	ffx::CreateBackendDX12Desc backendDesc{};
-	backendDesc.header.type = FFX_API_CREATE_CONTEXT_DESC_TYPE_BACKEND_DX12;
-	backendDesc.device = g_Device;
-
-	ffx::CreateContextDescUpscale createFsr{};
-
-	createFsr.maxUpscaleSize = { Display::g_DisplayWidth, Display::g_DisplayHeight };
-	createFsr.maxRenderSize = { Display::g_DisplayWidth, Display::g_DisplayHeight };
-
-	createFsr.flags = FFX_UPSCALE_ENABLE_AUTO_EXPOSURE;
-
-	if (REVERSE_Z)
+	if (enable)
 	{
-		createFsr.flags |= FFX_UPSCALE_ENABLE_DEPTH_INVERTED;
-	}
-	createFsr.flags |= FFX_UPSCALE_ENABLE_HIGH_DYNAMIC_RANGE;
-	createFsr.fpMessage = nullptr;
+		ffx::CreateBackendDX12Desc backendDesc{};
+		backendDesc.header.type = FFX_API_CREATE_CONTEXT_DESC_TYPE_BACKEND_DX12;
+		backendDesc.device = g_Device;
 
-	if (m_GlobalDebugCheckerMode != FSRDebugCheckerMode::Disabled)
+		ffx::CreateContextDescUpscale createFsr{};
+
+		createFsr.maxUpscaleSize = { Display::g_DisplayWidth, Display::g_DisplayHeight };
+		createFsr.maxRenderSize = { Display::g_DisplayWidth, Display::g_DisplayHeight };
+
+		createFsr.flags = FFX_UPSCALE_ENABLE_AUTO_EXPOSURE;
+
+		if (REVERSE_Z)
+		{
+			createFsr.flags |= FFX_UPSCALE_ENABLE_DEPTH_INVERTED;
+		}
+		createFsr.flags |= FFX_UPSCALE_ENABLE_HIGH_DYNAMIC_RANGE;
+		createFsr.fpMessage = nullptr;
+
+		if (m_GlobalDebugCheckerMode != FSRDebugCheckerMode::Disabled)
+		{
+			createFsr.flags |= FFX_UPSCALE_ENABLE_DEBUG_CHECKING;
+		}
+
+		// Create the FSR context
+		{
+			ffx::ReturnCode retCode;
+			retCode = ffx::CreateContext(m_UpscalingContext, nullptr, createFsr, backendDesc);
+			//Couldn't create the ffx-api upscaling context
+			assert(retCode == ffx::ReturnCode::Ok);
+		}
+
+		//Query created version
+		ffxQueryGetProviderVersion getVersion = { 0 };
+		getVersion.header.type = FFX_API_QUERY_DESC_TYPE_GET_PROVIDER_VERSION;
+
+		ffx::Query(m_UpscalingContext, getVersion);
+		m_CurrentUpscaleContextVersionId = getVersion.versionId;
+		m_CurrentUpscaleContextVersionName = getVersion.versionName;
+
+		EngineLog::AddLog(L"Upscaler Context VersionID 0x%016llx, %S", m_CurrentUpscaleContextVersionId, m_CurrentUpscaleContextVersionName);
+
+		//Debug message for FSR
+		SetGlobalDebugCheckerMode(m_GlobalDebugCheckerMode);
+	}
+	else
 	{
-		createFsr.flags |= FFX_UPSCALE_ENABLE_DEBUG_CHECKING;
+		if (m_UpscalingContext)
+		{
+			ffx::DestroyContext(m_UpscalingContext);
+			m_UpscalingContext = nullptr;
+		}
 	}
-
-	// Create the FSR context
-	{
-		ffx::ReturnCode retCode;
-		retCode = ffx::CreateContext(m_UpscalingContext, nullptr, createFsr, backendDesc);
-		//Couldn't create the ffx-api upscaling context
-		assert(retCode == ffx::ReturnCode::Ok);
-	}
-
-	//Query created version
-	ffxQueryGetProviderVersion getVersion = { 0 };
-	getVersion.header.type = FFX_API_QUERY_DESC_TYPE_GET_PROVIDER_VERSION;
-
-	ffx::Query(m_UpscalingContext, getVersion);
-	m_CurrentUpscaleContextVersionId = getVersion.versionId;
-	m_CurrentUpscaleContextVersionName = getVersion.versionName;
-
-	EngineLog::AddLog(L"Upscaler Context VersionID 0x%016llx, %S", m_CurrentUpscaleContextVersionId, m_CurrentUpscaleContextVersionName);
-
-	//Debug message for FSR
-	SetGlobalDebugCheckerMode(m_GlobalDebugCheckerMode);
 }
 
 void FSR::DrawUI()

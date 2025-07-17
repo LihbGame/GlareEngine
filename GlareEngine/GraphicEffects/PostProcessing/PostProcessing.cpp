@@ -10,6 +10,7 @@
 #include "MotionBlur.h"
 #include "TemporalAA.h"
 #include "Engine/Scene.h"
+#include "Graphics/FSR.h"
 
 //shaders
 #include "CompiledShaders/ScreenQuadVS.h"
@@ -527,6 +528,9 @@ void ScreenProcessing::Render(const Camera& camera)
 		Context.TransitionResource(*LastPostprocessRT, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	}
 
+	//Execute FSR 
+	FSR::GetInstance()->Execute(Context.GetCommandList());
+
 #ifdef DEBUG
 	EngineGUI::AddRenderPassVisualizeTexture("Scene Color", WStringToString(g_SceneColorBuffer.GetName()), g_SceneColorBuffer.GetHeight(), g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetSRV());
 	EngineGUI::AddRenderPassVisualizeTexture("Scene Color", WStringToString(g_LumaBuffer.GetName()), g_LumaBuffer.GetHeight(), g_LumaBuffer.GetWidth(), g_LumaBuffer.GetSRV());
@@ -649,6 +653,10 @@ void ScreenProcessing::Update(float dt, MainConstants& RenderData, Camera& camer
 		TemporalAA::Update(Display::GetFrameCount());
 
 		camera.UpdateJitter(TemporalAA::GetJitterOffset());
+	}
+	else if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TSR)
+	{
+		camera.UpdateJitter(FSR::GetInstance()->GetFSRjitter());
 	}
 }
 

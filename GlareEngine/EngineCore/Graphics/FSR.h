@@ -16,7 +16,7 @@ public:
 	static FSR* GetInstance();
 	static void Shutdown();
 
-	void Initialize();
+	void UpdateUpscalingContext(bool enable);
 
 	bool UpscalerEnabled() 
 	{
@@ -46,9 +46,9 @@ public:
 
 	float GetUpscaleRatio() { return m_UpscaleRatio; }
 
-	void Execute(double deltaTime, ID3D12GraphicsCommandList* pCmdList);
+	void Execute(ID3D12GraphicsCommandList* pCmdList);
 
-	void GetFSRjitter(DirectX::XMFLOAT2& jitter);
+	DirectX::XMFLOAT2 GetFSRjitter();
 
 	void ResetJitterIndex() { m_JitterIndex = 0; }
 private:
@@ -95,6 +95,8 @@ private:
 	bool m_UpscalerEnabled = false;
 	bool m_FrameInterpolationEnabled = false;
 	bool m_UseMask = true;
+	bool m_DrawFrameGenerationDebugView = false;
+	bool m_DrawUpscalerDebugView = false;
 
 	FSRDebugCheckerMode      m_GlobalDebugCheckerMode = FSRDebugCheckerMode::EnabledWithMessageCallback;
 

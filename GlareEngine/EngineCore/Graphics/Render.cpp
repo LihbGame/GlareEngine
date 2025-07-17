@@ -74,7 +74,6 @@ namespace GlareEngine
 		Lighting::InitializeResources(camera);
 		ScreenProcessing::Initialize(CommandList);
 		SSAO::Initialize();
-		FSR::GetInstance()->Initialize();
 
 		BuildRootSignature();
 

@@ -464,8 +464,6 @@ namespace GlareEngine
 		if (width == g_DisplayWidth && height == g_DisplayHeight)
 			return;
 
-		FSR::GetInstance()->ResetJitterIndex();
-
 		g_CommandManager.IdleGPU();
 
 		g_RenderWidth = width / g_UpscaleRatio;

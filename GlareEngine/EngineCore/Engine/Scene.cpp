@@ -27,6 +27,8 @@ Scene::Scene(string name, ID3D12GraphicsCommandList* pCommandList)
 
 void Scene::Update(float DeltaTime)
 {
+	mDeltaTime = DeltaTime;
+
 	//Clear visible buffer for debug
 	EngineGUI::ClearRenderPassVisualizeTexture();
 
