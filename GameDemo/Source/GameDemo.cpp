@@ -414,15 +414,16 @@ void App::RenderUI()
 
 void App::OnResize(uint32_t width, uint32_t height)
 {
+	//resize Viewport and Scissor
+	for (auto& scene : gScenes)
+	{
+		scene->ResizeViewport(width, height);
+	}
+
 	Display::Resize(width, height);
 
 	//窗口调整大小，因此更新宽高比并重新计算投影矩阵;
 	mCamera->SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, FAR_Z);
-	//resize Viewport and Scissor
-	for (auto& scene:gScenes)
-	{
-		scene->ResizeViewport(width, height);
-	}
 
 	//Client Rect
 	mClientRect = { static_cast<LONG>(mClientWidth * CLIENT_FROMLEFT),

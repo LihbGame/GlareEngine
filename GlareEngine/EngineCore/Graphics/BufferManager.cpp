@@ -3,9 +3,9 @@
 #include "CommandContext.h"
 #include "Render.h"
 #include "PostProcessing/TemporalAA.h"
-#include <EngineGUI.h>
+#include "EngineGUI.h"
 #include "FSR.h"
-
+#include "Engine/Scene.h"
 
 namespace GlareEngine
 {
@@ -14,6 +14,8 @@ namespace GlareEngine
 	DepthBuffer				g_SceneDepthBuffer;
 
 	ColorBuffer				g_SceneColorBuffer;
+
+	ColorBuffer				g_SceneFullScreenBuffer;//use for FSR Upscale
 
 	ColorBuffer				g_TransparentMaskBuffer(Color(0.0f, 0.0f, 0.0f));
 
@@ -130,10 +132,11 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 	g_SceneColorBuffer.Create(L"Main Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 	g_SceneDepthBuffer.Create(L"Scene Depth Buffer", NativeWidth, NativeHeight, DSV_FORMAT, REVERSE_Z);
 	g_PostEffectsBuffer.Create(L"Post Effects Buffer", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R32_UINT);
-
+	
 	//Used in FSR
 	g_TransparentMaskBuffer.Create(L"Transparent Mask Buffer", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8_UNORM);
 	g_ReactiveMaskBuffer.Create(L"Reactive Mask Buffer", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8_UNORM);
+	g_SceneFullScreenBuffer.Create(L"FSR Full Screen Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
 
 	//MSAA buffer
 	//g_SceneMSAADepthBuffer
@@ -252,9 +255,15 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 
 void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t NativeHeight)
 {
-	FSR::GetInstance()->UpdateUpscalingContext(false);
-	FSR::GetInstance()->UpdateUpscalingContext(true);
-	FSR::GetInstance()->ResetJitterIndex();
+	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::FSR)
+	{
+		EngineGlobal::gCurrentScene->ResizeViewport(NativeWidth, NativeHeight);
+		FSR::GetInstance()->UpdateUpscalingContext(false);
+		FSR::GetInstance()->UpdateUpscalingContext(true);
+		FSR::GetInstance()->ResetJitterIndex();
+
+		g_SceneFullScreenBuffer.Create(L"FSR Full Screen Color Buffer", Display::g_DisplayWidth, Display::g_DisplayHeight, 1, DefaultHDRColorFormat);
+	}
 
 	//resize display buffer
 	g_SceneColorBuffer.Create(L"Main Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
@@ -351,6 +360,8 @@ void GlareEngine::DestroyRenderingBuffers()
 	g_TransparentMaskBuffer.Destroy();
 	
 	g_ReactiveMaskBuffer.Destroy();
+
+	g_SceneFullScreenBuffer.Destroy();
 
 	g_LinearDepth[0].Destroy();
 	g_LinearDepth[1].Destroy();

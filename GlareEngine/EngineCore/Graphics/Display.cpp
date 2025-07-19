@@ -273,15 +273,21 @@ namespace GlareEngine
 
 	void Display::PreparePresent()
 	{
-		CurrentSceneColorBuffer = ScreenProcessing::GetLastPostprocessRT();
+		if (Render::GetAntiAliasingType() != Render::AntiAliasingType::FSR)
+		{
+			CurrentSceneColorBuffer = ScreenProcessing::GetLastPostprocessRT();
 
-		CurrentSceneColorBuffer= CurrentSceneColorBuffer? CurrentSceneColorBuffer: &g_SceneColorBuffer;
+			CurrentSceneColorBuffer = CurrentSceneColorBuffer ? CurrentSceneColorBuffer : &g_SceneColorBuffer;
+		}
+		else
+		{
+			CurrentSceneColorBuffer = &g_SceneFullScreenBuffer;
+		}
 
 		if (g_bEnableHDROutput)
 			PreparePresentHDR();
 		else
 			PreparePresentLDR();
-
 	}
 
 	void Display::PreparePresentLDR()
@@ -466,8 +472,16 @@ namespace GlareEngine
 
 		g_CommandManager.IdleGPU();
 
-		g_RenderWidth = width / g_UpscaleRatio;
-		g_RenderHeight = height / g_UpscaleRatio;
+		if (Render::GetAntiAliasingType() == Render::AntiAliasingType::FSR)
+		{
+			g_RenderWidth = width / g_UpscaleRatio;
+			g_RenderHeight = height / g_UpscaleRatio;
+		}
+		else
+		{
+			g_RenderWidth = width;
+			g_RenderHeight = height;
+		}
 
 		g_DisplayWidth = width;
 		g_DisplayHeight = height;

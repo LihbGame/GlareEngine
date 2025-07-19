@@ -31,7 +31,7 @@ namespace GlareEngine
 		
 		enum  AntiAliasingType :int
 		{
-			TSR,
+			FSR,
 			MSAA,
 			FXAA,
 			TAA,

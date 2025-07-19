@@ -350,6 +350,15 @@ namespace GlareEngine
 	void Render::SetAntiAliasingType(AntiAliasingType type)
 	{
 		gAntiAliasingType = type;
+
+		if (gAntiAliasingType == AntiAliasingType::FSR)
+		{
+			FSR::GetInstance()->EnableUpscaling(true);
+		}
+		else
+		{
+			FSR::GetInstance()->EnableUpscaling(false);
+		}
 	}
 
 	Render::AntiAliasingType Render::GetAntiAliasingType()

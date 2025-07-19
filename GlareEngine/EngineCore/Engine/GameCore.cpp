@@ -299,14 +299,17 @@ namespace GlareEngine
 
 						mAppPaused = false;
 						mMinimized = false;
-						mMaximized = true;
 						EngineGUI::mWindowMaxSize = true;
-						OnResize(mClientWidth, mClientHeight);
+						if (!mMaximized)
+						{
+							OnResize(mClientWidth, mClientHeight);
+						}
+						mMaximized = true;
 					}
 					else if (wParam == SIZE_RESTORED)
 					{
 						OnResize(mClientWidth, mClientHeight);
-						//UpdateApplication(*GameApp::GetApp());
+						UpdateApplication(*GameApp::GetApp());
 
 						// Restoring from minimized state?
 						if (mMinimized)

@@ -3,6 +3,7 @@
 #include <cmath>
 #include <limits> 
 #include <DirectXMath.h>
+#include "Graphics/ColorBuffer.h"
 
 #include "ffx-api/ffx_api.hpp"
 #include "ffx-api/ffx_upscale.hpp"
@@ -46,7 +47,7 @@ public:
 
 	float GetUpscaleRatio() { return m_UpscaleRatio; }
 
-	void Execute(ID3D12GraphicsCommandList* pCmdList);
+	void Execute(ID3D12GraphicsCommandList* pCmdList,ColorBuffer& Input,ColorBuffer& Output);
 
 	DirectX::XMFLOAT2 GetFSRjitter();
 
@@ -97,15 +98,17 @@ private:
 	bool m_UseMask = true;
 	bool m_DrawFrameGenerationDebugView = false;
 	bool m_DrawUpscalerDebugView = false;
+	bool m_ResetUpscale = false;
+	bool m_SharpnessEnabled = true;
 
 	FSRDebugCheckerMode      m_GlobalDebugCheckerMode = FSRDebugCheckerMode::EnabledWithMessageCallback;
 
-	FSRScalePreset  m_ScalePreset = FSRScalePreset::NativeAA;
+	FSRScalePreset  m_ScalePreset = FSRScalePreset::Count;
 	int32_t			m_NewPreset = 0;
 	float           m_MipBias = 0;
 
 	float           m_UpscaleRatio = 1.0f;
-	float           m_Sharpness = 0.8f;
+	float           m_Sharpness = 0.0f;
 	uint32_t        m_JitterIndex = 0;
 	float           m_JitterX = 0.f;
 	float           m_JitterY = 0.f;

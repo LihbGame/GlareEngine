@@ -208,6 +208,7 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 
 	InitMaterial();
 
+	mAntiAliasingName += string("FSR") + '\0';
 	mAntiAliasingName += string("MSAA") + '\0';
 	mAntiAliasingName += string("FXAA") + '\0';
 	mAntiAliasingName += string("TAA") + '\0';
@@ -508,11 +509,6 @@ void ScreenProcessing::Render(const Camera& camera)
 		std::swap(LastPostprocessRT, CurrentPostprocessRT);
 	}
 
-	//if (!g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
-	//{
-	//	CopyBackBufferForNotHDRUAVSupport(Context);
-	//}
-
 	if (DrawHistogram)
 	{
 		ScopedTimer Scope(L"Draw Debug Histogram", Context);
@@ -528,8 +524,17 @@ void ScreenProcessing::Render(const Camera& camera)
 		Context.TransitionResource(*LastPostprocessRT, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	}
 
-	//Execute FSR 
-	FSR::GetInstance()->Execute(Context.GetCommandList());
+	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::FSR)
+	{
+		//Execute FSR 
+		Context.TransitionResource(g_SceneFullScreenBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE| D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,true);
+		FSR::GetInstance()->Execute(Context.GetCommandList(), *LastPostprocessRT, g_SceneFullScreenBuffer);
+	}
+	
+	//if (!g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
+	//{
+	//	CopyBackBufferForNotHDRUAVSupport(Context);
+	//}
 
 #ifdef DEBUG
 	EngineGUI::AddRenderPassVisualizeTexture("Scene Color", WStringToString(g_SceneColorBuffer.GetName()), g_SceneColorBuffer.GetHeight(), g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetSRV());
@@ -654,7 +659,7 @@ void ScreenProcessing::Update(float dt, MainConstants& RenderData, Camera& camer
 
 		camera.UpdateJitter(TemporalAA::GetJitterOffset());
 	}
-	else if (Render::GetAntiAliasingType() == Render::AntiAliasingType::TSR)
+	else if (Render::GetAntiAliasingType() == Render::AntiAliasingType::FSR)
 	{
 		camera.UpdateJitter(FSR::GetInstance()->GetFSRjitter());
 	}

@@ -17,94 +17,115 @@
 
 #include "ffx-api/dx12/ffx_api_dx12.hpp"
 #include "PostProcessing/PostProcessing.h"
+#include <PostProcessing/TemporalAA.h>
 
 FSR* FSR::m_pFSRInstance = nullptr;
 
-void FSR::Execute(ID3D12GraphicsCommandList* pCmdList)
+void FSR::Execute(ID3D12GraphicsCommandList* pCmdList, ColorBuffer& Input, ColorBuffer& Output)
 {
-	ffx::DispatchDescUpscale dispatchUpscale{};
-	dispatchUpscale.commandList = pCmdList;
-
-	dispatchUpscale.color = ffxApiGetResourceDX12(ScreenProcessing::GetLastPostprocessRT()-> GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
-	dispatchUpscale.depth = ffxApiGetResourceDX12(g_SceneDepthBuffer.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
-	dispatchUpscale.motionVectors = ffxApiGetResourceDX12(g_VelocityBuffer.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
-	dispatchUpscale.exposure = ffxApiGetResourceDX12(nullptr, FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
-	dispatchUpscale.output = ffxApiGetResourceDX12(ScreenProcessing::GetCurrentPostprocessRT()->GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
-
-	if (m_UseMask)
+	if (m_UpscalingContext)
 	{
-		dispatchUpscale.reactive = ffxApiGetResourceDX12(g_ReactiveMaskBuffer.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
-		dispatchUpscale.transparencyAndComposition = ffxApiGetResourceDX12(g_TransparentMaskBuffer.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+		ffx::DispatchDescUpscale dispatchUpscale{};
+		dispatchUpscale.commandList = pCmdList;
+
+		dispatchUpscale.color = ffxApiGetResourceDX12(Input.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+		dispatchUpscale.depth = ffxApiGetResourceDX12(g_SceneDepthBuffer.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+		dispatchUpscale.motionVectors = ffxApiGetResourceDX12(g_VelocityBuffer.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+		dispatchUpscale.exposure = ffxApiGetResourceDX12(nullptr, FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+		dispatchUpscale.output = ffxApiGetResourceDX12(Output.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+
+		if (m_UseMask)
+		{
+			dispatchUpscale.reactive = ffxApiGetResourceDX12(g_ReactiveMaskBuffer.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+			dispatchUpscale.transparencyAndComposition = ffxApiGetResourceDX12(g_TransparentMaskBuffer.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+		}
+		else
+		{
+			dispatchUpscale.reactive = ffxApiGetResourceDX12(nullptr, FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+			dispatchUpscale.transparencyAndComposition = ffxApiGetResourceDX12(nullptr, FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+		}
+
+		// Jitter is calculated earlier in the frame using a callback from the camera update
+		dispatchUpscale.jitterOffset.x = -m_JitterX;
+		dispatchUpscale.jitterOffset.y = -m_JitterY;
+		dispatchUpscale.motionVectorScale.x = Display::g_RenderWidth;
+		dispatchUpscale.motionVectorScale.y = Display::g_RenderHeight;
+		dispatchUpscale.reset = m_ResetUpscale;
+		dispatchUpscale.enableSharpening = m_SharpnessEnabled;
+		dispatchUpscale.sharpness = m_Sharpness;
+
+		dispatchUpscale.frameTimeDelta = static_cast<float>(EngineGlobal::gCurrentScene->GetDeltaTime() * 1000.f);
+
+		dispatchUpscale.preExposure = 1.0f;
+		dispatchUpscale.renderSize.width = Display::g_RenderWidth;
+		dispatchUpscale.renderSize.height = Display::g_RenderHeight;
+		dispatchUpscale.upscaleSize.width = Display::g_DisplayWidth;
+		dispatchUpscale.upscaleSize.height = Display::g_DisplayHeight;
+
+		Camera* camera = EngineGlobal::gCurrentScene->GetCamera();
+		// Setup camera params as required
+		dispatchUpscale.cameraFovAngleVertical = camera->GetFovY()/2.0f;
+
+		if (REVERSE_Z)
+		{
+			dispatchUpscale.cameraFar = camera->GetNearZ();
+			dispatchUpscale.cameraNear = camera->GetFarZ();
+		}
+		else
+		{
+			dispatchUpscale.cameraFar = camera->GetFarZ();
+			dispatchUpscale.cameraNear = camera->GetNearZ();
+		}
+
+		dispatchUpscale.flags = 0;
+		dispatchUpscale.flags |= m_DrawUpscalerDebugView ? FFX_UPSCALE_FLAG_DRAW_DEBUG_VIEW : 0;
+
+		ffx::ReturnCode retCode = ffx::Dispatch(m_UpscalingContext, dispatchUpscale);
+
+		//check Dispatching FSR upscaling failed
+		assert(!!retCode);
+
+		//ColorBuffer* LastPostprocessRT = ScreenProcessing::GetLastPostprocessRT();
+		//ColorBuffer* CurrentPostprocessRT = ScreenProcessing::GetCurrentPostprocessRT();
+		//std::swap(LastPostprocessRT, CurrentPostprocessRT);
+
+#ifdef DEBUG
+		//EngineGUI::AddRenderPassVisualizeTexture("FSR DEBUG", WStringToString(CurrentPostprocessRT->GetName()), LastPostprocessRT->GetHeight(), LastPostprocessRT->GetWidth(), LastPostprocessRT->GetSRV());
+#endif
 	}
-	else
-	{
-		dispatchUpscale.reactive = ffxApiGetResourceDX12(nullptr, FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
-		dispatchUpscale.transparencyAndComposition = ffxApiGetResourceDX12(nullptr, FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
-	}
-
-	dispatchUpscale.frameTimeDelta = static_cast<float>(EngineGlobal::gCurrentScene->GetDeltaTime() * 1000.f);
-
-	dispatchUpscale.preExposure = 1.0f;
-	dispatchUpscale.renderSize.width = Display::g_RenderWidth;
-	dispatchUpscale.renderSize.height = Display::g_RenderHeight;
-	dispatchUpscale.upscaleSize.width = Display::g_DisplayWidth;
-	dispatchUpscale.upscaleSize.height = Display::g_DisplayHeight;
-
-	Camera* camera=EngineGlobal::gCurrentScene->GetCamera();
-	// Setup camera params as required
-	dispatchUpscale.cameraFovAngleVertical = camera->GetFovY();
-
-	if (REVERSE_Z)
-	{
-		dispatchUpscale.cameraFar = camera->GetNearZ();
-		dispatchUpscale.cameraNear = camera->GetFarZ();
-	}
-	else
-	{
-		dispatchUpscale.cameraFar = camera->GetFarZ();
-		dispatchUpscale.cameraNear = camera->GetNearZ();
-	}
-
-	dispatchUpscale.flags = 0;
-	dispatchUpscale.flags |= m_DrawUpscalerDebugView ? FFX_UPSCALE_FLAG_DRAW_DEBUG_VIEW : 0;
-
-	ffx::ReturnCode retCode = ffx::Dispatch(m_UpscalingContext, dispatchUpscale);
-
-	//check Dispatching FSR upscaling failed
-	assert(!!retCode);
-
-	ColorBuffer* LastPostprocessRT = ScreenProcessing::GetLastPostprocessRT();
-	ColorBuffer* CurrentPostprocessRT = ScreenProcessing::GetCurrentPostprocessRT();
-	std::swap(LastPostprocessRT, CurrentPostprocessRT);
 }
 
 XMFLOAT2 FSR::GetFSRjitter()
 {
-	// Increment jitter index for frame
-	++m_JitterIndex;
+	if (m_UpscalingContext)
+	{
+		// Increment jitter index for frame
+		++m_JitterIndex;
 
-	// Update FSR jitter for built in TAA
-	ffx::ReturnCode                     retCode;
-	int32_t                             jitterPhaseCount;
-	ffx::QueryDescUpscaleGetJitterPhaseCount getJitterPhaseDesc{};
-	getJitterPhaseDesc.displayWidth = Display::g_DisplayWidth;
-	getJitterPhaseDesc.renderWidth = Display::g_RenderWidth;
-	getJitterPhaseDesc.pOutPhaseCount = &jitterPhaseCount;
+		// Update FSR jitter for built in TAA
+		ffx::ReturnCode                     retCode;
+		int32_t                             jitterPhaseCount;
+		ffx::QueryDescUpscaleGetJitterPhaseCount getJitterPhaseDesc{};
+		getJitterPhaseDesc.displayWidth = Display::g_DisplayWidth;
+		getJitterPhaseDesc.renderWidth = Display::g_RenderWidth;
+		getJitterPhaseDesc.pOutPhaseCount = &jitterPhaseCount;
 
-	retCode = ffx::Query(m_UpscalingContext, getJitterPhaseDesc);
-	assert(retCode == ffx::ReturnCode::Ok);
+		retCode = ffx::Query(m_UpscalingContext, getJitterPhaseDesc);
+		assert(retCode == ffx::ReturnCode::Ok);
 
-	ffx::QueryDescUpscaleGetJitterOffset getJitterOffsetDesc{};
-	getJitterOffsetDesc.index = m_JitterIndex;
-	getJitterOffsetDesc.phaseCount = jitterPhaseCount;
-	getJitterOffsetDesc.pOutX = &m_JitterX;
-	getJitterOffsetDesc.pOutY = &m_JitterY;
+		ffx::QueryDescUpscaleGetJitterOffset getJitterOffsetDesc{};
+		getJitterOffsetDesc.index = m_JitterIndex;
+		getJitterOffsetDesc.phaseCount = jitterPhaseCount;
+		getJitterOffsetDesc.pOutX = &m_JitterX;
+		getJitterOffsetDesc.pOutY = &m_JitterY;
 
-	retCode = ffx::Query(m_UpscalingContext, getJitterOffsetDesc);
+		retCode = ffx::Query(m_UpscalingContext, getJitterOffsetDesc);
 
-	assert(retCode == ffx::ReturnCode::Ok);
-
-	return XMFLOAT2(-2.f * m_JitterX / Display::g_RenderWidth, 2.f * m_JitterY / Display::g_RenderHeight);
+		assert(retCode == ffx::ReturnCode::Ok);
+		return XMFLOAT2(-2.f * m_JitterX / Display::g_RenderWidth, 2.f * m_JitterY / Display::g_RenderHeight);
+	}
+	else
+		return XMFLOAT2(0, 0);
 }
 
 FSR::~FSR()
@@ -194,12 +215,15 @@ void FSR::UpdateUpscalingContext(bool enable)
 
 void FSR::DrawUI()
 {
-	if (ImGui::CollapsingHeader("FSR", ImGuiTreeNodeFlags_None))
+	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::FSR)
 	{
-		ImGui::Combo("FSR Quality", &m_NewPreset, "NativeAA\0Quality\0Balanced\0Performance\0UltraPerformance");
-		if (m_NewPreset != (int32_t)m_ScalePreset)
+		if (ImGui::CollapsingHeader("FSR", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			UpdateUpscalerPreset(m_NewPreset);
+			ImGui::Combo("FSR Quality", &m_NewPreset, "NativeAA\0Quality\0Balanced\0Performance\0UltraPerformance");
+			if (m_NewPreset != (int32_t)m_ScalePreset)
+			{
+				UpdateUpscalerPreset(m_NewPreset);
+			}
 		}
 	}
 }

@@ -32,11 +32,24 @@ void Scene::Update(float DeltaTime)
 	//Clear visible buffer for debug
 	EngineGUI::ClearRenderPassVisualizeTexture();
 
-	if (Display::g_bUpscale)
+	if (FSR::GetInstance()->UpscalerEnabled())
+	{
+		if (Display::g_bUpscale)
+		{
+			g_CommandManager.IdleGPU();
+			Display::g_RenderWidth = Display::g_DisplayWidth / Display::g_UpscaleRatio;
+			Display::g_RenderHeight = Display::g_DisplayHeight / Display::g_UpscaleRatio;
+			ResizeDisplayDependentBuffers(Display::g_RenderWidth, Display::g_RenderHeight);
+			Display::g_bUpscale = false;
+		}
+	}
+	else
 	{
 		g_CommandManager.IdleGPU();
-		ResizeDisplayDependentBuffers(Display::g_DisplayWidth / Display::g_UpscaleRatio, Display::g_DisplayHeight / Display::g_UpscaleRatio);
-		Display::g_bUpscale = false;
+		Display::g_RenderWidth = Display::g_DisplayWidth;
+		Display::g_RenderHeight = Display::g_DisplayHeight;
+		EngineGlobal::gCurrentScene->ResizeViewport(Display::g_RenderWidth, Display::g_RenderHeight);
+		ResizeDisplayDependentBuffers(Display::g_RenderWidth, Display::g_RenderHeight);
 	}
 
 	//Update shadow map
