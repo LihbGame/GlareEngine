@@ -922,7 +922,7 @@ void ApplyTemporalBlend(uint2 ST, float4 CurrentColor, float2 DepthOffset,float3
     TemporalColor = ClipColor(TemporalColor, Min, Max, lerp(1.0, 4.0, SpeedFactor * SpeedFactor));
 
     // Update the confidence term based on speed and disocclusion
-    TemporalWeight *= SpeedFactor * step(CompareDepth, TemporalDepth);
+    TemporalWeight *= SpeedFactor* step(CompareDepth, TemporalDepth);
 
     // Blend previous color with new color based on confidence.  Confidence steadily grows with each iteration
     // until it is broken by movement such as through disocclusion, color changes, or moving beyond the resolution

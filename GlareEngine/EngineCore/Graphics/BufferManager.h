@@ -70,6 +70,8 @@ namespace GlareEngine
 
 	extern ColorBuffer				g_VelocityBuffer;				// R10G10B10  (3D velocity)
 
+	extern ColorBuffer				g_UnpackVelocityBuffer;			// float2 
+
 	extern ColorBuffer				g_MotionPrepBuffer;				
 
 	extern ColorBuffer				g_TemporalColor[2];

@@ -30,7 +30,7 @@ void FSR::Execute(ID3D12GraphicsCommandList* pCmdList, ColorBuffer& Input, Color
 
 		dispatchUpscale.color = ffxApiGetResourceDX12(Input.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
 		dispatchUpscale.depth = ffxApiGetResourceDX12(g_SceneDepthBuffer.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
-		dispatchUpscale.motionVectors = ffxApiGetResourceDX12(g_VelocityBuffer.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+		dispatchUpscale.motionVectors = ffxApiGetResourceDX12(g_UnpackVelocityBuffer.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
 		dispatchUpscale.exposure = ffxApiGetResourceDX12(nullptr, FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
 		dispatchUpscale.output = ffxApiGetResourceDX12(Output.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
 
@@ -64,7 +64,7 @@ void FSR::Execute(ID3D12GraphicsCommandList* pCmdList, ColorBuffer& Input, Color
 
 		Camera* camera = EngineGlobal::gCurrentScene->GetCamera();
 		// Setup camera params as required
-		dispatchUpscale.cameraFovAngleVertical = camera->GetFovY()/2.0f;
+		dispatchUpscale.cameraFovAngleVertical = camera->GetFovY();
 
 		if (REVERSE_Z)
 		{
@@ -85,12 +85,8 @@ void FSR::Execute(ID3D12GraphicsCommandList* pCmdList, ColorBuffer& Input, Color
 		//check Dispatching FSR upscaling failed
 		assert(!!retCode);
 
-		//ColorBuffer* LastPostprocessRT = ScreenProcessing::GetLastPostprocessRT();
-		//ColorBuffer* CurrentPostprocessRT = ScreenProcessing::GetCurrentPostprocessRT();
-		//std::swap(LastPostprocessRT, CurrentPostprocessRT);
-
 #ifdef DEBUG
-		//EngineGUI::AddRenderPassVisualizeTexture("FSR DEBUG", WStringToString(CurrentPostprocessRT->GetName()), LastPostprocessRT->GetHeight(), LastPostprocessRT->GetWidth(), LastPostprocessRT->GetSRV());
+		EngineGUI::AddRenderPassVisualizeTexture("FSR DEBUG", WStringToString(g_UnpackVelocityBuffer.GetName()), g_UnpackVelocityBuffer.GetHeight(), g_UnpackVelocityBuffer.GetWidth(), g_UnpackVelocityBuffer.GetSRV());
 #endif
 	}
 }

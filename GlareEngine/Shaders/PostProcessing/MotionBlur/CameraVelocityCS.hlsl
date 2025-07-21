@@ -32,5 +32,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
     PrevHomogeneousPos.z        = PrevHomogeneousPos.w;
 #endif
 
-    VelocityBuffer[DTid.xy] = PackVelocity(PrevHomogeneousPos.xyz - float3(CurrentPixel, Depth));
+    float3 motionVector = PrevHomogeneousPos.xyz - float3(CurrentPixel, Depth);
+    
+    VelocityBuffer[DTid.xy] = PackVelocity(motionVector);
 }

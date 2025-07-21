@@ -24,6 +24,12 @@ namespace MotionBlur
 	ComputePSO CameraVelocityCS = { L"Camera Velocity Linear Z CS" };
 
 	Matrix4 gCurToPrevMatrix;
+
+	struct MotionBlurBuffer
+	{
+		Matrix4 CurToPrevMatrix;
+	};
+
 };
 
 
@@ -77,10 +83,11 @@ void MotionBlur::GenerateCameraVelocityBuffer(CommandContext& BaseContext, const
 		Vector4(0.0f, 0.0f, 1.0f, 0.0f),
 		Vector4(1.0f / RcpHalfDimX, 1.0f / RcpHalfDimY, 0.0f, 1.0f));
 
-
 	gCurToPrevMatrix = preMult * camera.GetReprojectMatrix() * postMult;
 
-	Context.SetDynamicConstantBufferView(3, sizeof(gCurToPrevMatrix), &gCurToPrevMatrix);
+	MotionBlurBuffer morionBlurBuffer{ gCurToPrevMatrix};
+
+	Context.SetDynamicConstantBufferView(3, sizeof(MotionBlurBuffer), &morionBlurBuffer);
 
 	Context.TransitionResource(g_VelocityBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 

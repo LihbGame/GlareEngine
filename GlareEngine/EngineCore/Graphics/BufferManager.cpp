@@ -57,6 +57,8 @@ namespace GlareEngine
 
 	ColorBuffer				g_VelocityBuffer;
 
+	ColorBuffer				g_UnpackVelocityBuffer;	//float2
+
 	ColorBuffer				g_MotionPrepBuffer;
 
 	ColorBuffer				g_TemporalColor[2];
@@ -181,6 +183,8 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 	g_BlurTempBuffer_R8.Create(L"Blur Half Temporary Buffer(R8_UNORM)", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R8_UNORM);
 
 	g_VelocityBuffer.Create(L"Motion Vectors", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R32_UINT);
+
+	g_UnpackVelocityBuffer.Create(L"Unpack Motion Vectors", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16G16_FLOAT);
 
 	g_MotionPrepBuffer.Create(L"Motion Blur Prep", NativeWidth / 2, NativeHeight / 2, 1, HDR_MOTION_FORMAT);
 
@@ -314,33 +318,12 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 
 	g_VelocityBuffer.Create(L"Motion Vectors", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R32_UINT);
 
+	g_UnpackVelocityBuffer.Create(L"Unpack Motion Vectors", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16G16_FLOAT);
+
 	g_MotionPrepBuffer.Create(L"Motion Blur Prep", NativeWidth / 2, NativeHeight / 2, 1, HDR_MOTION_FORMAT);
 
 	g_TemporalColor[0].Create(L"Temporal Color 0", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
 	g_TemporalColor[1].Create(L"Temporal Color 1", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
-
-	//GBuffer Init
-	g_GBuffer[GBUFFER_BaseColor].Create(L"GBuffer BaseColor", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_BaseColor]);
-	g_GBuffer[GBUFFER_Normal].Create(L"GBuffer Normal", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_Normal]);
-	g_GBuffer[GBUFFER_MSR].Create(L"GBuffer MSR", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_MSR]);
-	g_GBuffer[GBUFFER_Emissive].Create(L"GBuffer Emissive", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_Emissive]);
-	g_GBuffer[GBUFFER_WorldTangent].Create(L"GBuffer WorldTangent", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_WorldTangent]);
-}
-
-void GlareEngine::ResizeDisplayBuffers(uint32_t NativeWidth, uint32_t NativeHeight)
-{
-	//resize display buffer
-	g_SceneColorBuffer.Create(L"Main Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
-	g_SceneDepthBuffer.Create(L"Scene Depth Buffer", NativeWidth, NativeHeight, DSV_FORMAT, REVERSE_Z);
-	g_PostEffectsBuffer.Create(L"Post Effects Buffer", NativeWidth, NativeWidth, 1, DXGI_FORMAT_R32_UINT);
-
-	//resize  MSAA buffer
-	g_SceneMSAAColorBuffer.Create(L"Main MSAA Color Buffer", NativeWidth, NativeHeight, 1, DefaultHDRColorFormat);
-	g_SceneMSAADepthBuffer.Create(L"Scene MSAA Depth Buffer", NativeWidth, NativeHeight, MSAACOUNT, DSV_FORMAT, REVERSE_Z);
-
-	g_VelocityBuffer.Create(L"Motion Vectors", NativeWidth, NativeHeight, 1, DXGI_FORMAT_R32_UINT);
-
-	g_MotionPrepBuffer.Create(L"Motion Blur Prep", NativeWidth / 2, NativeHeight / 2, 1, HDR_MOTION_FORMAT);
 
 	//GBuffer Init
 	g_GBuffer[GBUFFER_BaseColor].Create(L"GBuffer BaseColor", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_BaseColor]);
@@ -405,6 +388,8 @@ void GlareEngine::DestroyRenderingBuffers()
 	g_BlurTempBuffer_R8.Destroy();
 
 	g_VelocityBuffer.Destroy();
+
+	g_UnpackVelocityBuffer.Destroy();
 
 	g_MotionPrepBuffer.Destroy();
 

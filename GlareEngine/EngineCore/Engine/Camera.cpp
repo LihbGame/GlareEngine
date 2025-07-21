@@ -182,6 +182,8 @@ void Camera::SetLens(float fovY, float aspect, float zn, float zf)
 
 void Camera::UpdateJitter(XMFLOAT2 Jitter)
 {
+	mPreJitter = mCurJitter;
+	mCurJitter = Jitter;
 	//Apply TAA jitter
 	mProj.m[2][0] = Jitter.x;
 	mProj.m[2][1] = Jitter.y;

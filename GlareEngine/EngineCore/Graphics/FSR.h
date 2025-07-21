@@ -108,7 +108,7 @@ private:
 	float           m_MipBias = 0;
 
 	float           m_UpscaleRatio = 1.0f;
-	float           m_Sharpness = 0.0f;
+	float           m_Sharpness = 0.8f;
 	uint32_t        m_JitterIndex = 0;
 	float           m_JitterX = 0.f;
 	float           m_JitterY = 0.f;
