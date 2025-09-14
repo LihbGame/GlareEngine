@@ -83,7 +83,8 @@ out float3 GBUFFER_Emissive : SV_Target0,
 out float4 GBUFFER_Normal : SV_Target1,
 out float4 GBUFFER_MSR : SV_Target2,
 out float4 GBUFFER_BaseColor : SV_Target3,
-out float4 GBUFFER_WorldTangent : SV_Target4)
+out float4 GBUFFER_WorldTangent : SV_Target4,
+out float4 GBUFFER_MotionVector : SV_Target5)
 {
     uint2 pixelPos = uint2(vsOutput.position.xy);
 

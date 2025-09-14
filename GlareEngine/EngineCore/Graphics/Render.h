@@ -55,6 +55,7 @@ namespace GlareEngine
 			GBUFFER_MSR,			//R8G8B8A8				Metallic(r), Specular(g), Roughness(b), ShadingModelID(a)
 			GBUFFER_BaseColor,		//R8G8B8A8				BaseColor(rgb), Material AO(a)	
 			GBUFFER_WorldTangent,	//R8G8B8A8				WorldTangent(rgb), Anisotropic intensity(a)
+			GBUFFER_MotionVector,   //R16G16				MotionVector
 			GBUFFER_Count
 		};
 
@@ -66,6 +67,7 @@ namespace GlareEngine
 			DXGI_FORMAT_R8G8B8A8_UNORM,			//GBUFFER_MSR
 			DXGI_FORMAT_R16G16B16A16_UNORM,	    //GBUFFER_BaseColor
 			DXGI_FORMAT_R8G8B8A8_UNORM,			//GBUFFER_WorldTangent
+			DXGI_FORMAT_R16G16_FLOAT
 		};
 	}
 

@@ -198,7 +198,7 @@ void GlareEngine::InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t Nati
 	g_GBuffer[GBUFFER_MSR].Create(L"GBuffer MSR", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_MSR]);
 	g_GBuffer[GBUFFER_Emissive].Create(L"GBuffer Emissive", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_Emissive]);
 	g_GBuffer[GBUFFER_WorldTangent].Create(L"GBuffer WorldTangent", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_WorldTangent]);
-
+	g_GBuffer[GBUFFER_MotionVector].Create(L"GBuffer MotionVector", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_MotionVector]);
 
 
 	//g_MinMaxDepth8.Create(L"MinMaxDepth 8x8", bufferWidth3, bufferHeight3, 1, DXGI_FORMAT_R32_UINT, esram);
@@ -331,6 +331,7 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 	g_GBuffer[GBUFFER_MSR].Create(L"GBuffer MSR", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_MSR]);
 	g_GBuffer[GBUFFER_Emissive].Create(L"GBuffer Emissive", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_Emissive]);
 	g_GBuffer[GBUFFER_WorldTangent].Create(L"GBuffer WorldTangent", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_WorldTangent]);
+	g_GBuffer[GBUFFER_MotionVector].Create(L"GBuffer MotionVector", NativeWidth, NativeHeight, 1, Render::GBufferFormat[GBUFFER_MotionVector]);
 }
 
 
