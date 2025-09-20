@@ -46,6 +46,8 @@ struct VSOutput
 #endif
     float3 worldPos : TEXCOORD2;
     float3 sunShadowCoord : TEXCOORD3;
+    float3 CurPosition : TEXCOORD4;
+    float3 PrePosition : TEXCOORD5;
 };
 
 
@@ -95,6 +97,8 @@ VSOutput main(VSInput vsInput)
 #ifndef NO_SECOND_UV
     vsOutput.uv1 = vsInput.uv1;
 #endif
-
+    float4 preposition = mul(float4(vsOutput.worldPos, 1.0), gPreViewProjMatrix);
+    vsOutput.CurPosition = vsOutput.position.xyw;
+    vsOutput.PrePosition = preposition.xyw;
     return vsOutput;
 }

@@ -54,6 +54,7 @@ public:
 	virtual const Frustum& GetWorldSpaceFrustum() const { return m_FrustumWS; }
 
 	Matrix4 GetReprojectMatrix()const { return m_ReprojectMatrix; }
+	Matrix4 GetPreViewProj()const { return m_PreviousViewProjMatrix; }
 
 	// Get View/Proj matrices.
 	virtual DirectX::XMMATRIX GetView()const;

@@ -55,6 +55,8 @@ struct VSOutput
 #endif
     float3 worldPos : TEXCOORD2;
     float3 sunShadowCoord : TEXCOORD3;
+    float3 CurPosition : TEXCOORD4;
+    float3 PrePosition : TEXCOORD5;
 };
 
 
@@ -84,7 +86,7 @@ out float4 GBUFFER_Normal : SV_Target1,
 out float4 GBUFFER_MSR : SV_Target2,
 out float4 GBUFFER_BaseColor : SV_Target3,
 out float4 GBUFFER_WorldTangent : SV_Target4,
-out float4 GBUFFER_MotionVector : SV_Target5)
+out float2 GBUFFER_MotionVector : SV_Target5)
 {
     uint2 pixelPos = uint2(vsOutput.position.xy);
 
@@ -103,11 +105,12 @@ out float4 GBUFFER_MotionVector : SV_Target5)
     normal = GetNormal(normalMap, normal, vsOutput.tangent);
 #endif
     
-    
     //Write GBuffer
     GBUFFER_BaseColor = float4(baseColor.xyz, occlusion);
     GBUFFER_MSR = float4(metallicRoughness.x, 0.0f, metallicRoughness.y, shaderModelID);
     GBUFFER_Normal = float4((normal + 1.0f) / 2.0f, 1.0f);
     GBUFFER_Emissive = emissive;
     GBUFFER_WorldTangent = (vsOutput.tangent + 1.0f) / 2.0f;
+    GBUFFER_MotionVector = ((vsOutput.PrePosition.xy / vsOutput.PrePosition.z) - (vsOutput.CurPosition.xy / vsOutput.CurPosition.z)) * float2(0.5f, -0.5f);
+
 }

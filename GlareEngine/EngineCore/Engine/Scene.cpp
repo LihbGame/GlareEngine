@@ -11,6 +11,7 @@
 #include "PostProcessing/PostProcessing.h"
 #include "PostProcessing/SSAO.h"
 #include "PostProcessing/TemporalAA.h"
+#include "PostProcessing/MotionBlur.h"
 
 /// Scene/////////////////////////////////////////////
 using namespace GlareEngine::Render;
@@ -328,7 +329,8 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 	XMStoreFloat4x4(&mSceneView.mMainConstants.InvViewProj, XMMatrixTranspose(InvViewProj));
 	XMFLOAT4X4 ShadowTransform = m_pShadowMap->GetShadowTransform();
 	XMStoreFloat4x4(&mSceneView.mMainConstants.ShadowTransform, XMMatrixTranspose(XMLoadFloat4x4(&ShadowTransform)));
-	
+	XMStoreFloat4x4(&mSceneView.mMainConstants.PreViewProjMatrix, XMMatrixTranspose(mSceneView.m_pCamera->GetPreViewProj()));
+
 	mSceneView.mMainConstants.EyePosW = mSceneView.m_pCamera->GetPosition3f();
 	mSceneView.mMainConstants.RenderTargetSize = XMFLOAT2((float)g_SceneColorBuffer.GetWidth(), (float)g_SceneColorBuffer.GetHeight());
 	mSceneView.mMainConstants.InvRenderTargetSize = XMFLOAT2(1.0f / g_SceneColorBuffer.GetWidth(), 1.0f / g_SceneColorBuffer.GetHeight());
