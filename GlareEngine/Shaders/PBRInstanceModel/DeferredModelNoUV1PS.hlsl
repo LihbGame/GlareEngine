@@ -111,6 +111,6 @@ out float2 GBUFFER_MotionVector : SV_Target5)
     GBUFFER_Normal = float4((normal + 1.0f) / 2.0f, 1.0f);
     GBUFFER_Emissive = emissive;
     GBUFFER_WorldTangent = (vsOutput.tangent + 1.0f) / 2.0f;
-    GBUFFER_MotionVector = ((vsOutput.PrePosition.xy / vsOutput.PrePosition.z) - (vsOutput.CurPosition.xy / vsOutput.CurPosition.z)) * float2(0.5f, -0.5f);
+    GBUFFER_MotionVector = float2(0, 0); //((vsOutput.PrePosition.xy / vsOutput.PrePosition.z) - (vsOutput.CurPosition.xy / vsOutput.CurPosition.z)) * float2(0.5f, -0.5f);
 
 }

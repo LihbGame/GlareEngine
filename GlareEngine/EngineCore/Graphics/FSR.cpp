@@ -12,12 +12,14 @@
 #include "Graphics/SamplerManager.h"
 #include "Graphics/CommandSignature.h"
 #include "Graphics/Display.h"
+#include "Graphics/Render.h"
 #include "EngineGUI.h"
 #include "Engine/Scene.h"
 
 #include "ffx-api/dx12/ffx_api_dx12.hpp"
 #include "PostProcessing/PostProcessing.h"
-#include <PostProcessing/TemporalAA.h>
+#include "PostProcessing/TemporalAA.h"
+
 
 FSR* FSR::m_pFSRInstance = nullptr;
 
@@ -30,7 +32,7 @@ void FSR::Execute(ID3D12GraphicsCommandList* pCmdList, ColorBuffer& Input, Color
 
 		dispatchUpscale.color = ffxApiGetResourceDX12(Input.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
 		dispatchUpscale.depth = ffxApiGetResourceDX12(g_SceneDepthBuffer.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
-		dispatchUpscale.motionVectors = ffxApiGetResourceDX12(g_UnpackVelocityBuffer.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
+		dispatchUpscale.motionVectors = ffxApiGetResourceDX12(g_GBuffer[Render::GBufferType::GBUFFER_MotionVector].GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
 		dispatchUpscale.exposure = ffxApiGetResourceDX12(nullptr, FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
 		dispatchUpscale.output = ffxApiGetResourceDX12(Output.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
 
@@ -220,6 +222,7 @@ void FSR::DrawUI()
 			{
 				UpdateUpscalerPreset(m_NewPreset);
 			}
+			ImGui::SliderVerticalFloat("Sharpness:", &m_Sharpness, 0.0f, 1.0f);
 		}
 	}
 }

@@ -54,6 +54,8 @@ struct VSOutput
 #endif
     float3 worldPos : TEXCOORD2;
     float3 sunShadowCoord : TEXCOORD3;
+    float3 CurPosition : TEXCOORD4;
+    float3 PrePosition : TEXCOORD5;
 };
 
 
@@ -109,4 +111,5 @@ out float2 GBUFFER_MotionVector : SV_Target5)
     GBUFFER_Normal       = float4((normal + 1.0f) / 2.0f, 1.0f);
     GBUFFER_Emissive     = emissive;
     GBUFFER_WorldTangent = (vsOutput.tangent + 1.0f) / 2.0f;
+    GBUFFER_MotionVector = ((vsOutput.PrePosition.xy / vsOutput.PrePosition.z) - (vsOutput.CurPosition.xy / vsOutput.CurPosition.z)) * float2(0.5f, -0.5f);
 }
