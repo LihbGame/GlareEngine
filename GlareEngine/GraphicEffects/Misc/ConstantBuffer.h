@@ -148,7 +148,12 @@ __declspec(align(16))struct MainConstants
 	int			gAreaLightLTC2SRVIndex;
 	int         gAreaLightTwoSide;
 	float       gMipLODBias;
+
+	XMFLOAT2    gCurJitterOffset;
+	XMFLOAT2    gPreJitterOffset;
 };
+
+
 
 struct TerrainConstants
 {

@@ -386,6 +386,9 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 	}
 
 	mSceneView.mMainConstants.gMipLODBias = m_pFSR->GetMipLODBias();
+
+	mSceneView.mMainConstants.gPreJitterOffset = mSceneView.m_pCamera->GetPreJitter();
+	mSceneView.mMainConstants.gCurJitterOffset = mSceneView.m_pCamera->GetCurJitter();
 }
 
 

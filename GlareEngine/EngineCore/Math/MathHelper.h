@@ -84,6 +84,16 @@ public:
         return I;
     }
 
+	static DirectX::XMFLOAT3X3 Identity3x3()
+	{
+		static DirectX::XMFLOAT3X3 I(
+			1.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 1.0f);
+
+		return I;
+	}
+
     static DirectX::XMVECTOR RandUnitVec3();
     static DirectX::XMVECTOR RandHemisphereUnitVec3(DirectX::XMVECTOR n);
 

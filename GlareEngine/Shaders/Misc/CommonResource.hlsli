@@ -144,6 +144,9 @@ cbuffer MainPass : register(b0)
     int			gAreaLightLTC2SRVIndex;
     int         gAreaLightTwoSide;
     float       gMipLodBias;
+    
+    float2      gCurJitterOffset;
+    float2      gPreJitterOffset;
 };
 
 struct AreaLightInstanceData
