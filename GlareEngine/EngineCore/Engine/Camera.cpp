@@ -189,7 +189,7 @@ void Camera::UpdateJitter(XMFLOAT2 Jitter)
 	mProj.m[2][0] = Jitter.x;
 	mProj.m[2][1] = Jitter.y;
 
-	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::FSR)
+	//if (Render::GetAntiAliasingType() == Render::AntiAliasingType::FSR)
 	{
 		mViewDirty = true;
 	}

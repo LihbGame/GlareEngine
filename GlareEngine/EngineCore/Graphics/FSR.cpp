@@ -114,7 +114,7 @@ XMFLOAT2 FSR::GetFSRjitter()
 		retCode = ffx::Query(m_UpscalingContext, getJitterOffsetDesc);
 
 		assert(retCode == ffx::ReturnCode::Ok);
-		return XMFLOAT2(-2.f * m_JitterX / Display::g_RenderWidth, 2.f * m_JitterY / Display::g_RenderHeight);
+		return XMFLOAT2(m_JitterX / Display::g_RenderWidth, m_JitterY / Display::g_RenderHeight);
 	}
 	else
 		return XMFLOAT2(0, 0);

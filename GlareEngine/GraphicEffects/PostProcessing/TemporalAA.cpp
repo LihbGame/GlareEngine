@@ -250,8 +250,7 @@ uint32_t TemporalAA::GetFrameIndexMod2(void)
 
 XMFLOAT2 TemporalAA::GetJitterOffset()
 {
-	//mul 2.0f is for NDC space (-1,1) 
-	return XMFLOAT2(-2.0f*mJitter.x / (float)g_SceneColorBuffer.GetWidth(), 2.0f*mJitter.y / (float)g_SceneColorBuffer.GetHeight());
+	return XMFLOAT2(mJitter.x / (float)g_SceneColorBuffer.GetWidth(), mJitter.y / (float)g_SceneColorBuffer.GetHeight());
 }
 
 void TemporalAA::ClearHistory(CommandContext& Context)
