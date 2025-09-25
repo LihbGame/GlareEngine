@@ -185,12 +185,14 @@ void Camera::UpdateJitter(XMFLOAT2 Jitter)
 	mPreJitter = mCurJitter;
 	mCurJitter = Jitter;
 
-	//Matrix3 identity(EIdentityTag::eIdentity);
-	//Matrix4 jitterMat(identity, Vector3(Jitter.x, Jitter.y, 0));
-	//XMStoreFloat4x4(&mProj,jitterMat * Matrix4(mProj));
 	//Apply TAA jitter
 	mProj.m[2][0] = Jitter.x;
 	mProj.m[2][1] = Jitter.y;
+
+	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::FSR)
+	{
+		mViewDirty = true;
+	}
 }
 
 void Camera::LookAt(FXMVECTOR pos, FXMVECTOR target, FXMVECTOR worldUp)
