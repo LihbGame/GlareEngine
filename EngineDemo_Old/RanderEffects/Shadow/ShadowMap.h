@@ -3,15 +3,15 @@
 #include "Engine/EngineUtility.h"
 #include "Engine/GameTimer.h"
 class TextureManage;
-class ShadowMap
+class ShadowMap_OLD
 {
 public:
-	ShadowMap(ID3D12Device* device,
+	ShadowMap_OLD(ID3D12Device* device,
 		UINT width, UINT height, TextureManage* TextureManage);
 
-	ShadowMap(const ShadowMap& rhs) = delete;
-	ShadowMap& operator=(const ShadowMap& rhs) = delete;
-	~ShadowMap() = default;
+	ShadowMap_OLD(const ShadowMap_OLD& rhs) = delete;
+	ShadowMap_OLD& operator=(const ShadowMap_OLD& rhs) = delete;
+	~ShadowMap_OLD() = default;
 
 	UINT Width()const;
 	UINT Height()const;

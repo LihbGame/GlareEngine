@@ -1,6 +1,6 @@
 #include "ShadowMap.h"
 #include "TextureManage.h"
-ShadowMap::ShadowMap(ID3D12Device* device, UINT width, UINT height, TextureManage* TextureManage)
+ShadowMap_OLD::ShadowMap_OLD(ID3D12Device* device, UINT width, UINT height, TextureManage* TextureManage)
 	:pTextureManage(TextureManage)
 {
 	md3dDevice = device;
@@ -21,38 +21,38 @@ ShadowMap::ShadowMap(ID3D12Device* device, UINT width, UINT height, TextureManag
 	BuildResource();
 }
 
-UINT ShadowMap::Width()const
+UINT ShadowMap_OLD::Width()const
 {
 	return mWidth;
 }
 
-UINT ShadowMap::Height()const
+UINT ShadowMap_OLD::Height()const
 {
 	return mHeight;
 }
 
-ID3D12Resource* ShadowMap::Resource()
+ID3D12Resource* ShadowMap_OLD::Resource()
 {
 	return mShadowMap.Get();
 }
 
 
-CD3DX12_CPU_DESCRIPTOR_HANDLE ShadowMap::Dsv()const
+CD3DX12_CPU_DESCRIPTOR_HANDLE ShadowMap_OLD::Dsv()const
 {
 	return mhCpuDsv;
 }
 
-D3D12_VIEWPORT ShadowMap::Viewport()const
+D3D12_VIEWPORT ShadowMap_OLD::Viewport()const
 {
 	return mViewport;
 }
 
-D3D12_RECT ShadowMap::ScissorRect()const
+D3D12_RECT ShadowMap_OLD::ScissorRect()const
 {
 	return mScissorRect;
 }
 
-void ShadowMap::BuildDescriptors(CD3DX12_CPU_DESCRIPTOR_HANDLE hCpuSrv,
+void ShadowMap_OLD::BuildDescriptors(CD3DX12_CPU_DESCRIPTOR_HANDLE hCpuSrv,
 	CD3DX12_CPU_DESCRIPTOR_HANDLE hCpuDsv)
 {
 	// Save references to the descriptors. 
@@ -63,7 +63,7 @@ void ShadowMap::BuildDescriptors(CD3DX12_CPU_DESCRIPTOR_HANDLE hCpuSrv,
 	BuildDescriptors();
 }
 
-void ShadowMap::OnResize(UINT newWidth, UINT newHeight)
+void ShadowMap_OLD::OnResize(UINT newWidth, UINT newHeight)
 {
 	if ((mWidth != newWidth) || (mHeight != newHeight))
 	{
@@ -77,7 +77,7 @@ void ShadowMap::OnResize(UINT newWidth, UINT newHeight)
 	}
 }
 
-void ShadowMap::FillSRVDescriptorHeap(int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor, D3D12_CPU_DESCRIPTOR_HANDLE DSVCPUStart, int DsvDescriptorSize)
+void ShadowMap_OLD::FillSRVDescriptorHeap(int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HANDLE* hDescriptor, D3D12_CPU_DESCRIPTOR_HANDLE DSVCPUStart, int DsvDescriptorSize)
 {
 	UINT CbvSrvDescriptorSize = pTextureManage->GetCbvSrvDescriptorSize();
 	
@@ -89,7 +89,7 @@ void ShadowMap::FillSRVDescriptorHeap(int* SRVIndex, CD3DX12_CPU_DESCRIPTOR_HAND
 	(*hDescriptor).Offset(1, CbvSrvDescriptorSize);
 }
 
-void ShadowMap::BuildDescriptors()
+void ShadowMap_OLD::BuildDescriptors()
 {
 	// Create SRV to resource so we can sample the shadow map in a shader program.
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -111,7 +111,7 @@ void ShadowMap::BuildDescriptors()
 	md3dDevice->CreateDepthStencilView(mShadowMap.Get(), &dsvDesc, mhCpuDsv);
 }
 
-void ShadowMap::BuildResource()
+void ShadowMap_OLD::BuildResource()
 {
 	D3D12_RESOURCE_DESC texDesc;
 	ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
@@ -144,7 +144,7 @@ void ShadowMap::BuildResource()
 
 
 
-void ShadowMap::UpdateShadowTransform(const GameTimer& gt)
+void ShadowMap_OLD::UpdateShadowTransform(const GameTimer& gt)
 {
 
 	// Animate the lights (and hence shadows).

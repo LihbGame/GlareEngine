@@ -7,10 +7,10 @@
 #include "TextureManage.h"
 #include "FrameResource.h"
 using Microsoft::WRL::ComPtr;
-bool gFullSreenMode = false;
-bool EngineGUI::mWindowMaxSize = false;
+bool gFullSreenMode_OLD = false;
+bool EngineGUI_OLD::mWindowMaxSize = false;
 
-EngineGUI::EngineGUI(HWND GameWnd, ID3D12Device* d3dDevice, TextureManage* pTextureManager, ID3D12GraphicsCommandList* d3dCommandList)
+EngineGUI_OLD::EngineGUI_OLD(HWND GameWnd, ID3D12Device* d3dDevice, TextureManage* pTextureManager, ID3D12GraphicsCommandList* d3dCommandList)
 {
 	md3dDevice = d3dDevice;
 	mTextureManager = pTextureManager;
@@ -18,12 +18,12 @@ EngineGUI::EngineGUI(HWND GameWnd, ID3D12Device* d3dDevice, TextureManage* pText
 	InitGUI(GameWnd);
 }
 
-EngineGUI::~EngineGUI()
+EngineGUI_OLD::~EngineGUI_OLD()
 {
 
 }
 
-void EngineGUI::InitGUI(HWND GameWnd)
+void EngineGUI_OLD::InitGUI(HWND GameWnd)
 {
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -67,7 +67,7 @@ void EngineGUI::InitGUI(HWND GameWnd)
 	 SetWindowStyles();
 }
 
-void EngineGUI::CreateUIDescriptorHeap(ID3D12GraphicsCommandList* d3dCommandList)
+void EngineGUI_OLD::CreateUIDescriptorHeap(ID3D12GraphicsCommandList* d3dCommandList)
 {
 	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -117,7 +117,7 @@ void EngineGUI::CreateUIDescriptorHeap(ID3D12GraphicsCommandList* d3dCommandList
 	mEngineCloseTexDescriptor.Offset(1, SRVDescriptorHandleIncrementSize);
 }
 
-void EngineGUI::Draw(ID3D12GraphicsCommandList* d3dCommandList)
+void EngineGUI_OLD::Draw(ID3D12GraphicsCommandList* d3dCommandList)
 {
 	//DRAW UI
 	{
@@ -134,7 +134,7 @@ void EngineGUI::Draw(ID3D12GraphicsCommandList* d3dCommandList)
 		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 		if (mShowControlPanel)
 		{	
-			DrawMainMenuBar(&mWindowMaxSize, gFullSreenMode);
+			DrawMainMenuBar(&mWindowMaxSize, gFullSreenMode_OLD);
 			ImGui::ShowDemoWindow(&mShowControlPanel,&mWindowMaxSize);
 		}
 		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
@@ -163,7 +163,7 @@ void EngineGUI::Draw(ID3D12GraphicsCommandList* d3dCommandList)
 	}
 }
 
-void EngineGUI::ShutDown()
+void EngineGUI_OLD::ShutDown()
 {
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
@@ -173,7 +173,7 @@ void EngineGUI::ShutDown()
 	mGUISrvDescriptorHeap->Release();
 }
 
-void EngineGUI::SetWindowStyles()
+void EngineGUI_OLD::SetWindowStyles()
 {
 	ImGuiStyle& style = ImGui::GetStyle();
 	ImVec4* colors = style.Colors;
@@ -228,7 +228,7 @@ void EngineGUI::SetWindowStyles()
 	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 }
 
-void EngineGUI::DrawEngineIcon(float IconSize, float IconWindowHigh)
+void EngineGUI_OLD::DrawEngineIcon(float IconSize, float IconWindowHigh)
 {
 	ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
 	ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * CLIENT_FROMLEFT, IconWindowHigh));
@@ -238,7 +238,7 @@ void EngineGUI::DrawEngineIcon(float IconSize, float IconWindowHigh)
 	ImGui::End();
 }
 
-void EngineGUI::DrawControlPanel(float IconWindowHigh)
+void EngineGUI_OLD::DrawControlPanel(float IconWindowHigh)
 {
 	ImGui::SetNextWindowPos(ImVec2(0.0f, IconWindowHigh));
 	ImGui::SetNextWindowSize(ImVec2(g->IO.DisplaySize.x * CLIENT_FROMLEFT, int(g->IO.DisplaySize.y * CLIENT_HEIGHT + 1.0f) - IconWindowHigh));
@@ -285,7 +285,7 @@ void EngineGUI::DrawControlPanel(float IconWindowHigh)
 	ImGui::End();
 }
 
-void EngineGUI::DrawDebugWindow()
+void EngineGUI_OLD::DrawDebugWindow()
 {
 	//g.NextWindowData.MenuBarOffsetMinVal = ImVec2(g.Style.DisplaySafeAreaPadding.x, ImMax(g.Style.DisplaySafeAreaPadding.y - g.Style.FramePadding.y, 0.0f));
 	ImGui::SetNextWindowPos(ImVec2(0.0f, g->IO.DisplaySize.y * 0.75f));
@@ -334,7 +334,7 @@ void EngineGUI::DrawDebugWindow()
 	ImGui::End();
 }
 
-void EngineGUI::DrawStatWindow()
+void EngineGUI_OLD::DrawStatWindow()
 {
 	ImGui::SetNextWindowPos(ImVec2(ImVec2(g->IO.DisplaySize.x / 5.8f, MainMenuBarHeight + 5.0f)));
 	ImGui::SetNextWindowSize(ImVec2(120.0f, 200.0f));
@@ -358,7 +358,7 @@ void EngineGUI::DrawStatWindow()
 	ImGui::End();
 }
 
-void EngineGUI::DrawMainMenuBar(bool* IsMax, bool IsFullScreenMode)
+void EngineGUI_OLD::DrawMainMenuBar(bool* IsMax, bool IsFullScreenMode)
 {
 	if (ImGui::BeginMainMenuBar())
 	{

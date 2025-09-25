@@ -80,7 +80,7 @@ bool GameApp::Initialize()
 	//texture manage
 	mTextureManage = std::make_unique<TextureManage>(md3dDevice.Get(), mCommandList.Get(), mCbvSrvDescriptorSize);
 	//init UI
-	mEngineUI = make_unique<EngineGUI>(mhMainWnd, md3dDevice.Get(),mTextureManage.get(), mCommandList.Get());
+	mEngineUI = make_unique<EngineGUI_OLD>(mhMainWnd, md3dDevice.Get(),mTextureManage.get(), mCommandList.Get());
 	//pso init
 	mPSOs = std::make_unique<PSO>();
 	//wave :not use
@@ -92,7 +92,7 @@ bool GameApp::Initialize()
 	//sky
 	mSky = std::make_unique<Sky>(md3dDevice.Get(), mCommandList.Get(), 5.0f, 20, 20, mTextureManage.get());
 	//shadow map
-	mShadowMap = std::make_unique<ShadowMap>(md3dDevice.Get(), ShadowMapSize, ShadowMapSize, mTextureManage.get());
+	mShadowMap = std::make_unique<ShadowMap_OLD>(md3dDevice.Get(), ShadowMapSize, ShadowMapSize, mTextureManage.get());
 	//Simple Geometry Instance Draw
 	mSimpleGeoInstance = std::make_unique<SimpleGeoInstance>(mCommandList.Get(), md3dDevice.Get(), mTextureManage.get());
 	//init model loader
@@ -147,11 +147,11 @@ void GameApp::OnResize()
 
 void GameApp::Update(const GameTimer& gt)
 {
-	if (EngineGUI::mWindowMaxSize && !mMaximized)
+	if (EngineGUI_OLD::mWindowMaxSize && !mMaximized)
 	{
 		SendMessage(mhMainWnd, WM_SYSCOMMAND, SC_MAXIMIZE, NULL);
 	}
-	if (!EngineGUI::mWindowMaxSize && mMaximized)
+	if (!EngineGUI_OLD::mWindowMaxSize && mMaximized)
 	{
 		SendMessage(mhMainWnd, WM_SYSCOMMAND, SC_RESTORE, NULL);
 	}

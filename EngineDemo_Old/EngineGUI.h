@@ -11,12 +11,12 @@ class TextureManage;
 #define CLIENT_FROMLEFT 0.166667f
 #define CLIENT_HEIGHT 0.75f
 
-extern bool gFullSreenMode;
-class EngineGUI
+extern bool gFullSreenMode_OLD;
+class EngineGUI_OLD
 {
 public:
-	EngineGUI(HWND GameWnd, ID3D12Device* d3dDevice, TextureManage* mTextureManager,ID3D12GraphicsCommandList* d3dCommandList = nullptr);
-	~EngineGUI();
+	EngineGUI_OLD(HWND GameWnd, ID3D12Device* d3dDevice, TextureManage* mTextureManager,ID3D12GraphicsCommandList* d3dCommandList = nullptr);
+	~EngineGUI_OLD();
 public:
 	void Draw(ID3D12GraphicsCommandList* d3dCommandList);
 	void ShutDown();

@@ -253,7 +253,7 @@ private:
 
 	int mSkyMapIndex = 0;
 	//UI
-	std::unique_ptr<EngineGUI> mEngineUI;
+	std::unique_ptr<EngineGUI_OLD> mEngineUI;
 
 	//Instance Culling
 	bool mFrustumCullingEnabled = true;
@@ -261,7 +261,7 @@ private:
 	std::unique_ptr<SimpleGeoInstance> mSimpleGeoInstance;
 
 	//shadow map 
-	std::unique_ptr<ShadowMap> mShadowMap;
+	std::unique_ptr<ShadowMap_OLD> mShadowMap;
 	int mShadowMapIndex = 0;
 	static bool RedrawShadowMap;
 

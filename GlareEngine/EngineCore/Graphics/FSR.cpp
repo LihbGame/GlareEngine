@@ -3,22 +3,16 @@
 #include "Engine/EngineProfiling.h"
 #include "Graphics/GraphicsCommon.h"
 #include "Graphics/CommandContext.h"
-#include "imgui.h"
 #include "Engine/GameCore.h"
 #include "BufferManager.h"
 #include "EngineGUI.h"
-#include "Engine/EngineProfiling.h"
-#include "Graphics/GraphicsCommon.h"
 #include "Graphics/SamplerManager.h"
 #include "Graphics/CommandSignature.h"
 #include "Graphics/Display.h"
-#include "Graphics/Render.h"
-#include "EngineGUI.h"
 #include "Engine/Scene.h"
 
 #include "ffx-api/dx12/ffx_api_dx12.hpp"
-#include "PostProcessing/PostProcessing.h"
-#include "PostProcessing/TemporalAA.h"
+
 
 
 FSR* FSR::m_pFSRInstance = nullptr;

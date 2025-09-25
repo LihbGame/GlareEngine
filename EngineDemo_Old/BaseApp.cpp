@@ -432,10 +432,10 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			SendMessage(hwnd, WM_NCLBUTTONDOWN, HTCAPTION, NULL);
 			SendMessage(hwnd, WM_LBUTTONUP, NULL, NULL);
 
-			if (EngineGUI::mWindowMaxSize)
+			if (EngineGUI_OLD::mWindowMaxSize)
 			{
 				SendMessage(mhMainWnd, WM_SYSCOMMAND, SC_RESTORE, NULL);
-				EngineGUI::mWindowMaxSize = false;
+				EngineGUI_OLD::mWindowMaxSize = false;
 			}
 
 		}
@@ -476,21 +476,21 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		//FullScreen 
 		if (wParam == VK_TAB)
 		{
-			if (!mFullscreenState&&!EngineGUI::mWindowMaxSize)
+			if (!mFullscreenState&&!EngineGUI_OLD::mWindowMaxSize)
 			{
 				mClientHeight = GetSystemMetrics(SM_CYSCREEN);
 				mClientWidth = GetSystemMetrics(SM_CXSCREEN);
 				
 				OnResize();
 				mSwapChain->SetFullscreenState(true, NULL);
-				gFullSreenMode=mFullscreenState = true;
+				gFullSreenMode_OLD=mFullscreenState = true;
 			}
 			else
 			{
 				
 				OnResize();
 				mSwapChain->SetFullscreenState(false, NULL);
-				gFullSreenMode = mFullscreenState = false;
+				gFullSreenMode_OLD = mFullscreenState = false;
 			}
 		}
 		if ((int)wParam == VK_SHIFT)
