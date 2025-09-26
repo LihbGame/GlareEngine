@@ -123,7 +123,7 @@ namespace ScreenProcessing
 	float MaxExposure = 64.0f;
 
 	string mAntiAliasingName;
-	int mAntiAliasingIndex = Render::AntiAliasingType::TAA;
+	int mAntiAliasingIndex = Render::AntiAliasingType::FSR;
 
 	//Exposure Data
 	StructuredBuffer g_Exposure;
@@ -558,7 +558,7 @@ void ScreenProcessing::DrawAfterToneMapping()
 {
 	GraphicsContext& Context = GraphicsContext::Begin(L"After Tone Mapping");
 	//FBM
-	//Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(mMainConstants), &mMainConstants);
+	//Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(gMainConstants), &gMainConstants);
 	//RenderFBM(Context);
 
 	Context.Finish();
@@ -568,7 +568,7 @@ void ScreenProcessing::DrawUI()
 {
 	ImGuiIO& io = ImGui::GetIO();
 
-	if (ImGui::CollapsingHeader("Anti-aliasing", ImGuiTreeNodeFlags_None))
+	if (ImGui::CollapsingHeader("Anti-aliasing", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::Combo("Anti Aliasing", &mAntiAliasingIndex, mAntiAliasingName.c_str());
 
