@@ -155,45 +155,130 @@ void FSR::UpdateUpscalingContext(bool enable)
 		backendDesc.header.type = FFX_API_CREATE_CONTEXT_DESC_TYPE_BACKEND_DX12;
 		backendDesc.device = g_Device;
 
-		ffx::CreateContextDescUpscale createFsr{};
-
-		createFsr.maxUpscaleSize = { Display::g_DisplayWidth, Display::g_DisplayHeight };
-		createFsr.maxRenderSize = { Display::g_DisplayWidth, Display::g_DisplayHeight };
-
-		createFsr.flags = FFX_UPSCALE_ENABLE_AUTO_EXPOSURE;
-
-		if (REVERSE_Z)
+		if (m_UpscalerEnabled)
 		{
-			createFsr.flags |= FFX_UPSCALE_ENABLE_DEPTH_INVERTED;
+			ffx::CreateContextDescUpscale createFsr{};
+
+			createFsr.maxUpscaleSize = { Display::g_DisplayWidth, Display::g_DisplayHeight };
+			createFsr.maxRenderSize = { Display::g_DisplayWidth, Display::g_DisplayHeight };
+
+			createFsr.flags = FFX_UPSCALE_ENABLE_AUTO_EXPOSURE;
+
+			if (REVERSE_Z)
+			{
+				createFsr.flags |= FFX_UPSCALE_ENABLE_DEPTH_INVERTED;
+			}
+			createFsr.flags |= FFX_UPSCALE_ENABLE_HIGH_DYNAMIC_RANGE;
+			createFsr.fpMessage = nullptr;
+
+			if (m_GlobalDebugCheckerMode != FSRDebugCheckerMode::Disabled)
+			{
+				createFsr.flags |= FFX_UPSCALE_ENABLE_DEBUG_CHECKING;
+			}
+
+			// Create the FSR context
+			{
+				ffx::ReturnCode retCode;
+				retCode = ffx::CreateContext(m_UpscalingContext, nullptr, createFsr, backendDesc);
+				//Couldn't create the ffx-api upscaling context
+				assert(retCode == ffx::ReturnCode::Ok);
+			}
+
+			//Query created version
+			ffxQueryGetProviderVersion getVersion = { 0 };
+			getVersion.header.type = FFX_API_QUERY_DESC_TYPE_GET_PROVIDER_VERSION;
+
+			ffx::Query(m_UpscalingContext, getVersion);
+			m_CurrentUpscaleContextVersionId = getVersion.versionId;
+			m_CurrentUpscaleContextVersionName = getVersion.versionName;
+
+			EngineLog::AddLog(L"Upscaler Context VersionID 0x%016llx, %S", m_CurrentUpscaleContextVersionId, m_CurrentUpscaleContextVersionName);
+
+			//Debug message for FSR
+			SetGlobalDebugCheckerMode(m_GlobalDebugCheckerMode);
 		}
-		createFsr.flags |= FFX_UPSCALE_ENABLE_HIGH_DYNAMIC_RANGE;
-		createFsr.fpMessage = nullptr;
 
-		if (m_GlobalDebugCheckerMode != FSRDebugCheckerMode::Disabled)
-		{
-			createFsr.flags |= FFX_UPSCALE_ENABLE_DEBUG_CHECKING;
-		}
+		//Create the FrameGen context
+		//if (m_FrameInterpolationEnabled)
+		//{
+		//	ffx::CreateContextDescFrameGeneration createFg{};
+		//	createFg.displaySize = { Display::g_DisplayWidth,Display::g_DisplayHeight };
+		//	createFg.maxRenderSize = { Display::g_DisplayWidth, Display::g_DisplayHeight };
+		//	if (REVERSE_Z)
+		//		createFg.flags |= FFX_FRAMEGENERATION_ENABLE_DEPTH_INVERTED;
+		//	createFg.flags |= FFX_FRAMEGENERATION_ENABLE_HIGH_DYNAMIC_RANGE;
 
-		// Create the FSR context
-		{
-			ffx::ReturnCode retCode;
-			retCode = ffx::CreateContext(m_UpscalingContext, nullptr, createFsr, backendDesc);
-			//Couldn't create the ffx-api upscaling context
-			assert(retCode == ffx::ReturnCode::Ok);
-		}
+		//	if (m_EnableAsyncCompute)
+		//	{
+		//		createFg.flags |= FFX_FRAMEGENERATION_ENABLE_ASYNC_WORKLOAD_SUPPORT;
+		//	}
+		//	if (m_GlobalDebugCheckerMode != FSRDebugCheckerMode::Disabled)
+		//	{
+		//		createFg.flags |= FFX_FRAMEGENERATION_ENABLE_DEBUG_CHECKING;
+		//	}
+		//	
+		//	createFg.backBufferFormat = SDKWrapper::GetFfxSurfaceFormat(GetFramework()->GetSwapChain()->GetSwapChainFormat());
+		//	ffx::ReturnCode retCode;
+		//	if (s_uiRenderMode == 3)
+		//	{
+		//		ffx::CreateContextDescFrameGenerationHudless createFgHudless{};
+		//		createFgHudless.hudlessBackBufferFormat = SDKWrapper::GetFfxSurfaceFormat(m_pHudLessTexture[0]->GetResource()->GetTextureResource()->GetFormat());
+		//		retCode = ffx::CreateContext(m_FrameGenContext, nullptr, createFg, backendDesc, createFgHudless);
+		//	}
+		//	else
+		//	{
+		//		retCode = ffx::CreateContext(m_FrameGenContext, nullptr, createFg, backendDesc);
+		//	}
 
-		//Query created version
-		ffxQueryGetProviderVersion getVersion = { 0 };
-		getVersion.header.type = FFX_API_QUERY_DESC_TYPE_GET_PROVIDER_VERSION;
+		//	CauldronAssert(ASSERT_CRITICAL, retCode == ffx::ReturnCode::Ok, L"Couldn't create the ffxapi framegen context: %d", (uint32_t)retCode);
 
-		ffx::Query(m_UpscalingContext, getVersion);
-		m_CurrentUpscaleContextVersionId = getVersion.versionId;
-		m_CurrentUpscaleContextVersionName = getVersion.versionName;
+		//	void* ffxSwapChain;
+		//	ffxSwapChain = GetSwapChain()->GetImpl()->DX12SwapChain();
 
-		EngineLog::AddLog(L"Upscaler Context VersionID 0x%016llx, %S", m_CurrentUpscaleContextVersionId, m_CurrentUpscaleContextVersionName);
 
-		//Debug message for FSR
-		SetGlobalDebugCheckerMode(m_GlobalDebugCheckerMode);
+		//	// Configure frame generation
+		//	FfxApiResource hudLessResource = SDKWrapper::ffxGetResourceApi(m_pHudLessTexture[m_curUiTextureIndex]->GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ);
+
+		//	m_FrameGenerationConfig.frameGenerationEnabled = false;
+		//	m_FrameGenerationConfig.frameGenerationCallback = [](ffxDispatchDescFrameGeneration* params, void* pUserCtx) -> ffxReturnCode_t
+		//		{
+		//			return ffxDispatch(reinterpret_cast<ffxContext*>(pUserCtx), &params->header);
+		//		};
+		//	m_FrameGenerationConfig.frameGenerationCallbackUserContext = &m_FrameGenContext;
+		//	if (s_uiRenderMode == 2)
+		//	{
+		//		m_FrameGenerationConfig.presentCallback = [](ffxCallbackDescFrameGenerationPresent* params, void* self) -> auto { return reinterpret_cast<FSRRenderModule*>(self)->UiCompositionCallback(params); };
+		//		m_FrameGenerationConfig.presentCallbackUserContext = this;
+		//	}
+		//	else
+		//	{
+		//		m_FrameGenerationConfig.presentCallback = nullptr;
+		//		m_FrameGenerationConfig.presentCallbackUserContext = nullptr;
+		//	}
+		//	m_FrameGenerationConfig.swapChain = ffxSwapChain;
+		//	m_FrameGenerationConfig.HUDLessColor = (s_uiRenderMode == 3) ? hudLessResource : FfxApiResource({});
+
+		//	m_FrameGenerationConfig.frameID = m_FrameID;
+
+		//	retCode = ffx::Configure(m_FrameGenContext, m_FrameGenerationConfig);
+		//	CauldronAssert(ASSERT_CRITICAL, retCode == ffx::ReturnCode::Ok, L"Couldn't create the ffxapi upscaling context: %d", (uint32_t)retCode);
+
+		//	FfxApiEffectMemoryUsage gpuMemoryUsageFrameGeneration;
+		//	ffx::QueryDescFrameGenerationGetGPUMemoryUsage frameGenGetGPUMemoryUsage{};
+		//	frameGenGetGPUMemoryUsage.gpuMemoryUsageFrameGeneration = &gpuMemoryUsageFrameGeneration;
+		//	ffx::Query(m_FrameGenContext, frameGenGetGPUMemoryUsage);
+
+		//	CAUDRON_LOG_INFO(L"FrameGeneration Context VRAM totalUsageInBytes %f MB aliasableUsageInBytes %f MB", gpuMemoryUsageFrameGeneration.totalUsageInBytes / 1048576.f, gpuMemoryUsageFrameGeneration.aliasableUsageInBytes / 1048576.f);
+
+
+		//	FfxApiEffectMemoryUsage gpuMemoryUsageFrameGenerationSwapchain;
+		//	ffx::QueryFrameGenerationSwapChainGetGPUMemoryUsageDX12 frameGenSwapchainGetGPUMemoryUsage{};
+		//	frameGenSwapchainGetGPUMemoryUsage.gpuMemoryUsageFrameGenerationSwapchain = &gpuMemoryUsageFrameGenerationSwapchain;
+		//	ffx::Query(m_SwapChainContext, frameGenSwapchainGetGPUMemoryUsage);
+
+		//	CAUDRON_LOG_INFO(L"Swapchain Context VRAM totalUsageInBytes %f MB aliasableUsageInBytes %f MB", gpuMemoryUsageFrameGenerationSwapchain.totalUsageInBytes / 1048576.f, gpuMemoryUsageFrameGenerationSwapchain.aliasableUsageInBytes / 1048576.f);
+		//}
+
 	}
 	else
 	{

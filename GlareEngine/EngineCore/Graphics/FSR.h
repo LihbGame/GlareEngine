@@ -5,6 +5,7 @@
 #include <DirectXMath.h>
 #include "Graphics/ColorBuffer.h"
 
+#include "ffx-api/ffx_api_types.h"
 #include "ffx-api/ffx_api.hpp"
 #include "ffx-api/ffx_upscale.hpp"
 #include "ffx-api/ffx_framegeneration.hpp"
@@ -90,13 +91,100 @@ private:
 
 	void SetGlobalDebugCheckerMode(FSRDebugCheckerMode mode);
 
+	/*inline FfxSurfaceFormat GetFfxSurfaceFormat(DXGI_FORMAT format)
+	{
+		switch (format)
+		{
+		case (DXGI_FORMAT_R32G32B32A32_TYPELESS):
+			return FFX_SURFACE_FORMAT_R32G32B32A32_TYPELESS;
+		case (cauldron::ResourceFormat::RGBA32_UINT):
+			return FFX_SURFACE_FORMAT_R32G32B32A32_UINT;
+		case (cauldron::ResourceFormat::RGBA32_FLOAT):
+			return FFX_SURFACE_FORMAT_R32G32B32A32_FLOAT;
+		case (cauldron::ResourceFormat::RGBA16_TYPELESS):
+			return FFX_SURFACE_FORMAT_R16G16B16A16_TYPELESS;
+		case (cauldron::ResourceFormat::RGBA16_FLOAT):
+			return FFX_SURFACE_FORMAT_R16G16B16A16_FLOAT;
+		case (cauldron::ResourceFormat::RGB32_FLOAT):
+			return FFX_SURFACE_FORMAT_R32G32B32_FLOAT;
+		case (cauldron::ResourceFormat::RG32_TYPELESS):
+			return FFX_SURFACE_FORMAT_R32G32_TYPELESS;
+		case (cauldron::ResourceFormat::RG32_FLOAT):
+			return FFX_SURFACE_FORMAT_R32G32_FLOAT;
+		case (cauldron::ResourceFormat::R8_UINT):
+			return FFX_SURFACE_FORMAT_R8_UINT;
+		case (cauldron::ResourceFormat::R32_UINT):
+			return FFX_SURFACE_FORMAT_R32_UINT;
+		case (cauldron::ResourceFormat::RGBA8_TYPELESS):
+			return FFX_SURFACE_FORMAT_R8G8B8A8_TYPELESS;
+		case (cauldron::ResourceFormat::RGBA8_UNORM):
+			return FFX_SURFACE_FORMAT_R8G8B8A8_UNORM;
+		case (cauldron::ResourceFormat::RGBA8_SNORM):
+			return FFX_SURFACE_FORMAT_R8G8B8A8_SNORM;
+		case (cauldron::ResourceFormat::RGBA8_SRGB):
+			return FFX_SURFACE_FORMAT_R8G8B8A8_SRGB;
+		case (cauldron::ResourceFormat::BGRA8_TYPELESS):
+			return FFX_SURFACE_FORMAT_B8G8R8A8_TYPELESS;
+		case (cauldron::ResourceFormat::BGRA8_UNORM):
+			return FFX_SURFACE_FORMAT_B8G8R8A8_UNORM;
+		case (cauldron::ResourceFormat::BGRA8_SRGB):
+			return FFX_SURFACE_FORMAT_B8G8R8A8_SRGB;
+		case (cauldron::ResourceFormat::RG11B10_FLOAT):
+			return FFX_SURFACE_FORMAT_R11G11B10_FLOAT;
+		case (cauldron::ResourceFormat::RGB9E5_SHAREDEXP):
+			return FFX_SURFACE_FORMAT_R9G9B9E5_SHAREDEXP;
+		case (cauldron::ResourceFormat::RGB10A2_UNORM):
+			return FFX_SURFACE_FORMAT_R10G10B10A2_UNORM;
+		case (cauldron::ResourceFormat::RGB10A2_TYPELESS):
+			return FFX_SURFACE_FORMAT_R10G10B10A2_TYPELESS;
+		case (cauldron::ResourceFormat::RG16_TYPELESS):
+			return FFX_SURFACE_FORMAT_R16G16_TYPELESS;
+		case (cauldron::ResourceFormat::RG16_FLOAT):
+			return FFX_SURFACE_FORMAT_R16G16_FLOAT;
+		case (cauldron::ResourceFormat::RG16_UINT):
+			return FFX_SURFACE_FORMAT_R16G16_UINT;
+		case (cauldron::ResourceFormat::RG16_SINT):
+			return FFX_SURFACE_FORMAT_R16G16_SINT;
+		case (cauldron::ResourceFormat::R16_TYPELESS):
+			return FFX_SURFACE_FORMAT_R16_TYPELESS;
+		case (cauldron::ResourceFormat::R16_FLOAT):
+			return FFX_SURFACE_FORMAT_R16_FLOAT;
+		case (cauldron::ResourceFormat::R16_UINT):
+			return FFX_SURFACE_FORMAT_R16_UINT;
+		case (cauldron::ResourceFormat::R16_UNORM):
+			return FFX_SURFACE_FORMAT_R16_UNORM;
+		case (cauldron::ResourceFormat::R16_SNORM):
+			return FFX_SURFACE_FORMAT_R16_SNORM;
+		case (cauldron::ResourceFormat::R8_TYPELESS):
+			return FFX_SURFACE_FORMAT_R8_TYPELESS;
+		case (cauldron::ResourceFormat::R8_UNORM):
+			return FFX_SURFACE_FORMAT_R8_UNORM;
+		case cauldron::ResourceFormat::RG8_TYPELESS:
+			return FFX_SURFACE_FORMAT_R8G8_TYPELESS;
+		case cauldron::ResourceFormat::RG8_UNORM:
+			return FFX_SURFACE_FORMAT_R8G8_UNORM;
+		case cauldron::ResourceFormat::RG8_UINT:
+			return FFX_SURFACE_FORMAT_R8G8_UINT;
+		case cauldron::ResourceFormat::R32_TYPELESS:
+			return FFX_SURFACE_FORMAT_R32_TYPELESS;
+		case cauldron::ResourceFormat::R32_FLOAT:
+		case cauldron::ResourceFormat::D32_FLOAT:
+			return FFX_SURFACE_FORMAT_R32_FLOAT;
+		case (cauldron::ResourceFormat::Unknown):
+			return FFX_SURFACE_FORMAT_UNKNOWN;
+		default:
+			EngineLog::AddLog(L"ValidationRemap: Unsupported format requested. Please implement.");
+			return FFX_SURFACE_FORMAT_UNKNOWN;
+		}
+	}*/
 private:
 	static FSR* m_pFSRInstance;
 
-	bool m_UpscalerEnabled = false;
+	bool m_UpscalerEnabled = true;
 	bool m_FrameInterpolationEnabled = false;
 	bool m_UseMask = true;
 	bool m_DrawFrameGenerationDebugView = false;
+	bool m_EnableAsyncCompute = true;
 	bool m_DrawUpscalerDebugView = false;
 	bool m_ResetUpscale = false;
 	bool m_SharpnessEnabled = true;

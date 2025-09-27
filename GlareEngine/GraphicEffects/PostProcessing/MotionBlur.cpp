@@ -14,7 +14,7 @@
 
 namespace MotionBlur
 {
-	bool IsEnable = true;
+	bool IsEnable = false;
 
 	NumVar MaxSampleCount(10, 10, 100);
 	NumVar StepSize(1.0f, 0.01f, 3.0f);

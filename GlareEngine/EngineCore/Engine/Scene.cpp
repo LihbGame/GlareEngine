@@ -905,6 +905,7 @@ void Scene::DeferredRendering(RasterRenderPipelineType DeferredRenderPipeline)
 			}
 
 			//After Lighting Pass
+			if(m_pGUI->IsShowDebugMesh())
 			{
 				mPRTManager.DebugVisual(Context);
 				Lighting::RenderAreaLightMesh(Context);

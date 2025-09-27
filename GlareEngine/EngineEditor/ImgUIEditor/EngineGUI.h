@@ -43,6 +43,7 @@ public:
 	bool	IsShowSky()const { return show_sky; }
 	bool	IsShowFog()const { return FogEnabled; }
 	bool	IsShowTerrain() const { return show_HeightMapTerrain; }
+	bool	IsShowDebugMesh() const { return show_DebugMesh; }
 	float	GetCameraModeSpeed()const { return CameraMoveSpeed; }
 	float	GetFogStart()const { return FogStart; }
 	float	GetFogRange()const { return FogRange; }
@@ -106,6 +107,7 @@ private:
 
 	bool show_sky				= true;
 	bool show_HeightMapTerrain	= true;
+	bool show_DebugMesh			= true;
 	bool show_Grass				= false;
 	float CameraMoveSpeed		= 1.0f;
 

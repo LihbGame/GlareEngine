@@ -18,7 +18,7 @@ namespace GlareEngine
         extern IDXGISwapChain1* s_SwapChain1;
         extern NumVar g_HDRPaperWhite;
         extern NumVar g_MaxDisplayLuminance;
-
+        extern DXGI_FORMAT g_SwapChainFormat;
 
         // Returns the number of elapsed frames since application start
         uint64_t GetFrameCount(void);
