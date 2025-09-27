@@ -974,8 +974,8 @@ void ScreenProcessing::GenerateBloom(ComputeContext& Context)
 		Context.TransitionResource(g_aBloomUAV5[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 		// Blur then Up-sampling and blur four times
-		BlurBuffer(Context, g_aBloomUAV4[0], g_aBloomUAV4[1]);
-		//UpsampleBlurBuffer(Context, g_aBloomUAV4, g_aBloomUAV5[1], BloomUpSampleFactor);
+		BlurBuffer(Context, g_aBloomUAV5[0], g_aBloomUAV5[1]);
+		UpsampleBlurBuffer(Context, g_aBloomUAV4, g_aBloomUAV5[1], BloomUpSampleFactor);
 		UpsampleBlurBuffer(Context, g_aBloomUAV3, g_aBloomUAV4[1], BloomUpSampleFactor);
 		UpsampleBlurBuffer(Context, g_aBloomUAV2, g_aBloomUAV3[1], BloomUpSampleFactor);
 		UpsampleBlurBuffer(Context, g_aBloomUAV1, g_aBloomUAV2[1], BloomUpSampleFactor);
@@ -995,8 +995,8 @@ void ScreenProcessing::GenerateBloom(ComputeContext& Context)
 		Context.TransitionResource(g_aBloomUAV5[0], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 		// Blur then Up-sampling and blur two times
-		BlurBuffer(Context, g_aBloomUAV4[0], g_aBloomUAV4[1]);
-		UpsampleBlurBuffer(Context, g_aBloomUAV3, g_aBloomUAV4[1], BloomUpSampleFactor);
+		BlurBuffer(Context, g_aBloomUAV5[0], g_aBloomUAV5[1]);
+		UpsampleBlurBuffer(Context, g_aBloomUAV3, g_aBloomUAV5[1], BloomUpSampleFactor);
 		UpsampleBlurBuffer(Context, g_aBloomUAV1, g_aBloomUAV3[1], BloomUpSampleFactor);
 	}
 

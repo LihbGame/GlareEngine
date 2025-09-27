@@ -5,10 +5,10 @@
 #include <DirectXMath.h>
 #include "Graphics/ColorBuffer.h"
 
-#include "ffx-api/ffx_api_types.h"
-#include "ffx-api/ffx_api.hpp"
-#include "ffx-api/ffx_upscale.hpp"
-#include "ffx-api/ffx_framegeneration.hpp"
+#include "FidelityFX/ffx-api/ffx_api_types.h"
+#include "FidelityFX/ffx-api/ffx_api.hpp"
+#include "FidelityFX/ffx-api/ffx_upscale.hpp"
+#include "FidelityFX/ffx-api/ffx_framegeneration.hpp"
 
 class ID3D12GraphicsCommandList;
 
