@@ -714,9 +714,9 @@ void Scene::ForwardRendering(RasterRenderPipelineType ForwardRenderPipeline)
 						g_TransparentMaskBuffer.GetUAV(),
 						g_ReactiveMaskBuffer.GetUAV()
 					};
-					CopyBufferDescriptors(FSRMask_UAV, ArraySize(FSRMask_UAV), &gTextureHeap[COMMONSRVSIZE]);
+					CopyBufferDescriptors(FSRMask_UAV, ArraySize(FSRMask_UAV), &gTextureHeap[COMMONSRVSIZE+1]);
 
-					Context.SetDescriptorTable((int)RootSignatureType::eCommonUAVs, gTextureHeap[COMMONSRVSIZE]);
+					Context.SetDescriptorTable((int)RootSignatureType::eCommonUAVs, gTextureHeap[COMMONSRVSIZE+1]);
 					DefaultMeshPass.RenderMeshes(MeshRenderPass::eTransparent, Context, mSceneView.mMainConstants);
 				}
 
@@ -802,6 +802,12 @@ void Scene::DeferredRendering(RasterRenderPipelineType DeferredRenderPipeline)
 			Context.ClearDepthAndStencil(g_SceneDepthBuffer, REVERSE_Z ? 0.0f : 1.0f);
 
 			DefaultMeshPass.RenderMeshes(MeshRenderPass::eZPass, Context, mSceneView.mMainConstants);
+
+			if (m_pRenderObjectsType[(int)ObjectType::Sky].front()->GetVisible())
+			{
+				Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &mSceneView.mMainConstants);
+				m_pRenderObjectsType[(int)ObjectType::Sky].front()->Draw(Context);
+			}
 		}
 
 		//Linear Z
@@ -872,30 +878,30 @@ void Scene::DeferredRendering(RasterRenderPipelineType DeferredRenderPipeline)
 			{
 				ScopedTimer BasePassScope(L"Base Pass", Context);
 
-				//Clear Render Target
-				Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-				Context.ClearRenderTarget(g_SceneColorBuffer);
-
 				//Set Cube SRV
 				Context.SetDescriptorTable((int)RootSignatureType::eCubeTextures, gTextureHeap[COMMONSRVSIZE + COMMONUAVSIZE]);
 				//Set Textures SRV
 				Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE + COMMONSRVSIZE + COMMONUAVSIZE]);
 
+				//Clear Render Target
+				Context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+				Context.ClearRenderTarget(g_SceneColorBuffer);
+
+				//Sky
+				{
+					ScopedTimer SkyPassScope(L"Sky", Context);
+					Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
+					Context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV_DepthReadOnly());
+					Context.SetViewportAndScissor(mSceneView.m_MainViewport, mSceneView.m_MainScissor);
+					if (m_pRenderObjectsType[(int)ObjectType::Sky].front()->GetVisible())
+					{
+						Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &mSceneView.mMainConstants);
+						m_pRenderObjectsType[(int)ObjectType::Sky].front()->Draw(Context);
+					}
+				}
+
 				DefaultMeshPass.RenderMeshes(MeshRenderPass::eOpaque, Context, mSceneView.mMainConstants);
 
-			}
-
-			//Sky
-			{
-				ScopedTimer SkyPassScope(L"Sky", Context);
-				Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
-				Context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV_DepthReadOnly());
-				Context.SetViewportAndScissor(mSceneView.m_MainViewport, mSceneView.m_MainScissor);
-				if (m_pRenderObjectsType[(int)ObjectType::Sky].front()->GetVisible())
-				{
-					Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &mSceneView.mMainConstants);
-					m_pRenderObjectsType[(int)ObjectType::Sky].front()->Draw(Context);
-				}
 			}
 
 			//Lighting Pass

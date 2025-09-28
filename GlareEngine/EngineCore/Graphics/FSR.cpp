@@ -13,16 +13,16 @@
 
 #include "FidelityFX/ffx-api/dx12/ffx_api_dx12.hpp"
 
-
-
 FSR* FSR::m_pFSRInstance = nullptr;
 
-void FSR::Execute(ID3D12GraphicsCommandList* pCmdList, ColorBuffer& Input, ColorBuffer& Output)
+void FSR::Execute(ComputeContext& Context, ColorBuffer& Input, ColorBuffer& Output)
 {
 	if (m_UpscalingContext)
 	{
+		ScopedTimer SkyPassScope(L"FSR", Context);
+
 		ffx::DispatchDescUpscale dispatchUpscale{};
-		dispatchUpscale.commandList = pCmdList;
+		dispatchUpscale.commandList = Context.GetCommandList();
 
 		dispatchUpscale.color = ffxApiGetResourceDX12(Input.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
 		dispatchUpscale.depth = ffxApiGetResourceDX12(g_SceneDepthBuffer.GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ, 0);
@@ -302,6 +302,7 @@ void FSR::DrawUI()
 				UpdateUpscalerPreset(m_NewPreset);
 			}
 			ImGui::SliderVerticalFloat("Sharpness:", &m_Sharpness, 0.0f, 1.0f);
+			ImGui::Checkbox("Upscaler Debug View", &m_DrawUpscalerDebugView);
 		}
 	}
 }

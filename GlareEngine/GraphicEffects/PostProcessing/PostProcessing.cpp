@@ -528,7 +528,7 @@ void ScreenProcessing::Render(const Camera& camera)
 	{
 		//Execute FSR 
 		Context.TransitionResource(g_SceneFullScreenBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE| D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,true);
-		FSR::GetInstance()->Execute(Context.GetCommandList(), *LastPostprocessRT, g_SceneFullScreenBuffer);
+		FSR::GetInstance()->Execute(Context, *LastPostprocessRT, g_SceneFullScreenBuffer);
 	}
 	
 	//if (!g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
@@ -572,7 +572,15 @@ void ScreenProcessing::DrawUI()
 	{
 		ImGui::Combo("Anti Aliasing", &mAntiAliasingIndex, mAntiAliasingName.c_str());
 
-		Render::SetAntiAliasingType(Render::AntiAliasingType(mAntiAliasingIndex));
+		if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBFR)
+		{
+			mAntiAliasingIndex = (int)Render::AntiAliasingType::TAA;
+			Render::SetAntiAliasingType(Render::AntiAliasingType(mAntiAliasingIndex));
+		}
+		else
+		{
+			Render::SetAntiAliasingType(Render::AntiAliasingType(mAntiAliasingIndex));
+		}
 
 		switch (mAntiAliasingIndex)
 		{

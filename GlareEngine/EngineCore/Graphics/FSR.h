@@ -48,7 +48,7 @@ public:
 
 	float GetUpscaleRatio() { return m_UpscaleRatio; }
 
-	void Execute(ID3D12GraphicsCommandList* pCmdList,ColorBuffer& Input,ColorBuffer& Output);
+	void Execute(ComputeContext& Context,ColorBuffer& Input,ColorBuffer& Output);
 
 	DirectX::XMFLOAT2 GetFSRjitter();
 

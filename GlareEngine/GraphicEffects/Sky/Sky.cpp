@@ -7,6 +7,7 @@
 //shader
 #include "CompiledShaders/SkyVS.h"
 #include "CompiledShaders/SkyPS.h"
+using namespace GlareEngine::Render;
 
 #define  HDR_SKY L"HDRSky\\SKY_HDR"
 #define  LDR_SKY L"HDRSky\\SKY_LDR"
@@ -123,6 +124,12 @@ void CSky::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 	else
 	{
 		Context.SetPipelineState(mSkyMaterial->GetRuntimePSO());
+		D3D12_CPU_DESCRIPTOR_HANDLE MotionVectorUAV[] =
+		{
+			g_GBuffer[GBUFFER_MotionVector].GetUAV()
+		};
+		CopyBufferDescriptors(MotionVectorUAV, ArraySize(MotionVectorUAV), &gTextureHeap[COMMONSRVSIZE + 3]);
+		Context.SetDescriptorTable((int)RootSignatureType::eCommonUAVs, gTextureHeap[COMMONSRVSIZE + 3]);
 		Context.SetDynamicConstantBufferView((int)RootSignatureType::eCommonConstantBuffer, sizeof(mWorld), &mWorld);
 	}
 	Context.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
