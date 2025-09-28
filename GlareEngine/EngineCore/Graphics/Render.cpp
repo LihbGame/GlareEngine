@@ -56,7 +56,7 @@ namespace GlareEngine
 		//Rendering Setting
 		AntiAliasingType gAntiAliasingType = AntiAliasingType::MSAA;
 
-		RasterRenderPipelineType gRasterRenderPipelineType = RasterRenderPipelineType::TBFR;
+		RasterRenderPipelineType gRasterRenderPipelineType = RasterRenderPipelineType::TBDR;
 
 		D3D12_CPU_DESCRIPTOR_HANDLE g_GBufferSRV[GBUFFER_Count];
 

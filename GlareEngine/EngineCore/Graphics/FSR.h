@@ -4,11 +4,13 @@
 #include <limits> 
 #include <DirectXMath.h>
 #include "Graphics/ColorBuffer.h"
-
+#include "Engine/EngineLog.h"
 #include "FidelityFX/ffx-api/ffx_api_types.h"
 #include "FidelityFX/ffx-api/ffx_api.hpp"
 #include "FidelityFX/ffx-api/ffx_upscale.hpp"
 #include "FidelityFX/ffx-api/ffx_framegeneration.hpp"
+#include "FidelityFX/host/ffx_types.h"
+
 
 class ID3D12GraphicsCommandList;
 
@@ -91,92 +93,92 @@ private:
 
 	void SetGlobalDebugCheckerMode(FSRDebugCheckerMode mode);
 
-	/*inline FfxSurfaceFormat GetFfxSurfaceFormat(DXGI_FORMAT format)
+	inline FfxSurfaceFormat GetFfxSurfaceFormat(DXGI_FORMAT format)
 	{
 		switch (format)
 		{
 		case (DXGI_FORMAT_R32G32B32A32_TYPELESS):
 			return FFX_SURFACE_FORMAT_R32G32B32A32_TYPELESS;
-		case (cauldron::ResourceFormat::RGBA32_UINT):
+		case (DXGI_FORMAT_R32G32B32A32_UINT):
 			return FFX_SURFACE_FORMAT_R32G32B32A32_UINT;
-		case (cauldron::ResourceFormat::RGBA32_FLOAT):
+		case (DXGI_FORMAT_R32G32B32A32_FLOAT):
 			return FFX_SURFACE_FORMAT_R32G32B32A32_FLOAT;
-		case (cauldron::ResourceFormat::RGBA16_TYPELESS):
+		case (DXGI_FORMAT_R16G16B16A16_TYPELESS):
 			return FFX_SURFACE_FORMAT_R16G16B16A16_TYPELESS;
-		case (cauldron::ResourceFormat::RGBA16_FLOAT):
+		case (DXGI_FORMAT_R16G16B16A16_FLOAT):
 			return FFX_SURFACE_FORMAT_R16G16B16A16_FLOAT;
-		case (cauldron::ResourceFormat::RGB32_FLOAT):
+		case (DXGI_FORMAT_R32G32B32_FLOAT):
 			return FFX_SURFACE_FORMAT_R32G32B32_FLOAT;
-		case (cauldron::ResourceFormat::RG32_TYPELESS):
+		case (DXGI_FORMAT_R32G32_TYPELESS):
 			return FFX_SURFACE_FORMAT_R32G32_TYPELESS;
-		case (cauldron::ResourceFormat::RG32_FLOAT):
+		case (DXGI_FORMAT_R32G32_FLOAT):
 			return FFX_SURFACE_FORMAT_R32G32_FLOAT;
-		case (cauldron::ResourceFormat::R8_UINT):
+		case (DXGI_FORMAT_R8_UINT):
 			return FFX_SURFACE_FORMAT_R8_UINT;
-		case (cauldron::ResourceFormat::R32_UINT):
+		case (DXGI_FORMAT_R32_UINT):
 			return FFX_SURFACE_FORMAT_R32_UINT;
-		case (cauldron::ResourceFormat::RGBA8_TYPELESS):
+		case (DXGI_FORMAT_R8G8B8A8_TYPELESS):
 			return FFX_SURFACE_FORMAT_R8G8B8A8_TYPELESS;
-		case (cauldron::ResourceFormat::RGBA8_UNORM):
+		case (DXGI_FORMAT_R8G8B8A8_UNORM):
 			return FFX_SURFACE_FORMAT_R8G8B8A8_UNORM;
-		case (cauldron::ResourceFormat::RGBA8_SNORM):
+		case (DXGI_FORMAT_R8G8B8A8_SNORM):
 			return FFX_SURFACE_FORMAT_R8G8B8A8_SNORM;
-		case (cauldron::ResourceFormat::RGBA8_SRGB):
+		case (DXGI_FORMAT_R8G8B8A8_UNORM_SRGB):
 			return FFX_SURFACE_FORMAT_R8G8B8A8_SRGB;
-		case (cauldron::ResourceFormat::BGRA8_TYPELESS):
+		case (DXGI_FORMAT_B8G8R8A8_TYPELESS):
 			return FFX_SURFACE_FORMAT_B8G8R8A8_TYPELESS;
-		case (cauldron::ResourceFormat::BGRA8_UNORM):
+		case (DXGI_FORMAT_B8G8R8A8_UNORM):
 			return FFX_SURFACE_FORMAT_B8G8R8A8_UNORM;
-		case (cauldron::ResourceFormat::BGRA8_SRGB):
+		case (DXGI_FORMAT_B8G8R8A8_UNORM_SRGB):
 			return FFX_SURFACE_FORMAT_B8G8R8A8_SRGB;
-		case (cauldron::ResourceFormat::RG11B10_FLOAT):
+		case (DXGI_FORMAT_R11G11B10_FLOAT):
 			return FFX_SURFACE_FORMAT_R11G11B10_FLOAT;
-		case (cauldron::ResourceFormat::RGB9E5_SHAREDEXP):
+		case (DXGI_FORMAT_R9G9B9E5_SHAREDEXP):
 			return FFX_SURFACE_FORMAT_R9G9B9E5_SHAREDEXP;
-		case (cauldron::ResourceFormat::RGB10A2_UNORM):
+		case (DXGI_FORMAT_R10G10B10A2_UNORM):
 			return FFX_SURFACE_FORMAT_R10G10B10A2_UNORM;
-		case (cauldron::ResourceFormat::RGB10A2_TYPELESS):
+		case (DXGI_FORMAT_R10G10B10A2_TYPELESS):
 			return FFX_SURFACE_FORMAT_R10G10B10A2_TYPELESS;
-		case (cauldron::ResourceFormat::RG16_TYPELESS):
+		case (DXGI_FORMAT_R16G16_TYPELESS):
 			return FFX_SURFACE_FORMAT_R16G16_TYPELESS;
-		case (cauldron::ResourceFormat::RG16_FLOAT):
+		case (DXGI_FORMAT_R16G16_FLOAT):
 			return FFX_SURFACE_FORMAT_R16G16_FLOAT;
-		case (cauldron::ResourceFormat::RG16_UINT):
+		case (DXGI_FORMAT_R16G16_UINT):
 			return FFX_SURFACE_FORMAT_R16G16_UINT;
-		case (cauldron::ResourceFormat::RG16_SINT):
+		case (DXGI_FORMAT_R16G16_SINT):
 			return FFX_SURFACE_FORMAT_R16G16_SINT;
-		case (cauldron::ResourceFormat::R16_TYPELESS):
+		case (DXGI_FORMAT_R16_TYPELESS):
 			return FFX_SURFACE_FORMAT_R16_TYPELESS;
-		case (cauldron::ResourceFormat::R16_FLOAT):
+		case (DXGI_FORMAT_R16_FLOAT):
 			return FFX_SURFACE_FORMAT_R16_FLOAT;
-		case (cauldron::ResourceFormat::R16_UINT):
+		case (DXGI_FORMAT_R16_UINT):
 			return FFX_SURFACE_FORMAT_R16_UINT;
-		case (cauldron::ResourceFormat::R16_UNORM):
+		case (DXGI_FORMAT_R16_UNORM):
 			return FFX_SURFACE_FORMAT_R16_UNORM;
-		case (cauldron::ResourceFormat::R16_SNORM):
+		case (DXGI_FORMAT_R16_SNORM):
 			return FFX_SURFACE_FORMAT_R16_SNORM;
-		case (cauldron::ResourceFormat::R8_TYPELESS):
+		case (DXGI_FORMAT_R8_TYPELESS):
 			return FFX_SURFACE_FORMAT_R8_TYPELESS;
-		case (cauldron::ResourceFormat::R8_UNORM):
+		case (DXGI_FORMAT_R8_UNORM):
 			return FFX_SURFACE_FORMAT_R8_UNORM;
-		case cauldron::ResourceFormat::RG8_TYPELESS:
+		case DXGI_FORMAT_R8G8_TYPELESS:
 			return FFX_SURFACE_FORMAT_R8G8_TYPELESS;
-		case cauldron::ResourceFormat::RG8_UNORM:
+		case DXGI_FORMAT_R8G8_UNORM:
 			return FFX_SURFACE_FORMAT_R8G8_UNORM;
-		case cauldron::ResourceFormat::RG8_UINT:
+		case DXGI_FORMAT_R8G8_UINT:
 			return FFX_SURFACE_FORMAT_R8G8_UINT;
-		case cauldron::ResourceFormat::R32_TYPELESS:
+		case DXGI_FORMAT_R32_TYPELESS:
 			return FFX_SURFACE_FORMAT_R32_TYPELESS;
-		case cauldron::ResourceFormat::R32_FLOAT:
-		case cauldron::ResourceFormat::D32_FLOAT:
+		case DXGI_FORMAT_R32_FLOAT:
+		case DXGI_FORMAT_D32_FLOAT:
 			return FFX_SURFACE_FORMAT_R32_FLOAT;
-		case (cauldron::ResourceFormat::Unknown):
+		case (DXGI_FORMAT_UNKNOWN):
 			return FFX_SURFACE_FORMAT_UNKNOWN;
 		default:
 			EngineLog::AddLog(L"ValidationRemap: Unsupported format requested. Please implement.");
 			return FFX_SURFACE_FORMAT_UNKNOWN;
 		}
-	}*/
+	}
 private:
 	static FSR* m_pFSRInstance;
 

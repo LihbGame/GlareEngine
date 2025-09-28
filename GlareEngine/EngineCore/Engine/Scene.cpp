@@ -35,13 +35,13 @@ void Scene::Update(float DeltaTime)
 
 	if (FSR::GetInstance()->UpscalerEnabled())
 	{
-		if (Display::g_bUpscale)
+		if (Display::g_bFSRUpscale)
 		{
 			g_CommandManager.IdleGPU();
 			Display::g_RenderWidth = Display::g_DisplayWidth / Display::g_UpscaleRatio;
 			Display::g_RenderHeight = Display::g_DisplayHeight / Display::g_UpscaleRatio;
 			ResizeDisplayDependentBuffers(Display::g_RenderWidth, Display::g_RenderHeight);
-			Display::g_bUpscale = false;
+			Display::g_bFSRUpscale = false;
 		}
 	}
 	else
@@ -51,6 +51,7 @@ void Scene::Update(float DeltaTime)
 		Display::g_RenderHeight = Display::g_DisplayHeight;
 		EngineGlobal::gCurrentScene->ResizeViewport(Display::g_RenderWidth, Display::g_RenderHeight);
 		ResizeDisplayDependentBuffers(Display::g_RenderWidth, Display::g_RenderHeight);
+		Display::g_bFSRUpscale = true;
 	}
 
 	//Update shadow map

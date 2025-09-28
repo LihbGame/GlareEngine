@@ -124,7 +124,7 @@ namespace ScreenProcessing
 
 	string mAntiAliasingName;
 	int mAntiAliasingIndex = Render::AntiAliasingType::FSR;
-
+	int mPreAntiAliasingIndex= Render::AntiAliasingType::FSR;
 	//Exposure Data
 	StructuredBuffer g_Exposure;
 
@@ -570,6 +570,8 @@ void ScreenProcessing::DrawUI()
 
 	if (ImGui::CollapsingHeader("Anti-aliasing", ImGuiTreeNodeFlags_DefaultOpen))
 	{
+		mPreAntiAliasingIndex = mAntiAliasingIndex;
+
 		ImGui::Combo("Anti Aliasing", &mAntiAliasingIndex, mAntiAliasingName.c_str());
 
 		if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBFR)

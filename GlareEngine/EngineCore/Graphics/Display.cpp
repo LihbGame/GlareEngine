@@ -94,7 +94,7 @@ namespace GlareEngine
 		uint32_t g_RenderHeight;
 
 		float g_UpscaleRatio = 1.0f;
-		bool  g_bUpscale = false;
+		bool  g_bFSRUpscale = false;
 
 		ColorBuffer g_PreDisplayBuffer;
 
