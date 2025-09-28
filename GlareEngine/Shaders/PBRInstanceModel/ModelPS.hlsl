@@ -131,6 +131,12 @@ float4 main(VSOutput vsOutput) : SV_Target0
     }
     else
     {
+        if (gIsRenderTiledBaseLighting)
+        {
+            //Shade each light using Forward+ tiles
+            color += ComputeTiledLighting(pixelPos, Surface);
+        }
+        
         Surface.c_diff *= ssao;
         Surface.c_spec *= ssao;
         //Outdoor environment light (IBL)

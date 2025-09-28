@@ -715,9 +715,9 @@ void Scene::ForwardRendering(RasterRenderPipelineType ForwardRenderPipeline)
 						g_TransparentMaskBuffer.GetUAV(),
 						g_ReactiveMaskBuffer.GetUAV()
 					};
-					CopyBufferDescriptors(FSRMask_UAV, ArraySize(FSRMask_UAV), &gTextureHeap[COMMONSRVSIZE+1]);
+					CopyBufferDescriptors(FSRMask_UAV, ArraySize(FSRMask_UAV), &gTextureHeap[COMMONSRVSIZE]);
 
-					Context.SetDescriptorTable((int)RootSignatureType::eCommonUAVs, gTextureHeap[COMMONSRVSIZE+1]);
+					Context.SetDescriptorTable((int)RootSignatureType::eCommonUAVs, gTextureHeap[COMMONSRVSIZE]);
 					DefaultMeshPass.RenderMeshes(MeshRenderPass::eTransparent, Context, mSceneView.mMainConstants);
 				}
 
@@ -731,6 +731,7 @@ void Scene::ForwardRendering(RasterRenderPipelineType ForwardRenderPipeline)
 			}
 
 			//After Lighting Pass
+			if (m_pGUI->IsShowDebugMesh())
 			{
 				mPRTManager.DebugVisual(Context);
 				Lighting::RenderAreaLightMesh(Context);

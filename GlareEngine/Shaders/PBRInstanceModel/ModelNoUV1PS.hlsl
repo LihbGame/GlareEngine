@@ -84,7 +84,7 @@ float3 GetNormal(float3 normalMapSample, float3 unitNormalW, float4 tangentW)
     return bumpedNormalW;
 }
 
-
+[earlydepthstencil]
 float4 main(VSOutput vsOutput) : SV_Target0
 {
      uint2 pixelPos = uint2(vsOutput.position.xy);
@@ -138,6 +138,12 @@ float4 main(VSOutput vsOutput) : SV_Target0
      }
      else
      {
+        if (gIsRenderTiledBaseLighting)
+        {
+            //Shade each light using Forward+ tiles
+            color += ComputeTiledLighting(pixelPos, Surface);
+        }
+        
          Surface.c_diff *= ssao;
          Surface.c_spec *= ssao;
          //Outdoor environment light (IBL)

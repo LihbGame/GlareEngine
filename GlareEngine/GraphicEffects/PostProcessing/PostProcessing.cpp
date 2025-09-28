@@ -576,7 +576,10 @@ void ScreenProcessing::DrawUI()
 
 		if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBFR)
 		{
-			mAntiAliasingIndex = (int)Render::AntiAliasingType::TAA;
+			if (mAntiAliasingIndex == Render::AntiAliasingType::FSR)
+			{
+				mAntiAliasingIndex = (int)Render::AntiAliasingType::TAA;
+			}
 			Render::SetAntiAliasingType(Render::AntiAliasingType(mAntiAliasingIndex));
 		}
 		else

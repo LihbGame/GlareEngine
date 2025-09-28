@@ -161,7 +161,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 		Render::InitializePSO();
 
 		//set global scene
-		EngineGlobal::gCurrentScene = gScenes[0];
+		EngineGlobal::gCurrentScene = gScenes[1];
 
 		for (auto& scene : gScenes)
 		{

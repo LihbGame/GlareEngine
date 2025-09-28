@@ -692,12 +692,11 @@ void Lighting::Update(MainConstants& mainConstants,Camera& camera)
 		bNeedRebuildCluster = true;
 		PreClusterTiles.x = ClusterTiles.x;
 		PreClusterTiles.y = ClusterTiles.y;
-
-		mainConstants.gCluserFactor = ClusterFactor;
-		mainConstants.gPerTileSize = ClusterTileSize;
-		mainConstants.gTileSizes = ClusterTiles;
 	}
 
+	mainConstants.gCluserFactor = ClusterFactor;
+	mainConstants.gPerTileSize = ClusterTileSize;
+	mainConstants.gTileSizes = ClusterTiles;
 }
 
 void Lighting::UpdateViewSpacePosition(Camera& camera)
