@@ -19,7 +19,7 @@ TIPS:
 - Screen-space ambient occlusion
 - HDR bloom
 - Color grading: exposure, adaptation
-- TAA, FXAA, MSAA
+- FSR, TAA, FXAA, MSAA
 - Parallax Mapping
 - Motion Blur
 - Runtime Shader Modify
