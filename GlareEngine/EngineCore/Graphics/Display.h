@@ -1,7 +1,9 @@
 #pragma once
 
 #include <cstdint>
+#include <dxgi1_5.h>
 #include "ColorBuffer.h"
+
 namespace GlareEngine
 {
     namespace Display
@@ -15,13 +17,19 @@ namespace GlareEngine
         extern bool  g_bFSRUpscale;
 
         extern bool g_bEnableHDROutput;
-        extern IDXGISwapChain1* s_SwapChain1;
+        extern IDXGISwapChain4* g_SwapChain4;
         extern NumVar g_HDRPaperWhite;
         extern NumVar g_MaxDisplayLuminance;
         extern DXGI_FORMAT g_SwapChainFormat;
 
         // Returns the number of elapsed frames since application start
         uint64_t GetFrameCount(void);
+
+        void CheckHDRSupport();
+
+        void CreateSwapChainBuffer();
+
+        void DestroyDisplayBuffers();
 
         // The amount of time elapsed during the last completed frame.The CPU and/or
         // GPU may be idle during parts of the frame.The frame time measures the time

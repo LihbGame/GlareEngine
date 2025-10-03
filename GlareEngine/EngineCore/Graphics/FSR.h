@@ -3,6 +3,7 @@
 #include <cmath>
 #include <limits> 
 #include <DirectXMath.h>
+#include <dxgi1_6.h>
 #include "Graphics/ColorBuffer.h"
 #include "Engine/EngineLog.h"
 #include "FidelityFX/ffx-api/ffx_api_types.h"
@@ -10,7 +11,7 @@
 #include "FidelityFX/ffx-api/ffx_upscale.hpp"
 #include "FidelityFX/ffx-api/ffx_framegeneration.hpp"
 #include "FidelityFX/host/ffx_types.h"
-
+#include "FidelityFX/ffx-api/dx12/ffx_api_dx12.hpp"
 
 class ID3D12GraphicsCommandList;
 
@@ -21,6 +22,8 @@ public:
 	static void Shutdown();
 
 	void UpdateUpscalingContext(bool enable);
+
+	void CreateSwapChain(ffx::CreateContextDescFrameGenerationSwapChainForHwndDX12& createSwapChainDesc);
 
 	bool UpscalerEnabled() 
 	{
@@ -55,8 +58,12 @@ public:
 	DirectX::XMFLOAT2 GetFSRjitter();
 
 	void ResetJitterIndex() { m_JitterIndex = 0; }
+
+	ffx::Context& GetSwapChainContext() {
+		return m_SwapChainContext;
+	}
 private:
-	FSR() {}
+	FSR();
 	~FSR();
 
 	enum class FSRScalePreset

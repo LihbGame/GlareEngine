@@ -275,7 +275,7 @@ namespace GlareEngine
 				mClientWidth = LOWORD(lParam);
 				mClientHeight = HIWORD(lParam);
 
-				if (s_SwapChain1 != nullptr)
+				if (g_SwapChain4 != nullptr)
 				{
 					if (wParam == SIZE_MINIMIZED)
 					{

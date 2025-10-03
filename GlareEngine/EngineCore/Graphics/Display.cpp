@@ -35,6 +35,7 @@
 #include <winreg.h>        // To read the registry
 #include <imgui.h>
 #include "FSR.h"
+#include <dxgidebug.h>
 
 namespace GlareEngine
 {
@@ -56,8 +57,6 @@ namespace GlareEngine
 
 	namespace Display
 	{
-
-		void CheckHDRSupport();
 		void InitializePersentPSO();
 
 		void PreparePresentLDR();
@@ -160,7 +159,7 @@ namespace GlareEngine
 		UINT g_CurrentBuffer = 0;
 
 		//Swap Chain
-		IDXGISwapChain1* s_SwapChain1 = nullptr;
+		IDXGISwapChain4* g_SwapChain4 = nullptr;
 
 		//Descriptor Allocator
 		DescriptorAllocator g_DescriptorAllocator[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES] =
@@ -198,7 +197,7 @@ namespace GlareEngine
 		//检查是否支持HDR
 #if CONDITIONALLY_ENABLE_HDR_OUTPUT && defined(NTDDI_WIN10_RS2) && (NTDDI_VERSION >= NTDDI_WIN10_RS2)
 		{
-			IDXGISwapChain4* swapChain = (IDXGISwapChain4*)s_SwapChain1;
+			IDXGISwapChain4* swapChain = (IDXGISwapChain4*)g_SwapChain4;
 			ComPtr<IDXGIOutput> output;
 			ComPtr<IDXGIOutput6> output6;
 			DXGI_OUTPUT_DESC1 outputDesc;
@@ -222,6 +221,41 @@ namespace GlareEngine
 			}
 		}
 #endif
+	}
+
+	void Display::CreateSwapChainBuffer()
+	{
+		//Destroy old display buffers
+		for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
+		{
+			if (g_DisplayBuffers[i].GetResource())
+			{
+				g_DisplayBuffers[i].Destroy();
+			}
+		}
+
+		//Resize Swap Chain 
+		ThrowIfFailed(g_SwapChain4->ResizeBuffers(SWAP_CHAIN_BUFFER_COUNT, g_DisplayWidth, g_DisplayHeight, g_SwapChainFormat, 0));
+
+		for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
+		{
+			ComPtr<ID3D12Resource> DisplayBuffer;
+			ThrowIfFailed(g_SwapChain4->GetBuffer(i, IID_PPV_ARGS(&DisplayBuffer)));
+			g_DisplayBuffers[i].CreateFromSwapChain(L"Primary SwapChain Buffer", DisplayBuffer.Detach());
+		}
+
+		//reset current buffer index
+		g_CurrentBuffer = 0;
+		g_CommandManager.IdleGPU();
+	}
+
+	void Display::DestroyDisplayBuffers()
+	{
+		//Destroy old display buffers
+		for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
+		{
+			g_DisplayBuffers[i].Destroy();
+		}
 	}
 
 	void Display::InitializePersentPSO()
@@ -366,8 +400,7 @@ namespace GlareEngine
 
 	void Display::Initialize(void)
 	{
-		assert(s_SwapChain1 == nullptr);
-		
+		assert(g_SwapChain4 == nullptr);
 		Microsoft::WRL::ComPtr<IDXGIFactory4> dxgiFactory;
 		SUCCEEDED(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgiFactory)));
 
@@ -387,32 +420,56 @@ namespace GlareEngine
 		DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsSwapChainDesc = {};
 		fsSwapChainDesc.Windowed = TRUE;
 
-		SUCCEEDED(dxgiFactory->CreateSwapChainForHwnd(
-			g_CommandManager.GetCommandQueue(),
-			GameCore::g_hWnd,
-			&swapChainDesc,
-			&fsSwapChainDesc,
-			nullptr,
-			&s_SwapChain1));
+		FSR* fsr = FSR::GetInstance();
+		if (fsr->FrameInterpolationEnabled())
+		{
+			IDXGISwapChain4* SwapChain4 = nullptr;
 
+			ffx::CreateContextDescFrameGenerationSwapChainForHwndDX12 GenerationSwapChainDesc{};
+			GenerationSwapChainDesc.hwnd = GameCore::g_hWnd;
+			GenerationSwapChainDesc.desc = &swapChainDesc;
+			GenerationSwapChainDesc.fullscreenDesc = &fsSwapChainDesc;
+			GenerationSwapChainDesc.gameQueue = g_CommandManager.GetCommandQueue();
+			GenerationSwapChainDesc.swapchain = &SwapChain4;
+			GenerationSwapChainDesc.dxgiFactory = dxgiFactory.Get();
+			fsr->CreateSwapChain(GenerationSwapChainDesc);
+			SwapChain4->AddRef();
+			g_SwapChain4 = SwapChain4;
+		}
+		else
+		{
+			IDXGISwapChain1* pSwapChain1 = nullptr;
+			SUCCEEDED(dxgiFactory->CreateSwapChainForHwnd(
+				g_CommandManager.GetCommandQueue(),
+				GameCore::g_hWnd,
+				&swapChainDesc,
+				&fsSwapChainDesc,
+				nullptr,
+				&pSwapChain1));
 
-		CheckHDRSupport();
+			SUCCEEDED(pSwapChain1->QueryInterface(IID_PPV_ARGS(&g_SwapChain4)));
+			pSwapChain1->Release();
+		}
 
 		for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
 		{
 			ComPtr<ID3D12Resource> DisplayPlane;
-			SUCCEEDED(s_SwapChain1->GetBuffer(i, IID_PPV_ARGS(&DisplayPlane)));
+			SUCCEEDED(g_SwapChain4->GetBuffer(i, IID_PPV_ARGS(&DisplayPlane)));
 			g_DisplayBuffers[i].CreateFromSwapChain(L"Primary SwapChain Buffer", DisplayPlane.Detach());
 		}
 
+		dxgiFactory->MakeWindowAssociation(GameCore::g_hWnd, DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
+		dxgiFactory->Release();
+
+		CheckHDRSupport();
 		SetNativeResolution();
 		InitializePersentPSO();
 	}
 
 	void Display::Shutdown(void)
 	{
-		s_SwapChain1->SetFullscreenState(FALSE, nullptr);
-		s_SwapChain1->Release();
+		g_SwapChain4->SetFullscreenState(FALSE, nullptr);
+		g_SwapChain4->Release();
 
 		for (UINT i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
 			g_DisplayBuffers[i].Destroy();
@@ -432,7 +489,7 @@ namespace GlareEngine
 		g_CurrentBuffer = (g_CurrentBuffer + 1) % SWAP_CHAIN_BUFFER_COUNT;
 
 		UINT PresentInterval = s_EnableVSync ? min(4, (int)round(s_FrameTime * 60.0f)) : 0;
-		s_SwapChain1->Present(PresentInterval, 0);
+		g_SwapChain4->Present(PresentInterval, 0);
 
 
 		float CurrentTick = GameTimer::TotalTime();
@@ -460,7 +517,7 @@ namespace GlareEngine
 
 	void Display::Resize(uint32_t width, uint32_t height)
 	{
-		assert(s_SwapChain1 != nullptr);
+		assert(g_SwapChain4 != nullptr);
 
 		// Check for invalid window dimensions
 		if (width == 0 || height == 0)
@@ -496,23 +553,7 @@ namespace GlareEngine
 
 		//g_PreDisplayBuffer.Create(L"PreDisplay Buffer", width, height, 1, g_SwapChainFormat);
 
-		//Destroy old display buffers
-		for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
-			g_DisplayBuffers[i].Destroy();
-
-		//Resize Swap Chain 
-		ThrowIfFailed(s_SwapChain1->ResizeBuffers(SWAP_CHAIN_BUFFER_COUNT, g_DisplayWidth, g_DisplayHeight, g_SwapChainFormat, 0));
-
-		for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
-		{
-			ComPtr<ID3D12Resource> DisplayBuffer;
-			ThrowIfFailed(s_SwapChain1->GetBuffer(i, IID_PPV_ARGS(&DisplayBuffer)));
-			g_DisplayBuffers[i].CreateFromSwapChain(L"Primary SwapChain Buffer", DisplayBuffer.Detach());
-		}
-
-		//reset current buffer index
-		g_CurrentBuffer = 0;
-		g_CommandManager.IdleGPU();
+		CreateSwapChainBuffer();
 
 		ResizeDisplayDependentBuffers(g_RenderWidth, g_RenderHeight);
 	}

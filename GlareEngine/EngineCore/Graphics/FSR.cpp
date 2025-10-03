@@ -11,9 +11,14 @@
 #include "Graphics/Display.h"
 #include "Engine/Scene.h"
 
-#include "FidelityFX/ffx-api/dx12/ffx_api_dx12.hpp"
+using namespace GlareEngine::Display;
 
 FSR* FSR::m_pFSRInstance = nullptr;
+
+FSR::FSR()
+{
+}
+
 
 void FSR::Execute(ComputeContext& Context, ColorBuffer& Input, ColorBuffer& Output)
 {
@@ -122,10 +127,13 @@ XMFLOAT2 FSR::GetFSRjitter()
 
 FSR::~FSR()
 {
-	if (m_UpscalingContext)
+	UpdateUpscalingContext(false);
+
+	if (m_SwapChainContext != nullptr)
 	{
-		ffx::DestroyContext(m_UpscalingContext);
-		m_UpscalingContext = nullptr;
+		// Restore the application's swapchain
+		ffx::DestroyContext(m_SwapChainContext);
+		m_SwapChainContext = nullptr;
 	}
 }
 
@@ -201,7 +209,7 @@ void FSR::UpdateUpscalingContext(bool enable)
 		//Create the FrameGen context
 		if (m_FrameInterpolationEnabled)
 		{
-			ffx::CreateContextDescFrameGeneration createFg{};
+			/*ffx::CreateContextDescFrameGeneration createFg{};
 			createFg.displaySize = { Display::g_DisplayWidth,Display::g_DisplayHeight };
 			createFg.maxRenderSize = { Display::g_DisplayWidth, Display::g_DisplayHeight };
 			if (REVERSE_Z)
@@ -216,20 +224,21 @@ void FSR::UpdateUpscalingContext(bool enable)
 			{
 				createFg.flags |= FFX_FRAMEGENERATION_ENABLE_DEBUG_CHECKING;
 			}
-			
-			createFg.backBufferFormat = GetFfxSurfaceFormat(Display::g_SwapChainFormat);
-			ffx::ReturnCode retCode;
-			//if (s_uiRenderMode == 3)
-			//{
-			//	ffx::CreateContextDescFrameGenerationHudless createFgHudless{};
-			//	createFgHudless.hudlessBackBufferFormat = SDKWrapper::GetFfxSurfaceFormat(m_pHudLessTexture[0]->GetResource()->GetTextureResource()->GetFormat());
-			//	retCode = ffx::CreateContext(m_FrameGenContext, nullptr, createFg, backendDesc, createFgHudless);
-			//}
-			//else
-			//{
-			//	retCode = ffx::CreateContext(m_FrameGenContext, nullptr, createFg, backendDesc);
-			//}
 
+
+			createFg.backBufferFormat = GetFfxSurfaceFormat(Display::g_SwapChainFormat);
+			ffx::ReturnCode retCode;*/
+			/*if (s_uiRenderMode == 3)
+			{
+				ffx::CreateContextDescFrameGenerationHudless createFgHudless{};
+				createFgHudless.hudlessBackBufferFormat = SDKWrapper::GetFfxSurfaceFormat(m_pHudLessTexture[0]->GetResource()->GetTextureResource()->GetFormat());
+				retCode = ffx::CreateContext(m_FrameGenContext, nullptr, createFg, backendDesc, createFgHudless);
+			}
+			else
+			{
+				retCode = ffx::CreateContext(m_FrameGenContext, nullptr, createFg, backendDesc);
+			}*/
+			
 			//CauldronAssert(ASSERT_CRITICAL, retCode == ffx::ReturnCode::Ok, L"Couldn't create the ffxapi framegen context: %d", (uint32_t)retCode);
 
 			//void* ffxSwapChain;
@@ -282,12 +291,41 @@ void FSR::UpdateUpscalingContext(bool enable)
 	}
 	else
 	{
+		//if (m_FrameInterpolationEnabled&& m_FrameGenContext)
+		//{
+		//	void* ffxSwapChain;
+		//	ffxSwapChain = Display::g_SwapChain4;
+
+		//	// disable frame generation before destroying context
+		//	// also unset present callback, HUDLessColor and UiTexture to have the swapchain only present the backbuffer
+		//	m_FrameGenerationConfig.frameGenerationEnabled = false;
+		//	m_FrameGenerationConfig.swapChain = ffxSwapChain;
+		//	m_FrameGenerationConfig.presentCallback = nullptr;
+		//	m_FrameGenerationConfig.HUDLessColor = FfxApiResource({});
+		//	ffx::Configure(m_FrameGenContext, m_FrameGenerationConfig);
+
+		//	ffx::ConfigureDescFrameGenerationSwapChainRegisterUiResourceDX12 uiConfig{};
+		//	uiConfig.uiResource = {};
+		//	uiConfig.flags = 0;
+		//	ffx::Configure(m_SwapChainContext, uiConfig);
+
+		//	ffx::DestroyContext(m_FrameGenContext);
+		//	m_FrameGenContext = nullptr;
+		//}
+
 		if (m_UpscalingContext)
 		{
 			ffx::DestroyContext(m_UpscalingContext);
 			m_UpscalingContext = nullptr;
 		}
 	}
+}
+
+void FSR::CreateSwapChain(ffx::CreateContextDescFrameGenerationSwapChainForHwndDX12& createSwapChainDesc)
+{
+	ffx::ReturnCode retCode = ffx::CreateContext(m_SwapChainContext, nullptr, createSwapChainDesc);
+	assert(retCode == ffx::ReturnCode::Ok);
+	createSwapChainDesc.dxgiFactory->Release();
 }
 
 void FSR::DrawUI()
