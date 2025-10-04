@@ -55,10 +55,15 @@ using namespace Microsoft::WRL;
 using namespace DirectX;
 using namespace std;
 
-
-
 namespace GlareEngine
 {
+	enum AssertLevel
+	{
+		ASSERT_WARNING = 0,     ///< Warning.
+		ASSERT_ERROR,           ///< Error. (Displays error UI if supported on Platform)
+		ASSERT_CRITICAL,        ///< Critical. Throws calling application.
+	};
+
     typedef shared_ptr<vector<byte> > ByteArray;
 
     inline void d3dSetDebugName(IDXGIObject* obj, const char* name)
@@ -247,4 +252,6 @@ namespace GlareEngine
     std::wstring RemoveExtension(const std::wstring& str);
     std::string ToLower(const std::string& str);
     std::wstring ToLower(const std::wstring& str);
+
+    void GlareAssert(AssertLevel severity, bool condition, const wchar_t* format, ...);
 }

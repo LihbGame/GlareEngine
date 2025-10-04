@@ -115,7 +115,7 @@ namespace GlareEngine
 
 	void ResizeDisplayBuffers(uint32_t NativeWidth, uint32_t NativeHeight);
 	
-
 	void DestroyRenderingBuffers();
 
+	DXGI_FORMAT GetDefaultHDRColorFormat();
 }// GlareEngine

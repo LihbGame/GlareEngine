@@ -186,6 +186,14 @@ private:
 			return FFX_SURFACE_FORMAT_UNKNOWN;
 		}
 	}
+
+	static inline FfxApiResource ffxGetResourceApi(ID3D12Resource* pDX12Resource,
+		uint32_t            state = FFX_API_RESOURCE_STATE_COMPUTE_READ,
+		uint32_t            additionalUsages = 0)
+	{
+		FfxApiResource apiRes = ffxApiGetResourceDX12(pDX12Resource, state, additionalUsages);
+		return apiRes;
+	}
 private:
 	static FSR* m_pFSRInstance;
 
@@ -193,11 +201,22 @@ private:
 	bool m_FrameInterpolationEnabled = false;
 	bool m_UseMask = true;
 	bool m_DrawFrameGenerationDebugView = false;
-	bool m_EnableAsyncCompute = true;
+	bool m_EnableAsyncCompute = false;
 	bool m_DrawUpscalerDebugView = false;
 	bool m_ResetUpscale = false;
 	bool m_SharpnessEnabled = true;
+	
+	bool m_DrawFrameGenerationDebugTearLines = false;
+	bool m_DrawFrameGenerationDebugResetIndicators = false;
+	bool m_DrawFrameGenerationDebugPacingLines = false;
 
+	bool m_UseCallback = true;
+	bool m_PresentInterpolatedOnly = false;
+
+	bool m_ResetFrameInterpolation = true;
+	bool m_DoublebufferInSwapchain = false;
+
+	int32_t m_uiRenderMode = 0;
 	FSRDebugCheckerMode      m_GlobalDebugCheckerMode = FSRDebugCheckerMode::EnabledWithMessageCallback;
 
 	FSRScalePreset  m_ScalePreset = FSRScalePreset::Count;

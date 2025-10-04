@@ -56,12 +56,12 @@ namespace detail
     }
 }
 
-template<class First, class Second, class... Rest>
+template <class First, class Second, class... Rest>
 First* LinkHeaders(First& first, Second& second, Rest&... rest)
 {
-    first.pNext = &second;
-    LinkHeaders(second, rest...);
-    return &first;
+	first.pNext = &second;
+	LinkHeaders(second, rest...);
+	return &first;
 }
 
 template<class First, class Second>

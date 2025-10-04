@@ -423,18 +423,15 @@ namespace GlareEngine
 		FSR* fsr = FSR::GetInstance();
 		if (fsr->FrameInterpolationEnabled())
 		{
-			IDXGISwapChain4* SwapChain4 = nullptr;
-
 			ffx::CreateContextDescFrameGenerationSwapChainForHwndDX12 GenerationSwapChainDesc{};
 			GenerationSwapChainDesc.hwnd = GameCore::g_hWnd;
 			GenerationSwapChainDesc.desc = &swapChainDesc;
 			GenerationSwapChainDesc.fullscreenDesc = &fsSwapChainDesc;
 			GenerationSwapChainDesc.gameQueue = g_CommandManager.GetCommandQueue();
-			GenerationSwapChainDesc.swapchain = &SwapChain4;
+			GenerationSwapChainDesc.swapchain = &g_SwapChain4;
 			GenerationSwapChainDesc.dxgiFactory = dxgiFactory.Get();
 			fsr->CreateSwapChain(GenerationSwapChainDesc);
-			SwapChain4->AddRef();
-			g_SwapChain4 = SwapChain4;
+			g_SwapChain4->AddRef();
 		}
 		else
 		{

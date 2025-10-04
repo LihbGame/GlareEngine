@@ -642,4 +642,77 @@ namespace GlareEngine
 			s = std::tolower(s, loc);
 		return lower_case;
 	}
+
+	/// Throw an error if we encounter program crashing error in Windows.
+	/// Will display an error message box and trow the calling process.
+	///
+	/// @param [in] format  The formatted string to parse.
+	///
+	/// @returns            None.
+	inline void GlareCritical(const wchar_t* format, ...)
+	{
+		// Format the message string
+		wchar_t buffer[512];
+
+		va_list args;
+		va_start(args, format);
+		vswprintf(buffer, 512, format, args);
+		va_end(args);
+
+		EngineLog::AddLog(buffer);
+		MessageBoxW(NULL, buffer, L"Critical Error", MB_OK);
+		throw 1;
+	}
+
+	void GlareError(const wchar_t* format, ...)
+	{
+		// Format the message string
+		wchar_t buffer[512];
+
+		va_list args;
+		va_start(args, format);
+		vswprintf(buffer, 512, format, args);
+		va_end(args);
+
+		EngineLog::AddLog(buffer);
+#if defined(_DEBUG)
+		MessageBoxW(NULL, buffer, L"Error", MB_OK);
+#endif // #if defined(_DEBUG)
+	}
+
+	void GlareWarning(const wchar_t* format, ...)
+	{
+		// Format the message string
+		wchar_t buffer[1024];
+
+		va_list args;
+		va_start(args, format);
+		vswprintf(buffer, 1024, format, args);
+		va_end(args);
+
+		EngineLog::AddLog(buffer);
+	}
+
+	void GlareAssert(AssertLevel severity, bool condition, const wchar_t* format, ...)
+	{
+		if (!condition)
+		{
+			wchar_t buffer[512];
+
+			va_list args;
+			va_start(args, format);
+			vswprintf(buffer, 512, format, args);
+			va_end(args);
+
+			// Most common
+			if (severity == ASSERT_CRITICAL)
+				GlareCritical(buffer);
+
+			else if (severity == ASSERT_ERROR)
+				GlareError(buffer);
+
+			else
+				GlareWarning(buffer);
+		}
+	}
 }

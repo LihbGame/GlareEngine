@@ -448,3 +448,8 @@ void GlareEngine::DestroyRenderingBuffers()
 
 	//g_GenMipsBuffer.Destroy();
 }
+
+DXGI_FORMAT GlareEngine::GetDefaultHDRColorFormat()
+{
+	return DefaultHDRColorFormat;
+}
