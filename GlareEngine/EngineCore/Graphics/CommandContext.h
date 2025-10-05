@@ -197,6 +197,8 @@ namespace GlareEngine
 		void SetID(const std::wstring& ID) { m_ID = ID; }
 
 		D3D12_COMMAND_LIST_TYPE m_Type;
+
+		static std::mutex m_Mutex;
 	};
 #pragma endregion
 

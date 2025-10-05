@@ -24,6 +24,9 @@ namespace GlareEngine
 
 		//返回开始和停止查询之间的时间(以毫秒为单位) 
 		float GetTime(uint32_t TimerIdx);
+
+		int32_t GetTimeCount();
+		ID3D12QueryHeap* GetTimeHeap();
 	};
 }
 

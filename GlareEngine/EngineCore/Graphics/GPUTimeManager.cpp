@@ -3,7 +3,7 @@
 #include "GraphicsCore.h"
 #include "CommandContext.h"
 #include "CommandListManager.h"
-
+#include "Engine/Scene.h"
 using namespace  GlareEngine;
 namespace
 {
@@ -89,7 +89,6 @@ void GPUTimeManager::BeginReadBack(void)
 	D3D12_RANGE Range;
 	Range.Begin = 0;
 	Range.End = (sm_NumTimers * 2) * sizeof(uint64_t);
-	HRESULT dd;
 	ThrowIfFailed(sm_ReadBackBuffer->Map(0, &Range, reinterpret_cast<void**>(&sm_TimeStampBuffer)))
 
 	//ThrowIfFailed();
@@ -114,12 +113,27 @@ void GPUTimeManager::EndReadBack(void)
 	sm_TimeStampBuffer = nullptr;
 
 	CommandContext& Context = CommandContext::Begin();
+
+	static bool needReset = true;
+	if (needReset)
+	{
+		for (UINT i = 0; i < sm_NumTimers * 2; i++)
+		{
+			Context.InsertTimeStamp(sm_QueryHeap, i);
+		}
+		needReset = false;
+	}
+
+	Context.InsertTimeStamp(sm_QueryHeap, 1);
+	Context.InsertTimeStamp(sm_QueryHeap, 3); // for sm_RootScope
+	Context.ResolveTimeStamps(sm_ReadBackBuffer, sm_QueryHeap, (sm_NumTimers-1) * 2);
+	Context.Flush(true);
 	for (UINT i = 0; i < sm_NumTimers * 2; i++)
 	{
 		Context.InsertTimeStamp(sm_QueryHeap, i);
 	}
-	Context.ResolveTimeStamps(sm_ReadBackBuffer, sm_QueryHeap, sm_NumTimers * 2);
-
+	//Context.InsertTimeStamp(sm_QueryHeap, 2); // for sm_RootScope
+	//Context.InsertTimeStamp(sm_QueryHeap, 0);
 	sm_Fence = Context.Finish();
 }
 
@@ -137,4 +151,14 @@ float GPUTimeManager::GetTime(uint32_t TimerIdx)
 		return 0.0f;
 
 	return static_cast<float>(sm_GpuTickDelta * (TimeStamp2 - TimeStamp1));
+}
+
+int32_t GPUTimeManager::GetTimeCount()
+{
+	return sm_NumTimers;
+}
+
+ID3D12QueryHeap* GPUTimeManager::GetTimeHeap()
+{
+	return sm_QueryHeap;
 }

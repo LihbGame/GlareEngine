@@ -5,6 +5,7 @@ vector<wstring> EngineLog::DisplayLogs = {};
 vector<wstring>  EngineLog::FilterDisplayLogs = {};
 wstring EngineLog::OldFilter;
 vector<wstring>  EngineLog::FilterLogs = {};
+std::mutex EngineLog::m_Mutex;
 
 #define MAX_LOG_SIZE 2048
 
@@ -22,6 +23,8 @@ void EngineLog::ClearLogs()
 
 int EngineLog::AddLog(const wchar_t* format, ...)
 {
+	std::lock_guard<std::mutex> locker(m_Mutex);
+
 	wchar_t buffer[MAX_LOG_SIZE];
 	va_list ap;
 	va_start(ap, format);
@@ -35,6 +38,9 @@ int EngineLog::AddLog(const wchar_t* format, ...)
 		*it =tolower(*it);
 	}
 	FilterLogs.push_back(log);
+
+	log += '\n';
+	::OutputDebugString(log.c_str());
 	return FilterLogs.size();
 }
 

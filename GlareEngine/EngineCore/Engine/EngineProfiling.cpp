@@ -5,10 +5,10 @@
 #include "GameTimer.h"
 #include "Graphics/GraphicsCore.h"
 #include "EngineInput.h"
-#include "Graphics/GPUTimeManager.h"
 #include "Graphics/CommandContext.h"
 #include "EngineAdjust.h"
 #include "EngineLog.h"
+#include "Engine/Scene.h"
 
 using namespace GlareEngine;
 using namespace GlareEngine::Math;
@@ -83,39 +83,6 @@ namespace GlareEngine
 		float m_Maximum;
 	};
 
-
-	class GPUTimer
-	{
-	public:
-
-		GPUTimer()
-		{
-			m_TimerIndex = GPUTimeManager::NewTimer();
-		}
-
-		void Start(CommandContext& Context)
-		{
-			GPUTimeManager::StartTimer(Context, m_TimerIndex);
-		}
-
-		void Stop(CommandContext& Context)
-		{
-			GPUTimeManager::StopTimer(Context, m_TimerIndex);
-		}
-
-		float GetTime(void)
-		{
-			return GPUTimeManager::GetTime(m_TimerIndex);
-		}
-
-		uint32_t GetTimerIndex(void)
-		{
-			return m_TimerIndex;
-		}
-	private:
-
-		uint32_t m_TimerIndex;
-	};
 
 	//递归时序树
 	class NestedTimingTree
@@ -218,7 +185,6 @@ namespace GlareEngine
 			m_StartTick = (int64_t)GameTimer::TotalTime();
 			if (Context == nullptr)
 				return;
-
 			m_GPUTimer.Start(*Context);
 
 			Context->PIXBeginEvent(m_Name.c_str());
@@ -229,7 +195,6 @@ namespace GlareEngine
 			m_EndTick = (int64_t)GameTimer::TotalTime();
 			if (Context == nullptr)
 				return;
-
 			m_GPUTimer.Stop(*Context);
 
 			Context->PIXEndEvent();
@@ -269,29 +234,31 @@ namespace GlareEngine
 		static void Update(void);
 		static void UpdateTimes(void)
 		{
-			uint32_t FrameIndex = (uint32_t)GlareEngine::Display::GetFrameCount();
+			if (EngineGlobal::gCurrentScene->LoadingFinish)
+			{
+				uint32_t FrameIndex = (uint32_t)GlareEngine::Display::GetFrameCount();
 
-			//开始GPU Time Buffer 的读取
-			GPUTimeManager::BeginReadBack();
-			//统计时间树的所有结点的时间
-    			sm_RootScope.GatherTimes(FrameIndex);
-			//记录每帧的时间timer的0-1记录了本帧的时间
-			s_FrameDelta.RecordStat(FrameIndex, GPUTimeManager::GetTime(0));
-			//结束GPU Time Buffer 的读取
-			GPUTimeManager::EndReadBack();
+				//开始GPU Time Buffer 的读取
+				GPUTimeManager::BeginReadBack();
+				//统计时间树的所有结点的时间
+				sm_RootScope.GatherTimes(FrameIndex);
+				//记录每帧的时间timer的0-1记录了本帧的时间
+				s_FrameDelta.RecordStat(FrameIndex, GPUTimeManager::GetTime(0));
+				//结束GPU Time Buffer 的读取
+				GPUTimeManager::EndReadBack();
 
-			float TotalCPUTime, TotalGPUTime;
-			//统计一帧的GPU,CPU总耗费时间
-			sm_RootScope.SumInclusiveTimes(TotalCPUTime, TotalGPUTime);
-			//记录CPU和GPU总耗费时间
-			s_TotalCPUTime.RecordStat(FrameIndex, TotalCPUTime);
-			s_TotalGPUTime.RecordStat(FrameIndex, TotalGPUTime);
+				float TotalCPUTime, TotalGPUTime;
+				//统计一帧的GPU,CPU总耗费时间
+				sm_RootScope.SumInclusiveTimes(TotalCPUTime, TotalGPUTime);
+				//记录CPU和GPU总耗费时间
+				s_TotalCPUTime.RecordStat(FrameIndex, TotalCPUTime);
+				s_TotalGPUTime.RecordStat(FrameIndex, TotalGPUTime);
+			}
 		}
 
 		static float GetTotalCPUTime(void) { return s_TotalCPUTime.GetAvg(); }
 		static float GetTotalGPUTime(void) { return s_TotalGPUTime.GetAvg(); }
 		static float GetFrameDelta(void) { return s_FrameDelta.GetAvg(); }
-
 	private:
 
 		void DeleteChildren(void)
@@ -322,12 +289,10 @@ namespace GlareEngine
 
 	};
 
-
-
 	StatHistory NestedTimingTree::s_TotalCPUTime;
 	StatHistory NestedTimingTree::s_TotalGPUTime;
 	StatHistory NestedTimingTree::s_FrameDelta;
-	NestedTimingTree NestedTimingTree::sm_RootScope(L"");
+	NestedTimingTree NestedTimingTree::sm_RootScope(L"TotalGPU");
 	NestedTimingTree* NestedTimingTree::sm_CurrentNode = &NestedTimingTree::sm_RootScope;
 	namespace EngineProfiling
 	{
@@ -357,6 +322,11 @@ namespace GlareEngine
 		bool IsPaused()
 		{
 			return Paused;
+		}
+
+		float GetFrameTime()
+		{
+			return NestedTimingTree::GetFrameDelta();
 		}
 	} // EngineProfiling
 

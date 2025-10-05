@@ -66,17 +66,17 @@ void Scene::Update(float DeltaTime)
 		object->Update(DeltaTime);
 	}
 
-	GraphicsContext& Context = GraphicsContext::Begin(L"Scene Update");
-
-	//Update GLTF Objects
-	for (auto& object : m_pGLTFRenderObjects)
-	{
-		object->Update(DeltaTime, &Context);
-	}
-
 	//update Render Pipeline Type
 	if (LoadingFinish)
 	{
+		GraphicsContext& Context = GraphicsContext::Begin(L"Scene Update");
+
+		//Update GLTF Objects
+		for (auto& object : m_pGLTFRenderObjects)
+		{
+			object->Update(DeltaTime, &Context);
+		}
+
 		RasterRenderPipelineType NewRasterRenderPipelineType = static_cast<RasterRenderPipelineType>(m_pGUI->GetRasterRenderPipelineIndex());
 
 		if (NewRasterRenderPipelineType != Render::gRasterRenderPipelineType && !gCommonProperty.IsWireframe)
@@ -84,6 +84,7 @@ void Scene::Update(float DeltaTime)
 			Render::gRasterRenderPipelineType = NewRasterRenderPipelineType;
 			Render::BuildPSOs();
 		}
+		Context.Finish();
 	}
 
 	if (gCommonProperty.IsWireframe)
@@ -100,9 +101,6 @@ void Scene::Update(float DeltaTime)
 
 	//lighting update
 	Lighting::Update(mSceneView.mMainConstants, *mSceneView.m_pCamera);
-
-	Context.Finish();
-
 }
 
 void Scene::VisibleUpdateForType()
@@ -870,6 +868,7 @@ void Scene::DeferredRendering(RasterRenderPipelineType DeferredRenderPipeline)
 
 			if (LoadingFinish)
 			{
+				ScopedTimer MainRenderScope(L"oneShadowMap", Context);
 				CreateTileConeShadowMap(Context);
 			}
 

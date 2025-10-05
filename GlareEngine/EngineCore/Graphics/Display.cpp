@@ -479,7 +479,6 @@ namespace GlareEngine
 	{
 		GraphicsContext& RenderContext = GraphicsContext::Begin(L"Present");
 		RenderContext.TransitionResource(Display::GetCurrentBuffer(), D3D12_RESOURCE_STATE_PRESENT, true);
-		RenderContext.PIXEndEvent();
 		g_PreFenceValue = RenderContext.Finish(g_PreFenceValue, true);
 
 

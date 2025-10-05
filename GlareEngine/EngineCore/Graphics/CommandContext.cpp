@@ -1,4 +1,5 @@
 ﻿#include "Engine/EngineUtility.h"
+#include "Engine/EngineProfiling.h"
 #include "CommandContext.h"
 #include "ColorBuffer.h"
 #include "DepthBuffer.h"
@@ -9,6 +10,8 @@
 namespace GlareEngine
 {
 #pragma region ContextManager
+	std::mutex CommandContext::m_Mutex;
+
 	CommandContext* ContextManager::AllocateContext(D3D12_COMMAND_LIST_TYPE Type)
 	{
 		std::lock_guard<std::mutex> LockGuard(m_ContextAllocationMutex);
@@ -119,7 +122,10 @@ namespace GlareEngine
 	{
 		CommandContext* NewContext = g_ContextManager.AllocateContext(D3D12_COMMAND_LIST_TYPE_DIRECT);
 		NewContext->SetID(ID);
-		NewContext->PIXBeginEvent(ID.c_str());
+		if (ID.length() > 0)
+		{
+			EngineProfiling::BeginBlock(ID, NewContext);
+		}
 		return *NewContext;
 	}
 
@@ -167,8 +173,10 @@ namespace GlareEngine
 
 		assert(m_CurrentAllocator != nullptr);
 
-		PIXEndEvent();
-
+		if (m_ID.length() > 0)
+		{
+			EngineProfiling::EndBlock(this);
+		}
 		CommandQueue& Queue = g_CommandManager.GetQueue(m_Type);
 
 		uint64_t FenceValue = Queue.ExecuteCommandList(m_CommandList);
@@ -195,6 +203,11 @@ namespace GlareEngine
 		FlushResourceBarriers();
 
 		assert(m_CurrentAllocator != nullptr);
+
+		if (m_ID.length() > 0)
+		{
+			EngineProfiling::EndBlock(this);
+		}
 
 		CommandQueue& Queue = g_CommandManager.GetQueue(m_Type);
 
@@ -659,7 +672,8 @@ namespace GlareEngine
 		ComputeContext& Context = g_ContextManager.AllocateContext(
 			Async ? D3D12_COMMAND_LIST_TYPE_COMPUTE : D3D12_COMMAND_LIST_TYPE_DIRECT)->GetComputeContext();
 		Context.SetID(ID);
-		Context.PIXBeginEvent(ID.c_str());
+		if (ID.length() > 0)
+			EngineProfiling::BeginBlock(ID, &Context);
 		return Context;
 	}
 

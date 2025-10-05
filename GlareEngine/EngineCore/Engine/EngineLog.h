@@ -2,6 +2,9 @@
 #include <vector>
 #include <string>
 #include <stdarg.h>
+#include <atomic>
+#include <mutex>
+
 using namespace std;
 class EngineLog
 {
@@ -17,6 +20,8 @@ public:
 	static void Filter(wstring Filter);
 	static void SaveLog();
 private:
+	static std::mutex m_Mutex;
+
 	static vector<wstring> DisplayLogs;
 	static vector<wstring> FilterLogs;
 	static vector<wstring> FilterDisplayLogs;

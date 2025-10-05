@@ -22,6 +22,8 @@ FSR::FSR()
 
 void FSR::Execute(ComputeContext& Context, ColorBuffer& Input, ColorBuffer& Output)
 {
+	ScopedTimer SkyPassScope(L"FSR", Context);
+
 	if (m_FrameInterpolationEnabled)
 	{
 		ffx::DispatchDescFrameGenerationSwapChainWaitForPresentsDX12 waitForPresentsDesc;
@@ -32,8 +34,6 @@ void FSR::Execute(ComputeContext& Context, ColorBuffer& Input, ColorBuffer& Outp
 	Camera* camera = EngineGlobal::gCurrentScene->GetCamera();
 	if (m_UpscalingContext)
 	{
-		ScopedTimer SkyPassScope(L"FSR", Context);
-
 		ffx::DispatchDescUpscale dispatchUpscale{};
 		dispatchUpscale.commandList = Context.GetCommandList();
 
