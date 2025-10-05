@@ -45,7 +45,8 @@ namespace GlareEngine
 		void BeginBlock(const std::wstring& name, CommandContext* Context = nullptr);
 		void EndBlock(CommandContext* Context = nullptr);
 		bool IsPaused();
-		float GetFrameTime();
+		float GetGPUFrameTime();
+		float GetCPUFrameTime();
 	};
 
 

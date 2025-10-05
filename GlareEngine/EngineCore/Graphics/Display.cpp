@@ -479,7 +479,7 @@ namespace GlareEngine
 	{
 		GraphicsContext& RenderContext = GraphicsContext::Begin(L"Present");
 		RenderContext.TransitionResource(Display::GetCurrentBuffer(), D3D12_RESOURCE_STATE_PRESENT, true);
-		g_PreFenceValue = RenderContext.Finish(g_PreFenceValue, true);
+		g_PreFenceValue = RenderContext.Finish(g_PreFenceValue, false);
 
 
 		g_CurrentBuffer = (g_CurrentBuffer + 1) % SWAP_CHAIN_BUFFER_COUNT;

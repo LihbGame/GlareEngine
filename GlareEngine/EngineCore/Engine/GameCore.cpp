@@ -9,6 +9,7 @@
 #include "EngineGUI.h"
 #include "PostProcessing/PostProcessing.h"
 #include "Engine/Tools/RuntimePSOManager.h"
+#include "Engine/SystemTime.h"
 
 #include <dwmapi.h>
 #include <windowsx.h>
@@ -106,6 +107,7 @@ namespace GlareEngine
 			InitializeGraphics(true);
 			EngineInput::Initialize();
 			EngineAdjust::Initialize();
+			SystemTime::Initialize();
 			GameTimer::Reset();
 			
 			//Game Initialize

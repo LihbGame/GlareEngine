@@ -132,8 +132,8 @@ void GPUTimeManager::EndReadBack(void)
 	{
 		Context.InsertTimeStamp(sm_QueryHeap, i);
 	}
-	//Context.InsertTimeStamp(sm_QueryHeap, 2); // for sm_RootScope
-	//Context.InsertTimeStamp(sm_QueryHeap, 0);
+	Context.InsertTimeStamp(sm_QueryHeap, 2); // for sm_RootScope
+	Context.InsertTimeStamp(sm_QueryHeap, 0);
 	sm_Fence = Context.Finish();
 }
 

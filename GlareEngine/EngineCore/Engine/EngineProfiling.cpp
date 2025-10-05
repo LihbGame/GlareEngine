@@ -9,6 +9,7 @@
 #include "EngineAdjust.h"
 #include "EngineLog.h"
 #include "Engine/Scene.h"
+#include "SystemTime.h"
 
 using namespace GlareEngine;
 using namespace GlareEngine::Math;
@@ -98,6 +99,7 @@ namespace GlareEngine
 
 		NestedTimingTree* GetChild(const wstring& name)
 		{
+			std::lock_guard<std::mutex> lock(m_Mutex);
 			auto iter = m_LUT.find(name);
 			if (iter != m_LUT.end())
 				return iter->second;
@@ -182,7 +184,7 @@ namespace GlareEngine
 
 		void StartTiming(CommandContext* Context)
 		{
-			m_StartTick = (int64_t)GameTimer::TotalTime();
+			m_StartTick = SystemTime::GetCurrentTick();
 			if (Context == nullptr)
 				return;
 			m_GPUTimer.Start(*Context);
@@ -192,7 +194,7 @@ namespace GlareEngine
 
 		void StopTiming(CommandContext* Context)
 		{
-			m_EndTick = (int64_t)GameTimer::TotalTime();
+			m_EndTick = SystemTime::GetCurrentTick();
 			if (Context == nullptr)
 				return;
 			m_GPUTimer.Stop(*Context);
@@ -208,7 +210,7 @@ namespace GlareEngine
 					node->GatherTimes(FrameIndex);
 				return;
 			}
-			m_CPUTime.RecordStat(FrameIndex, 1000.0f * (float)(m_EndTick - m_StartTick));
+			m_CPUTime.RecordStat(FrameIndex, 1000.0f * (float)SystemTime::TimeBetweenTicks(m_StartTick, m_EndTick));
 			m_GPUTime.RecordStat(FrameIndex, 1000.0f * m_GPUTimer.GetTime());
 
 			for (auto node : m_Children)
@@ -238,6 +240,9 @@ namespace GlareEngine
 			{
 				uint32_t FrameIndex = (uint32_t)GlareEngine::Display::GetFrameCount();
 
+				m_CPUStartTick = m_CPUEndTick;
+				m_CPUEndTick = SystemTime::GetCurrentTick();
+
 				//开始GPU Time Buffer 的读取
 				GPUTimeManager::BeginReadBack();
 				//统计时间树的所有结点的时间
@@ -251,11 +256,13 @@ namespace GlareEngine
 				//统计一帧的GPU,CPU总耗费时间
 				sm_RootScope.SumInclusiveTimes(TotalCPUTime, TotalGPUTime);
 				//记录CPU和GPU总耗费时间
+				s_AvgCPUTime.RecordStat(FrameIndex, (float)SystemTime::TimeBetweenTicks(m_CPUStartTick, m_CPUEndTick));
 				s_TotalCPUTime.RecordStat(FrameIndex, TotalCPUTime);
 				s_TotalGPUTime.RecordStat(FrameIndex, TotalGPUTime);
 			}
 		}
 
+		static float GetAvgCPUTime(void) { return  s_AvgCPUTime.GetAvg(); }
 		static float GetTotalCPUTime(void) { return s_TotalCPUTime.GetAvg(); }
 		static float GetTotalGPUTime(void) { return s_TotalGPUTime.GetAvg(); }
 		static float GetFrameDelta(void) { return s_FrameDelta.GetAvg(); }
@@ -267,7 +274,7 @@ namespace GlareEngine
 				delete node;
 			m_Children.clear();
 		}
-
+		std::mutex m_Mutex;
 		wstring m_Name;
 		NestedTimingTree* m_Parent;
 		vector<NestedTimingTree*> m_Children;
@@ -278,6 +285,9 @@ namespace GlareEngine
 		StatHistory m_GPUTime;
 		bool m_IsExpanded;
 		GPUTimer m_GPUTimer;
+		static int64_t m_CPUStartTick;
+		static int64_t m_CPUEndTick;
+		static StatHistory s_AvgCPUTime;
 		static StatHistory s_TotalCPUTime;
 		static StatHistory s_TotalGPUTime;
 		static StatHistory s_FrameDelta;
@@ -288,7 +298,9 @@ namespace GlareEngine
 		static bool sm_CursorOnGraph;
 
 	};
-
+	int64_t NestedTimingTree::m_CPUStartTick = 0;
+	int64_t NestedTimingTree::m_CPUEndTick = 0;
+	StatHistory NestedTimingTree::s_AvgCPUTime;
 	StatHistory NestedTimingTree::s_TotalCPUTime;
 	StatHistory NestedTimingTree::s_TotalGPUTime;
 	StatHistory NestedTimingTree::s_FrameDelta;
@@ -324,7 +336,12 @@ namespace GlareEngine
 			return Paused;
 		}
 
-		float GetFrameTime()
+		float GetCPUFrameTime()
+		{
+			return NestedTimingTree::GetAvgCPUTime();
+		}
+
+		float GetGPUFrameTime()
 		{
 			return NestedTimingTree::GetFrameDelta();
 		}

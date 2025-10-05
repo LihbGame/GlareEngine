@@ -369,7 +369,7 @@ void EngineGUI::DrawDebugWindow()
 	if (ImGui::Button("Copy")) { ImGui::LogToClipboard(); }ImGui::SameLine();
 	ImGui::SetNextItemWidth(200);
 	ImGui::InputText("Filter", FilterString, IM_ARRAYSIZE(FilterString)); ImGui::SameLine();
-	ImGui::Text("    Frame Time: %.3f ms  GPU AVG Time: %.3f ms  FPS: %.1f", 1000.0f / ImGui::GetIO().Framerate, EngineProfiling::GetFrameTime()*1000.0f, ImGui::GetIO().Framerate);
+	ImGui::Text("    Frame Time: %.3f ms   GPU AVG Time: %.3f ms    FPS: %.1f", 1000.0f / ImGui::GetIO().Framerate, EngineProfiling::GetGPUFrameTime() * 1000.0f, ImGui::GetIO().Framerate);
 	ImGui::Separator();
 
 	const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing(); // 1 separator, 1 input text
