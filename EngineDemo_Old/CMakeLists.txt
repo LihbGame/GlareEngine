@@ -17,11 +17,20 @@ source_group(TREE "${GAME_ROOT_DIR}" FILES ${SOURCE_FILES} ${RESOURCE_FILES} ${S
 
 add_executable(${TARGET_NAME} WIN32 ${SOURCE_FILES} ${RESOURCE_FILES})
 
-file(COPY ${DLL_FILES} DESTINATION ${GLAREENGINE_ROOT_DIR}/build/${TARGET_NAME})
-file(COPY ${SHADER_FILES} DESTINATION ${GLAREENGINE_ROOT_DIR}/build/${TARGET_NAME}/Shaders)
-file(COPY ${SHADER_FILES} DESTINATION ${GLAREENGINE_ROOT_DIR}/bin/${TARGET_NAME}/Shaders)
+#file(COPY ${DLL_FILES} DESTINATION ${GLAREENGINE_ROOT_DIR}/build/${TARGET_NAME})
+#file(COPY ${SHADER_FILES} DESTINATION ${GLAREENGINE_ROOT_DIR}/build/${TARGET_NAME}/Shaders)
+#file(COPY ${SHADER_FILES} DESTINATION ${GLAREENGINE_ROOT_DIR}/bin/${TARGET_NAME}/Shaders)
 file(COPY ${RESOURCE_FILES} DESTINATION ${GLAREENGINE_ROOT_DIR}/build/${TARGET_NAME}/Resource)
-file(COPY ${DLL_FILES} DESTINATION ${GLAREENGINE_ROOT_DIR}/bin/${TARGET_NAME})   
+#file(COPY ${DLL_FILES} DESTINATION ${GLAREENGINE_ROOT_DIR}/bin/${TARGET_NAME})   
+
+# 遍历所有配置类型（如 Debug, Release 等）
+foreach(CONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER ${CONFIG_TYPE} CONFIG_TYPE_UPPER)
+    set(CONFIG_DIR "${GLAREENGINE_ROOT_DIR}/build/${TARGET_NAME}/${CONFIG_TYPE}")
+    set(SHADER_DIR "${GLAREENGINE_ROOT_DIR}/build/${TARGET_NAME}/${CONFIG_TYPE}/Shaders")
+    file(COPY ${DLL_FILES} DESTINATION ${CONFIG_DIR})
+    file(COPY ${SHADER_FILES} DESTINATION ${SHADER_DIR})
+endforeach()
 
 if(CMAKE_CL_64)
 set(LIB_SET ${GLAREENGINE_ROOT_DIR}/packages/directxmesh_desktop_win10.2022.10.18.1/native/lib/x64/$<$<CONFIG:Release>:Release>$<$<CONFIG:Debug>:Debug>/DirectXMesh.lib
@@ -37,8 +46,14 @@ set(LIB_SET ${GLAREENGINE_ROOT_DIR}/packages/directxmesh_desktop_win10.2022.10.1
 endif(CMAKE_CL_64)
 
 add_custom_command(TARGET ${TARGET_NAME} COMMAND ${CMAKE_COMMAND} -E copy_directory ${GLAREENGINE_ROOT_DIR}/build/${TARGET_NAME}/$<$<CONFIG:Release>:Release>$<$<CONFIG:Debug>:Debug>
-                                      ${GLAREENGINE_ROOT_DIR}/bin/${TARGET_NAME})
-                                 
+                                      ${GLAREENGINE_ROOT_DIR}/bin/$<$<CONFIG:Release>:Release>$<$<CONFIG:Debug>:Debug>/${TARGET_NAME})
+                 
+add_custom_command(TARGET ${TARGET_NAME} COMMAND ${CMAKE_COMMAND} -E copy_directory ${GLAREENGINE_ROOT_DIR}/Resource
+                                      ${GLAREENGINE_ROOT_DIR}/bin/$<$<CONFIG:Release>:Release>$<$<CONFIG:Debug>:Debug>/Resource)
+
+add_custom_command(TARGET ${TARGET_NAME} COMMAND ${CMAKE_COMMAND} -E copy_directory ${GLAREENGINE_ROOT_DIR}/Resource
+                                      ${GLAREENGINE_ROOT_DIR}/build/${TARGET_NAME}/Resource)   
+
 target_link_libraries(${TARGET_NAME} ${LIB_SET})
 
 set_target_properties("${TARGET_NAME}" PROPERTIES FOLDER "Game")

@@ -30,10 +30,10 @@ set(LIB_SET ${GLAREENGINE_ROOT_DIR}/packages/directxmesh_desktop_win10.2022.10.1
 endif(CMAKE_CL_64)
 
 add_custom_command(TARGET ${TARGET_NAME} COMMAND ${CMAKE_COMMAND} -E copy_directory ${GLAREENGINE_ROOT_DIR}/build/${TARGET_NAME}/$<$<CONFIG:Release>:Release>$<$<CONFIG:Debug>:Debug>
-                                      ${GLAREENGINE_ROOT_DIR}/bin/${TARGET_NAME})
+                                      ${GLAREENGINE_ROOT_DIR}/bin/$<$<CONFIG:Release>:Release>$<$<CONFIG:Debug>:Debug>/${TARGET_NAME})
 
 add_custom_command(TARGET ${TARGET_NAME} COMMAND ${CMAKE_COMMAND} -E copy_directory ${GLAREENGINE_ROOT_DIR}/Resource
-                                      ${GLAREENGINE_ROOT_DIR}/bin/Resource)
+                                      ${GLAREENGINE_ROOT_DIR}/bin/$<$<CONFIG:Release>:Release>$<$<CONFIG:Debug>:Debug>/Resource)
 
 add_custom_command(TARGET ${TARGET_NAME} COMMAND ${CMAKE_COMMAND} -E copy_directory ${GLAREENGINE_ROOT_DIR}/Resource
                                       ${GLAREENGINE_ROOT_DIR}/build/${TARGET_NAME}/Resource)                                     
@@ -104,7 +104,7 @@ foreach(CONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
 endforeach()
 
 #file(COPY ${DLL_FILES} DESTINATION ${GLAREENGINE_ROOT_DIR}/build/${TARGET_NAME}/$<$<CONFIG:Release>:Release>$<$<CONFIG:Debug>:Debug>)
-file(COPY ${DLL_FILES} DESTINATION ${GLAREENGINE_ROOT_DIR}/bin/${TARGET_NAME})
+#file(COPY ${DLL_FILES} DESTINATION ${GLAREENGINE_ROOT_DIR}/bin/${TARGET_NAME})
 file(COPY ${RESOURCE_FILES} DESTINATION ${GLAREENGINE_ROOT_DIR}/build/${TARGET_NAME}/Resource)
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${TARGET_NAME})
