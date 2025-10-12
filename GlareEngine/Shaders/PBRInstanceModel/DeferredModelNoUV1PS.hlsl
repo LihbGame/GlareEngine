@@ -114,5 +114,12 @@ out float2 GBUFFER_MotionVector : SV_Target5)
     
     float2 cancelJitter = gPreJitterOffset - gCurJitterOffset;
     GBUFFER_MotionVector = (((vsOutput.PrePosition.xy / vsOutput.PrePosition.z) - (vsOutput.CurPosition.xy / vsOutput.CurPosition.z)) - cancelJitter) * float2(0.5f, -0.5f);
+    
+    //Fix FSR visual issue 
+    if (length(GBUFFER_MotionVector) < 0.000001f)
+    {
+        GBUFFER_MotionVector *= 10;
+
+    }
 
 }
