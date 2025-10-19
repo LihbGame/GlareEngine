@@ -25,6 +25,25 @@ void DLSS::Shutdown()
 	}
 }
 
+bool DLSS::InitializeDLSSFeatures(DirectX::XMFLOAT2 optimalRenderSize, DirectX::XMFLOAT2 displayOutSize, int isContentHDR, bool depthInverted, float depthScale, bool enableSharpening, bool enableAutoExposure, NVSDK_NGX_PerfQuality_Value qualValue, NVSDK_NGX_DLSS_Hint_Render_Preset renderPreset)
+{
+	return false;
+}
+
+void DLSS::ReleaseDLSSFeatures()
+{
+}
+
+bool DLSS::QueryOptimalSettings(DirectX::XMFLOAT2 inDisplaySize, NVSDK_NGX_PerfQuality_Value inQualValue, DLSSRecommendedSettings* outRecommendedSettings)
+{
+	return false;
+}
+
+bool DLSS::IsFeatureSupported(NVSDK_NGX_FeatureDiscoveryInfo* dis)
+{
+	return false;
+}
+
 DLSS::~DLSS()
 {
 
