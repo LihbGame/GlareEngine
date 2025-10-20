@@ -9,6 +9,12 @@ namespace GlareEngine
 {
 	namespace Math
 	{
+		struct UINT2
+		{
+			uint32_t x = 0;
+			uint32_t y = 0;
+		};
+
 		template <typename T> __forceinline T AlignUpWithMask(T value, size_t mask)
 		{
 			return (T)(((size_t)value + mask) & ~mask);

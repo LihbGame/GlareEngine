@@ -52,6 +52,8 @@ namespace GlareEngine
 	ID3D12Device* g_Device = nullptr;
 	CommandListManager g_CommandManager;
 	ContextManager g_ContextManager;
+	Microsoft::WRL::ComPtr<IDXGIAdapter1> g_pAdapter;
+
 
 	//FEATURE LEVEL 11
 	D3D_FEATURE_LEVEL g_D3DFeatureLevel = D3D_FEATURE_LEVEL_11_0;
@@ -180,9 +182,6 @@ namespace GlareEngine
 		Microsoft::WRL::ComPtr<IDXGIFactory6> dxgiFactory;
 		SUCCEEDED(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&dxgiFactory)));
 
-		// Create the D3D graphics device
-		Microsoft::WRL::ComPtr<IDXGIAdapter1> pAdapter;
-
 		// Temporary workaround because SetStablePowerState() is crashing
 		D3D12EnableExperimentalFeatures(0, nullptr, nullptr, nullptr);
 
@@ -190,10 +189,10 @@ namespace GlareEngine
 		{
 			SIZE_T MaxSize = 0;
 
-			for (uint32_t Idx = 0; DXGI_ERROR_NOT_FOUND != dxgiFactory->EnumAdapters1(Idx, &pAdapter); ++Idx)
+			for (uint32_t Idx = 0; DXGI_ERROR_NOT_FOUND != dxgiFactory->EnumAdapters1(Idx, &g_pAdapter); ++Idx)
 			{
 				DXGI_ADAPTER_DESC1 desc;
-				pAdapter->GetDesc1(&desc);
+				g_pAdapter->GetDesc1(&desc);
 
 				// Is a software adapter?
 				if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
@@ -239,8 +238,8 @@ namespace GlareEngine
 				EngineLog::AddLog(L"WARP software adapter requested.  Initializing...\n");
 			else
 				EngineLog::AddLog(L"Failed to find a hardware adapter.Falling back to WARP.\n");
-			SUCCEEDED(dxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&pAdapter)));
-			SUCCEEDED(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(&pDevice)));
+			SUCCEEDED(dxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&g_pAdapter)));
+			SUCCEEDED(D3D12CreateDevice(g_pAdapter.Get(), D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(&pDevice)));
 			g_Device = pDevice.Detach();
 		}
 #ifndef RELEASE
@@ -396,6 +395,12 @@ namespace GlareEngine
 #endif
 		SAFE_RELEASE(g_Device);
 	}
+
+	IDXGIAdapter1* GetAdapter()
+	{
+		return g_pAdapter.Get();
+	}
+	
 	D3D12_CPU_DESCRIPTOR_HANDLE AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE Type, UINT Count)
 	{
 		return g_DescriptorAllocator[Type].Allocate(Count);

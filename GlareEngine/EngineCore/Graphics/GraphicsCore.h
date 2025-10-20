@@ -22,6 +22,8 @@ namespace GlareEngine
 
 	extern bool g_bTypedUAVLoadSupport_R11G11B10_FLOAT;
 
+	IDXGIAdapter1* GetAdapter();
+
 	//Descriptor Allocator 
 	extern DescriptorAllocator g_DescriptorAllocator[];
 	D3D12_CPU_DESCRIPTOR_HANDLE AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE Type, UINT Count = 1);

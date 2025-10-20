@@ -5,6 +5,8 @@
 #include "Graphics/GraphicsCommon.h"
 #include "Graphics/CommandContext.h"
 
+using namespace std;
+
 DLSS* DLSS::m_pDLSSInstance = nullptr;
 
 DLSS* DLSS::GetInstance()
@@ -25,28 +27,99 @@ void DLSS::Shutdown()
 	}
 }
 
-bool DLSS::InitializeDLSSFeatures(DirectX::XMFLOAT2 optimalRenderSize, DirectX::XMFLOAT2 displayOutSize, int isContentHDR, bool depthInverted, float depthScale, bool enableSharpening, bool enableAutoExposure, NVSDK_NGX_PerfQuality_Value qualValue, NVSDK_NGX_DLSS_Hint_Render_Preset renderPreset)
+bool DLSS::InitializeDLSSFeatures(Math::UINT2 optimalRenderSize, Math::UINT2 displayOutSize, int isContentHDR, bool depthInverted, float depthScale, bool enableSharpening, bool enableAutoExposure, NVSDK_NGX_PerfQuality_Value qualValue, NVSDK_NGX_DLSS_Hint_Render_Preset renderPreset)
 {
 	return false;
 }
 
 void DLSS::ReleaseDLSSFeatures()
 {
+	if (!IsNGXInitialized())
+	{
+		EngineLog::AddLog(L"Attempt to ReleaseDLSSFeatures without NGX being initialized.");
+		return;
+	}
+
+	g_CommandManager.IdleGPU();
+
+	NVSDK_NGX_Result ResultDLSS = (m_dlssFeature != nullptr) ? NVSDK_NGX_D3D12_ReleaseFeature(m_dlssFeature) : NVSDK_NGX_Result_Success;
+	if (NVSDK_NGX_FAILED(ResultDLSS))
+	{
+		EngineLog::AddLog(L"Failed to NVSDK_NGX_D3D12_ReleaseFeature, code = 0x%08x, info: %ls", ResultDLSS, GetNGXResultAsString(ResultDLSS));
+	}
+
+	m_dlssFeature = nullptr;
 }
 
-bool DLSS::QueryOptimalSettings(DirectX::XMFLOAT2 inDisplaySize, NVSDK_NGX_PerfQuality_Value inQualValue, DLSSRecommendedSettings* outRecommendedSettings)
+// Not everything is returned from GET_OPTIMAL_SETTINGS as it is unneeded for this sample.  However, everything is 
+// saved off for future use, since this sample should be updated as needed.
+bool DLSS::QueryOptimalSettings(Math::UINT2 inDisplaySize, NVSDK_NGX_PerfQuality_Value inQualValue, DLSSRecommendedSettings* outRecommendedSettings)
 {
-	return false;
+	if (!IsNGXInitialized())
+	{
+		outRecommendedSettings->m_ngxRecommendedOptimalRenderSize = inDisplaySize;
+		outRecommendedSettings->m_ngxDynamicMaximumRenderSize = inDisplaySize;
+		outRecommendedSettings->m_ngxDynamicMinimumRenderSize = inDisplaySize;
+
+		EngineLog::AddLog(L"NGX was not initialized when querying Optimal Settings");
+		return false;
+	}
+
+	NVSDK_NGX_Result Result = NGX_DLSS_GET_OPTIMAL_SETTINGS(m_ngxParameters,
+		inDisplaySize.x, inDisplaySize.y, inQualValue,
+		&outRecommendedSettings->m_ngxRecommendedOptimalRenderSize.x, &outRecommendedSettings->m_ngxRecommendedOptimalRenderSize.y,
+		&outRecommendedSettings->m_ngxDynamicMaximumRenderSize.x, &outRecommendedSettings->m_ngxDynamicMaximumRenderSize.y,
+		&outRecommendedSettings->m_ngxDynamicMinimumRenderSize.x, &outRecommendedSettings->m_ngxDynamicMinimumRenderSize.y,
+		&outRecommendedSettings->m_ngxRecommendedSharpness);
+
+	if (NVSDK_NGX_FAILED(Result))
+	{
+		outRecommendedSettings->m_ngxRecommendedOptimalRenderSize = inDisplaySize;
+		outRecommendedSettings->m_ngxDynamicMaximumRenderSize = inDisplaySize;
+		outRecommendedSettings->m_ngxDynamicMinimumRenderSize = inDisplaySize;
+		outRecommendedSettings->m_ngxRecommendedSharpness = 0.0f;
+
+		EngineLog::AddLog(L"Querying Optimal Settings failed! code = 0x%08x, info: %ls", Result, GetNGXResultAsString(Result));
+		return false;
+	}
+
+	return true;
 }
 
 bool DLSS::IsFeatureSupported(NVSDK_NGX_FeatureDiscoveryInfo* dis)
 {
-	return false;
+	NVSDK_NGX_Result             res;
+	NVSDK_NGX_FeatureRequirement req;
+
+	res = NVSDK_NGX_UpdateFeature(&dis->Identifier, dis->FeatureID);
+	// expect to fail for now. Don't check the return value until it's implemented.
+	EngineLog::AddLog(L"NVSDK_NGX_UpdateFeature returned 0x%08x info: %ls", res, GetNGXResultAsString(res));
+
+	res = NVSDK_NGX_D3D12_GetFeatureRequirements(GlareEngine::GetAdapter(), dis, &req);
+
+	if (res != NVSDK_NGX_Result_Success && res != NVSDK_NGX_Result_FAIL_NotImplemented)
+	{
+		EngineLog::AddLog(L"GetFeatureRequirements error: 0x%08x info: %ls\n", res, GetNGXResultAsString(res));
+		return false;
+	}
+
+	EngineLog::AddLog(L"GetFeatureRequirements returned 0x%08x: Min GPU Arch: 0x%08x MinOS: %s\n", req.FeatureSupported, req.MinHWArchitecture, req.MinOSVersion);
+
+	return true;
+}
+
+DLSS::DLSS()
+{
+	InitializeNGX();
 }
 
 DLSS::~DLSS()
 {
-
+	if (IsNGXInitialized())
+	{
+		ReleaseDLSSFeatures();
+	}
+	ShutdownNGX();
 }
 
 void DLSS::InitializeNGX(const wchar_t* rwLogsFolder)
