@@ -1,52 +1,17 @@
 #pragma once
 #include <string>
 #include "Graphics/CommandContext.h"
-#include "Graphics/GPUTimeManager.h"
+
 namespace GlareEngine
 {
-	class NestedTimingTree;
-
-	class GPUTimer
-	{
-	public:
-
-		GPUTimer()
-		{
-			m_TimerIndex = GPUTimeManager::NewTimer();
-		}
-
-		void Start(CommandContext& Context)
-		{
-			GPUTimeManager::StartTimer(Context, m_TimerIndex);
-		}
-
-		void Stop(CommandContext& Context)
-		{
-			GPUTimeManager::StopTimer(Context, m_TimerIndex);
-		}
-
-		float GetTime(void)
-		{
-			return GPUTimeManager::GetTime(m_TimerIndex);
-		}
-
-		uint32_t GetTimerIndex(void)
-		{
-			return m_TimerIndex;
-		}
-	private:
-
-		uint32_t m_TimerIndex;
-	};
-
 	namespace EngineProfiling
 	{
 		void Update();
+
 		void BeginBlock(const std::wstring& name, CommandContext* Context = nullptr);
 		void EndBlock(CommandContext* Context = nullptr);
+
 		bool IsPaused();
-		float GetGPUFrameTime();
-		float GetCPUFrameTime();
 	};
 
 

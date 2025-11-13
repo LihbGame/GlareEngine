@@ -17,7 +17,7 @@ namespace GlareEngine
         extern bool  g_bFSRUpscale;
 
         extern bool g_bEnableHDROutput;
-        extern Microsoft::WRL::ComPtr<IDXGISwapChain4> g_SwapChain4;
+        extern IDXGISwapChain4* g_SwapChain4;
         extern NumVar g_HDRPaperWhite;
         extern NumVar g_MaxDisplayLuminance;
         extern DXGI_FORMAT g_SwapChainFormat;

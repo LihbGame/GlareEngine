@@ -159,7 +159,7 @@ namespace GlareEngine
 		UINT g_CurrentBuffer = 0;
 
 		//Swap Chain
-		Microsoft::WRL::ComPtr<IDXGISwapChain4> g_SwapChain4 = nullptr;
+		IDXGISwapChain4* g_SwapChain4 = nullptr;
 
 		//Descriptor Allocator
 		DescriptorAllocator g_DescriptorAllocator[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES] =
@@ -197,7 +197,7 @@ namespace GlareEngine
 		//检查是否支持HDR
 #if CONDITIONALLY_ENABLE_HDR_OUTPUT && defined(NTDDI_WIN10_RS2) && (NTDDI_VERSION >= NTDDI_WIN10_RS2)
 		{
-			IDXGISwapChain4* swapChain = (IDXGISwapChain4*)g_SwapChain4.Get();
+			IDXGISwapChain4* swapChain = g_SwapChain4;
 			ComPtr<IDXGIOutput> output;
 			ComPtr<IDXGIOutput6> output6;
 			DXGI_OUTPUT_DESC1 outputDesc;
@@ -467,14 +467,11 @@ namespace GlareEngine
 	void Display::Shutdown(void)
 	{
 		g_SwapChain4->SetFullscreenState(FALSE, nullptr);
-		
+		//g_SwapChain4->Release();
+
 		for (UINT i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
-		{
-			if (g_DisplayBuffers[i].GetResource())
-			{
-				g_DisplayBuffers[i].Destroy();
-			}
-		}
+			g_DisplayBuffers[i].Destroy();
+
 		g_PreDisplayBuffer.Destroy();
 	}
 

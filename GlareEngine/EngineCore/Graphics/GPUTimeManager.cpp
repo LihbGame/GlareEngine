@@ -3,7 +3,7 @@
 #include "GraphicsCore.h"
 #include "CommandContext.h"
 #include "CommandListManager.h"
-#include "Engine/Scene.h"
+
 using namespace  GlareEngine;
 namespace
 {
@@ -49,7 +49,7 @@ void GPUTimeManager::Initialize(uint32_t MaxNumTimers)
 	sm_ReadBackBuffer->SetName(L"GpuTimeStamp Buffer");
 
 	D3D12_QUERY_HEAP_DESC QueryHeapDesc;
- 	QueryHeapDesc.Count = MaxNumTimers * 2;
+	QueryHeapDesc.Count = MaxNumTimers * 2;
 	QueryHeapDesc.NodeMask = 1;
 	QueryHeapDesc.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
 	ThrowIfFailed(g_Device->CreateQueryHeap(&QueryHeapDesc, IID_PPV_ARGS(&sm_QueryHeap)));
@@ -89,14 +89,15 @@ void GPUTimeManager::BeginReadBack(void)
 	D3D12_RANGE Range;
 	Range.Begin = 0;
 	Range.End = (sm_NumTimers * 2) * sizeof(uint64_t);
+	HRESULT dd;
 	ThrowIfFailed(sm_ReadBackBuffer->Map(0, &Range, reinterpret_cast<void**>(&sm_TimeStampBuffer)))
 
-	//ThrowIfFailed();
-	if (sm_TimeStampBuffer)
-	{
-		sm_ValidTimeStart = sm_TimeStampBuffer[0];
-		sm_ValidTimeEnd = sm_TimeStampBuffer[1];
-	}
+		//ThrowIfFailed();
+		if (sm_TimeStampBuffer)
+		{
+			sm_ValidTimeStart = sm_TimeStampBuffer[0];
+			sm_ValidTimeEnd = sm_TimeStampBuffer[1];
+		}
 	//在第一帧中，时间戳查询堆中具有随机值，我们可以避免错误启动。
 	if (sm_ValidTimeEnd < sm_ValidTimeStart)
 	{
@@ -113,27 +114,12 @@ void GPUTimeManager::EndReadBack(void)
 	sm_TimeStampBuffer = nullptr;
 
 	CommandContext& Context = CommandContext::Begin();
-
-	static bool needReset = true;
-	if (needReset)
-	{
-		for (UINT i = 0; i < sm_NumTimers * 2; i++)
-		{
-			Context.InsertTimeStamp(sm_QueryHeap, i);
-		}
-		needReset = false;
-	}
-
-	Context.InsertTimeStamp(sm_QueryHeap, 1);
-	Context.InsertTimeStamp(sm_QueryHeap, 3); // for sm_RootScope
-	Context.ResolveTimeStamps(sm_ReadBackBuffer, sm_QueryHeap, (sm_NumTimers-1) * 2);
-	Context.Flush(true);
 	for (UINT i = 0; i < sm_NumTimers * 2; i++)
 	{
 		Context.InsertTimeStamp(sm_QueryHeap, i);
 	}
-	Context.InsertTimeStamp(sm_QueryHeap, 2); // for sm_RootScope
-	Context.InsertTimeStamp(sm_QueryHeap, 0);
+	Context.ResolveTimeStamps(sm_ReadBackBuffer, sm_QueryHeap, sm_NumTimers * 2);
+
 	sm_Fence = Context.Finish();
 }
 
@@ -151,14 +137,4 @@ float GPUTimeManager::GetTime(uint32_t TimerIdx)
 		return 0.0f;
 
 	return static_cast<float>(sm_GpuTickDelta * (TimeStamp2 - TimeStamp1));
-}
-
-int32_t GPUTimeManager::GetTimeCount()
-{
-	return sm_NumTimers;
-}
-
-ID3D12QueryHeap* GPUTimeManager::GetTimeHeap()
-{
-	return sm_QueryHeap;
 }

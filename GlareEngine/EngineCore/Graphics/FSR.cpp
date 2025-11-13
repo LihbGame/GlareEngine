@@ -169,7 +169,7 @@ void FSR::Execute(ComputeContext& Context, ColorBuffer& Input, ColorBuffer& Outp
 		m_FrameGenerationConfig.frameID = Display::GetFrameCount();
 
 		void* ffxSwapChain;
-		ffxSwapChain = g_SwapChain4.Get();
+		ffxSwapChain = g_SwapChain4;
 
 		m_FrameGenerationConfig.swapChain = ffxSwapChain;
 		ffx::ReturnCode retCode = ffx::ReturnCode::ErrorParameter;
@@ -385,7 +385,7 @@ void FSR::UpdateUpscalingContext(bool enable)
 			assert(retCode == ffx::ReturnCode::Ok);
 
 			void* ffxSwapChain;
-			ffxSwapChain = g_SwapChain4.Get();
+			ffxSwapChain = g_SwapChain4;
 
 			// Configure frame generation
 			//FfxApiResource hudLessResource = ffxGetResourceApi(Display::GetCurrentSceneColorBufferBuffer().GetResource(), FFX_API_RESOURCE_STATE_PIXEL_COMPUTE_READ);
@@ -436,7 +436,7 @@ void FSR::UpdateUpscalingContext(bool enable)
 		if (m_FrameInterpolationEnabled && m_FrameGenContext)
 		{
 			void* ffxSwapChain;
-			ffxSwapChain = Display::g_SwapChain4.Get();
+			ffxSwapChain = g_SwapChain4;
 
 			// disable frame generation before destroying context
 			// also unset present callback, HUDLessColor and UiTexture to have the swapchain only present the backbuffer
