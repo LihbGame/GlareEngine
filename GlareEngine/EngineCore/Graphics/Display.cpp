@@ -456,8 +456,8 @@ namespace GlareEngine
 			g_DisplayBuffers[i].CreateFromSwapChain(L"Primary SwapChain Buffer", DisplayPlane.Detach());
 		}
 
-		dxgiFactory->MakeWindowAssociation(GameCore::g_hWnd, DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
-		dxgiFactory->Release();
+		//dxgiFactory->MakeWindowAssociation(GameCore::g_hWnd, DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
+		//dxgiFactory->Release();
 
 		CheckHDRSupport();
 		SetNativeResolution();
@@ -467,7 +467,7 @@ namespace GlareEngine
 	void Display::Shutdown(void)
 	{
 		g_SwapChain4->SetFullscreenState(FALSE, nullptr);
-		//g_SwapChain4->Release();
+		g_SwapChain4->Release();
 
 		for (UINT i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
 			g_DisplayBuffers[i].Destroy();
