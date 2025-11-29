@@ -305,7 +305,7 @@ namespace GlareEngine
 		wstring m_Name;
 		NestedTimingTree* m_Parent;
 		vector<NestedTimingTree*> m_Children;
-		unordered_map<wstring, NestedTimingTree*> m_LUT;
+		map<wstring, NestedTimingTree*> m_LUT;
 		int64_t m_StartTick;
 		int64_t m_EndTick;
 		StatHistory m_CPUTime;
