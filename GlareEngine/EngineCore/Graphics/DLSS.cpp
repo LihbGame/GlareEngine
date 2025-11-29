@@ -216,3 +216,53 @@ void DLSS::ShutdownNGX()
 		m_ngxInitialized = false;
 	}
 }
+
+bool DLSS::FindAdapter(const std::wstring& targetName)
+{
+	if (m_Adapter != nullptr)
+		return true;
+
+	IDXGIFactory1* DXGIFactory;
+	HRESULT hres = CreateDXGIFactory1(IID_PPV_ARGS(&DXGIFactory));
+	if (hres != S_OK)
+	{
+		EngineLog::AddLog(L"ERROR in CreateDXGIFactory.\n"
+			"For more info, get log from debug D3D runtime: (1) Install DX SDK, and enable Debug D3D from DX Control Panel Utility. (2) Install and start DbgView. (3) Try running the program again.\n");
+		return false;
+	}
+
+	unsigned int adapterNo = 0;
+	while (SUCCEEDED(hres))
+	{
+		IDXGIAdapter* pAdapter;
+		hres = DXGIFactory->EnumAdapters(adapterNo, &pAdapter);
+
+		if (SUCCEEDED(hres))
+		{
+			DXGI_ADAPTER_DESC aDesc;
+			pAdapter->GetDesc(&aDesc);
+
+			// If no name is specified, return the first adapter.  This is the same behavior as the
+			// default specified for D3D11CreateDevice when no adapter is specified.
+			if (targetName.length() == 0)
+			{
+				m_Adapter = pAdapter;
+				return true;
+			}
+
+			std::wstring aName = aDesc.Description;
+
+			if (aName.find(targetName) != std::string::npos)
+			{
+				m_Adapter = pAdapter;
+				return true;
+			}
+		}
+
+		adapterNo++;
+	}
+
+	return false;
+}
+
+

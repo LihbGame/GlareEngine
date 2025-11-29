@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <DirectXMath.h>
+#include <xstring>
 #include "DLSS/nvsdk_ngx.h"
 #include "Math/Common.h"
 
@@ -12,7 +13,7 @@ class DLSS
 public:
 	struct DLSSRecommendedSettings
 	{
-		float			   m_ngxRecommendedSharpness = 0.01f; // in ngx sdk 3.1, dlss sharpening is deprecated
+		float	     m_ngxRecommendedSharpness = 0.01f; // in ngx sdk 3.1, dlss sharpening is deprecated
 		Math::UINT2  m_ngxRecommendedOptimalRenderSize;
 		Math::UINT2  m_ngxDynamicMaximumRenderSize;
 		Math::UINT2  m_ngxDynamicMinimumRenderSize;
@@ -47,6 +48,9 @@ private:
 
 	void InitializeNGX(const wchar_t* rwLogsFolder = L".");
 	void ShutdownNGX();
+
+	IDXGIAdapter* m_Adapter{};
+	bool FindAdapter(const std::wstring& targetName);
 
 };
 
