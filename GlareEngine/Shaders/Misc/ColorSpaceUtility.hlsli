@@ -16,36 +16,36 @@
 float3 ApplySRGBCurve(float3 x)
 {
     //Approximately pow(x, 1.0 / 2.2)
-    return x < 0.0031308 ? 12.92 * x : 1.055 * pow(x, 1.0 / 2.4) - 0.055;
+    return select(x < 0.0031308 ,12.92 * x ,1.055 * pow(x, 1.0 / 2.4) - 0.055);
 }
 
 float3 RemoveSRGBCurve(float3 x)
 {
     //Approximately pow(x, 2.2)
-    return x < 0.04045 ? x / 12.92 : pow((x + 0.055) / 1.055, 2.4);
+    return select(x < 0.04045 , x / 12.92 , pow((x + 0.055) / 1.055, 2.4));
 }
 
 // These functions avoid pow() to efficiently approximate sRGB with an error < 0.4%.
 float3 ApplySRGBCurve_Fast(float3 x)
 {
-    return x < 0.0031308 ? 12.92 * x : 1.13005 * sqrt(x - 0.00228) - 0.13448 * x + 0.005719;
+    return select(x < 0.0031308 , 12.92 * x , 1.13005 * sqrt(x - 0.00228) - 0.13448 * x + 0.005719);
 }
 
 float3 RemoveSRGBCurve_Fast(float3 x)
 {
-    return x < 0.04045 ? x / 12.92 : -7.43605 * x - 31.24297 * sqrt(-0.53792 * x + 1.279924) + 35.34864;
+    return select(x < 0.04045 , x / 12.92 , -7.43605 * x - 31.24297 * sqrt(-0.53792 * x + 1.279924) + 35.34864);
 }
 
 //OETF recommends for content displayed on HDTV. This "gamma ramp" increases contrast appropriately for viewing in dark environments.
 //Always use this curve with Limited RGB as it is used with HDTV.
 float3 ApplyREC709Curve(float3 x)
 {
-    return x < 0.0181 ? 4.5 * x : 1.0993 * pow(x, 0.45) - 0.0993;
+    return select(x < 0.0181 , 4.5 * x , 1.0993 * pow(x, 0.45) - 0.0993);
 }
 
 float3 RemoveREC709Curve(float3 x)
 {
-    return x < 0.08145 ? x / 4.5 : pow((x + 0.0993) / 1.0993, 1.0 / 0.45);
+    return select(x < 0.08145 , x / 4.5 , pow((x + 0.0993) / 1.0993, 1.0 / 0.45));
 }
 
 //This is the new HDR transfer function, also known as "PQ" for perceptual quantizer.
