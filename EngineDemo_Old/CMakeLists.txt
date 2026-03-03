@@ -32,6 +32,7 @@ foreach(CONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
     file(COPY ${SHADER_FILES} DESTINATION ${SHADER_DIR})
 endforeach()
 
+
 if(CMAKE_CL_64)
 set(LIB_SET ${GLAREENGINE_ROOT_DIR}/packages/directxmesh_desktop_win10.2022.10.18.1/native/lib/x64/$<$<CONFIG:Release>:Release>$<$<CONFIG:Debug>:Debug>/DirectXMesh.lib
             ${GLAREENGINE_ROOT_DIR}/packages/directxtex_desktop_win10.2022.10.18.1/native/lib/x64/$<$<CONFIG:Release>:Release>$<$<CONFIG:Debug>:Debug>/DirectXTex.lib
@@ -39,7 +40,9 @@ set(LIB_SET ${GLAREENGINE_ROOT_DIR}/packages/directxmesh_desktop_win10.2022.10.1
             ${GLAREENGINE_ROOT_DIR}/packages/zlib-msvc-x64.1.2.11.8900/build/native/$<$<CONFIG:Release>:lib_release>$<$<CONFIG:Debug>:lib_debug>/$<$<CONFIG:Release>:zlib>$<$<CONFIG:Debug>:zlibd>.lib
             ${GLAREENGINE_ROOT_DIR}/GlareEngine/Dependences/lib/$<$<CONFIG:Release>:assimp-vc140-mt>$<$<CONFIG:Debug>:assimp-vc142-mtd>.lib
             ${GLAREENGINE_ROOT_DIR}/packages/dxc_2023_08_14/lib/x64/dxcompiler.lib
-            ${GLAREENGINE_ROOT_DIR}/GlareEngine/Dependences/lib/amd_fidelityfx_dx12.lib)
+            ${GLAREENGINE_ROOT_DIR}/GlareEngine/Dependences/lib/amd_fidelityfx_dx12.lib          
+            ${GLAREENGINE_ROOT_DIR}/GlareEngine/Dependences/lib/nvsdk_ngx_d_dbg.lib
+            ${GLAREENGINE_ROOT_DIR}/GlareEngine/Dependences/lib/nvsdk_ngx_d.lib)
 else(CMAKE_CL_64)
 set(LIB_SET ${GLAREENGINE_ROOT_DIR}/packages/directxmesh_desktop_win10.2022.10.18.1/native/lib/x86/$<$<CONFIG:Release>:Release>$<$<CONFIG:Debug>:Debug>/DirectXMesh.lib
             ${GLAREENGINE_ROOT_DIR}/packages/directxtex_desktop_win10.2022.10.18.1/native/lib/x86/$<$<CONFIG:Release>:Release>$<$<CONFIG:Debug>:Debug>/DirectXTex.lib)

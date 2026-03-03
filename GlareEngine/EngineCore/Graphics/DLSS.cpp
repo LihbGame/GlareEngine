@@ -1,9 +1,13 @@
 #include "DLSS.h"
-#include "DLSS/nvsdk_ngx_helpers.h"
 #include "Engine/EngineLog.h"
 #include "Engine/EngineProfiling.h"
 #include "Graphics/GraphicsCommon.h"
 #include "Graphics/CommandContext.h"
+#include "EngineGUI.h"
+#include "Graphics/DepthBuffer.h"
+
+#include "DLSS/nvsdk_ngx_helpers.h"
+#include "Engine/Camera.h"
 
 using namespace std;
 
@@ -27,9 +31,78 @@ void DLSS::Shutdown()
 	}
 }
 
-bool DLSS::InitializeDLSSFeatures(Math::UINT2 optimalRenderSize, Math::UINT2 displayOutSize, int isContentHDR, bool depthInverted, float depthScale, bool enableSharpening, bool enableAutoExposure, NVSDK_NGX_PerfQuality_Value qualValue, NVSDK_NGX_DLSS_Hint_Render_Preset renderPreset)
+bool DLSS::InitializeDLSSFeatures(Math::UINT2 optimalRenderSize, Math::UINT2 displayOutSize, const DLSSSettings& settings)
 {
-	return false;
+	if (!IsNGXInitialized())
+	{
+		EngineLog::AddLog(L"NGX is not initialized. Cannot create DLSS feature.");
+		return false;
+	}
+
+	m_Settings = settings;
+	m_OptimalRenderSize = optimalRenderSize;
+	m_DisplaySize = displayOutSize;
+
+	CreateDLSSFeature(optimalRenderSize, displayOutSize);
+
+	return m_dlssFeature != nullptr;
+}
+
+void DLSS::CreateDLSSFeature(Math::UINT2 optimalRenderSize, Math::UINT2 displayOutSize)
+{
+	NVSDK_NGX_Result Result = NVSDK_NGX_Result_Fail;
+
+	m_ngxParameters->Set(NVSDK_NGX_Parameter_Width, optimalRenderSize.x);
+	m_ngxParameters->Set(NVSDK_NGX_Parameter_Height, optimalRenderSize.y);
+	m_ngxParameters->Set(NVSDK_NGX_Parameter_OutWidth, displayOutSize.x);
+	m_ngxParameters->Set(NVSDK_NGX_Parameter_OutHeight, displayOutSize.y);
+	m_ngxParameters->Set(NVSDK_NGX_Parameter_PerfQualityValue, m_Settings.Quality);
+
+	if (m_Settings.EnableSharpening)
+	{
+		m_ngxParameters->Set(NVSDK_NGX_Parameter_Sharpness, m_Settings.Sharpness);
+	}
+
+	size_t ScratchSize = 0;
+	Result = NVSDK_NGX_D3D12_GetScratchBufferSize(NVSDK_NGX_Feature_SuperSampling, m_ngxParameters, &ScratchSize);
+	if (NVSDK_NGX_FAILED(Result))
+	{
+		EngineLog::AddLog(L"NVSDK_NGX_D3D12_GetScratchBufferSize failed, code = 0x%08x", Result);
+		return;
+	}
+
+	ID3D12Resource* ScratchBuffer = nullptr;
+	if (ScratchSize > 0)
+	{
+		CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_DEFAULT);
+		CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(ScratchSize, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+		HRESULT hr = g_Device->CreateCommittedResource(
+			&heapProps,
+			D3D12_HEAP_FLAG_NONE,
+			&bufferDesc,
+			D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+			nullptr,
+			IID_PPV_ARGS(&ScratchBuffer));
+
+		if (SUCCEEDED(hr))
+		{
+			m_ngxParameters->Set(NVSDK_NGX_Parameter_Scratch, ScratchBuffer);
+			m_ngxParameters->Set(NVSDK_NGX_Parameter_Scratch_SizeInBytes, (unsigned int)ScratchSize);
+			ScratchBuffer->Release();
+		}
+	}
+
+	Result = NVSDK_NGX_D3D12_CreateFeature(nullptr, NVSDK_NGX_Feature_SuperSampling, m_ngxParameters, &m_dlssFeature);
+
+	if (NVSDK_NGX_FAILED(Result))
+	{
+		EngineLog::AddLog(L"Failed to create DLSS feature, code = 0x%08x", Result);
+		m_dlssFeature = nullptr;
+		return;
+	}
+
+	EngineLog::AddLog(L"DLSS feature created successfully! Render resolution: %ux%u, Output resolution: %ux%u", 
+		optimalRenderSize.x, optimalRenderSize.y, displayOutSize.x, displayOutSize.y);
 }
 
 void DLSS::ReleaseDLSSFeatures()
@@ -45,14 +118,12 @@ void DLSS::ReleaseDLSSFeatures()
 	NVSDK_NGX_Result ResultDLSS = (m_dlssFeature != nullptr) ? NVSDK_NGX_D3D12_ReleaseFeature(m_dlssFeature) : NVSDK_NGX_Result_Success;
 	if (NVSDK_NGX_FAILED(ResultDLSS))
 	{
-		EngineLog::AddLog(L"Failed to NVSDK_NGX_D3D12_ReleaseFeature, code = 0x%08x, info: %ls", ResultDLSS, GetNGXResultAsString(ResultDLSS));
+		EngineLog::AddLog(L"Failed to release DLSS feature");
 	}
 
 	m_dlssFeature = nullptr;
 }
 
-// Not everything is returned from GET_OPTIMAL_SETTINGS as it is unneeded for this sample.  However, everything is 
-// saved off for future use, since this sample should be updated as needed.
 bool DLSS::QueryOptimalSettings(Math::UINT2 inDisplaySize, NVSDK_NGX_PerfQuality_Value inQualValue, DLSSRecommendedSettings* outRecommendedSettings)
 {
 	if (!IsNGXInitialized())
@@ -65,52 +136,17 @@ bool DLSS::QueryOptimalSettings(Math::UINT2 inDisplaySize, NVSDK_NGX_PerfQuality
 		return false;
 	}
 
-	NVSDK_NGX_Result Result = NGX_DLSS_GET_OPTIMAL_SETTINGS(m_ngxParameters,
-		inDisplaySize.x, inDisplaySize.y, inQualValue,
-		&outRecommendedSettings->m_ngxRecommendedOptimalRenderSize.x, &outRecommendedSettings->m_ngxRecommendedOptimalRenderSize.y,
-		&outRecommendedSettings->m_ngxDynamicMaximumRenderSize.x, &outRecommendedSettings->m_ngxDynamicMaximumRenderSize.y,
-		&outRecommendedSettings->m_ngxDynamicMinimumRenderSize.x, &outRecommendedSettings->m_ngxDynamicMinimumRenderSize.y,
-		&outRecommendedSettings->m_ngxRecommendedSharpness);
+	outRecommendedSettings->m_ngxRecommendedOptimalRenderSize = inDisplaySize;
+	outRecommendedSettings->m_ngxDynamicMaximumRenderSize = inDisplaySize;
+	outRecommendedSettings->m_ngxDynamicMinimumRenderSize = inDisplaySize;
+	outRecommendedSettings->m_ngxRecommendedSharpness = 0.0f;
 
-	if (NVSDK_NGX_FAILED(Result))
-	{
-		outRecommendedSettings->m_ngxRecommendedOptimalRenderSize = inDisplaySize;
-		outRecommendedSettings->m_ngxDynamicMaximumRenderSize = inDisplaySize;
-		outRecommendedSettings->m_ngxDynamicMinimumRenderSize = inDisplaySize;
-		outRecommendedSettings->m_ngxRecommendedSharpness = 0.0f;
-
-		EngineLog::AddLog(L"Querying Optimal Settings failed! code = 0x%08x, info: %ls", Result, GetNGXResultAsString(Result));
-		return false;
-	}
-
-	return true;
-}
-
-bool DLSS::IsFeatureSupported(NVSDK_NGX_FeatureDiscoveryInfo* dis)
-{
-	NVSDK_NGX_Result             res;
-	NVSDK_NGX_FeatureRequirement req;
-
-	res = NVSDK_NGX_UpdateFeature(&dis->Identifier, dis->FeatureID);
-	// expect to fail for now. Don't check the return value until it's implemented.
-	EngineLog::AddLog(L"NVSDK_NGX_UpdateFeature returned 0x%08x info: %ls", res, GetNGXResultAsString(res));
-
-	res = NVSDK_NGX_D3D12_GetFeatureRequirements(GlareEngine::GetAdapter(), dis, &req);
-
-	if (res != NVSDK_NGX_Result_Success && res != NVSDK_NGX_Result_FAIL_NotImplemented)
-	{
-		EngineLog::AddLog(L"GetFeatureRequirements error: 0x%08x info: %ls\n", res, GetNGXResultAsString(res));
-		return false;
-	}
-
-	EngineLog::AddLog(L"GetFeatureRequirements returned 0x%08x: Min GPU Arch: 0x%08x MinOS: %s\n", req.FeatureSupported, req.MinHWArchitecture, req.MinOSVersion);
-
-	return true;
+	return false;
 }
 
 DLSS::DLSS()
 {
-	InitializeNGX();
+	InitializeNGX(L".");
 }
 
 DLSS::~DLSS()
@@ -132,9 +168,9 @@ void DLSS::InitializeNGX(const wchar_t* rwLogsFolder)
 	if (!IsNGXInitialized())
 	{
 		if (Result == NVSDK_NGX_Result_FAIL_FeatureNotSupported || Result == NVSDK_NGX_Result_FAIL_PlatformError)
-			EngineLog::AddLog(L"NVIDIA NGX not available on this hardware/platform., code = 0x%08x, info: %ls", Result, GetNGXResultAsString(Result));
+			EngineLog::AddLog(L"NVIDIA NGX not available on this hardware/platform.");
 		else
-			EngineLog::AddLog(L"Failed to initialize NGX, error code = 0x%08x, info: %ls", Result, GetNGXResultAsString(Result));
+			EngineLog::AddLog(L"Failed to initialize NGX");
 
 		return;
 	}
@@ -143,59 +179,22 @@ void DLSS::InitializeNGX(const wchar_t* rwLogsFolder)
 
 	if (NVSDK_NGX_FAILED(Result))
 	{
-		EngineLog::AddLog(L"NVSDK_NGX_GetCapabilityParameters failed, code = 0x%08x, info: %ls", Result, GetNGXResultAsString(Result));
+		EngineLog::AddLog(L"NVSDK_NGX_GetCapabilityParameters failed");
 		ShutdownNGX();
 		return;
 	}
-
-// Currently, the SDK and this sample are not in sync.  The sample is a bit forward looking,
-// in this case.  This will likely be resolved very shortly, and therefore, the code below
-// should be thought of as needed for a smooth user experience.
-#if defined(NVSDK_NGX_Parameter_SuperSampling_NeedsUpdatedDriver)        \
-    && defined (NVSDK_NGX_Parameter_SuperSampling_MinDriverVersionMajor) \
-    && defined (NVSDK_NGX_Parameter_SuperSampling_MinDriverVersionMinor)
-
-	// If NGX Successfully initialized then it should set those flags in return
-	int needsUpdatedDriver = 0;
-	unsigned int minDriverVersionMajor = 0;
-	unsigned int minDriverVersionMinor = 0;
-	NVSDK_NGX_Result ResultUpdatedDriver = m_ngxParameters->Get(NVSDK_NGX_Parameter_SuperSampling_NeedsUpdatedDriver, &needsUpdatedDriver);
-	NVSDK_NGX_Result ResultMinDriverVersionMajor = m_ngxParameters->Get(NVSDK_NGX_Parameter_SuperSampling_MinDriverVersionMajor, &minDriverVersionMajor);
-	NVSDK_NGX_Result ResultMinDriverVersionMinor = m_ngxParameters->Get(NVSDK_NGX_Parameter_SuperSampling_MinDriverVersionMinor, &minDriverVersionMinor);
-	if (ResultUpdatedDriver == NVSDK_NGX_Result_Success &&
-		ResultMinDriverVersionMajor == NVSDK_NGX_Result_Success &&
-		ResultMinDriverVersionMinor == NVSDK_NGX_Result_Success)
-	{
-		if (needsUpdatedDriver)
-		{
-			EngineLog::AddLog(L"NVIDIA DLSS cannot be loaded due to outdated driver. Minimum Driver Version required : %u.%u", minDriverVersionMajor, minDriverVersionMinor);
-
-			ShutdownNGX();
-			return;
-		}
-		else
-		{
-			EngineLog::AddLog(L"NVIDIA DLSS Minimum driver version was reported as : %u.%u", minDriverVersionMajor, minDriverVersionMinor);
-		}
-	}
-	else
-	{
-		EngineLog::AddLog(L"NVIDIA DLSS Minimum driver version was not reported.");
-	}
-
-#endif
 
 	int dlssAvailable = 0;
 	NVSDK_NGX_Result ResultDLSS = m_ngxParameters->Get(NVSDK_NGX_Parameter_SuperSampling_Available, &dlssAvailable);
 	if (ResultDLSS != NVSDK_NGX_Result_Success || !dlssAvailable)
 	{
-		// More details about what failed (per feature init result)
-		NVSDK_NGX_Result FeatureInitResult = NVSDK_NGX_Result_Fail;
-		NVSDK_NGX_Parameter_GetI(m_ngxParameters, NVSDK_NGX_Parameter_SuperSampling_FeatureInitResult, (int*)&FeatureInitResult);
-		EngineLog::AddLog(L"NVIDIA DLSS not available on this hardware/platform., FeatureInitResult = 0x%08x, info: %ls", FeatureInitResult, GetNGXResultAsString(FeatureInitResult));
+		EngineLog::AddLog(L"NVIDIA DLSS not available on this hardware/platform.");
 		ShutdownNGX();
 		return;
 	}
+
+	m_bDlssAvailable = true;
+	EngineLog::AddLog(L"NVIDIA DLSS is available!");
 }
 
 void DLSS::ShutdownNGX()
@@ -206,7 +205,7 @@ void DLSS::ShutdownNGX()
 
 		if (m_dlssFeature != nullptr)
 		{
-			EngineLog::AddLog(L"Attempt to release NGX library before features have been released!  Releasing now but should check your code.");
+			EngineLog::AddLog(L"Attempt to release NGX library before features have been released!");
 			ReleaseDLSSFeatures();
 		}
 
@@ -226,8 +225,7 @@ bool DLSS::FindAdapter(const std::wstring& targetName)
 	HRESULT hres = CreateDXGIFactory1(IID_PPV_ARGS(&DXGIFactory));
 	if (hres != S_OK)
 	{
-		EngineLog::AddLog(L"ERROR in CreateDXGIFactory.\n"
-			"For more info, get log from debug D3D runtime: (1) Install DX SDK, and enable Debug D3D from DX Control Panel Utility. (2) Install and start DbgView. (3) Try running the program again.\n");
+		EngineLog::AddLog(L"ERROR in CreateDXGIFactory.");
 		return false;
 	}
 
@@ -242,8 +240,6 @@ bool DLSS::FindAdapter(const std::wstring& targetName)
 			DXGI_ADAPTER_DESC aDesc;
 			pAdapter->GetDesc(&aDesc);
 
-			// If no name is specified, return the first adapter.  This is the same behavior as the
-			// default specified for D3D11CreateDevice when no adapter is specified.
 			if (targetName.length() == 0)
 			{
 				m_Adapter = pAdapter;
@@ -265,4 +261,126 @@ bool DLSS::FindAdapter(const std::wstring& targetName)
 	return false;
 }
 
+void DLSS::Execute(ComputeContext& Context, ColorBuffer& InputColor, ColorBuffer& OutputColor, 
+                   DepthBuffer* DepthBuffer, ColorBuffer* MotionVectorBuffer, 
+                   const Camera& camera, float deltaTime, bool reset)
+{
+	if (!IsDLSSInitialized() || !m_Settings.Enable)
+	{
+		return;
+	}
 
+	ID3D12GraphicsCommandList* CommandList = Context.GetCommandList();
+
+	NVSDK_NGX_D3D12_DLSS_Eval_Params EvalParams = {};
+	EvalParams.Feature.pInColor = InputColor.GetResource();
+	EvalParams.Feature.pInOutput = OutputColor.GetResource();
+	EvalParams.InRenderSubrectDimensions = { InputColor.GetWidth(), InputColor.GetHeight() };
+	EvalParams.InJitterOffsetX = m_JitterOffset.x;
+	EvalParams.InJitterOffsetY = m_JitterOffset.y;
+	EvalParams.InReset = reset ? 1 : 0;
+	EvalParams.InMVScaleX = 1.0f;
+	EvalParams.InMVScaleY = 1.0f;
+	EvalParams.Feature.InSharpness = m_Settings.EnableSharpening ? m_Settings.Sharpness : 0.0f;
+
+	if (DepthBuffer != nullptr && DepthBuffer->GetResource())
+	{
+		EvalParams.pInDepth = DepthBuffer->GetResource();
+	}
+
+	if (MotionVectorBuffer != nullptr && MotionVectorBuffer->GetResource())
+	{
+		EvalParams.pInMotionVectors = MotionVectorBuffer->GetResource();
+	}
+
+	NVSDK_NGX_Result Result = NGX_D3D12_EVALUATE_DLSS_EXT(CommandList, m_dlssFeature, m_ngxParameters, &EvalParams);
+
+	if (NVSDK_NGX_FAILED(Result))
+	{
+		EngineLog::AddLog(L"DLSS EvaluateFeature failed, code = 0x%08x", Result);
+	}
+}
+
+void DLSS::UpdateJitter(int frameIndex)
+{
+	if (!IsDLSSInitialized() || !m_Settings.Enable)
+	{
+		m_JitterOffset = XMFLOAT2(0, 0);
+		return;
+	}
+
+	static const int c_DLSSJitterPattern[] = {
+		-4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+		-8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7
+	};
+	static const int c_DLSSJitterPatternCount = sizeof(c_DLSSJitterPattern) / sizeof(c_DLSSJitterPattern[0]);
+
+	m_JitterIndex = frameIndex % c_DLSSJitterPatternCount;
+
+	float jitterX = (float)c_DLSSJitterPattern[m_JitterIndex] / (float)m_OptimalRenderSize.x;
+	float jitterY = (float)c_DLSSJitterPattern[m_JitterIndex] / (float)m_OptimalRenderSize.y;
+
+	m_JitterOffset = XMFLOAT2(jitterX, jitterY);
+}
+
+void DLSS::DrawUI()
+{
+	ImGui::Separator();
+	ImGui::Text("NVIDIA DLSS");
+
+	if (!IsNGXInitialized())
+	{
+		ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "DLSS not available (No NVIDIA GPU or outdated driver)");
+		return;
+	}
+
+	if (!IsDLSSAvailable())
+	{
+		ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "DLSS not supported on this hardware");
+		return;
+	}
+
+	ImGui::Checkbox("Enable DLSS", &m_Settings.Enable);
+
+	if (m_Settings.Enable && IsDLSSInitialized())
+	{
+		ImGui::Text("Render Resolution: %ux%u", m_OptimalRenderSize.x, m_OptimalRenderSize.y);
+		ImGui::Text("Output Resolution: %ux%u", m_DisplaySize.x, m_DisplaySize.y);
+
+		const char* qualityNames[] = { "Ultra Performance", "Performance", "Balanced", "Quality", "Ultra Quality" };
+		int currentQuality = 0;
+		switch (m_Settings.Quality)
+		{
+		case NVSDK_NGX_PerfQuality_Value_UltraPerformance: currentQuality = 0; break;
+		case NVSDK_NGX_PerfQuality_Value_MaxPerf: currentQuality = 1; break;
+		case NVSDK_NGX_PerfQuality_Value_Balanced: currentQuality = 2; break;
+		case NVSDK_NGX_PerfQuality_Value_MaxQuality: currentQuality = 3; break;
+		case NVSDK_NGX_PerfQuality_Value_DLAA: currentQuality = 4; break;
+		}
+
+		if (ImGui::Combo("Quality", &currentQuality, qualityNames, IM_ARRAYSIZE(qualityNames)))
+		{
+			switch (currentQuality)
+			{
+			case 0: m_Settings.Quality = NVSDK_NGX_PerfQuality_Value_UltraPerformance; break;
+			case 1: m_Settings.Quality = NVSDK_NGX_PerfQuality_Value_MaxPerf; break;
+			case 2: m_Settings.Quality = NVSDK_NGX_PerfQuality_Value_Balanced; break;
+			case 3: m_Settings.Quality = NVSDK_NGX_PerfQuality_Value_MaxQuality; break;
+			case 4: m_Settings.Quality = NVSDK_NGX_PerfQuality_Value_DLAA; break;
+			}
+		}
+
+		ImGui::Checkbox("Enable Sharpening", &m_Settings.EnableSharpening);
+
+		if (m_Settings.EnableSharpening)
+		{
+			ImGui::SliderFloat("Sharpness", &m_Settings.Sharpness, 0.0f, 1.0f);
+		}
+
+		if (ImGui::Button("Reset DLSS"))
+		{
+			ReleaseDLSSFeatures();
+			CreateDLSSFeature(m_OptimalRenderSize, m_DisplaySize);
+		}
+	}
+}

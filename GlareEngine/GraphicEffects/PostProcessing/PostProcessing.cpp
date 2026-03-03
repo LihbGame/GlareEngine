@@ -11,6 +11,9 @@
 #include "TemporalAA.h"
 #include "Engine/Scene.h"
 #include "Graphics/FSR.h"
+#include "Graphics/DLSS.h"
+#include "Math/Common.h"
+#include "Engine/Camera.h"
 
 //shaders
 #include "CompiledShaders/ScreenQuadVS.h"
@@ -123,8 +126,8 @@ namespace ScreenProcessing
 	float MaxExposure = 64.0f;
 
 	string mAntiAliasingName;
-	int mAntiAliasingIndex = Render::AntiAliasingType::FSR;
-	int mPreAntiAliasingIndex= Render::AntiAliasingType::FSR;
+	int mAntiAliasingIndex = Render::AntiAliasingType::DLSS;
+	int mPreAntiAliasingIndex = Render::AntiAliasingType::DLSS;
 	//Exposure Data
 	StructuredBuffer g_Exposure;
 
@@ -208,6 +211,7 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 
 	InitMaterial();
 
+	mAntiAliasingName += string("DLSS") + '\0';
 	mAntiAliasingName += string("FSR") + '\0';
 	mAntiAliasingName += string("MSAA") + '\0';
 	mAntiAliasingName += string("FXAA") + '\0';
@@ -233,6 +237,21 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 
 	//TemporalAA Initialize
 	TemporalAA::Initialize();
+
+	//DLSS Initialize
+	if (DLSS::GetInstance()->IsDLSSAvailable())
+	{
+		Math::UINT2 displaySize = { Display::g_DisplayWidth, Display::g_DisplayHeight };
+		Math::UINT2 renderSize = { Display::g_RenderWidth, Display::g_RenderHeight };
+		
+		DLSS::DLSSSettings settings;
+		settings.Enable = true;
+		settings.Quality = NVSDK_NGX_PerfQuality_Value_Balanced;
+		settings.EnableSharpening = false;
+		settings.Sharpness = 0.0f;
+		
+		DLSS::GetInstance()->InitializeDLSSFeatures(renderSize, displaySize, settings);
+	}
 }
 
 void ScreenProcessing::BuildSRV(ID3D12GraphicsCommandList* CommandList)
@@ -530,6 +549,19 @@ void ScreenProcessing::Render(const Camera& camera)
 		Context.TransitionResource(g_SceneFullScreenBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE| D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,true);
 		FSR::GetInstance()->Execute(Context, *LastPostprocessRT, g_SceneFullScreenBuffer);
 	}
+
+	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::DLSS)
+	{
+		//Execute DLSS
+		Context.TransitionResource(g_SceneFullScreenBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, true);
+		Camera* camera = EngineGlobal::gCurrentScene->GetCamera();
+		if (camera)
+		{
+			DLSS::GetInstance()->Execute(Context, *LastPostprocessRT, g_SceneFullScreenBuffer,
+				&g_SceneDepthBuffer, &g_GBuffer[Render::GBufferType::GBUFFER_MotionVector],
+				*camera, EngineGlobal::gCurrentScene->GetDeltaTime(), false);
+		}
+	}
 	
 	//if (!g_bTypedUAVLoadSupport_R11G11B10_FLOAT)
 	//{
@@ -618,6 +650,24 @@ void ScreenProcessing::DrawUI()
 			}
 			break;
 		}
+		case Render::AntiAliasingType::FSR:
+		{
+			if (ImGui::TreeNodeEx("FSR"))
+			{
+				FSR::GetInstance()->DrawUI();
+				ImGui::TreePop();
+			}
+			break;
+		}
+		case Render::AntiAliasingType::DLSS:
+		{
+			if (ImGui::TreeNodeEx("DLSS"))
+			{
+				DLSS::GetInstance()->DrawUI();
+				ImGui::TreePop();
+			}
+			break;
+		}
 		default:
 			break;
 		}
@@ -675,6 +725,11 @@ void ScreenProcessing::Update(float dt, MainConstants& RenderData, Camera& camer
 	else if (Render::GetAntiAliasingType() == Render::AntiAliasingType::FSR)
 	{
 		camera.UpdateJitter(FSR::GetInstance()->GetFSRjitter());
+	}
+	else if (Render::GetAntiAliasingType() == Render::AntiAliasingType::DLSS)
+	{
+		DLSS::GetInstance()->UpdateJitter(Display::GetFrameCount());
+		camera.UpdateJitter(DLSS::GetInstance()->GetJitterOffset());
 	}
 }
 

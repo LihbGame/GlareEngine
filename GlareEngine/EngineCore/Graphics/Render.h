@@ -31,11 +31,12 @@ namespace GlareEngine
 		
 		enum  AntiAliasingType :int
 		{
+			DLSS,
 			FSR,
 			MSAA,
 			FXAA,
 			TAA,
-			TFAA, //TAA AND FXAA
+			TFAA,
 			NOAA
 		};
 
