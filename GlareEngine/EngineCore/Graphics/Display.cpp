@@ -92,7 +92,7 @@ namespace GlareEngine
 		uint32_t g_RenderWidth;
 		uint32_t g_RenderHeight;
 
-		float g_UpscaleRatio = 1.0f;
+		float g_FSRUpscaleRatio = 1.0f;
 		bool  g_bFSRUpscale = true;
 		bool  g_bDLSSUpscale = true;
 
@@ -530,8 +530,8 @@ namespace GlareEngine
 		if (Render::GetAntiAliasingType() == Render::AntiAliasingType::FSR||
 			Render::GetAntiAliasingType() == Render::AntiAliasingType::DLSS)
 		{
-			g_RenderWidth = width / g_UpscaleRatio;
-			g_RenderHeight = height / g_UpscaleRatio;
+			g_RenderWidth = width / g_FSRUpscaleRatio;
+			g_RenderHeight = height / g_FSRUpscaleRatio;
 		}
 		else
 		{

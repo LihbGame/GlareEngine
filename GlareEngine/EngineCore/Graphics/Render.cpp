@@ -107,6 +107,7 @@ namespace GlareEngine
 		gTextureHeap.Destroy();
 		gSamplerHeap.Destroy();
 		FSR::Shutdown();
+		DLSS::Shutdown();
 	}
 
 	void Render::BuildRootSignature()

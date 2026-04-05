@@ -526,7 +526,7 @@ void FSR::UpdateUpscalerPreset(const int32_t NewPreset)
 	// Update Mip bias
 	m_MipBias = cMipBias[static_cast<uint32_t>(m_ScalePreset)];
 
-	Display::g_UpscaleRatio = m_UpscaleRatio;
+	Display::g_FSRUpscaleRatio = m_UpscaleRatio;
 
 	Display::g_bFSRUpscale = true;
 }

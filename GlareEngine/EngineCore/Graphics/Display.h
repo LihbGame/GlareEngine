@@ -13,7 +13,7 @@ namespace GlareEngine
 		extern uint32_t g_RenderWidth;
 		extern uint32_t g_RenderHeight;
 
-		extern float g_UpscaleRatio;
+		extern float g_FSRUpscaleRatio;
         extern bool  g_bFSRUpscale;
         extern bool  g_bDLSSUpscale;
 

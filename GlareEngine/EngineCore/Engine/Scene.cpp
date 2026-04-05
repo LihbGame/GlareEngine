@@ -39,8 +39,8 @@ void Scene::Update(float DeltaTime)
 		if (Display::g_bFSRUpscale)
 		{
 			g_CommandManager.IdleGPU();
-			Display::g_RenderWidth = Display::g_DisplayWidth / Display::g_UpscaleRatio;
-			Display::g_RenderHeight = Display::g_DisplayHeight / Display::g_UpscaleRatio;
+			Display::g_RenderWidth = Display::g_DisplayWidth / Display::g_FSRUpscaleRatio;
+			Display::g_RenderHeight = Display::g_DisplayHeight / Display::g_FSRUpscaleRatio;
 			ResizeDisplayDependentBuffers(Display::g_RenderWidth, Display::g_RenderHeight);
 			Display::g_bFSRUpscale = false;
 		}
@@ -50,8 +50,8 @@ void Scene::Update(float DeltaTime)
 		if (Display::g_bDLSSUpscale)
 		{
 			g_CommandManager.IdleGPU();
-			Display::g_RenderWidth = Display::g_DisplayWidth / Display::g_UpscaleRatio;
-			Display::g_RenderHeight = Display::g_DisplayHeight / Display::g_UpscaleRatio;
+			Display::g_RenderWidth = Display::g_DisplayWidth / DLSS::GetInstance()->GetUpscaleRatio();
+			Display::g_RenderHeight = Display::g_DisplayHeight / DLSS::GetInstance()->GetUpscaleRatio();
 			ResizeDisplayDependentBuffers(Display::g_RenderWidth, Display::g_RenderHeight);
 			Display::g_bDLSSUpscale = false;
 		}

@@ -110,14 +110,11 @@ void DLSS::ReleaseDLSSFeatures()
 		return;
 	}
 
-	g_CommandManager.IdleGPU();
-
 	NVSDK_NGX_Result ResultDLSS = (m_dlssFeature != nullptr) ? NVSDK_NGX_D3D12_ReleaseFeature(m_dlssFeature) : NVSDK_NGX_Result_Success;
 	if (NVSDK_NGX_FAILED(ResultDLSS))
 	{
 		EngineLog::AddLog(L"Failed to release DLSS feature");
 	}
-
 	m_dlssFeature = nullptr;
 }
 
@@ -245,8 +242,6 @@ void DLSS::ShutdownNGX()
 {
 	if (IsNGXInitialized())
 	{
-		g_CommandManager.IdleGPU();
-
 		if (m_dlssFeature != nullptr)
 		{
 			EngineLog::AddLog(L"Attempt to release NGX library before features have been released!");
