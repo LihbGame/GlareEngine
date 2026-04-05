@@ -5,9 +5,11 @@
 #include "Graphics/CommandContext.h"
 #include "EngineGUI.h"
 #include "Graphics/DepthBuffer.h"
+#include "Graphics/GraphicsCore.h"
 
 #include "DLSS/nvsdk_ngx_helpers.h"
 #include "Engine/Camera.h"
+#include "Display.h"
 
 using namespace std;
 
@@ -43,6 +45,9 @@ bool DLSS::InitializeDLSSFeatures(Math::UINT2 optimalRenderSize, Math::UINT2 dis
 	m_OptimalRenderSize = optimalRenderSize;
 	m_DisplaySize = displayOutSize;
 
+	// Calculate upscale ratio and mip bias
+	UpdateUpscaleRatio();
+
 	CreateDLSSFeature(optimalRenderSize, displayOutSize);
 
 	return m_dlssFeature != nullptr;
@@ -52,47 +57,39 @@ void DLSS::CreateDLSSFeature(Math::UINT2 optimalRenderSize, Math::UINT2 displayO
 {
 	NVSDK_NGX_Result Result = NVSDK_NGX_Result_Fail;
 
-	m_ngxParameters->Set(NVSDK_NGX_Parameter_Width, optimalRenderSize.x);
-	m_ngxParameters->Set(NVSDK_NGX_Parameter_Height, optimalRenderSize.y);
-	m_ngxParameters->Set(NVSDK_NGX_Parameter_OutWidth, displayOutSize.x);
-	m_ngxParameters->Set(NVSDK_NGX_Parameter_OutHeight, displayOutSize.y);
-	m_ngxParameters->Set(NVSDK_NGX_Parameter_PerfQualityValue, m_Settings.Quality);
+	unsigned int CreationNodeMask = 1;
+	unsigned int VisibilityNodeMask = 1;
 
+	// DLSS feature flags
+	int DlssCreateFeatureFlags = NVSDK_NGX_DLSS_Feature_Flags_None;
+	DlssCreateFeatureFlags |= NVSDK_NGX_DLSS_Feature_Flags_MVLowRes;  // Motion vectors at low resolution
+	// DlssCreateFeatureFlags |= NVSDK_NGX_DLSS_Feature_Flags_IsHDR;  // Enable if using HDR
+	DlssCreateFeatureFlags |= NVSDK_NGX_DLSS_Feature_Flags_DepthInverted;  // Engine uses Reverse Z
 	if (m_Settings.EnableSharpening)
 	{
-		m_ngxParameters->Set(NVSDK_NGX_Parameter_Sharpness, m_Settings.Sharpness);
+		DlssCreateFeatureFlags |= NVSDK_NGX_DLSS_Feature_Flags_DoSharpening;
 	}
+	// DlssCreateFeatureFlags |= NVSDK_NGX_DLSS_Feature_Flags_AutoExposure;  // Enable auto exposure
 
-	size_t ScratchSize = 0;
-	Result = NVSDK_NGX_D3D12_GetScratchBufferSize(NVSDK_NGX_Feature_SuperSampling, m_ngxParameters, &ScratchSize);
-	if (NVSDK_NGX_FAILED(Result))
-	{
-		EngineLog::AddLog(L"NVSDK_NGX_D3D12_GetScratchBufferSize failed, code = 0x%08x", Result);
-		return;
-	}
+	// Setup create parameters
+	NVSDK_NGX_DLSS_Create_Params DlssCreateParams = {};
+	DlssCreateParams.Feature.InWidth = optimalRenderSize.x;
+	DlssCreateParams.Feature.InHeight = optimalRenderSize.y;
+	DlssCreateParams.Feature.InTargetWidth = displayOutSize.x;
+	DlssCreateParams.Feature.InTargetHeight = displayOutSize.y;
+	DlssCreateParams.Feature.InPerfQualityValue = m_Settings.Quality;
+	DlssCreateParams.InFeatureCreateFlags = DlssCreateFeatureFlags;
 
-	ID3D12Resource* ScratchBuffer = nullptr;
-	if (ScratchSize > 0)
-	{
-		CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_DEFAULT);
-		CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(ScratchSize, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-		HRESULT hr = g_Device->CreateCommittedResource(
-			&heapProps,
-			D3D12_HEAP_FLAG_NONE,
-			&bufferDesc,
-			D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-			nullptr,
-			IID_PPV_ARGS(&ScratchBuffer));
+	// Create a command list for feature creation
+	CommandContext* InitContext = nullptr;
+	// We need to get a command list from the command manager
+	// For simplicity, we'll use the compute context
+	ComputeContext& Context = ComputeContext::Begin(L"DLSS Init Context");
+	ID3D12GraphicsCommandList* commandList = Context.GetCommandList();
 
-		if (SUCCEEDED(hr))
-		{
-			m_ngxParameters->Set(NVSDK_NGX_Parameter_Scratch, ScratchBuffer);
-			m_ngxParameters->Set(NVSDK_NGX_Parameter_Scratch_SizeInBytes, (unsigned int)ScratchSize);
-			ScratchBuffer->Release();
-		}
-	}
+	Result = NGX_D3D12_CREATE_DLSS_EXT(commandList, CreationNodeMask, VisibilityNodeMask, &m_dlssFeature, m_ngxParameters, &DlssCreateParams);
 
-	Result = NVSDK_NGX_D3D12_CreateFeature(nullptr, NVSDK_NGX_Feature_SuperSampling, m_ngxParameters, &m_dlssFeature);
+	Context.Finish(true);  // Execute and wait for completion
 
 	if (NVSDK_NGX_FAILED(Result))
 	{
@@ -101,7 +98,7 @@ void DLSS::CreateDLSSFeature(Math::UINT2 optimalRenderSize, Math::UINT2 displayO
 		return;
 	}
 
-	EngineLog::AddLog(L"DLSS feature created successfully! Render resolution: %ux%u, Output resolution: %ux%u", 
+	EngineLog::AddLog(L"DLSS feature created successfully! Render resolution: %ux%u, Output resolution: %ux%u",
 		optimalRenderSize.x, optimalRenderSize.y, displayOutSize.x, displayOutSize.y);
 }
 
@@ -131,17 +128,36 @@ bool DLSS::QueryOptimalSettings(Math::UINT2 inDisplaySize, NVSDK_NGX_PerfQuality
 		outRecommendedSettings->m_ngxRecommendedOptimalRenderSize = inDisplaySize;
 		outRecommendedSettings->m_ngxDynamicMaximumRenderSize = inDisplaySize;
 		outRecommendedSettings->m_ngxDynamicMinimumRenderSize = inDisplaySize;
+		outRecommendedSettings->m_ngxRecommendedSharpness = 0.0f;
 
 		EngineLog::AddLog(L"NGX was not initialized when querying Optimal Settings");
 		return false;
 	}
 
-	outRecommendedSettings->m_ngxRecommendedOptimalRenderSize = inDisplaySize;
-	outRecommendedSettings->m_ngxDynamicMaximumRenderSize = inDisplaySize;
-	outRecommendedSettings->m_ngxDynamicMinimumRenderSize = inDisplaySize;
-	outRecommendedSettings->m_ngxRecommendedSharpness = 0.0f;
+	NVSDK_NGX_Result Result = NGX_DLSS_GET_OPTIMAL_SETTINGS(m_ngxParameters,
+		inDisplaySize.x, inDisplaySize.y, inQualValue,
+		&outRecommendedSettings->m_ngxRecommendedOptimalRenderSize.x, &outRecommendedSettings->m_ngxRecommendedOptimalRenderSize.y,
+		&outRecommendedSettings->m_ngxDynamicMaximumRenderSize.x, &outRecommendedSettings->m_ngxDynamicMaximumRenderSize.y,
+		&outRecommendedSettings->m_ngxDynamicMinimumRenderSize.x, &outRecommendedSettings->m_ngxDynamicMinimumRenderSize.y,
+		&outRecommendedSettings->m_ngxRecommendedSharpness);
 
-	return false;
+	if (NVSDK_NGX_FAILED(Result))
+	{
+		outRecommendedSettings->m_ngxRecommendedOptimalRenderSize = inDisplaySize;
+		outRecommendedSettings->m_ngxDynamicMaximumRenderSize = inDisplaySize;
+		outRecommendedSettings->m_ngxDynamicMinimumRenderSize = inDisplaySize;
+		outRecommendedSettings->m_ngxRecommendedSharpness = 0.0f;
+
+		EngineLog::AddLog(L"Querying Optimal Settings failed! code = 0x%08x", Result);
+		return false;
+	}
+
+	EngineLog::AddLog(L"DLSS Optimal Settings - Render Size: %ux%u, Sharpness: %.2f",
+		outRecommendedSettings->m_ngxRecommendedOptimalRenderSize.x,
+		outRecommendedSettings->m_ngxRecommendedOptimalRenderSize.y,
+		outRecommendedSettings->m_ngxRecommendedSharpness);
+
+	return true;
 }
 
 DLSS::DLSS()
@@ -168,9 +184,9 @@ void DLSS::InitializeNGX(const wchar_t* rwLogsFolder)
 	if (!IsNGXInitialized())
 	{
 		if (Result == NVSDK_NGX_Result_FAIL_FeatureNotSupported || Result == NVSDK_NGX_Result_FAIL_PlatformError)
-			EngineLog::AddLog(L"NVIDIA NGX not available on this hardware/platform.");
+			EngineLog::AddLog(L"NVIDIA NGX not available on this hardware/platform., code = 0x%08x", Result);
 		else
-			EngineLog::AddLog(L"Failed to initialize NGX");
+			EngineLog::AddLog(L"Failed to initialize NGX, error code = 0x%08x", Result);
 
 		return;
 	}
@@ -179,16 +195,44 @@ void DLSS::InitializeNGX(const wchar_t* rwLogsFolder)
 
 	if (NVSDK_NGX_FAILED(Result))
 	{
-		EngineLog::AddLog(L"NVSDK_NGX_GetCapabilityParameters failed");
+		EngineLog::AddLog(L"NVSDK_NGX_GetCapabilityParameters failed, code = 0x%08x", Result);
 		ShutdownNGX();
 		return;
+	}
+
+	// Check for driver version requirements
+	int needsUpdatedDriver = 0;
+	unsigned int minDriverVersionMajor = 0;
+	unsigned int minDriverVersionMinor = 0;
+
+	NVSDK_NGX_Result ResultUpdatedDriver = m_ngxParameters->Get(NVSDK_NGX_Parameter_SuperSampling_NeedsUpdatedDriver, &needsUpdatedDriver);
+	NVSDK_NGX_Result ResultMinDriverMajor = m_ngxParameters->Get(NVSDK_NGX_Parameter_SuperSampling_MinDriverVersionMajor, &minDriverVersionMajor);
+	NVSDK_NGX_Result ResultMinDriverMinor = m_ngxParameters->Get(NVSDK_NGX_Parameter_SuperSampling_MinDriverVersionMinor, &minDriverVersionMinor);
+
+	if (ResultUpdatedDriver == NVSDK_NGX_Result_Success &&
+		ResultMinDriverMajor == NVSDK_NGX_Result_Success &&
+		ResultMinDriverMinor == NVSDK_NGX_Result_Success)
+	{
+		if (needsUpdatedDriver)
+		{
+			EngineLog::AddLog(L"NVIDIA DLSS requires driver update. Minimum version: %u.%u", minDriverVersionMajor, minDriverVersionMinor);
+			ShutdownNGX();
+			return;
+		}
+		else
+		{
+			EngineLog::AddLog(L"NVIDIA DLSS minimum driver version: %u.%u", minDriverVersionMajor, minDriverVersionMinor);
+		}
 	}
 
 	int dlssAvailable = 0;
 	NVSDK_NGX_Result ResultDLSS = m_ngxParameters->Get(NVSDK_NGX_Parameter_SuperSampling_Available, &dlssAvailable);
 	if (ResultDLSS != NVSDK_NGX_Result_Success || !dlssAvailable)
 	{
-		EngineLog::AddLog(L"NVIDIA DLSS not available on this hardware/platform.");
+		// Get more details about the failure
+		NVSDK_NGX_Result FeatureInitResult = NVSDK_NGX_Result_Fail;
+		NVSDK_NGX_Parameter_GetI(m_ngxParameters, NVSDK_NGX_Parameter_SuperSampling_FeatureInitResult, (int*)&FeatureInitResult);
+		EngineLog::AddLog(L"NVIDIA DLSS not available. FeatureInitResult = 0x%08x", FeatureInitResult);
 		ShutdownNGX();
 		return;
 	}
@@ -261,66 +305,205 @@ bool DLSS::FindAdapter(const std::wstring& targetName)
 	return false;
 }
 
-void DLSS::Execute(ComputeContext& Context, ColorBuffer& InputColor, ColorBuffer& OutputColor, 
-                   DepthBuffer* DepthBuffer, ColorBuffer* MotionVectorBuffer, 
-                   const Camera& camera, float deltaTime, bool reset)
+void DLSS::Execute(ComputeContext& Context, ColorBuffer& InputColor, ColorBuffer& OutputColor,
+	DepthBuffer* depthBuffer, ColorBuffer* MotionVectorBuffer,
+	const Camera& camera, float deltaTime, bool reset)
 {
 	if (!IsDLSSInitialized() || !m_Settings.Enable)
 	{
 		return;
 	}
 
+	// Validate buffer dimensions match what DLSS was initialized with
+	uint32_t inputWidth = InputColor.GetWidth();
+	uint32_t inputHeight = InputColor.GetHeight();
+	uint32_t outputWidth = OutputColor.GetWidth();
+	uint32_t outputHeight = OutputColor.GetHeight();
+
+	if (inputWidth != m_OptimalRenderSize.x || inputHeight != m_OptimalRenderSize.y ||
+	    outputWidth != m_DisplaySize.x || outputHeight != m_DisplaySize.y)
+	{
+		EngineLog::AddLog(L"DLSS Execute: Buffer size mismatch!");
+		EngineLog::AddLog(L"  Expected Input: %ux%u, Got: %ux%u", m_OptimalRenderSize.x, m_OptimalRenderSize.y, inputWidth, inputHeight);
+		EngineLog::AddLog(L"  Expected Output: %ux%u, Got: %ux%u", m_DisplaySize.x, m_DisplaySize.y, outputWidth, outputHeight);
+		EngineLog::AddLog(L"  Skipping DLSS this frame.");
+		return;
+	}
+
 	ID3D12GraphicsCommandList* CommandList = Context.GetCommandList();
+
+	// Transition resources to correct states for DLSS
+	Context.TransitionResource(InputColor, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	if (depthBuffer)
+	{
+		Context.TransitionResource(*depthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	}
+	if (MotionVectorBuffer)
+	{
+		Context.TransitionResource(*MotionVectorBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	}
+	Context.TransitionResource(OutputColor, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+	// Flush resource barriers
+	Context.FlushResourceBarriers();
+
+	// Calculate render subrect dimensions
+	NVSDK_NGX_Dimensions renderSubrectDimensions = { InputColor.GetWidth(), InputColor.GetHeight() };
+	NVSDK_NGX_Coordinates renderOffset = { 0, 0 };
+
+	// Calculate motion vector scale based on render resolution
+	float mvScaleX = 1.0f;
+	float mvScaleY = 1.0f;
+	if (m_DisplaySize.x > 0 && m_DisplaySize.y > 0)
+	{
+		mvScaleX = static_cast<float>(InputColor.GetWidth()) / static_cast<float>(m_DisplaySize.x);
+		mvScaleY = static_cast<float>(InputColor.GetHeight()) / static_cast<float>(m_DisplaySize.y);
+	}
 
 	NVSDK_NGX_D3D12_DLSS_Eval_Params EvalParams = {};
 	EvalParams.Feature.pInColor = InputColor.GetResource();
 	EvalParams.Feature.pInOutput = OutputColor.GetResource();
-	EvalParams.InRenderSubrectDimensions = { InputColor.GetWidth(), InputColor.GetHeight() };
-	EvalParams.InJitterOffsetX = m_JitterOffset.x;
-	EvalParams.InJitterOffsetY = m_JitterOffset.y;
-	EvalParams.InReset = reset ? 1 : 0;
-	EvalParams.InMVScaleX = 1.0f;
-	EvalParams.InMVScaleY = 1.0f;
-	EvalParams.Feature.InSharpness = m_Settings.EnableSharpening ? m_Settings.Sharpness : 0.0f;
 
-	if (DepthBuffer != nullptr && DepthBuffer->GetResource())
+	// Set input textures (required)
+	if (depthBuffer && depthBuffer->GetResource())
 	{
-		EvalParams.pInDepth = DepthBuffer->GetResource();
+		EvalParams.pInDepth = depthBuffer->GetResource();
 	}
 
-	if (MotionVectorBuffer != nullptr && MotionVectorBuffer->GetResource())
+	if (MotionVectorBuffer && MotionVectorBuffer->GetResource())
 	{
 		EvalParams.pInMotionVectors = MotionVectorBuffer->GetResource();
 	}
+
+	// Set evaluation parameters
+	EvalParams.InJitterOffsetX = m_JitterOffset.x;
+	EvalParams.InJitterOffsetY = m_JitterOffset.y;
+	// Use either explicit reset or accumulated reset request
+	EvalParams.InReset = (reset || ConsumeResetAccumulation()) ? 1 : 0;
+	EvalParams.InMVScaleX = mvScaleX;
+	EvalParams.InMVScaleY = mvScaleY;
+	EvalParams.Feature.InSharpness = m_Settings.EnableSharpening ? m_Settings.Sharpness : 0.0f;
+
+	// Set subrect parameters
+	EvalParams.InRenderSubrectDimensions = renderSubrectDimensions;
+	EvalParams.InColorSubrectBase = renderOffset;
+	EvalParams.InDepthSubrectBase = renderOffset;
+	EvalParams.InMVSubrectBase = renderOffset;
+	EvalParams.InTranslucencySubrectBase = renderOffset;
 
 	NVSDK_NGX_Result Result = NGX_D3D12_EVALUATE_DLSS_EXT(CommandList, m_dlssFeature, m_ngxParameters, &EvalParams);
 
 	if (NVSDK_NGX_FAILED(Result))
 	{
 		EngineLog::AddLog(L"DLSS EvaluateFeature failed, code = 0x%08x", Result);
+		EngineLog::AddLog(L"  Input: %ux%u, Output: %ux%u, RenderSize: %ux%u, DisplaySize: %ux%u",
+			InputColor.GetWidth(), InputColor.GetHeight(),
+			OutputColor.GetWidth(), OutputColor.GetHeight(),
+			m_OptimalRenderSize.x, m_OptimalRenderSize.y,
+			m_DisplaySize.x, m_DisplaySize.y);
+		EngineLog::AddLog(L"  Depth: %p, MotionVectors: %p",
+			depthBuffer ? depthBuffer->GetResource() : nullptr,
+			MotionVectorBuffer ? MotionVectorBuffer->GetResource() : nullptr);
 	}
 }
 
 void DLSS::UpdateJitter(int frameIndex)
 {
-	if (!IsDLSSInitialized() || !m_Settings.Enable)
+	if (!IsDLSSInitialized() || !m_Settings.Enable || m_OptimalRenderSize.x == 0 || m_OptimalRenderSize.y == 0)
 	{
 		m_JitterOffset = XMFLOAT2(0, 0);
 		return;
 	}
 
-	static const int c_DLSSJitterPattern[] = {
-		-4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-		-8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7
-	};
-	static const int c_DLSSJitterPatternCount = sizeof(c_DLSSJitterPattern) / sizeof(c_DLSSJitterPattern[0]);
+	// Halton jitter
+	constexpr int BaseX = 2;
+	int Index = frameIndex + 1;
+	float InvBase = 1.0f / BaseX;
+	float Fraction = InvBase;
+	while (Index > 0)
+	{
+		m_JitterOffset.x += (Index % BaseX) * Fraction;
+		Index /= BaseX;
+		Fraction *= InvBase;
+	}
 
-	m_JitterIndex = frameIndex % c_DLSSJitterPatternCount;
+	constexpr int BaseY = 3;
+	Index = frameIndex + 1;
+	InvBase = 1.0f / BaseY;
+	Fraction = InvBase;
+	while (Index > 0)
+	{
+		m_JitterOffset.y += (Index % BaseY) * Fraction;
+		Index /= BaseY;
+		Fraction *= InvBase;
+	}
 
-	float jitterX = (float)c_DLSSJitterPattern[m_JitterIndex] / (float)m_OptimalRenderSize.x;
-	float jitterY = (float)c_DLSSJitterPattern[m_JitterIndex] / (float)m_OptimalRenderSize.y;
+	m_JitterOffset.x -= 0.5f;
+	m_JitterOffset.y -= 0.5f;
+}
 
-	m_JitterOffset = XMFLOAT2(jitterX, jitterY);
+void DLSS::UpdateUpscaleRatio()
+{
+	if (m_OptimalRenderSize.x > 0 && m_DisplaySize.x > 0)
+	{
+		m_UpscaleRatio = static_cast<float>(m_DisplaySize.x) / static_cast<float>(m_OptimalRenderSize.x);
+		m_MipBias = CalculateMipBias(m_UpscaleRatio);
+	}
+	else
+	{
+		m_UpscaleRatio = 1.0f;
+		m_MipBias = 0.0f;
+	}
+}
+
+float DLSS::CalculateMipBias(float upscalerRatio) const
+{
+	return std::log2f(1.0f / upscalerRatio) - 1.0f + std::numeric_limits<float>::epsilon();
+}
+
+float DLSS::GetMipBias() const
+{
+	if (!m_Settings.Enable || !IsDLSSInitialized())
+		return 0.0f;
+	return m_MipBias;
+}
+
+float DLSS::GetUpscaleRatio() const
+{
+	if (!m_Settings.Enable || !IsDLSSInitialized())
+		return 1.0f;
+	return m_UpscaleRatio;
+}
+
+bool DLSS::NeedsRecreate(NVSDK_NGX_PerfQuality_Value newQuality) const
+{
+	return newQuality != m_Settings.Quality;
+}
+
+void DLSS::SetDLSSEnabled(bool enabled)
+{
+	if (m_Settings.Enable != enabled)
+	{
+		m_Settings.Enable = enabled;
+		if (!enabled)
+		{
+			ResetJitter();
+		}
+	}
+}
+
+void DLSS::SetQuality(NVSDK_NGX_PerfQuality_Value quality)
+{
+	if (m_Settings.Quality != quality && IsDLSSInitialized())
+	{
+		m_Settings.Quality = quality;
+		m_NeedsRecreate = true;
+		Display::g_bDLSSUpscale = true;
+	}
+	else
+	{
+		m_Settings.Quality = quality;
+	}
 }
 
 void DLSS::DrawUI()
@@ -340,33 +523,55 @@ void DLSS::DrawUI()
 		return;
 	}
 
-	ImGui::Checkbox("Enable DLSS", &m_Settings.Enable);
-
 	if (m_Settings.Enable && IsDLSSInitialized())
 	{
 		ImGui::Text("Render Resolution: %ux%u", m_OptimalRenderSize.x, m_OptimalRenderSize.y);
 		ImGui::Text("Output Resolution: %ux%u", m_DisplaySize.x, m_DisplaySize.y);
+		ImGui::Text("Upscale Ratio: %.2fx", m_UpscaleRatio);
+		ImGui::Text("Mip Bias: %.2f", m_MipBias);
 
-		const char* qualityNames[] = { "Ultra Performance", "Performance", "Balanced", "Quality", "Ultra Quality" };
+		const char* qualityNames[] = { "DLAA (Native AA)", "Ultra Performance", "Performance", "Balanced", "Quality" };
 		int currentQuality = 0;
 		switch (m_Settings.Quality)
 		{
-		case NVSDK_NGX_PerfQuality_Value_UltraPerformance: currentQuality = 0; break;
-		case NVSDK_NGX_PerfQuality_Value_MaxPerf: currentQuality = 1; break;
-		case NVSDK_NGX_PerfQuality_Value_Balanced: currentQuality = 2; break;
-		case NVSDK_NGX_PerfQuality_Value_MaxQuality: currentQuality = 3; break;
-		case NVSDK_NGX_PerfQuality_Value_DLAA: currentQuality = 4; break;
+		case NVSDK_NGX_PerfQuality_Value_DLAA: currentQuality = 0; break;
+		case NVSDK_NGX_PerfQuality_Value_UltraPerformance: currentQuality = 1; break;
+		case NVSDK_NGX_PerfQuality_Value_MaxPerf: currentQuality = 2; break;
+		case NVSDK_NGX_PerfQuality_Value_Balanced: currentQuality = 3; break;
+		case NVSDK_NGX_PerfQuality_Value_MaxQuality: currentQuality = 4; break;
+		default: currentQuality = 2; break;
 		}
 
+		int previousQuality = currentQuality;
 		if (ImGui::Combo("Quality", &currentQuality, qualityNames, IM_ARRAYSIZE(qualityNames)))
 		{
-			switch (currentQuality)
+			if (currentQuality != previousQuality)
 			{
-			case 0: m_Settings.Quality = NVSDK_NGX_PerfQuality_Value_UltraPerformance; break;
-			case 1: m_Settings.Quality = NVSDK_NGX_PerfQuality_Value_MaxPerf; break;
-			case 2: m_Settings.Quality = NVSDK_NGX_PerfQuality_Value_Balanced; break;
-			case 3: m_Settings.Quality = NVSDK_NGX_PerfQuality_Value_MaxQuality; break;
-			case 4: m_Settings.Quality = NVSDK_NGX_PerfQuality_Value_DLAA; break;
+				switch (currentQuality)
+				{
+				case 0: SetQuality(NVSDK_NGX_PerfQuality_Value_DLAA); break;
+				case 1: SetQuality(NVSDK_NGX_PerfQuality_Value_UltraPerformance); break;
+				case 2: SetQuality(NVSDK_NGX_PerfQuality_Value_MaxPerf); break;
+				case 3: SetQuality(NVSDK_NGX_PerfQuality_Value_Balanced); break;
+				case 4: SetQuality(NVSDK_NGX_PerfQuality_Value_MaxQuality); break;
+				}
+			}
+		}
+
+		// Handle automatic recreation when quality changes
+		if (m_NeedsRecreate && IsDLSSInitialized())
+		{
+			// Re-query optimal settings for new quality
+			DLSSRecommendedSettings recommended;
+			if (QueryOptimalSettings(m_DisplaySize, m_Settings.Quality, &recommended))
+			{
+				ReleaseDLSSFeatures();
+				m_OptimalRenderSize = recommended.m_ngxRecommendedOptimalRenderSize;
+				CreateDLSSFeature(m_OptimalRenderSize, m_DisplaySize);
+				UpdateUpscaleRatio();
+				m_NeedsRecreate = false;
+				EngineLog::AddLog(L"DLSS quality changed - Recreated feature with render size: %ux%u",
+					m_OptimalRenderSize.x, m_OptimalRenderSize.y);
 			}
 		}
 
@@ -381,6 +586,7 @@ void DLSS::DrawUI()
 		{
 			ReleaseDLSSFeatures();
 			CreateDLSSFeature(m_OptimalRenderSize, m_DisplaySize);
+			ResetJitter();
 		}
 	}
 }

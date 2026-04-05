@@ -241,16 +241,31 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 	//DLSS Initialize
 	if (DLSS::GetInstance()->IsDLSSAvailable())
 	{
-		Math::UINT2 displaySize = { Display::g_DisplayWidth, Display::g_DisplayHeight };
-		Math::UINT2 renderSize = { Display::g_RenderWidth, Display::g_RenderHeight };
-		
+		// Use actual buffer dimensions for DLSS initialization
+		// Input is the post-process buffer (g_PostColorBuffer)
+		// Output is the full-screen buffer (g_SceneFullScreenBuffer)
+		Math::UINT2 renderSize = { g_PostColorBuffer.GetWidth(), g_PostColorBuffer.GetHeight() };
+		Math::UINT2 displaySize = { g_SceneFullScreenBuffer.GetWidth(), g_SceneFullScreenBuffer.GetHeight() };
+
+		// If render and display are the same size, use DLAA (native AA) mode
+		bool isDLAA = (renderSize.x == displaySize.x && renderSize.y == displaySize.y);
+
 		DLSS::DLSSSettings settings;
 		settings.Enable = true;
-		settings.Quality = NVSDK_NGX_PerfQuality_Value_Balanced;
+		settings.Quality = isDLAA ? NVSDK_NGX_PerfQuality_Value_DLAA : NVSDK_NGX_PerfQuality_Value_Balanced;
 		settings.EnableSharpening = false;
 		settings.Sharpness = 0.0f;
-		
-		DLSS::GetInstance()->InitializeDLSSFeatures(renderSize, displaySize, settings);
+
+		if (DLSS::GetInstance()->InitializeDLSSFeatures(renderSize, displaySize, settings))
+		{
+			EngineLog::AddLog(L"DLSS Initialized: Render=%ux%u, Display=%ux%u, Mode=%s",
+				renderSize.x, renderSize.y, displaySize.x, displaySize.y,
+				isDLAA ? L"DLAA" : L"Upscaling");
+		}
+		else
+		{
+			EngineLog::AddLog(L"DLSS InitializeDLSSFeatures failed");
+		}
 	}
 }
 
@@ -557,6 +572,15 @@ void ScreenProcessing::Render(const Camera& camera)
 		Camera* camera = EngineGlobal::gCurrentScene->GetCamera();
 		if (camera)
 		{
+			// Detect camera cut/teleport for DLSS reset
+			static XMFLOAT3 s_LastCameraPos = camera->GetPosition3f();
+			XMFLOAT3 currentPos = camera->GetPosition3f();
+			float distSq = (currentPos.x - s_LastCameraPos.x) * (currentPos.x - s_LastCameraPos.x) +
+				(currentPos.y - s_LastCameraPos.y) * (currentPos.y - s_LastCameraPos.y) +
+				(currentPos.z - s_LastCameraPos.z) * (currentPos.z - s_LastCameraPos.z);
+			bool cameraCut = distSq > 100.0f; // If camera moved more than 10 units, treat as cut
+			s_LastCameraPos = currentPos;
+
 			DLSS::GetInstance()->Execute(Context, *LastPostprocessRT, g_SceneFullScreenBuffer,
 				&g_SceneDepthBuffer, &g_GBuffer[Render::GBufferType::GBUFFER_MotionVector],
 				*camera, EngineGlobal::gCurrentScene->GetDeltaTime(), false);

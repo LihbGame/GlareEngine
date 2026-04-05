@@ -15,6 +15,7 @@ namespace GlareEngine
 
 		extern float g_UpscaleRatio;
         extern bool  g_bFSRUpscale;
+        extern bool  g_bDLSSUpscale;
 
         extern bool g_bEnableHDROutput;
         extern IDXGISwapChain4* g_SwapChain4;

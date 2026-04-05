@@ -23,8 +23,7 @@ set(LIB_SET ${GLAREENGINE_ROOT_DIR}/packages/directxmesh_desktop_win10.2022.10.1
             ${GLAREENGINE_ROOT_DIR}/GlareEngine/Dependences/lib/$<$<CONFIG:Release>:assimp-vc140-mt>$<$<CONFIG:Debug>:assimp-vc142-mtd>.lib
             ${GLAREENGINE_ROOT_DIR}/packages/dxc_2023_08_14/lib/x64/dxcompiler.lib
             ${GLAREENGINE_ROOT_DIR}/GlareEngine/Dependences/lib/amd_fidelityfx_dx12.lib
-            ${GLAREENGINE_ROOT_DIR}/GlareEngine/Dependences/lib/nvsdk_ngx_d_dbg.lib
-            ${GLAREENGINE_ROOT_DIR}/GlareEngine/Dependences/lib/nvsdk_ngx_d.lib)
+            ${GLAREENGINE_ROOT_DIR}/GlareEngine/Dependences/lib/$<$<CONFIG:Release>:nvsdk_ngx_d>$<$<CONFIG:Debug>:nvsdk_ngx_d_dbg>.lib)
 else(CMAKE_CL_64)
 set(LIB_SET ${GLAREENGINE_ROOT_DIR}/packages/directxmesh_desktop_win10.2022.10.18.1/native/lib/x86/$<$<CONFIG:Release>:Release>$<$<CONFIG:Debug>:Debug>/DirectXMesh.lib
             ${GLAREENGINE_ROOT_DIR}/packages/directxtex_desktop_win10.2022.10.18.1/native/lib/x86/$<$<CONFIG:Release>:Release>$<$<CONFIG:Debug>:Debug>/DirectXTex.lib)

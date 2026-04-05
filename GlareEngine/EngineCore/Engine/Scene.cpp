@@ -12,6 +12,7 @@
 #include "PostProcessing/SSAO.h"
 #include "PostProcessing/TemporalAA.h"
 #include "PostProcessing/MotionBlur.h"
+#include "Graphics/DLSS.h"
 
 /// Scene/////////////////////////////////////////////
 using namespace GlareEngine::Render;
@@ -44,14 +45,30 @@ void Scene::Update(float DeltaTime)
 			Display::g_bFSRUpscale = false;
 		}
 	}
+	else if(DLSS::GetInstance()->IsDLSSEnabled())
+	{
+		if (Display::g_bDLSSUpscale)
+		{
+			g_CommandManager.IdleGPU();
+			Display::g_RenderWidth = Display::g_DisplayWidth / Display::g_UpscaleRatio;
+			Display::g_RenderHeight = Display::g_DisplayHeight / Display::g_UpscaleRatio;
+			ResizeDisplayDependentBuffers(Display::g_RenderWidth, Display::g_RenderHeight);
+			Display::g_bDLSSUpscale = false;
+		}
+	}
 	else
 	{
-		g_CommandManager.IdleGPU();
-		Display::g_RenderWidth = Display::g_DisplayWidth;
-		Display::g_RenderHeight = Display::g_DisplayHeight;
-		EngineGlobal::gCurrentScene->ResizeViewport(Display::g_RenderWidth, Display::g_RenderHeight);
-		ResizeDisplayDependentBuffers(Display::g_RenderWidth, Display::g_RenderHeight);
-		Display::g_bFSRUpscale = true;
+		if (Display::g_RenderWidth != Display::g_DisplayWidth ||
+			Display::g_RenderHeight != Display::g_DisplayHeight)
+		{
+			g_CommandManager.IdleGPU();
+			Display::g_RenderWidth = Display::g_DisplayWidth;
+			Display::g_RenderHeight = Display::g_DisplayHeight;
+			EngineGlobal::gCurrentScene->ResizeViewport(Display::g_RenderWidth, Display::g_RenderHeight);
+			ResizeDisplayDependentBuffers(Display::g_RenderWidth, Display::g_RenderHeight);
+			Display::g_bFSRUpscale = true;
+			Display::g_bDLSSUpscale = true;
+		}
 	}
 
 	//Update shadow map

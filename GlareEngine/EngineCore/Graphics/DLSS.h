@@ -1,10 +1,13 @@
 #pragma once
 #include <memory>
+#include <cmath>
+#include <limits>
 #include <DirectXMath.h>
 #include <xstring>
 #include "Math/Common.h"
 #include "Graphics/ColorBuffer.h"
 #include "Graphics/DepthBuffer.h"
+#include "Graphics/Display.h"
 
 #include "DLSS/nvsdk_ngx.h"
 #include "DLSS/nvsdk_ngx_helpers.h"
@@ -31,6 +34,18 @@ public:
         NVSDK_NGX_PerfQuality_Value Quality = NVSDK_NGX_PerfQuality_Value_MaxPerf;
     };
 
+    // Quality mode presets and their scale ratios
+    enum class QualityPreset
+    {
+        DLAA = 0,           // 1.0x (Native quality anti-aliasing)
+        Quality,            // 1.5x
+        Balanced,           // 1.7x
+        Performance,        // 2.0x
+        UltraPerformance,   // 3.0x
+        Native,             // 1.0x (No upscaling)
+        Count
+    };
+
     static DLSS* GetInstance();
     static void Shutdown();
 
@@ -43,21 +58,34 @@ public:
     bool IsDLSSInitialized() const { return IsNGXInitialized() && m_dlssFeature != nullptr; }
     bool IsNGXInitialized() const { return m_ngxInitialized; }
 
-    void Execute(ComputeContext& Context, ColorBuffer& InputColor, ColorBuffer& OutputColor, 
-                 DepthBuffer* DepthBuffer, ColorBuffer* MotionVectorBuffer, 
+    void Execute(ComputeContext& Context, ColorBuffer& InputColor, ColorBuffer& OutputColor,
+                 DepthBuffer* depthBuffer, ColorBuffer* MotionVectorBuffer,
                  const Camera& camera, float deltaTime, bool reset);
 
     void UpdateJitter(int frameIndex);
-    XMFLOAT2 GetJitterOffset() const { return m_JitterOffset; }
+    XMFLOAT2 GetJitterOffset() const { return XMFLOAT2(m_JitterOffset.x / Display::g_RenderWidth, m_JitterOffset.y / Display::g_RenderHeight); }
     void ResetJitter() { m_JitterIndex = 0; m_JitterOffset = XMFLOAT2(0, 0); }
+
+    // Mip bias for texture LOD when using DLSS
+    float GetMipBias() const;
+    float GetUpscaleRatio() const;
 
     void DrawUI();
 
-    void SetDLSSEnabled(bool enabled) { m_Settings.Enable = enabled; }
+    void SetDLSSEnabled(bool enabled);
     bool IsDLSSEnabled() const { return m_Settings.Enable; }
 
-    void SetQuality(NVSDK_NGX_PerfQuality_Value quality) { m_Settings.Quality = quality; }
+    void SetQuality(NVSDK_NGX_PerfQuality_Value quality);
     NVSDK_NGX_PerfQuality_Value GetQuality() const { return m_Settings.Quality; }
+
+    // Reset accumulation on scene changes or camera cuts
+    void RequestResetAccumulation() { m_NeedsResetAccumulation = true; }
+    bool ConsumeResetAccumulation()
+    {
+        bool reset = m_NeedsResetAccumulation;
+        m_NeedsResetAccumulation = false;
+        return reset;
+    }
 
     void SetSharpness(float sharpness) { m_Settings.Sharpness = sharpness; }
     float GetSharpness() const { return m_Settings.Sharpness; }
@@ -67,6 +95,9 @@ public:
 
     Math::UINT2 GetOptimalRenderSize() const { return m_OptimalRenderSize; }
     Math::UINT2 GetDisplaySize() const { return m_DisplaySize; }
+
+    // Check if quality mode change requires feature recreation
+    bool NeedsRecreate(NVSDK_NGX_PerfQuality_Value newQuality) const;
 
 private:
     DLSS();
@@ -87,6 +118,16 @@ private:
     int m_JitterIndex = 0;
     XMFLOAT2 m_JitterOffset = { 0, 0 };
 
+    // Mip bias cache
+    float m_MipBias = 0.0f;
+    float m_UpscaleRatio = 1.0f;
+
+    // Track if we need to recreate the feature
+    bool m_NeedsRecreate = false;
+
+    // Track if we need to reset accumulation (scene change, camera cut)
+    bool m_NeedsResetAccumulation = false;
+
     void InitializeNGX(const wchar_t* rwLogsFolder = L".");
     void ShutdownNGX();
 
@@ -94,4 +135,7 @@ private:
     bool FindAdapter(const std::wstring& targetName);
 
     void CreateDLSSFeature(Math::UINT2 optimalRenderSize, Math::UINT2 displayOutSize);
+
+    void UpdateUpscaleRatio();
+    float CalculateMipBias(float upscalerRatio) const;
 };

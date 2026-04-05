@@ -22,6 +22,7 @@
 
 #include "CompiledShaders/LightingPassCS.h"
 #include "CompiledShaders/WireframeCS.h"
+#include "DLSS.h"
 
 #define MAX_TEXTURE_HEAP_DESCRIPTORS  4096
 
@@ -358,6 +359,15 @@ namespace GlareEngine
 		else
 		{
 			FSR::GetInstance()->EnableUpscaling(false);
+		}
+
+		if (gAntiAliasingType == AntiAliasingType::DLSS)
+		{
+			DLSS::GetInstance()->SetDLSSEnabled(true);
+		}
+		else
+		{
+			DLSS::GetInstance()->SetDLSSEnabled(false);
 		}
 	}
 

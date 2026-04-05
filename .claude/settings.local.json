@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/22528/Desktop/DLSS_Sample_App/**)",
+      "Read(//c/Users/22528/Desktop//**)",
+      "Bash(cmake --build . --config Release)",
+      "Bash(cmake ..)"
+    ]
+  }
+}

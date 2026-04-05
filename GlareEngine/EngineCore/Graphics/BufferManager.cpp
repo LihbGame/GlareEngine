@@ -6,6 +6,7 @@
 #include "EngineGUI.h"
 #include "FSR.h"
 #include "Engine/Scene.h"
+#include "DLSS.h"
 
 namespace GlareEngine
 {
@@ -265,6 +266,43 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 		FSR::GetInstance()->UpdateUpscalingContext(false);
 		FSR::GetInstance()->UpdateUpscalingContext(true);
 		FSR::GetInstance()->ResetJitterIndex();
+
+		g_SceneFullScreenBuffer.Create(L"FSR Full Screen Color Buffer", Display::g_DisplayWidth, Display::g_DisplayHeight, 1, DefaultHDRColorFormat);
+	}
+
+	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::DLSS && DLSS::GetInstance()->IsDLSSEnabled())
+	{
+		EngineGlobal::gCurrentScene->ResizeViewport(NativeWidth, NativeHeight);
+		
+		//DLSS Initialize
+		if (DLSS::GetInstance()->IsDLSSAvailable())
+		{
+			// Use actual buffer dimensions for DLSS initialization
+			// Input is the post-process buffer (g_PostColorBuffer)
+			// Output is the full-screen buffer (g_SceneFullScreenBuffer)
+			Math::UINT2 renderSize = { Display::g_RenderWidth, Display::g_RenderHeight };
+			Math::UINT2 displaySize = { Display::g_DisplayWidth, Display::g_DisplayHeight };
+
+			// If render and display are the same size, use DLAA (native AA) mode
+			bool isDLAA = (renderSize.x == displaySize.x && renderSize.y == displaySize.y);
+
+			DLSS::DLSSSettings settings;
+			settings.Enable = true;
+			settings.Quality = isDLAA ? NVSDK_NGX_PerfQuality_Value_DLAA : NVSDK_NGX_PerfQuality_Value_Balanced;
+			settings.EnableSharpening = false;
+			settings.Sharpness = 0.0f;
+
+			if (DLSS::GetInstance()->InitializeDLSSFeatures(renderSize, displaySize, settings))
+			{
+				EngineLog::AddLog(L"DLSS Initialized: Render=%ux%u, Display=%ux%u, Mode=%s",
+					renderSize.x, renderSize.y, displaySize.x, displaySize.y,
+					isDLAA ? L"DLAA" : L"Upscaling");
+			}
+			else
+			{
+				EngineLog::AddLog(L"DLSS InitializeDLSSFeatures failed");
+			}
+		}
 
 		g_SceneFullScreenBuffer.Create(L"FSR Full Screen Color Buffer", Display::g_DisplayWidth, Display::g_DisplayHeight, 1, DefaultHDRColorFormat);
 	}

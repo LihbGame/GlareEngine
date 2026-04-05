@@ -93,7 +93,8 @@ namespace GlareEngine
 		uint32_t g_RenderHeight;
 
 		float g_UpscaleRatio = 1.0f;
-		bool  g_bFSRUpscale = false;
+		bool  g_bFSRUpscale = true;
+		bool  g_bDLSSUpscale = true;
 
 		ColorBuffer g_PreDisplayBuffer;
 
@@ -307,15 +308,15 @@ namespace GlareEngine
 
 	void Display::PreparePresent()
 	{
-		if (Render::GetAntiAliasingType() != Render::AntiAliasingType::FSR)
+		if (Render::GetAntiAliasingType() == Render::AntiAliasingType::FSR||
+			Render::GetAntiAliasingType() == Render::AntiAliasingType::DLSS)
 		{
-			CurrentSceneColorBuffer = ScreenProcessing::GetLastPostprocessRT();
-
-			CurrentSceneColorBuffer = CurrentSceneColorBuffer ? CurrentSceneColorBuffer : &g_SceneColorBuffer;
+			CurrentSceneColorBuffer = &g_SceneFullScreenBuffer;
 		}
 		else
 		{
-			CurrentSceneColorBuffer = &g_SceneFullScreenBuffer;
+			CurrentSceneColorBuffer = ScreenProcessing::GetLastPostprocessRT();
+			CurrentSceneColorBuffer = CurrentSceneColorBuffer ? CurrentSceneColorBuffer : &g_SceneColorBuffer;
 		}
 
 		if (g_bEnableHDROutput)
@@ -526,7 +527,8 @@ namespace GlareEngine
 
 		g_CommandManager.IdleGPU();
 
-		if (Render::GetAntiAliasingType() == Render::AntiAliasingType::FSR)
+		if (Render::GetAntiAliasingType() == Render::AntiAliasingType::FSR||
+			Render::GetAntiAliasingType() == Render::AntiAliasingType::DLSS)
 		{
 			g_RenderWidth = width / g_UpscaleRatio;
 			g_RenderHeight = height / g_UpscaleRatio;
