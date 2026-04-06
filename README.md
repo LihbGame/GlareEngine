@@ -9,7 +9,7 @@ TIPS:
 
 ## Features
 - Image-based lighting
-- Tiled Base Forward Rendering,Tiled Base Deferred Rendering 
+- Tiled Base Forward Rendering,Tiled Base Deferred Rendering
 - Cluster Base Deferred Rendering
 - Cook-Torrance microfacet specular BRDF
 - Metallic workflow
@@ -19,7 +19,13 @@ TIPS:
 - Screen-space ambient occlusion
 - HDR bloom
 - Color grading: exposure, adaptation
-- FSR, TAA, FXAA, MSAA
+- **NVIDIA DLSS** (Deep Learning Super Sampling)
+  - DLAA (Deep Learning Anti-Aliasing) - native resolution with AI anti-aliasing
+  - Quality/Performance/Balanced/Ultra Performance presets
+  - Automatic camera cut detection
+  - Mip bias calculation for texture LOD
+- AMD FSR (FidelityFX Super Resolution)
+- TAA, FXAA, MSAA
 - Parallax Mapping
 - Motion Blur
 - Runtime Shader Modify
