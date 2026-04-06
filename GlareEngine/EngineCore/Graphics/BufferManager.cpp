@@ -273,7 +273,7 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::DLSS && DLSS::GetInstance()->IsDLSSEnabled())
 	{
 		EngineGlobal::gCurrentScene->ResizeViewport(NativeWidth, NativeHeight);
-		
+		DLSS::GetInstance()->ResetJitter();
 		//DLSS Initialize
 		if (DLSS::GetInstance()->IsDLSSAvailable())
 		{
@@ -287,10 +287,11 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 			bool isDLAA = (renderSize.x == displaySize.x && renderSize.y == displaySize.y);
 
 			DLSS::DLSSSettings settings;
-			settings.Enable = true;
-			settings.Quality = isDLAA ? NVSDK_NGX_PerfQuality_Value_DLAA : NVSDK_NGX_PerfQuality_Value_Balanced;
-			settings.EnableSharpening = false;
-			settings.Sharpness = 0.0f;
+			settings.Enable = DLSS::GetInstance()->IsDLSSEnabled();
+			settings.Quality = DLSS::GetInstance()->GetQuality();
+			settings.EnableSharpening = DLSS::GetInstance()->IsSharpeningEnabled();
+			settings.Sharpness = DLSS::GetInstance()->GetSharpness();
+			settings.RenderPreset = DLSS::GetInstance()->GetRenderPreset();
 
 			if (DLSS::GetInstance()->InitializeDLSSFeatures(renderSize, displaySize, settings))
 			{

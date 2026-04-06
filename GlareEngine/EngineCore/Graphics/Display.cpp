@@ -36,6 +36,7 @@
 #include <imgui.h>
 #include "FSR.h"
 #include <dxgidebug.h>
+#include "DLSS.h"
 
 namespace GlareEngine
 {
@@ -527,11 +528,15 @@ namespace GlareEngine
 
 		g_CommandManager.IdleGPU();
 
-		if (Render::GetAntiAliasingType() == Render::AntiAliasingType::FSR||
-			Render::GetAntiAliasingType() == Render::AntiAliasingType::DLSS)
+		if (Render::GetAntiAliasingType() == Render::AntiAliasingType::FSR)
 		{
 			g_RenderWidth = width / g_FSRUpscaleRatio;
 			g_RenderHeight = height / g_FSRUpscaleRatio;
+		}
+		else if (Render::GetAntiAliasingType() == Render::AntiAliasingType::DLSS)
+		{
+			g_RenderWidth = width / DLSS::GetInstance()->GetUpscaleRatio();
+			g_RenderHeight = height / DLSS::GetInstance()->GetUpscaleRatio();
 		}
 		else
 		{

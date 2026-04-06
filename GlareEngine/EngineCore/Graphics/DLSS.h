@@ -13,7 +13,7 @@
 #include "DLSS/nvsdk_ngx_helpers.h"
 #include "Engine/Camera.h"
 
-#define APP_ID 231313132
+#define APP_ID 331313132
 
 class DLSS
 {
@@ -29,9 +29,10 @@ public:
     struct DLSSSettings
     {
         bool Enable = true;
-        bool EnableSharpening = false;
+        bool EnableSharpening = true;
         float Sharpness = 0.0f;
         NVSDK_NGX_PerfQuality_Value Quality = NVSDK_NGX_PerfQuality_Value_MaxPerf;
+        NVSDK_NGX_DLSS_Hint_Render_Preset RenderPreset = NVSDK_NGX_DLSS_Hint_Render_Preset_K;
     };
 
     // Quality mode presets and their scale ratios
@@ -92,6 +93,9 @@ public:
 
     void SetEnableSharpening(bool enabled) { m_Settings.EnableSharpening = enabled; }
     bool IsSharpeningEnabled() const { return m_Settings.EnableSharpening; }
+
+    void SetRenderPreset(NVSDK_NGX_DLSS_Hint_Render_Preset preset);
+    NVSDK_NGX_DLSS_Hint_Render_Preset GetRenderPreset() const { return m_Settings.RenderPreset; }
 
     Math::UINT2 GetOptimalRenderSize() const { return m_OptimalRenderSize; }
     Math::UINT2 GetDisplaySize() const { return m_DisplaySize; }

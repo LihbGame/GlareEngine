@@ -15,6 +15,8 @@ using namespace std;
 
 DLSS* DLSS::m_pDLSSInstance = nullptr;
 
+constexpr size_t NUM_OFFSET_SEQUENCES = 64; // Use a large number of Halton sequence offsets to accomodate large scaling ratios.
+
 DLSS* DLSS::GetInstance()
 {
 	if (m_pDLSSInstance == nullptr)
@@ -63,16 +65,20 @@ void DLSS::CreateDLSSFeature(Math::UINT2 optimalRenderSize, Math::UINT2 displayO
 	// DLSS feature flags
 	int DlssCreateFeatureFlags = NVSDK_NGX_DLSS_Feature_Flags_None;
 	DlssCreateFeatureFlags |= NVSDK_NGX_DLSS_Feature_Flags_MVLowRes;  // Motion vectors at low resolution
-	// DlssCreateFeatureFlags |= NVSDK_NGX_DLSS_Feature_Flags_IsHDR;  // Enable if using HDR
+	//DlssCreateFeatureFlags |= NVSDK_NGX_DLSS_Feature_Flags_MVJittered;
+	DlssCreateFeatureFlags |= NVSDK_NGX_DLSS_Feature_Flags_IsHDR;  // Enable if using HDR
 	DlssCreateFeatureFlags |= NVSDK_NGX_DLSS_Feature_Flags_DepthInverted;  // Engine uses Reverse Z
 	if (m_Settings.EnableSharpening)
 	{
 		DlssCreateFeatureFlags |= NVSDK_NGX_DLSS_Feature_Flags_DoSharpening;
 	}
-	// DlssCreateFeatureFlags |= NVSDK_NGX_DLSS_Feature_Flags_AutoExposure;  // Enable auto exposure
+	//DlssCreateFeatureFlags |= NVSDK_NGX_DLSS_Feature_Flags_AutoExposure;  // Enable auto exposure
 
 	// Setup create parameters
-	NVSDK_NGX_DLSS_Create_Params DlssCreateParams = {};
+	NVSDK_NGX_DLSS_Create_Params DlssCreateParams;
+
+	memset(&DlssCreateParams, 0, sizeof(DlssCreateParams));
+
 	DlssCreateParams.Feature.InWidth = optimalRenderSize.x;
 	DlssCreateParams.Feature.InHeight = optimalRenderSize.y;
 	DlssCreateParams.Feature.InTargetWidth = displayOutSize.x;
@@ -80,11 +86,16 @@ void DLSS::CreateDLSSFeature(Math::UINT2 optimalRenderSize, Math::UINT2 displayO
 	DlssCreateParams.Feature.InPerfQualityValue = m_Settings.Quality;
 	DlssCreateParams.InFeatureCreateFlags = DlssCreateFeatureFlags;
 
+	// Select render preset (DL weights)
+	unsigned int renderPreset = m_Settings.RenderPreset;
+	NVSDK_NGX_Parameter_SetUI(m_ngxParameters, NVSDK_NGX_Parameter_DLSS_Hint_Render_Preset_DLAA, renderPreset);
+	NVSDK_NGX_Parameter_SetUI(m_ngxParameters, NVSDK_NGX_Parameter_DLSS_Hint_Render_Preset_Quality, renderPreset);
+	NVSDK_NGX_Parameter_SetUI(m_ngxParameters, NVSDK_NGX_Parameter_DLSS_Hint_Render_Preset_Balanced, renderPreset);
+	NVSDK_NGX_Parameter_SetUI(m_ngxParameters, NVSDK_NGX_Parameter_DLSS_Hint_Render_Preset_Performance, renderPreset);
+	NVSDK_NGX_Parameter_SetUI(m_ngxParameters, NVSDK_NGX_Parameter_DLSS_Hint_Render_Preset_UltraPerformance, renderPreset);
+
 	// Create a command list for feature creation
-	CommandContext* InitContext = nullptr;
-	// We need to get a command list from the command manager
-	// For simplicity, we'll use the compute context
-	ComputeContext& Context = ComputeContext::Begin(L"DLSS Init Context");
+	GraphicsContext& Context = GraphicsContext::Begin(L"DLSS Init Context");
 	ID3D12GraphicsCommandList* commandList = Context.GetCommandList();
 
 	Result = NGX_D3D12_CREATE_DLSS_EXT(commandList, CreationNodeMask, VisibilityNodeMask, &m_dlssFeature, m_ngxParameters, &DlssCreateParams);
@@ -309,6 +320,8 @@ void DLSS::Execute(ComputeContext& Context, ColorBuffer& InputColor, ColorBuffer
 		return;
 	}
 
+	ScopedTimer DLSSPassScope(L"DLSS", Context);
+
 	// Validate buffer dimensions match what DLSS was initialized with
 	uint32_t inputWidth = InputColor.GetWidth();
 	uint32_t inputHeight = InputColor.GetHeight();
@@ -346,15 +359,6 @@ void DLSS::Execute(ComputeContext& Context, ColorBuffer& InputColor, ColorBuffer
 	NVSDK_NGX_Dimensions renderSubrectDimensions = { InputColor.GetWidth(), InputColor.GetHeight() };
 	NVSDK_NGX_Coordinates renderOffset = { 0, 0 };
 
-	// Calculate motion vector scale based on render resolution
-	float mvScaleX = 1.0f;
-	float mvScaleY = 1.0f;
-	if (m_DisplaySize.x > 0 && m_DisplaySize.y > 0)
-	{
-		mvScaleX = static_cast<float>(InputColor.GetWidth()) / static_cast<float>(m_DisplaySize.x);
-		mvScaleY = static_cast<float>(InputColor.GetHeight()) / static_cast<float>(m_DisplaySize.y);
-	}
-
 	NVSDK_NGX_D3D12_DLSS_Eval_Params EvalParams = {};
 	EvalParams.Feature.pInColor = InputColor.GetResource();
 	EvalParams.Feature.pInOutput = OutputColor.GetResource();
@@ -371,12 +375,12 @@ void DLSS::Execute(ComputeContext& Context, ColorBuffer& InputColor, ColorBuffer
 	}
 
 	// Set evaluation parameters
-	EvalParams.InJitterOffsetX = m_JitterOffset.x;
-	EvalParams.InJitterOffsetY = m_JitterOffset.y;
+	EvalParams.InJitterOffsetX = -m_JitterOffset.x;
+	EvalParams.InJitterOffsetY = -m_JitterOffset.y;
 	// Use either explicit reset or accumulated reset request
 	EvalParams.InReset = (reset || ConsumeResetAccumulation()) ? 1 : 0;
-	EvalParams.InMVScaleX = mvScaleX;
-	EvalParams.InMVScaleY = mvScaleY;
+	EvalParams.InMVScaleX = inputWidth;
+	EvalParams.InMVScaleY = inputHeight;
 	EvalParams.Feature.InSharpness = m_Settings.EnableSharpening ? m_Settings.Sharpness : 0.0f;
 
 	// Set subrect parameters
@@ -410,6 +414,10 @@ void DLSS::UpdateJitter(int frameIndex)
 		return;
 	}
 
+	XMFLOAT2 Result(0.0f, 0.0f);
+
+	frameIndex = frameIndex % NUM_OFFSET_SEQUENCES;
+
 	// Halton jitter
 	constexpr int BaseX = 2;
 	int Index = frameIndex + 1;
@@ -417,7 +425,7 @@ void DLSS::UpdateJitter(int frameIndex)
 	float Fraction = InvBase;
 	while (Index > 0)
 	{
-		m_JitterOffset.x += (Index % BaseX) * Fraction;
+		Result.x += (Index % BaseX) * Fraction;
 		Index /= BaseX;
 		Fraction *= InvBase;
 	}
@@ -428,13 +436,15 @@ void DLSS::UpdateJitter(int frameIndex)
 	Fraction = InvBase;
 	while (Index > 0)
 	{
-		m_JitterOffset.y += (Index % BaseY) * Fraction;
+		Result.y += (Index % BaseY) * Fraction;
 		Index /= BaseY;
 		Fraction *= InvBase;
 	}
 
-	m_JitterOffset.x -= 0.5f;
-	m_JitterOffset.y -= 0.5f;
+	Result.x -= 0.5f;
+	Result.y -= 0.5f;
+
+	m_JitterOffset = Result;
 }
 
 void DLSS::UpdateUpscaleRatio()
@@ -501,6 +511,19 @@ void DLSS::SetQuality(NVSDK_NGX_PerfQuality_Value quality)
 	}
 }
 
+void DLSS::SetRenderPreset(NVSDK_NGX_DLSS_Hint_Render_Preset preset)
+{
+	if (m_Settings.RenderPreset != preset && IsDLSSInitialized())
+	{
+		m_Settings.RenderPreset = preset;
+		m_NeedsRecreate = true;
+	}
+	else
+	{
+		m_Settings.RenderPreset = preset;
+	}
+}
+
 void DLSS::DrawUI()
 {
 	ImGui::Separator();
@@ -524,31 +547,33 @@ void DLSS::DrawUI()
 		ImGui::Text("Output Resolution: %ux%u", m_DisplaySize.x, m_DisplaySize.y);
 		ImGui::Text("Upscale Ratio: %.2fx", m_UpscaleRatio);
 		ImGui::Text("Mip Bias: %.2f", m_MipBias);
+		ImGui::Text("Sharpness: %.2f", m_Settings.Sharpness);
 
-		const char* qualityNames[] = { "DLAA (Native AA)", "Ultra Performance", "Performance", "Balanced", "Quality" };
+		// Quality names in the same order as NVSDK_NGX_PerfQuality_Value enum
+		const char* qualityNames[] = { "Performance", "Balanced", "Quality", "Ultra Performance", "DLAA (Native AA)" };
 		int currentQuality = 0;
 		switch (m_Settings.Quality)
 		{
-		case NVSDK_NGX_PerfQuality_Value_DLAA: currentQuality = 0; break;
-		case NVSDK_NGX_PerfQuality_Value_UltraPerformance: currentQuality = 1; break;
-		case NVSDK_NGX_PerfQuality_Value_MaxPerf: currentQuality = 2; break;
-		case NVSDK_NGX_PerfQuality_Value_Balanced: currentQuality = 3; break;
-		case NVSDK_NGX_PerfQuality_Value_MaxQuality: currentQuality = 4; break;
-		default: currentQuality = 2; break;
+		case NVSDK_NGX_PerfQuality_Value_MaxPerf:          currentQuality = 0; break;
+		case NVSDK_NGX_PerfQuality_Value_Balanced:         currentQuality = 1; break;
+		case NVSDK_NGX_PerfQuality_Value_MaxQuality:       currentQuality = 2; break;
+		case NVSDK_NGX_PerfQuality_Value_UltraPerformance: currentQuality = 3; break;
+		case NVSDK_NGX_PerfQuality_Value_DLAA:             currentQuality = 4; break;
+		default: currentQuality = 0; break;
 		}
 
 		int previousQuality = currentQuality;
-		if (ImGui::Combo("Quality", &currentQuality, qualityNames, IM_ARRAYSIZE(qualityNames)))
+		if (ImGui::Combo("DLSS Quality", &currentQuality, qualityNames, IM_ARRAYSIZE(qualityNames)))
 		{
 			if (currentQuality != previousQuality)
 			{
 				switch (currentQuality)
 				{
-				case 0: SetQuality(NVSDK_NGX_PerfQuality_Value_DLAA); break;
-				case 1: SetQuality(NVSDK_NGX_PerfQuality_Value_UltraPerformance); break;
-				case 2: SetQuality(NVSDK_NGX_PerfQuality_Value_MaxPerf); break;
-				case 3: SetQuality(NVSDK_NGX_PerfQuality_Value_Balanced); break;
-				case 4: SetQuality(NVSDK_NGX_PerfQuality_Value_MaxQuality); break;
+				case 0: SetQuality(NVSDK_NGX_PerfQuality_Value_MaxPerf); break;
+				case 1: SetQuality(NVSDK_NGX_PerfQuality_Value_Balanced); break;
+				case 2: SetQuality(NVSDK_NGX_PerfQuality_Value_MaxQuality); break;
+				case 3: SetQuality(NVSDK_NGX_PerfQuality_Value_UltraPerformance); break;
+				case 4: SetQuality(NVSDK_NGX_PerfQuality_Value_DLAA); break;
 				}
 			}
 		}
@@ -570,8 +595,40 @@ void DLSS::DrawUI()
 			}
 		}
 
-		ImGui::Checkbox("Enable Sharpening", &m_Settings.EnableSharpening);
+		// Render Preset selection
+		const char* presetNames[] = { "Default", "F (UltraPerf/DLAA)", "J (Less Ghosting)", "K (Transformer, Best Quality)" };
+		unsigned int presetValues[] = {
+			NVSDK_NGX_DLSS_Hint_Render_Preset_Default,
+			NVSDK_NGX_DLSS_Hint_Render_Preset_F,
+			NVSDK_NGX_DLSS_Hint_Render_Preset_J,
+			NVSDK_NGX_DLSS_Hint_Render_Preset_K
+		};
+		int currentPresetIndex = 0;
+		for (int i = 0; i < IM_ARRAYSIZE(presetValues); i++)
+		{
+			if (presetValues[i] == m_Settings.RenderPreset)
+			{
+				currentPresetIndex = i;
+				break;
+			}
+		}
+		int previousPresetIndex = currentPresetIndex;
+		if (ImGui::Combo("Render Preset", &currentPresetIndex, presetNames, IM_ARRAYSIZE(presetNames)))
+		{
+			if (currentPresetIndex != previousPresetIndex)
+			{
+				SetRenderPreset((NVSDK_NGX_DLSS_Hint_Render_Preset)presetValues[currentPresetIndex]);
+			}
+		}
 
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::BeginTooltip();
+			ImGui::Text("K: Transformer model, best quality (recommended)\nF: For Ultra Performance/DLAA modes\nJ: Less ghosting, more flickering than K");
+			ImGui::EndTooltip();
+		}
+
+		ImGui::Checkbox("Enable Sharpening", &m_Settings.EnableSharpening);
 		if (m_Settings.EnableSharpening)
 		{
 			ImGui::SliderFloat("Sharpness", &m_Settings.Sharpness, 0.0f, 1.0f);

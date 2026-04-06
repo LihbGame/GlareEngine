@@ -401,7 +401,18 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 		mSceneView.mMainConstants.Lights[2].Strength = mSceneLights[2].Strength;
 	}
 
-	mSceneView.mMainConstants.gMipLODBias = m_pFSR->GetMipLODBias();
+	if (Render::GetAntiAliasingType() == Render::AntiAliasingType::DLSS)
+	{
+		mSceneView.mMainConstants.gMipLODBias = m_pFSR->GetMipLODBias();
+	}
+	else if(Render::GetAntiAliasingType() == Render::AntiAliasingType::FSR)
+	{
+		mSceneView.mMainConstants.gMipLODBias = DLSS::GetInstance()->GetMipBias();
+	}
+	else
+	{
+		mSceneView.mMainConstants.gMipLODBias = 0;
+	}
 
 	mSceneView.mMainConstants.gPreJitterOffset = mSceneView.m_pCamera->GetPreJitter();
 	mSceneView.mMainConstants.gCurJitterOffset = mSceneView.m_pCamera->GetCurJitter();

@@ -237,36 +237,6 @@ void ScreenProcessing::Initialize(ID3D12GraphicsCommandList* CommandList)
 
 	//TemporalAA Initialize
 	TemporalAA::Initialize();
-
-	//DLSS Initialize
-	if (DLSS::GetInstance()->IsDLSSAvailable())
-	{
-		// Use actual buffer dimensions for DLSS initialization
-		// Input is the post-process buffer (g_PostColorBuffer)
-		// Output is the full-screen buffer (g_SceneFullScreenBuffer)
-		Math::UINT2 renderSize = { g_PostColorBuffer.GetWidth(), g_PostColorBuffer.GetHeight() };
-		Math::UINT2 displaySize = { g_SceneFullScreenBuffer.GetWidth(), g_SceneFullScreenBuffer.GetHeight() };
-
-		// If render and display are the same size, use DLAA (native AA) mode
-		bool isDLAA = (renderSize.x == displaySize.x && renderSize.y == displaySize.y);
-
-		DLSS::DLSSSettings settings;
-		settings.Enable = true;
-		settings.Quality = isDLAA ? NVSDK_NGX_PerfQuality_Value_DLAA : NVSDK_NGX_PerfQuality_Value_Balanced;
-		settings.EnableSharpening = false;
-		settings.Sharpness = 0.0f;
-
-		if (DLSS::GetInstance()->InitializeDLSSFeatures(renderSize, displaySize, settings))
-		{
-			EngineLog::AddLog(L"DLSS Initialized: Render=%ux%u, Display=%ux%u, Mode=%s",
-				renderSize.x, renderSize.y, displaySize.x, displaySize.y,
-				isDLAA ? L"DLAA" : L"Upscaling");
-		}
-		else
-		{
-			EngineLog::AddLog(L"DLSS InitializeDLSSFeatures failed");
-		}
-	}
 }
 
 void ScreenProcessing::BuildSRV(ID3D12GraphicsCommandList* CommandList)
@@ -583,7 +553,7 @@ void ScreenProcessing::Render(const Camera& camera)
 
 			DLSS::GetInstance()->Execute(Context, *LastPostprocessRT, g_SceneFullScreenBuffer,
 				&g_SceneDepthBuffer, &g_GBuffer[Render::GBufferType::GBUFFER_MotionVector],
-				*camera, EngineGlobal::gCurrentScene->GetDeltaTime(), false);
+				*camera, EngineGlobal::gCurrentScene->GetDeltaTime(), cameraCut);
 		}
 	}
 	
