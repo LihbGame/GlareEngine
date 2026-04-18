@@ -986,6 +986,11 @@ ColorBuffer* ScreenProcessing::GetLastPostprocessRT()
 	return LastPostprocessRT;
 }
 
+void ScreenProcessing::SetLastPostprocessRT(ColorBuffer* rt)
+{
+	LastPostprocessRT = rt;
+}
+
 void ScreenProcessing::GenerateBloom(ComputeContext& Context)
 {
 	ScopedTimer Scope(L"Generate Bloom", Context);

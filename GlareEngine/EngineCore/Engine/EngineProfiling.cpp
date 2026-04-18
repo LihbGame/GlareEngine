@@ -1,6 +1,7 @@
 #include <vector>
 #include <unordered_map>
 #include <array>
+#include <mutex>
 #include "EngineProfiling.h"
 #include "GameTimer.h"
 #include "Graphics/GraphicsCore.h"
@@ -21,7 +22,7 @@ namespace GlareEngine
 	};
 
 
-	//¼ÇÂ¼Ã¿Ö¡µÄ×´Ì¬
+	//ï¿½ï¿½Â¼Ã¿Ö¡ï¿½ï¿½×´Ì¬
 	class StatHistory
 	{
 	public:
@@ -117,7 +118,7 @@ namespace GlareEngine
 		uint32_t m_TimerIndex;
 	};
 
-	//µÝ¹éÊ±ÐòÊ÷
+	//ï¿½Ý¹ï¿½Ê±ï¿½ï¿½ï¿½ï¿½
 	class NestedTimingTree
 	{
 	public:
@@ -270,21 +271,23 @@ namespace GlareEngine
 		static void Update(void);
 		static void UpdateTimes(void)
 		{
+			std::lock_guard<std::mutex> Lock(sm_Mutex);
+
 			uint32_t FrameIndex = (uint32_t)GlareEngine::Display::GetFrameCount();
 
-			//¿ªÊ¼GPU Time Buffer µÄ¶ÁÈ¡
+			//ï¿½ï¿½Ê¼GPU Time Buffer ï¿½Ä¶ï¿½È¡
 			GPUTimeManager::BeginReadBack();
-			//Í³¼ÆÊ±¼äÊ÷µÄËùÓÐ½áµãµÄÊ±¼ä
+			//Í³ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
 			sm_RootScope.GatherTimes(FrameIndex);
-			//¼ÇÂ¼Ã¿Ö¡µÄÊ±¼ätimerµÄ0-1¼ÇÂ¼ÁË±¾Ö¡µÄÊ±¼ä
+			//ï¿½ï¿½Â¼Ã¿Ö¡ï¿½ï¿½Ê±ï¿½ï¿½timerï¿½ï¿½0-1ï¿½ï¿½Â¼ï¿½Ë±ï¿½Ö¡ï¿½ï¿½Ê±ï¿½ï¿½
 			s_FrameDelta.RecordStat(FrameIndex, GPUTimeManager::GetTime(0));
-			//½áÊøGPU Time Buffer µÄ¶ÁÈ¡
+			//ï¿½ï¿½ï¿½ï¿½GPU Time Buffer ï¿½Ä¶ï¿½È¡
 			GPUTimeManager::EndReadBack();
 
 			float TotalCPUTime, TotalGPUTime;
-			//Í³¼ÆÒ»Ö¡µÄGPU,CPU×ÜºÄ·ÑÊ±¼ä
+			//Í³ï¿½ï¿½Ò»Ö¡ï¿½ï¿½GPU,CPUï¿½ÜºÄ·ï¿½Ê±ï¿½ï¿½
 			sm_RootScope.SumInclusiveTimes(TotalCPUTime, TotalGPUTime);
-			//¼ÇÂ¼CPUºÍGPU×ÜºÄ·ÑÊ±¼ä
+			//ï¿½ï¿½Â¼CPUï¿½ï¿½GPUï¿½ÜºÄ·ï¿½Ê±ï¿½ï¿½
 			s_TotalCPUTime.RecordStat(FrameIndex, TotalCPUTime);
 			s_TotalGPUTime.RecordStat(FrameIndex, TotalGPUTime);
 		}
@@ -318,6 +321,7 @@ namespace GlareEngine
 		static NestedTimingTree sm_RootScope;
 		static NestedTimingTree* sm_CurrentNode;
 		static NestedTimingTree* sm_SelectedScope;
+		static std::mutex sm_Mutex;
 
 		static bool sm_CursorOnGraph;
 
@@ -330,6 +334,7 @@ namespace GlareEngine
 	StatHistory NestedTimingTree::s_FrameDelta;
 	NestedTimingTree NestedTimingTree::sm_RootScope(L"");
 	NestedTimingTree* NestedTimingTree::sm_CurrentNode = &NestedTimingTree::sm_RootScope;
+	std::mutex NestedTimingTree::sm_Mutex;
 	namespace EngineProfiling
 	{
 		BoolVar DrawFrameRate("Display Frame Rate", true);
@@ -363,12 +368,14 @@ namespace GlareEngine
 
 	void NestedTimingTree::PushProfilingMarker(const wstring& name, CommandContext* Context)
 	{
+		std::lock_guard<std::mutex> Lock(sm_Mutex);
 		sm_CurrentNode = sm_CurrentNode->GetChild(name);
 		sm_CurrentNode->StartTiming(Context);
 	}
 
 	void NestedTimingTree::PopProfilingMarker(CommandContext* Context)
 	{
+		std::lock_guard<std::mutex> Lock(sm_Mutex);
 		sm_CurrentNode->StopTiming(Context);
 		sm_CurrentNode = sm_CurrentNode->m_Parent;
 	}

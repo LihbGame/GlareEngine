@@ -86,6 +86,8 @@ namespace GlareEngine
 
 		extern DescriptorHeap gTextureHeap;
 
+		extern DescriptorHeap gRayTracingBufferHeap;
+
 		extern DescriptorHeap gSamplerHeap;
 
 		extern BoolVar SeparateZPass;

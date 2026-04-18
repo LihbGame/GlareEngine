@@ -41,6 +41,8 @@ namespace ScreenProcessing
 
     ColorBuffer* GetLastPostprocessRT();
 
+    void SetLastPostprocessRT(ColorBuffer* rt);
+
     ColorBuffer* GetCurrentPostprocessRT();
 }
 

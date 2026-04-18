@@ -40,6 +40,10 @@ set_source_files_properties(${DS_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Domai
 file(GLOB_RECURSE CS_SHADER_SOURCES ${ENGINE_ROOT_DIR}/Shaders/*CS.hlsl)
 set_source_files_properties(${CS_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Compute)
 
+# Ray Tracing Shaders (lib_6_6)
+file(GLOB_RECURSE RT_SHADER_SOURCES ${ENGINE_ROOT_DIR}/Shaders/DXR/*.hlsl)
+set_source_files_properties(${RT_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Library)
+
 add_library(${TARGET_NAME} ${ENGINE_RESOURCE} ${HEADER_FILES} ${SOURCE_FILES} ${SHADER_SOURCES} ${SHADER_HEAD} ${PACKAGE_FILES})
 
 add_custom_command(TARGET ${TARGET_NAME} COMMAND ${CMAKE_COMMAND} -E copy_directory ${GLAREENGINE_ROOT_DIR}/Resource

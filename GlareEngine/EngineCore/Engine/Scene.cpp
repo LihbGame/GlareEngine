@@ -118,6 +118,15 @@ void Scene::Update(float DeltaTime)
 
 	//lighting update
 	Lighting::Update(mSceneView.mMainConstants, *mSceneView.m_pCamera);
+
+	//Update DXR Renderer
+	mDXRRenderer.Update(DeltaTime);
+
+	// Lazy init DXR renderer when switching to ray tracing mode at runtime
+	if (LoadingFinish && m_pGUI && m_pGUI->GetRenderPipelineIndex() == RenderPipeline::RayTracing)
+	{
+		mDXRRenderer.Initialize();
+	}
 }
 
 void Scene::VisibleUpdateForType()
@@ -190,6 +199,11 @@ void Scene::Finalize()
 	LoadingFinish = true;
 
 	mPRTManager.Initialize(mSceneAABB, PROBE_CELL_SIZE);
+
+	if (m_pGUI && m_pGUI->GetRenderPipelineIndex() == RenderPipeline::RayTracing)
+	{
+		mDXRRenderer.Initialize();
+	}
 }
 
 
@@ -230,6 +244,21 @@ void Scene::RenderScene(RasterRenderPipelineType Type)
 
 	}
 
+	// RayTracing mode: skip rasterization entirely
+	if (m_pGUI->GetRenderPipelineIndex() == RenderPipeline::RayTracing)
+	{
+		GraphicsContext& context = GraphicsContext::Begin(L"DXR Render");
+
+		mDXRRenderer.Render(context);
+
+		context.Finish();
+
+		// Ensure present uses the scene color buffer that DXR just wrote to
+		ScreenProcessing::SetLastPostprocessRT(&g_SceneColorBuffer);
+		return;
+	}
+
+	// Rasterization paths
 	switch (Type)
 	{
 	case RasterRenderPipelineType::FR:
@@ -261,7 +290,7 @@ void Scene::RenderScene(RasterRenderPipelineType Type)
 		break;
 	}
 
-	//Post Processing
+	// Post Processing
 	ScreenProcessing::Render(*mSceneView.m_pCamera);
 }
 

@@ -3,6 +3,7 @@
 #include "GI/IBL.h"
 #include "GI/PRTManager.h"
 #include "Graphics/FSR.h"
+#include "DXR/DXRRenderer.h"
 
 class ShadowMap;
 class EngineGUI;
@@ -132,5 +133,7 @@ private:
 	GraphicsContext* RenderUIContext=nullptr;
 
 	float mDeltaTime = 0;
+
+	DXRRenderer mDXRRenderer;
 };
 
