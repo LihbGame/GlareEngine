@@ -29,7 +29,7 @@ namespace GlareEngine
 		//创建一个颜色缓冲区。 如果提供了一个地址，将不会分配内存。vmem地址允许你对缓冲区进行别名。 
 		void CreateArray(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t MipMap, uint32_t ArrayCount,
 			DXGI_FORMAT Format,D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN);
-
+		 
 
 		//获取预先创建的CPU可见描述符句柄。 
 		const D3D12_CPU_DESCRIPTOR_HANDLE& GetSRV(void) const { return m_SRVHandle; }

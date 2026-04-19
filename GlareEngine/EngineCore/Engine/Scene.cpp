@@ -253,8 +253,11 @@ void Scene::RenderScene(RasterRenderPipelineType Type)
 
 		context.Finish();
 
+		EngineGUI::AddRenderPassVisualizeTexture("DXR", WStringToString(g_SceneFullScreenBuffer.GetName()),
+			g_SceneFullScreenBuffer.GetHeight(), g_SceneFullScreenBuffer.GetWidth(), g_SceneFullScreenBuffer.GetSRV());
+
 		// Ensure present uses the scene color buffer that DXR just wrote to
-		ScreenProcessing::SetLastPostprocessRT(&g_SceneColorBuffer);
+		//ScreenProcessing::SetLastPostprocessRT(&g_SceneColorBuffer);
 		return;
 	}
 

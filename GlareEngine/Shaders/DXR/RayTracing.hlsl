@@ -6,8 +6,9 @@
 // --- Constant Buffer ---
 cbuffer DXRConstants : register(b0)
 {
-    row_major float4x4 InvViewProj;
+    float4x4 InvViewProj;
     float3 CameraPos;
+    float  _Pad0;
     uint   Width;
     uint   Height;
 };

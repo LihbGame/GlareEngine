@@ -17,7 +17,6 @@ bool gFullSreenMode = false;
 bool EngineGUI::mWindowMaxSize = false;
 
 unordered_map<string,vector<RenderPassDebugInfo>> EngineGUI::mRenderPassDebugInfo;
-unordered_map<string, vector<RenderPassDebugInfo>> EngineGUI::mRayTracingRenderPassDebugInfo;
 
 DescriptorHeap EngineGUI::mGUISrvDescriptorHeap;
 UINT EngineGUI::mCurrentDescriptorOffset = 0;
@@ -57,18 +56,6 @@ void EngineGUI::AddRenderPassVisualizeTexture(string FeatureGroup, string Textur
 		destCount, &TexDescriptor, &destCount, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	RenderPassDebugInfo renderInfo = RenderPassDebugInfo{ TextureName, Rate,TextureWidth,TextureHeight,ColorScale,CD3DX12_GPU_DESCRIPTOR_HANDLE(D3D12_GPU_DESCRIPTOR_HANDLE(mGUISrvDescriptorHeap[mCurrentDescriptorOffset])) };
 	mRenderPassDebugInfo[FeatureGroup].push_back(renderInfo);
-	mCurrentDescriptorOffset++;
-}
-
-void EngineGUI::AddRayTracingRenderPassVisualizeTexture(string FeatureGroup, string TextureName, float TextureHeight, float TextureWidth, D3D12_CPU_DESCRIPTOR_HANDLE TexDescriptor, Vector4 ColorScale)
-{
-	float Rate = TextureHeight / TextureWidth;
-
-	UINT destCount = 1;
-	g_Device->CopyDescriptors(1, &mGUISrvDescriptorHeap[mCurrentDescriptorOffset], &destCount,
-		destCount, &TexDescriptor, &destCount, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	RenderPassDebugInfo renderInfo = RenderPassDebugInfo{ TextureName, Rate,TextureWidth,TextureHeight,ColorScale,CD3DX12_GPU_DESCRIPTOR_HANDLE(D3D12_GPU_DESCRIPTOR_HANDLE(mGUISrvDescriptorHeap[mCurrentDescriptorOffset])) };
-	mRayTracingRenderPassDebugInfo[FeatureGroup].push_back(renderInfo);
 	mCurrentDescriptorOffset++;
 }
 
@@ -484,11 +471,6 @@ void EngineGUI::DrawRenderDebugWindow()
 
 	unordered_map<string, vector<RenderPassDebugInfo>>& RenderPassDebugInfo=mRenderPassDebugInfo;
 
-	if (mRenderPipelineIndex==RenderPipeline::RayTracing)
-	{
-		RenderPassDebugInfo=mRayTracingRenderPassDebugInfo;
-	}
-	
 	for (auto& Feature : RenderPassDebugInfo)
 	{
 		if (ImGui::CollapsingHeader(Feature.first.c_str(), ImGuiTreeNodeFlags_DefaultOpen))

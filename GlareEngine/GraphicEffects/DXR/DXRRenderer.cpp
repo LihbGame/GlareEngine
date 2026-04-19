@@ -7,8 +7,9 @@
 #include "Engine/Camera.h"
 #include "Engine/EngineLog.h"
 #include "Graphics/DescriptorHeap.h"
-#include "Engine/Tools/ShaderCompiler.h"
 #include "Engine/Scene.h"
+
+#include "CompiledShaders/RayTracing.h"
 
 using namespace GlareEngine;
 using namespace GlareEngine::Math;
@@ -68,14 +69,14 @@ void DXRRenderer::Update(float DeltaTime)
 
 void DXRRenderer::CreateTriangleGeometry()
 {
-    SimpleVertex vertices[3] =
+    __declspec(align(16)) SimpleVertex vertices[3] =
     {
-        { Math::Vector3(-0.5f, -0.5f, 0.0f) },
-        { Math::Vector3( 0.5f, -0.5f, 0.0f) },
-        { Math::Vector3( 0.0f,  0.5f, 0.0f) }
+        { Math::Vector3(-3.0f, -3.0f, 0.0f) },
+        { Math::Vector3( 3.0f, -3.0f, 0.0f) },
+        { Math::Vector3( 0.0f,  3.0f, 0.0f) }
     };
 
-    uint32_t indices[3] = { 0, 1, 2 };
+    __declspec(align(16)) uint32_t indices[4] = { 0, 1, 2, 0 };
 
     mVertexBuffer.Create(L"DXR Vertex Buffer", 3, sizeof(SimpleVertex), vertices);
     mIndexBuffer.Create(L"DXR Index Buffer", 3, sizeof(uint32_t), indices);
@@ -128,9 +129,9 @@ void DXRRenderer::BuildAccelerationStructure(ID3D12GraphicsCommandList4* CmdList
 
     // ---- Build TLAS ----
     D3D12_RAYTRACING_INSTANCE_DESC instanceDesc = {};
-    instanceDesc.Transform[0][0] = 1.0f;
-    instanceDesc.Transform[1][1] = 1.0f;
-    instanceDesc.Transform[2][2] = 1.0f;
+    instanceDesc.Transform[0][0] = 10.0f;
+    instanceDesc.Transform[1][1] = 10.0f;
+    instanceDesc.Transform[2][2] = 10.0f;
     instanceDesc.InstanceMask = 0xFF;
     instanceDesc.InstanceID = 0;
     instanceDesc.InstanceContributionToHitGroupIndex = 0;
@@ -209,20 +210,10 @@ void DXRRenderer::CreateRootSignature()
 
 void DXRRenderer::CreatePipelineStateObject()
 {
-    // Compile the HLSL library to DXIL using dxc
-    ShaderBinary rayGenBinary = ShaderCompiler::Get().Compile(
-        "Shaders/DXR/RayTracing.hlsl", "RayGenShader", "lib_6_6", ShaderDefinitions());
-
-    if (!rayGenBinary.IsValid())
-    {
-        EngineLog::AddLog(L"Failed to compile RayTracing.hlsl");
-        return;
-    }
-
-    // Define DXIL library subobject
+    // Use the shader binary compiled at build time by CMake/dxc
     D3D12_DXIL_LIBRARY_DESC dxilLibDesc = {};
-    dxilLibDesc.DXILLibrary.pShaderBytecode = rayGenBinary.ByteCode.pShaderBytecode;
-    dxilLibDesc.DXILLibrary.BytecodeLength = rayGenBinary.ByteCode.BytecodeLength;
+    dxilLibDesc.DXILLibrary.pShaderBytecode = g_pRayTracing;
+    dxilLibDesc.DXILLibrary.BytecodeLength = sizeof(g_pRayTracing);
 
     LPCWSTR exports[] = { L"RayGenShader", L"ClosestHitShader", L"MissShader" };
     D3D12_EXPORT_DESC exportDescs[3] = {};
@@ -312,12 +303,8 @@ void DXRRenderer::CreateShaderBindingTable()
 
 void DXRRenderer::CreateOutputBuffer()
 {
-    // Use the global scene color buffer as DXR output target
-    D3D12_CPU_DESCRIPTOR_HANDLE cpuUAV = GlareEngine::g_SceneColorBuffer.GetUAV();
-    int rtIndex = AddToGlobalRayTracingDescriptor(cpuUAV);
-    Render::CopyRayTracingBufferHeap();
-
-    mSceneColorUAVDescriptor = Render::gRayTracingBufferHeap[rtIndex];
+    // No setup needed; the scene color buffer UAV is bound at render time
+    // via DynamicDescriptorHeap to get a GPU-visible descriptor.
 }
 
 void DXRRenderer::CreateConstantBuffer()
@@ -331,13 +318,13 @@ void DXRRenderer::Render(GraphicsContext& Context)
     if (!mInitialized)
         return;
 
-    ID3D12GraphicsCommandList4* CmdList = nullptr;
+    ComPtr<ID3D12GraphicsCommandList4> CmdList;
     Context.GetCommandList()->QueryInterface(IID_PPV_ARGS(&CmdList));
 
     // Build AS on first frame
     if (!mAccelStructureBuilt)
     {
-        BuildAccelerationStructure(CmdList);
+        BuildAccelerationStructure(CmdList.Get());
     }
 
     // 1. Update constant buffer
@@ -354,18 +341,23 @@ void DXRRenderer::Render(GraphicsContext& Context)
     memcpy(mMappedCBV, &cb, sizeof(DXRConstants));
 
     // 2. Transition scene color buffer to UAV for DXR write
-    Context.TransitionResource(GlareEngine::g_SceneColorBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+    Context.TransitionResource(GlareEngine::g_SceneFullScreenBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+    Context.FlushResourceBarriers();
 
-    // 3. Set root signature and pipeline
+    // 3. Get GPU-visible UAV descriptor via DynamicDescriptorHeap
+    D3D12_GPU_DESCRIPTOR_HANDLE gpuUAV = Context.UploadDirectDescriptor(
+        GlareEngine::g_SceneFullScreenBuffer.GetUAV());
+
+    // 4. Set root signature and pipeline
     CmdList->SetComputeRootSignature(mRootSignature.Get());
     CmdList->SetPipelineState1(mPipelineState.Get());
 
-    // 4. Bind root parameters
+    // 5. Bind root parameters
     CmdList->SetComputeRootShaderResourceView(0, mTLAS.accelerationStructure.GetGPUVirtualAddress());
-    CmdList->SetComputeRootDescriptorTable(1, mSceneColorUAVDescriptor);
+    CmdList->SetComputeRootDescriptorTable(1, gpuUAV);
     CmdList->SetComputeRootConstantBufferView(2, mConstantBuffer.GetGPUVirtualAddress());
 
-    // 5. Dispatch rays
+    // 6. Dispatch rays
     D3D12_DISPATCH_RAYS_DESC dispatchDesc = {};
     dispatchDesc.RayGenerationShaderRecord.StartAddress = mRayGenTable.GetGPUVirtualAddress();
     dispatchDesc.RayGenerationShaderRecord.SizeInBytes = mSBTRecordSize;
@@ -381,11 +373,7 @@ void DXRRenderer::Render(GraphicsContext& Context)
 
     CmdList->DispatchRays(&dispatchDesc);
 
-    // 6. Transition scene color buffer back to pixel shader resource for present
-    Context.TransitionResource(GlareEngine::g_SceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-    if (CmdList)
-    {
-        CmdList->Release();
-    }
+    // 7. Transition scene color buffer back to pixel shader resource for present
+    Context.TransitionResource(GlareEngine::g_SceneFullScreenBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    Context.FlushResourceBarriers();
 }

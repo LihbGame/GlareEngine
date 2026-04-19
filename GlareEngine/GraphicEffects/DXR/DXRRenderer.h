@@ -70,8 +70,6 @@ private:
     GlareEngine::UploadBuffer mMissTable;
     GlareEngine::UploadBuffer mHitGroupTable;
 
-    D3D12_GPU_DESCRIPTOR_HANDLE mSceneColorUAVDescriptor = {};
-
     GlareEngine::UploadBuffer mConstantBuffer;
     DXRConstants*             mMappedCBV = nullptr;
 
