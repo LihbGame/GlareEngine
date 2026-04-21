@@ -89,7 +89,7 @@ namespace GlareEngine
 		//Flush Resource Barriers
 		inline void FlushResourceBarriers(void);
 
-		//通过保留命令列表和命令分配器来准备渲染 
+		// Prepare rendering by reserving command list and command allocator
 		void Initialize(void);
 
 		static void DestroyAllContexts(void);

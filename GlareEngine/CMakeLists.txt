@@ -37,6 +37,36 @@ set_source_files_properties(${HS_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Hull 
 file(GLOB_RECURSE DS_SHADER_SOURCES ${ENGINE_ROOT_DIR}/Shaders/*DS.hlsl)
 set_source_files_properties(${DS_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Domain VS_TOOL_OVERRIDE "none")
 
+# Manually compile HS/DS shaders with dxc (FXCompile in VS fails for Hull/Domain with SM 6.6)
+set(DXC_PATH "${GLAREENGINE_ROOT_DIR}/packages/dxc_2023_08_14/bin/x64/dxc.exe")
+set(COMPILED_SHADER_DIR "${shaderPath}/CompiledShaders")
+
+add_custom_command(
+    OUTPUT "${COMPILED_SHADER_DIR}/TerrainClipmapHS.h"
+    COMMAND ${DXC_PATH} -T hs_6_6 -E main -HV 2021 -Zi -Qembed_debug -Od
+            -Fh "${COMPILED_SHADER_DIR}/TerrainClipmapHS.h"
+            -Vn g_pTerrainClipmapHS
+            "${ENGINE_ROOT_DIR}/Shaders/Terrain/TerrainClipmapHS.hlsl"
+            -I "${ENGINE_ROOT_DIR}/Shaders"
+    DEPENDS "${ENGINE_ROOT_DIR}/Shaders/Terrain/TerrainClipmapHS.hlsl"
+            "${ENGINE_ROOT_DIR}/Shaders/Terrain/TerrainCommon.hlsli"
+            "${ENGINE_ROOT_DIR}/Shaders/Misc/CommonResource.hlsli"
+    COMMENT "Compiling TerrainClipmapHS.hlsl with dxc"
+)
+
+add_custom_command(
+    OUTPUT "${COMPILED_SHADER_DIR}/TerrainClipmapDS.h"
+    COMMAND ${DXC_PATH} -T ds_6_6 -E main -HV 2021 -Zi -Qembed_debug -Od
+            -Fh "${COMPILED_SHADER_DIR}/TerrainClipmapDS.h"
+            -Vn g_pTerrainClipmapDS
+            "${ENGINE_ROOT_DIR}/Shaders/Terrain/TerrainClipmapDS.hlsl"
+            -I "${ENGINE_ROOT_DIR}/Shaders"
+    DEPENDS "${ENGINE_ROOT_DIR}/Shaders/Terrain/TerrainClipmapDS.hlsl"
+            "${ENGINE_ROOT_DIR}/Shaders/Terrain/TerrainCommon.hlsli"
+            "${ENGINE_ROOT_DIR}/Shaders/Misc/CommonResource.hlsli"
+    COMMENT "Compiling TerrainClipmapDS.hlsl with dxc"
+)
+
 file(GLOB_RECURSE CS_SHADER_SOURCES ${ENGINE_ROOT_DIR}/Shaders/*CS.hlsl)
 set_source_files_properties(${CS_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Compute)
 
@@ -44,7 +74,10 @@ set_source_files_properties(${CS_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Compu
 file(GLOB_RECURSE RT_SHADER_SOURCES ${ENGINE_ROOT_DIR}/Shaders/DXR/*.hlsl)
 set_source_files_properties(${RT_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Library)
 
-add_library(${TARGET_NAME} ${ENGINE_RESOURCE} ${HEADER_FILES} ${SOURCE_FILES} ${SHADER_SOURCES} ${SHADER_HEAD} ${PACKAGE_FILES})
+add_library(${TARGET_NAME} ${ENGINE_RESOURCE} ${HEADER_FILES} ${SOURCE_FILES} ${SHADER_SOURCES} ${SHADER_HEAD} ${PACKAGE_FILES}
+    "${COMPILED_SHADER_DIR}/TerrainClipmapHS.h"
+    "${COMPILED_SHADER_DIR}/TerrainClipmapDS.h"
+)
 
 add_custom_command(TARGET ${TARGET_NAME} COMMAND ${CMAKE_COMMAND} -E copy_directory ${GLAREENGINE_ROOT_DIR}/Resource
                                       ${GLAREENGINE_ROOT_DIR}/build/Resource)

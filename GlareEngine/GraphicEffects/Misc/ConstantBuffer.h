@@ -171,6 +171,74 @@ struct TerrainConstants
 
 
 
+// Procedural terrain constants for GPU generation
+struct ProceduralTerrainNoiseCB
+{
+    XMFLOAT3    CameraPosition      = { 0,0,0 };
+    float       CellSize            = 1.0f;
+    XMINT2      TileOffset          = { 0, 0 };
+    int         TileSize            = 64;
+    float       HeightScale         = 200.0f;
+    float       NoiseScale          = 0.005f;
+    UINT        Seed                = 42;
+    UINT        Octaves             = 7;
+    float       Lacunarity          = 2.0f;
+    float       Persistence         = 0.5f;
+    float       WarpStrength        = 30.0f;
+    float       WarpScale           = 0.004f;
+    float       SnowHeight          = 150.0f;
+    float       SnowTransition      = 20.0f;
+    float       StoneSlope          = 0.6f;
+    float       StoneTransition     = 0.15f;
+    int         LODLevel            = 0;
+    float       Pad0                = 0;
+    float       Pad1                = 0;
+    float       Pad2                = 0;
+};
+
+// Procedural terrain render constants
+__declspec(align(256)) struct ProceduralTerrainConstants
+{
+    XMFLOAT4X4  ViewProj            = MathHelper::Identity4x4();
+    XMFLOAT3    EyePosW             = { 0,0,0 };
+    float       MinTessDistance     = 10.0f;
+    float       MaxTessDistance     = 500.0f;
+    float       MinTessFactor       = 0.0f;
+    float       MaxTessFactor       = 6.0f;
+    int         ClipmapLevel        = 0;
+    float       CellSize            = 1.0f;
+    float       HeightScale         = 200.0f;
+    float       TexScale            = 50.0f;
+    float       StochasticSharpness = 0.95f;
+    XMFLOAT4    gWorldFrustumPlanes[6];
+    // Per-tile SRV indices set dynamically
+    int         HeightMapIndex      = 0;
+    int         NormalMapIndex      = 0;
+    int         MaterialWeightMapIndex = 0;
+    // Per-tile positioning data (separate ints for HLSL packing alignment)
+    int         TileGridOffsetX    = 0;
+    int         TileGridOffsetY    = 0;
+    // Material layer SRV indices
+    int         LayerAlbedoIndices[5]    = {};
+    int         LayerNormalIndices[5]    = {};
+    int         LayerRoughnessIndices[5] = {};
+    int         LayerMetallicIndices[5]  = {};
+    int         LayerAOIndices[5]        = {};
+};
+
+struct ProceduralTerrainInitInfo
+{
+    UINT        ClipmapLevels       = 10;
+    UINT        TileSize            = 64;
+    float       CellSizeBase        = 1.0f;
+    float       HeightScale         = 200.0f;
+    float       NoiseScale          = 0.005f;
+    UINT        Seed                = 42;
+    string      LayerMapNames[5]    = { "grass","darkdirt","stone","lightdirt","snow" };
+    string      LayerAssetPath;
+};
+
+
 struct CubeMapConstants
 {
 	XMFLOAT4X4	View				= MathHelper::Identity4x4();

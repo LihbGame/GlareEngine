@@ -22,6 +22,7 @@ GlareEngine is a DirectX 12 rendering engine written in C++20, targeting Windows
 - **EngineDemo_Old** — legacy demo, links against GlareEngine
 
 ### Shader Compilation Convention
+所有的shader都是在cmake里配置的dxc 编译的，把编译的.h文件结果保存到GlareEngine/Shaders/CompiledShaders/，然后再需要的CPP文件中include进来
 Shaders are HLSL files under `GlareEngine/Shaders/`. The shader type is determined by filename suffix:
 - `*VS.hlsl` → Vertex, `*PS.hlsl` → Pixel, `*CS.hlsl` → Compute
 - `*GS.hlsl` → Geometry, `*HS.hlsl` → Hull, `*DS.hlsl` → Domain
