@@ -26,12 +26,11 @@ TerrainNoiseGenerator::~TerrainNoiseGenerator() = default;
 
 void TerrainNoiseGenerator::BuildRootSignature(ID3D12Device* Device)
 {
-    mRootSig.Reset(3, 0);
+    mRootSig.Reset(2, 0);
     // [0] CBV - TerrainNoiseCB
     mRootSig[0].InitAsConstantBuffer(0);
     // [1] UAV table - HeightMap, NormalMap, MaterialWeights
     mRootSig[1].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 3);
-    // [2] Static samplers
     mRootSig.Finalize(L"TerrainNoiseGen", D3D12_ROOT_SIGNATURE_FLAG_NONE);
 }
 
@@ -144,6 +143,9 @@ void TerrainNoiseGenerator::GenerateTiles(
         Context.Dispatch2D(mTileSize, mTileSize, 8, 8);
     }
 
-    // Insert UAV barrier to ensure writes complete before rendering
+    // UAV barrier to ensure all compute writes complete
+    CD3DX12_RESOURCE_BARRIER uavBarrier = CD3DX12_RESOURCE_BARRIER::UAV(nullptr);
+    Context.GetCommandList()->ResourceBarrier(1, &uavBarrier);
+
     Context.FlushResourceBarriers();
 }

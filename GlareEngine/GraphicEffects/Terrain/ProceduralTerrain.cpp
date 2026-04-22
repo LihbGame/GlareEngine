@@ -7,6 +7,8 @@
 #include "Graphics/GraphicsCore.h"
 #include "Graphics/BufferManager.h"
 #include "Graphics/GraphicsCommon.h"
+#include "Graphics/SamplerManager.h"
+#include "Graphics/Render.h"
 
 #include "CompiledShaders/TerrainClipmapVS.h"
 #include "CompiledShaders/TerrainClipmapHS.h"
@@ -98,7 +100,8 @@ ProceduralTerrain::~ProceduralTerrain() = default;
 
 void ProceduralTerrain::BuildRootSignature()
 {
-    mTerrainRootSig.Reset(4, 0);
+    // 4 root params + 8 static samplers (matching CommonResource.hlsli s10-s17)
+    mTerrainRootSig.Reset(4, 8);
 
     // [0] Main pass CB (b0) - view/proj/lights
     mTerrainRootSig[0].InitAsConstantBuffer(0);
@@ -110,7 +113,32 @@ void ProceduralTerrain::BuildRootSignature()
     mTerrainRootSig[3].InitAsDescriptorRange(
         D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 62, 1024);
 
-    mTerrainRootSig.Finalize(L"ProceduralTerrain");
+    // Static samplers matching CommonResource.hlsli registers
+    SamplerDesc wrapDesc; wrapDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    SamplerDesc anisoDesc; // default is anisotropic wrap, MaxAnisotropy=16
+    SamplerDesc shadowDesc; shadowDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+    shadowDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+    shadowDesc.SetTextureAddressMode(D3D12_TEXTURE_ADDRESS_MODE_BORDER);
+    SamplerDesc clampDesc; clampDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    clampDesc.SetTextureAddressMode(D3D12_TEXTURE_ADDRESS_MODE_CLAMP);
+    SamplerDesc volumeDesc; volumeDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+    SamplerDesc pointClampDesc; pointClampDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+    pointClampDesc.SetTextureAddressMode(D3D12_TEXTURE_ADDRESS_MODE_CLAMP);
+    SamplerDesc pointBorderDesc; pointBorderDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+    pointBorderDesc.SetTextureAddressMode(D3D12_TEXTURE_ADDRESS_MODE_BORDER);
+    SamplerDesc linearBorderDesc; linearBorderDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    linearBorderDesc.SetTextureAddressMode(D3D12_TEXTURE_ADDRESS_MODE_BORDER);
+
+    mTerrainRootSig.InitStaticSampler(10, wrapDesc);
+    mTerrainRootSig.InitStaticSampler(11, anisoDesc);
+    mTerrainRootSig.InitStaticSampler(12, shadowDesc);
+    mTerrainRootSig.InitStaticSampler(13, clampDesc);
+    mTerrainRootSig.InitStaticSampler(14, volumeDesc);
+    mTerrainRootSig.InitStaticSampler(15, pointClampDesc);
+    mTerrainRootSig.InitStaticSampler(16, pointBorderDesc);
+    mTerrainRootSig.InitStaticSampler(17, linearBorderDesc);
+
+    mTerrainRootSig.Finalize(L"ProceduralTerrain", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 }
 
 void ProceduralTerrain::BuildPipelineState(ID3D12GraphicsCommandList*)
@@ -236,8 +264,15 @@ void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
     Context.SetRootSignature(mTerrainRootSig);
     Context.SetPipelineState(SpecificPSO ? *SpecificPSO : mTerrainPSO);
 
-    // Bind main pass CB (b0) - assume set externally by the render loop
-    // If not, the terrain CB at b1 contains the view/proj it needs
+    // Bind main pass CB (b0) for lights/ambient/shadow
+    if (mMainCBData && mMainCBSize > 0)
+        Context.SetDynamicConstantBufferView(0, mMainCBSize, mMainCBData);
+
+    // Bind global texture SRV heap for gSRVMap[] access in shaders
+    Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
+        Render::gTextureHeap.GetHeapPointer());
+    Context.SetDescriptorTable(3,
+        Render::gTextureHeap[MAXCUBESRVSIZE + COMMONSRVSIZE + COMMONUAVSIZE]);
 
     // Set vertex and index buffers
     D3D12_VERTEX_BUFFER_VIEW vbv = {};
@@ -330,6 +365,13 @@ void ProceduralTerrain::DrawUI()
         ImGui::SliderFloat("Warp Strength", &mWarpStrengthUI, 0.0f, 100.0f);
         ImGui::SliderFloat("Snow Height", &mSnowHeightUI, 50.0f, 300.0f);
         ImGui::SliderFloat("Stone Slope", &mStoneSlopeUI, 0.1f, 1.0f);
+
+        // Propagate UI params to noise generator
+        if (mNoiseGen)
+        {
+            mNoiseGen->SetNoiseScale(mNoiseScaleUI);
+            mNoiseGen->SetHeightScale(mHeightScaleUI);
+        }
 
         ImGui::Separator();
         ImGui::Text("Active Tiles: %d", (int)mClipmap->GetActiveTiles().size());

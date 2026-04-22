@@ -8,6 +8,7 @@
 #include "Model/MeshRenderPass.h"
 #include "Engine/EngineProfiling.h"
 #include "Misc/LightManager.h"
+#include "Terrain/ProceduralTerrain.h"
 #include "PostProcessing/PostProcessing.h"
 #include "PostProcessing/SSAO.h"
 #include "PostProcessing/TemporalAA.h"
@@ -77,16 +78,16 @@ void Scene::Update(float DeltaTime)
 	//Update Main Constant Buffer
 	UpdateMainConstantBuffer(DeltaTime);
 
-	//Update Objects
-	for (auto& object : m_pRenderObjects)
-	{
-		object->Update(DeltaTime);
-	}
-
 	//update Render Pipeline Type
 	if (LoadingFinish)
 	{
 		GraphicsContext& Context = GraphicsContext::Begin(L"Scene Update");
+
+		//Update Objects (with GraphicsContext for compute dispatch)
+		for (auto& object : m_pRenderObjects)
+		{
+			object->Update(DeltaTime, &Context);
+		}
 
 		//Update GLTF Objects
 		for (auto& object : m_pGLTFRenderObjects)
@@ -135,6 +136,7 @@ void Scene::VisibleUpdateForType()
 	TypeVisible[ObjectType::Sky]		= m_pGUI->IsShowSky();
 	TypeVisible[ObjectType::Model]		= m_pGUI->IsShowModel();
 	TypeVisible[ObjectType::Shadow]		= m_pGUI->IsShowShadow();
+	TypeVisible[ObjectType::Terrain]	= m_pGUI->IsShowTerrain();
 
 	bool ShadowVisible = TypeVisible[ObjectType::Shadow];
 
@@ -217,6 +219,11 @@ void Scene::AddObjectToScene(RenderObject* Object)
 		break;
 	}
 	case ObjectType::Model:{
+		m_pRenderObjects.push_back(Object);
+		break;
+	}
+	case ObjectType::Terrain: {
+		m_pRenderObjectsType[(int)ObjectType::Terrain].push_back(Object);
 		m_pRenderObjects.push_back(Object);
 		break;
 	}
@@ -526,10 +533,27 @@ void Scene::ForwardRendering()
 		Context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
 	}
 
+	// Terrain pass
+	Context.PIXBeginEvent(L"Terrain");
+	for (auto& obj : m_pRenderObjectsType[(int)ObjectType::Terrain])
+	{
+		if (obj->GetVisible())
+		{
+			static_cast<ProceduralTerrain*>(obj)->CacheMainCBData(
+				&mSceneView.mMainConstants, sizeof(mSceneView.mMainConstants));
+			obj->Draw(Context);
+		}
+	}
+	Context.PIXEndEvent();
+
 	Context.PIXBeginEvent(L"Main Pass");
+	Context.SetRootSignature(*m_pRootSignature);
+	Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gTextureHeap.GetHeapPointer());
+	Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(mSceneView.mMainConstants), &mSceneView.mMainConstants);
+	Context.SetDescriptorTable((int)RootSignatureType::ePBRTextures, gTextureHeap[MAXCUBESRVSIZE+ COMMONSRVSIZE+ COMMONUAVSIZE]);
 	for (auto& RenderObject : m_pRenderObjects)
 	{
-		if (RenderObject->GetVisible())
+		if (RenderObject->GetVisible() && RenderObject->mObjectType != ObjectType::Terrain)
 		{
 			Context.PIXBeginEvent(RenderObject->GetName().c_str());
 			RenderObject->Draw(Context);
@@ -762,7 +786,21 @@ void Scene::ForwardRendering(RasterRenderPipelineType ForwardRenderPipeline)
 						m_pRenderObjectsType[(int)ObjectType::Sky].front()->Draw(Context);
 					}
 
-					DefaultMeshPass.RenderMeshes(MeshRenderPass::eOpaque, Context, mSceneView.mMainConstants);
+					
+				// Terrain pass
+				Context.PIXBeginEvent(L"Terrain");
+				for (auto& obj : m_pRenderObjectsType[(int)ObjectType::Terrain])
+				{
+					if (obj->GetVisible())
+					{
+						static_cast<ProceduralTerrain*>(obj)->CacheMainCBData(
+							&mSceneView.mMainConstants, sizeof(mSceneView.mMainConstants));
+						obj->Draw(Context);
+					}
+				}
+				Context.PIXEndEvent();
+
+				DefaultMeshPass.RenderMeshes(MeshRenderPass::eOpaque, Context, mSceneView.mMainConstants);
 
 				}
 
@@ -960,6 +998,20 @@ void Scene::DeferredRendering(RasterRenderPipelineType DeferredRenderPipeline)
 						m_pRenderObjectsType[(int)ObjectType::Sky].front()->Draw(Context);
 					}
 				}
+
+				
+				// Terrain pass
+				Context.PIXBeginEvent(L"Terrain");
+				for (auto& obj : m_pRenderObjectsType[(int)ObjectType::Terrain])
+				{
+					if (obj->GetVisible())
+					{
+						static_cast<ProceduralTerrain*>(obj)->CacheMainCBData(
+							&mSceneView.mMainConstants, sizeof(mSceneView.mMainConstants));
+						obj->Draw(Context);
+					}
+				}
+				Context.PIXEndEvent();
 
 				DefaultMeshPass.RenderMeshes(MeshRenderPass::eOpaque, Context, mSceneView.mMainConstants);
 

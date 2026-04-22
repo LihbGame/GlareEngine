@@ -17,6 +17,7 @@
 #include "Sky/Sky.h"
 #include "Shadow/ShadowMap.h"
 #include "Terrain/Terrain.h"
+#include "Terrain/ProceduralTerrain.h"
 #include "Graphics/Render.h"
 #include "Model/Model.h"
 #include "Model/glTFModelLoader.h"
@@ -94,6 +95,8 @@ private:
 	unique_ptr<Camera> mCamera;
 	//Sky
 	unique_ptr<CSky> mSky;
+	//Procedural Terrain
+	unique_ptr<ProceduralTerrain> mProceduralTerrain;
 	//Shadow map
 	unique_ptr<ShadowMap> mShadowMap;
 	//UI
@@ -186,6 +189,15 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			//add hdr Sky
 			scene->AddObjectToScene(mSky.get());
 		}
+
+		//Create Procedural Terrain
+		ProceduralTerrainInitInfo terrainInfo;
+		terrainInfo.LayerAssetPath = EngineGlobal::TerrainAssetPath;
+		mProceduralTerrain = make_unique<ProceduralTerrain>(CommandList, terrainInfo);
+		mProceduralTerrain->SetName(L"Procedural Terrain");
+		for (auto& scene : gScenes)
+			scene->AddObjectToScene(mProceduralTerrain.get());
+
 		InitializeContext.Flush(true);
 		//Release Upload Temporary Textures (must flush GPU command wait for texture already load in GPU)
 		TextureManager::GetInstance(CommandList)->ReleaseUploadTextures();

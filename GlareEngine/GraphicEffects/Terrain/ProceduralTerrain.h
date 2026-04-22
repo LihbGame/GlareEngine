@@ -67,4 +67,14 @@ private:
     float mWarpStrengthUI = 30.0f;
     float mSnowHeightUI = 150.0f;
     float mStoneSlopeUI = 0.6f;
+
+    // Cached main pass CB data (set by Scene before Draw)
+    const void* mMainCBData = nullptr;
+    uint32_t mMainCBSize = 0;
+public:
+    void CacheMainCBData(const void* data, uint32_t size)
+    {
+        mMainCBData = data;
+        mMainCBSize = size;
+    }
 };

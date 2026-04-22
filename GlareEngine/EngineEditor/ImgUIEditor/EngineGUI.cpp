@@ -312,11 +312,15 @@ void EngineGUI::DrawControlPanel(float IconWindowHigh)
 			ImGui::Checkbox("Shadow", &show_shadow);
 			ImGui::Checkbox("Model", &show_model);
 			ImGui::Checkbox("Sky", &show_sky);
-			ImGui::Checkbox("Terrain", &show_HeightMapTerrain);
 			ImGui::Checkbox("DebugMesh", &show_DebugMesh);
 		}
 	}
-	
+
+	if (ImGui::CollapsingHeader("Terrain Control"))
+	{
+		ImGui::Checkbox("Enable Terrain", &show_HeightMapTerrain);
+	}
+
 	//if (ImGui::CollapsingHeader("Water", ImGuiTreeNodeFlags_DefaultOpen))
 	//{
 	//	ImGui::Checkbox("Water Rendering", &show_water);

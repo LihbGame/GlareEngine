@@ -4,7 +4,20 @@
       "Read(//c/Users/22528/Desktop/DLSS_Sample_App/**)",
       "Read(//c/Users/22528/Desktop//**)",
       "Bash(cmake --build . --config Release)",
-      "Bash(cmake ..)"
+      "Bash(cmake ..)",
+      "Bash(git add:*)",
+      "Bash(cmake --build*)",
+        "Bash(cmake -B*)",
+        "Bash(git status)",
+        "Bash(git diff)",
+        "Bash(git log)",
+        "Edit(C:/Users/22528/RiderProjects/GlareEngine/**/*.cpp)",
+        "Edit(C:/Users/22528/RiderProjects/GlareEngine/**/*.h)",
+        "Edit(C:/Users/22528/RiderProjects/GlareEngine/**/*.hlsl)",
+        "Write(C:/Users/22528/RiderProjects/GlareEngine/**/*.cpp)",
+        "Write(C:/Users/22528/RiderProjects/GlareEngine/**/*.h)",
+        "Write(C:/Users/22528/RiderProjects/GlareEngine/**/*.hlsl)",
+        "Read(C:/Users/22528/RiderProjects/GlareEngine/**)"
     ]
   }
 }
