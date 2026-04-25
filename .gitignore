@@ -41,3 +41,5 @@
 /EngineDemo_Old/CMakeFiles/
 /EngineDemo_Old/cmake_install*
 /CMakeFiles/
+compile_commands.json
+build-clangd/

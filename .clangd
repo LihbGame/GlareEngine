@@ -1,0 +1,16 @@
+CompileFlags:
+  CompilationDatabase: .
+
+Diagnostics:
+  UnusedIncludes: Strict
+  Suppress:
+    - pp_file_not_found
+    - drv_unknown_argument
+
+InlayHints:
+  Enabled: Yes
+  ParameterNames: Yes
+  DeducedTypes: Yes
+
+Hover:
+  ShowAKA: Yes
