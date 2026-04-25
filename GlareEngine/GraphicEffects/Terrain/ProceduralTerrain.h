@@ -62,7 +62,7 @@ private:
     UINT mVertexStride = 0;
 
     // ImGui parameters
-    float mNoiseScaleUI = 0.005f;
+    float mNoiseScaleUI = 0.05f;
     float mHeightScaleUI = 200.0f;
     float mWarpStrengthUI = 30.0f;
     float mSnowHeightUI = 150.0f;

@@ -157,18 +157,8 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 		gScenes.push_back(mSceneManager->CreateScene("Damaged Helmet"));
 		gScenes.push_back(mSceneManager->CreateScene("Flight Helmet"));
 		gScenes.push_back(mSceneManager->CreateScene("Blue Tree"));
-
-		//Create Procedural Terrain
-		ProceduralTerrainInitInfo terrainInfo;
-		terrainInfo.LayerAssetPath = EngineGlobal::TerrainAssetPath;
-		mProceduralTerrain = make_unique<ProceduralTerrain>(CommandList, terrainInfo);
-		mProceduralTerrain->SetName(L"Procedural Terrain");
-
-		//Terrain scene: dedicated scene with only terrain + sky
 		gScenes.push_back(mSceneManager->CreateScene("Terrain"));
-		gScenes.back()->AddObjectToScene(mProceduralTerrain.get());
-		gScenes.back()->Finalize();
-		
+	
 		mEngineUI->SetScenes(gScenes);
 
 		//Initialize all material PSO
@@ -256,6 +246,17 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 				gScenes[4]->AddObjectToScene(model.get());
 			}
 			gScenes[4]->Finalize();
+
+
+			//Create Procedural Terrain
+			ProceduralTerrainInitInfo terrainInfo;
+			terrainInfo.LayerAssetPath = EngineGlobal::TerrainAssetPath;
+			mProceduralTerrain = make_unique<ProceduralTerrain>(CommandList, terrainInfo);
+			mProceduralTerrain->SetName(L"Procedural Terrain");
+
+			//Terrain scene: dedicated scene with only terrain + sky
+			gScenes.back()->AddObjectToScene(mProceduralTerrain.get());
+			gScenes.back()->Finalize();
 
 			InitializeContext.Finish(true);
 

@@ -137,7 +137,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         return;
 
     // Compute world position for this texel
-    float2 worldXZ = (gNoiseTileOffset + DTid.xy) * gNoiseCellSize;
+    float2 worldXZ = (gNoiseTileOffset + (int2)DTid.xy) * gNoiseCellSize;
 
     // Generate height
     float height = ComputeHeight(worldXZ);
@@ -159,7 +159,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float2 packedNormal = normal.xz;
 
     // Write outputs
-    gOutputHeightMap[DTid.xy] = height;
+    // Store height normalized to [0, 1] for R16_FLOAT (height in [-HeightScale, HeightScale])
+    gOutputHeightMap[DTid.xy] = height / (2.0 * gNoiseHeightScale) + 0.5;
     gOutputNormalMap[DTid.xy] = packedNormal;
     gOutputMaterialWeights[DTid.xy] = weights;
 }

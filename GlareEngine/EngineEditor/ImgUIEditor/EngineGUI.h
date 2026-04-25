@@ -117,7 +117,7 @@ private:
 
 	bool mWireframe				= false;
 
-	int mSceneIndex				= 0;
+	int mSceneIndex				= 5;
 	int mRenderPipelineIndex	= 0;
 	int mRasterRenderPipelineIndex	= 1;
 	string mSceneName;

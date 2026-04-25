@@ -221,6 +221,25 @@ void ProceduralTerrain::Update(float dt, GraphicsContext* Context)
         }
     }
 
+#ifdef DEBUG
+    // Register first active tile textures in debug visualization panel
+    const auto& debugActiveTiles = mClipmap->GetActiveTiles();
+    if (!debugActiveTiles.empty())
+    {
+        ClipmapTile* dbgTile = debugActiveTiles[0];
+        if (dbgTile && dbgTile->HeightMap)
+        {
+            float tileSz = (float)mInitInfo.TileSize;
+            EngineGUI::AddRenderPassVisualizeTexture("Terrain", "HeightMap",
+                tileSz, tileSz, dbgTile->HeightSRV);
+            EngineGUI::AddRenderPassVisualizeTexture("Terrain", "NormalMap",
+                tileSz, tileSz, dbgTile->NormalSRV);
+            EngineGUI::AddRenderPassVisualizeTexture("Terrain", "MaterialWeights",
+                tileSz, tileSz, dbgTile->WeightSRV);
+        }
+    }
+#endif
+
     // Update base constant buffer (frustum, material indices)
     UpdateConstantBuffer();
 }
@@ -296,10 +315,11 @@ void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
     const UINT cRingBufferSize = 256;
     UINT ringIndex = 0;
 
-    // Draw each active tile
+    // Draw tiles coarse-to-fine so fine LOD overwrites coarse in overlap regions
     const auto& activeTiles = mClipmap->GetActiveTiles();
-    for (ClipmapTile* tile : activeTiles)
+    for (int i = (int)activeTiles.size() - 1; i >= 0; --i)
     {
+        ClipmapTile* tile = activeTiles[i];
         if (!tile || !tile->HeightMap) continue;
 
         // Update per-tile constants
@@ -360,7 +380,7 @@ void ProceduralTerrain::DrawUI()
 {
     if (ImGui::CollapsingHeader("Procedural Terrain", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        ImGui::SliderFloat("Noise Scale", &mNoiseScaleUI, 0.001f, 0.05f);
+        ImGui::SliderFloat("Noise Scale", &mNoiseScaleUI, 0.001f, 0.1f);
         ImGui::SliderFloat("Height Scale", &mHeightScaleUI, 10.0f, 500.0f);
         ImGui::SliderFloat("Warp Strength", &mWarpStrengthUI, 0.0f, 100.0f);
         ImGui::SliderFloat("Snow Height", &mSnowHeightUI, 50.0f, 300.0f);
@@ -376,6 +396,22 @@ void ProceduralTerrain::DrawUI()
         ImGui::Separator();
         ImGui::Text("Active Tiles: %d", (int)mClipmap->GetActiveTiles().size());
         ImGui::Text("Dirty Tiles: %d", (int)mClipmap->GetDirtyTiles().size());
+
+        // Show debug info for first active tile
+        const auto& activeTiles = mClipmap->GetActiveTiles();
+        if (!activeTiles.empty())
+        {
+            ClipmapTile* tile = activeTiles[0];
+            ImGui::Separator();
+            ImGui::Text("Debug Tile (first active):");
+            ImGui::Text("  Grid: (%d, %d)  LOD: %d",
+                tile->GridCoord.x, tile->GridCoord.y, tile->LODLevel);
+            ImGui::Text("  CellSize: %.2f  Dirty: %s",
+                mClipmap->GetCellSize(tile->LODLevel),
+                tile->IsDirty ? "yes" : "no");
+            ImGui::Text("  HeightSRV: %d  NormalSRV: %d  WeightSRV: %d",
+                tile->HeightSRVIndex, tile->NormalSRVIndex, tile->WeightSRVIndex);
+        }
     }
 }
 

@@ -179,13 +179,13 @@ struct ProceduralTerrainNoiseCB
     XMINT2      TileOffset          = { 0, 0 };
     int         TileSize            = 64;
     float       HeightScale         = 200.0f;
-    float       NoiseScale          = 0.005f;
+    float       NoiseScale          = 0.05f;
     UINT        Seed                = 42;
     UINT        Octaves             = 7;
     float       Lacunarity          = 2.0f;
     float       Persistence         = 0.5f;
     float       WarpStrength        = 30.0f;
-    float       WarpScale           = 0.004f;
+    float       WarpScale           = 0.02f;
     float       SnowHeight          = 150.0f;
     float       SnowTransition      = 20.0f;
     float       StoneSlope          = 0.6f;
@@ -232,7 +232,7 @@ struct ProceduralTerrainInitInfo
     UINT        TileSize            = 64;
     float       CellSizeBase        = 1.0f;
     float       HeightScale         = 200.0f;
-    float       NoiseScale          = 0.005f;
+    float       NoiseScale          = 0.05f;
     UINT        Seed                = 42;
     string      LayerMapNames[5]    = { "grass","darkdirt","stone","lightdirt","snow" };
     string      LayerAssetPath;

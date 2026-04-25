@@ -23,8 +23,8 @@ ClipmapDomainOut main(
         tileUV.y * TERRAIN_TILE_SIZE * cellSize + tileOffsetWorld.y
     );
 
-    // Sample heightmap for displacement
-    float height = SampleTerrainHeight(tileUV);
+    // Sample heightmap and denormalize from [0,1] to world-space height
+    float height = (SampleTerrainHeight(tileUV) - 0.5) * 2.0 * gTerrainHeightScale;
 
     // Construct world position
     dout.PosW = float3(worldXZ.x, height, worldXZ.y);

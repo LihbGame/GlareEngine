@@ -52,12 +52,12 @@ private:
     // Parameters
     UINT    mSeed           = 42;
     float   mHeightScale    = 200.0f;
-    float   mNoiseScale     = 0.005f;
+    float   mNoiseScale     = 0.05f;
     UINT    mOctaves        = 7;
     float   mLacunarity     = 2.0f;
     float   mPersistence    = 0.5f;
     float   mWarpStrength   = 30.0f;
-    float   mWarpScale      = 0.004f;
+    float   mWarpScale      = 0.02f;
     float   mSnowHeight     = 150.0f;
     float   mSnowTransition = 20.0f;
     float   mStoneSlope     = 0.6f;
