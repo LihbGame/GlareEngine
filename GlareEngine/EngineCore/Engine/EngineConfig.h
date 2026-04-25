@@ -3,7 +3,7 @@
 //Render Config 
 #define NUMFRAME					3
 
-#define MAX2DSRVSIZE				1024
+#define MAX2DSRVSIZE				2048
 
 #define MAXCUBESRVSIZE				32
 

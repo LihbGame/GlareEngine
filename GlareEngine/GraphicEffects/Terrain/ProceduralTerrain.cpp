@@ -111,7 +111,7 @@ void ProceduralTerrain::BuildRootSignature()
     mTerrainRootSig[2].InitAsBufferSRV(1, 1); // space1
     // [3] Texture SRV table
     mTerrainRootSig[3].InitAsDescriptorRange(
-        D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 62, 1024);
+        D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 62, MAX2DSRVSIZE);
 
     // Static samplers matching CommonResource.hlsli registers
     SamplerDesc wrapDesc; wrapDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;

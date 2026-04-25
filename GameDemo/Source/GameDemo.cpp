@@ -158,6 +158,17 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 		gScenes.push_back(mSceneManager->CreateScene("Flight Helmet"));
 		gScenes.push_back(mSceneManager->CreateScene("Blue Tree"));
 
+		//Create Procedural Terrain
+		ProceduralTerrainInitInfo terrainInfo;
+		terrainInfo.LayerAssetPath = EngineGlobal::TerrainAssetPath;
+		mProceduralTerrain = make_unique<ProceduralTerrain>(CommandList, terrainInfo);
+		mProceduralTerrain->SetName(L"Procedural Terrain");
+
+		//Terrain scene: dedicated scene with only terrain + sky
+		gScenes.push_back(mSceneManager->CreateScene("Terrain"));
+		gScenes.back()->AddObjectToScene(mProceduralTerrain.get());
+		gScenes.back()->Finalize();
+		
 		mEngineUI->SetScenes(gScenes);
 
 		//Initialize all material PSO
@@ -189,14 +200,6 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			//add hdr Sky
 			scene->AddObjectToScene(mSky.get());
 		}
-
-		//Create Procedural Terrain
-		ProceduralTerrainInitInfo terrainInfo;
-		terrainInfo.LayerAssetPath = EngineGlobal::TerrainAssetPath;
-		mProceduralTerrain = make_unique<ProceduralTerrain>(CommandList, terrainInfo);
-		mProceduralTerrain->SetName(L"Procedural Terrain");
-		for (auto& scene : gScenes)
-			scene->AddObjectToScene(mProceduralTerrain.get());
 
 		InitializeContext.Flush(true);
 		//Release Upload Temporary Textures (must flush GPU command wait for texture already load in GPU)

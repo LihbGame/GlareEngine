@@ -1,7 +1,7 @@
 #ifndef COMMON_RESOURCE
 #define COMMON_RESOURCE
 
-#define MAX2DSRVSIZE        1024
+#define MAX2DSRVSIZE        2048
 #define MAXCUBESRVSIZE      32
 #define MAXPBRSRVSIZE       10
 #define COMMONSRVSIZE       20
