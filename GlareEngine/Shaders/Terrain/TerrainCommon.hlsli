@@ -175,8 +175,6 @@ float CalcClipmapTessFactor(float3 p)
     float d = distance(p, gTerrainEyePosW);
     float s = saturate((d - gTerrainMinTessDist) / (gTerrainMaxTessDist - gTerrainMinTessDist));
     float tess = lerp(gTerrainMaxTess, gTerrainMinTess, s);
-    // Reduce tessellation for coarser LOD levels
-    tess /= float(1 << gClipmapLevel);
     tess = max(tess, gTerrainMinTess);
     return tess;
 }

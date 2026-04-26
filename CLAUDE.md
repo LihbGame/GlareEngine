@@ -91,3 +91,7 @@ The engine supports multiple rendering paths selected at runtime. `GraphicEffect
 
 - `_HAS_STD_BYTE=0` — defined globally; use `std::byte` alternatives
 - `_DEBUG` / `DEBUG` — defined in Debug configuration
+
+
+## Other
+在C++段和hlsl段矩阵的存储行列顺序是不同的，有行主序和列主序之分，在hlsl里进行矩阵乘法的时候，根据正交矩阵的逆矩阵等于转置矩阵，验证c++端有没有做处理，来确定hlsl中矩阵是左乘还是右乘。

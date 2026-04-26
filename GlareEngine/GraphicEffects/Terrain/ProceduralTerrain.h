@@ -23,6 +23,7 @@ public:
     void InitMaterial() override;
     void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr) override;
     void DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificShadowPSO = nullptr) override;
+    void DrawDepthOnly(GraphicsContext& Context);
     void DrawUI() override;
 
     float GetHeight(float x, float z) const;

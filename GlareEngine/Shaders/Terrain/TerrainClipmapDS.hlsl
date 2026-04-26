@@ -49,7 +49,7 @@ ClipmapDomainOut main(
     dout.ShadowPosH = mul(float4(dout.PosW, 1.0), gShadowTransform);
 
     // Project to clip space
-    dout.PosH = mul(float4(dout.PosW, 1.0), gTerrainViewProj);
+    dout.PosH = mul(gTerrainViewProj,float4(dout.PosW, 1.0));
 
     dout.TileUV = tileUV;
 

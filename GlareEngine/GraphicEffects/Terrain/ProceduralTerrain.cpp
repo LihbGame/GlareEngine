@@ -165,6 +165,20 @@ void ProceduralTerrain::BuildPipelineState(ID3D12GraphicsCommandList*)
     mTerrainPSO.SetRasterizerState(CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT));
     mTerrainPSO.Finalize();
 
+    // Depth-only PSO for Z-prepass (VS+HS+DS, no pixel shader)
+    mTerrainShadowPSO.SetRootSignature(mTerrainRootSig);
+    mTerrainShadowPSO.SetVertexShader(g_pTerrainClipmapVS, sizeof(g_pTerrainClipmapVS));
+    mTerrainShadowPSO.SetHullShader(g_pTerrainClipmapHS, sizeof(g_pTerrainClipmapHS));
+    mTerrainShadowPSO.SetDomainShader(g_pTerrainClipmapDS, sizeof(g_pTerrainClipmapDS));
+    mTerrainShadowPSO.SetInputLayout(_countof(layout), layout);
+    mTerrainShadowPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH);
+    mTerrainShadowPSO.SetSampleMask(0xFFFFFFFF);
+    mTerrainShadowPSO.SetDepthStencilState(DepthStateReadWriteReversed);
+    mTerrainShadowPSO.SetBlendState(CD3DX12_BLEND_DESC(D3D12_DEFAULT));
+    mTerrainShadowPSO.SetRasterizerState(CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT));
+    mTerrainShadowPSO.SetRenderTargetFormats(0, nullptr, g_SceneDepthBuffer.GetFormat());
+    mTerrainShadowPSO.Finalize();
+
     // Deferred rendering PSO — outputs to GBuffer (6 render targets)
     if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBDR ||
         Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBDR)
@@ -279,7 +293,7 @@ void ProceduralTerrain::UpdateConstantBuffer()
     mConstants.EyePosW = camera->GetPosition3f();
     mConstants.MinTessDistance = 10.0f;
     mConstants.MaxTessDistance = 500.0f;
-    mConstants.MinTessFactor = 0.0f;
+    mConstants.MinTessFactor = 2.0f;
     mConstants.MaxTessFactor = 6.0f;
     mConstants.HeightScale = mInitInfo.HeightScale;
     mConstants.TexScale = 50.0f;
@@ -313,6 +327,9 @@ void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 
     Context.SetRootSignature(mTerrainRootSig);
     Context.SetPipelineState(SpecificPSO ? *SpecificPSO : *pso);
+
+    // Ensure viewport matches scene buffer dimensions
+    Context.SetViewportAndScissor(0, 0, g_SceneDepthBuffer.GetWidth(), g_SceneDepthBuffer.GetHeight());
 
     // Bind main pass CB (b0) for lights/ambient/shadow
     if (mMainCBData && mMainCBSize > 0)
@@ -351,7 +368,10 @@ void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
     for (int i = (int)activeTiles.size() - 1; i >= 0; --i)
     {
         ClipmapTile* tile = activeTiles[i];
-        if (!tile || !tile->HeightMap) continue;
+        if (!tile || !tile->HeightMap)
+        {
+            continue;
+        }
 
         // Update per-tile constants
         mConstants.HeightMapIndex = tile->HeightSRVIndex;
@@ -383,15 +403,15 @@ void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
                 CD3DX12_RESOURCE_BARRIER::Transition(
                     tile->HeightMap.Get(),
                     D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
+                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
                 CD3DX12_RESOURCE_BARRIER::Transition(
                     tile->NormalMap.Get(),
                     D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
+                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
                 CD3DX12_RESOURCE_BARRIER::Transition(
                     tile->MaterialWeightMap.Get(),
                     D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
+                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
             };
             Context.GetCommandList()->ResourceBarrier(3, barriers);
             tile->NeedsSRVTransition = false;
@@ -405,6 +425,90 @@ void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 void ProceduralTerrain::DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificShadowPSO)
 {
     // TODO: Phase 4 - shadow rendering for procedural terrain
+}
+
+void ProceduralTerrain::DrawDepthOnly(GraphicsContext& Context)
+{
+    Context.SetRootSignature(mTerrainRootSig);
+    Context.SetPipelineState(mTerrainShadowPSO);
+
+    // Bind depth-only output target
+    Context.SetDepthStencilTarget(g_SceneDepthBuffer.GetDSV());
+    Context.SetViewportAndScissor(0, 0, g_SceneDepthBuffer.GetWidth(), g_SceneDepthBuffer.GetHeight());
+
+    // DS needs gSRVMap[] for heightmap sampling
+    Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
+        Render::gTextureHeap.GetHeapPointer());
+    Context.SetDescriptorTable(3,
+        Render::gTextureHeap[MAXCUBESRVSIZE + COMMONSRVSIZE + COMMONUAVSIZE]);
+
+    // Set vertex and index buffers
+    D3D12_VERTEX_BUFFER_VIEW vbv = {};
+    vbv.BufferLocation = mVertexBuffer->GetGPUVirtualAddress();
+    vbv.SizeInBytes = (UINT)(mVertexStride * mInitInfo.TileSize * mInitInfo.TileSize);
+    vbv.StrideInBytes = mVertexStride;
+
+    D3D12_INDEX_BUFFER_VIEW ibv = {};
+    ibv.BufferLocation = mIndexBuffer->GetGPUVirtualAddress();
+    ibv.SizeInBytes = (UINT)mIndexCount * sizeof(USHORT);
+    ibv.Format = DXGI_FORMAT_R16_UINT;
+
+    Context.SetVertexBuffer(0, vbv);
+    Context.SetIndexBuffer(ibv);
+    Context.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST);
+
+    const UINT cbAlignedSize = Math::AlignUp(sizeof(ProceduralTerrainConstants), 256u);
+    const UINT cRingBufferSize = 256;
+    UINT ringIndex = 0;
+
+    const auto& activeTiles = mClipmap->GetActiveTiles();
+    for (int i = (int)activeTiles.size() - 1; i >= 0; --i)
+    {
+        ClipmapTile* tile = activeTiles[i];
+        if (!tile || !tile->HeightMap) continue;
+
+        mConstants.HeightMapIndex = tile->HeightSRVIndex;
+        mConstants.NormalMapIndex = tile->NormalSRVIndex;
+        mConstants.MaterialWeightMapIndex = tile->WeightSRVIndex;
+        mConstants.ClipmapLevel = tile->LODLevel;
+        mConstants.CellSize = mClipmap->GetCellSize(tile->LODLevel);
+        mConstants.TileGridOffsetX = tile->GridCoord.x * (int)mInitInfo.TileSize;
+        mConstants.TileGridOffsetY = tile->GridCoord.y * (int)mInitInfo.TileSize;
+
+        UINT8* pData = nullptr;
+        D3D12_RANGE readRange = { 0, 0 };
+        D3D12_RANGE writeRange = { ringIndex * cbAlignedSize, (ringIndex + 1) * cbAlignedSize };
+        mConstantBuffer->Map(0, &readRange, (void**)&pData);
+        memcpy(pData + ringIndex * cbAlignedSize, &mConstants, sizeof(ProceduralTerrainConstants));
+        mConstantBuffer->Unmap(0, &writeRange);
+
+        D3D12_GPU_VIRTUAL_ADDRESS tileCBAddr = mCBGPU + ringIndex * cbAlignedSize;
+        ringIndex = (ringIndex + 1) % cRingBufferSize;
+
+        Context.SetConstantBuffer(1, tileCBAddr);
+
+        if (tile->NeedsSRVTransition)
+        {
+            CD3DX12_RESOURCE_BARRIER barriers[3] = {
+                CD3DX12_RESOURCE_BARRIER::Transition(
+                    tile->HeightMap.Get(),
+                    D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
+                CD3DX12_RESOURCE_BARRIER::Transition(
+                    tile->NormalMap.Get(),
+                    D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
+                CD3DX12_RESOURCE_BARRIER::Transition(
+                    tile->MaterialWeightMap.Get(),
+                    D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
+            };
+            Context.GetCommandList()->ResourceBarrier(3, barriers);
+            tile->NeedsSRVTransition = false;
+        }
+
+        Context.DrawIndexed(mIndexCount);
+    }
 }
 
 void ProceduralTerrain::DrawUI()

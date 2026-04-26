@@ -97,7 +97,7 @@ private:
 	bool show_model				= true;
 	bool show_water				= false;
 
-	bool show_sky				= true;
+	bool show_sky				= false;
 	bool show_HeightMapTerrain	= true;
 	bool show_DebugMesh			= true;
 	bool show_Grass				= false;

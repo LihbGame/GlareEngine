@@ -674,6 +674,12 @@ void Scene::ForwardRendering(RasterRenderPipelineType ForwardRenderPipeline)
 
 				DefaultMeshPass.RenderMeshes(MeshRenderPass::eZPass, Context, mSceneView.mMainConstants);
 
+				// Terrain depth prepass
+				Context.PIXBeginEvent(L"Terrain Depth PrePass");
+				for (auto& obj : m_pRenderObjectsType[(int)ObjectType::Terrain])
+					obj->DrawDepthOnly(Context);
+				Context.PIXEndEvent();
+
 				//Resolve Depth Buffer if MSAA
 				if (IsMSAA)
 				{
@@ -792,7 +798,13 @@ void Scene::ForwardRendering(RasterRenderPipelineType ForwardRenderPipeline)
 				if (gRasterRenderPipelineType == RasterRenderPipelineType::TBDR ||
 					gRasterRenderPipelineType == RasterRenderPipelineType::CBDR)
 				{
+						Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 					Context.SetRenderTargets(GBUFFER_Count, GetGBufferRTV(Context), g_SceneDepthBuffer.GetDSV());
+				}
+					else
+				{
+					// Forward path: render to color buffer with depth-read-only (prepass wrote depth)
+					Context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV_DepthReadOnly());
 				}
 				for (auto& obj : m_pRenderObjectsType[(int)ObjectType::Terrain])
 				{
@@ -906,6 +918,12 @@ void Scene::DeferredRendering(RasterRenderPipelineType DeferredRenderPipeline)
 
 			DefaultMeshPass.RenderMeshes(MeshRenderPass::eZPass, Context, mSceneView.mMainConstants);
 
+			// Terrain depth prepass
+			Context.PIXBeginEvent(L"Terrain Depth PrePass");
+			for (auto& obj : m_pRenderObjectsType[(int)ObjectType::Terrain])
+				obj->DrawDepthOnly(Context);
+			Context.PIXEndEvent();
+
 			if (m_pRenderObjectsType[(int)ObjectType::Sky].front()->GetVisible())
 			{
 				Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &mSceneView.mMainConstants);
@@ -1010,6 +1028,7 @@ void Scene::DeferredRendering(RasterRenderPipelineType DeferredRenderPipeline)
 				if (gRasterRenderPipelineType == RasterRenderPipelineType::TBDR ||
 					gRasterRenderPipelineType == RasterRenderPipelineType::CBDR)
 				{
+						Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 					Context.SetRenderTargets(GBUFFER_Count, GetGBufferRTV(Context), g_SceneDepthBuffer.GetDSV());
 				}
 				for (auto& obj : m_pRenderObjectsType[(int)ObjectType::Terrain])

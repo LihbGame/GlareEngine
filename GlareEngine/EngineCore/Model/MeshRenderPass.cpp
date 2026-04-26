@@ -169,7 +169,7 @@ void MeshRenderPass::RenderMeshes(DrawPass pass, GraphicsContext& context, MainC
 		if (m_BatchType == eDefault)
 		{
 			switch (m_CurrentPass)
-			{
+			{ 
 			case eZPass:
 				context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 				context.SetDepthStencilTarget(m_DSV->GetDSV());

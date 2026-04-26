@@ -79,6 +79,7 @@ private:
     struct ClipmapLevel
     {
         XMINT2 CurrentOrigin = { 0, 0 }; // grid origin of this level's center tile
+        bool Initialized = false;
         vector<unique_ptr<ClipmapTile>> Tiles; // 5x5 tiles = 25 per level
     };
     vector<ClipmapLevel> mLevels;

@@ -170,9 +170,10 @@ void TerrainClipmap::Update(const XMFLOAT3& CameraPos)
         XMINT2 newOrigin = WorldToGrid(CameraPos, level);
         ClipmapLevel& lvl = mLevels[level];
 
-        if (newOrigin.x != lvl.CurrentOrigin.x || newOrigin.y != lvl.CurrentOrigin.y)
+        if (newOrigin.x != lvl.CurrentOrigin.x || newOrigin.y != lvl.CurrentOrigin.y || !lvl.Initialized)
         {
             lvl.CurrentOrigin = newOrigin;
+            lvl.Initialized = true;
             UpdateActiveTiles(level, newOrigin);
         }
 

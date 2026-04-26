@@ -203,7 +203,7 @@ __declspec(align(256)) struct ProceduralTerrainConstants
     XMFLOAT3    EyePosW             = { 0,0,0 };
     float       MinTessDistance     = 10.0f;
     float       MaxTessDistance     = 500.0f;
-    float       MinTessFactor       = 0.0f;
+    float       MinTessFactor       = 2.0f;
     float       MaxTessFactor       = 6.0f;
     int         ClipmapLevel        = 0;
     float       CellSize            = 1.0f;

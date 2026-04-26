@@ -55,6 +55,7 @@ public:
 
 	virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr) {};
 	virtual void DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificShadowPSO = nullptr) {};
+	virtual void DrawDepthOnly(GraphicsContext& Context) {};
 	virtual void Update(float DeltaTime, GraphicsContext* Context = nullptr) {};
 	virtual void DrawUI() {};
 	virtual void InitMaterial() {};
