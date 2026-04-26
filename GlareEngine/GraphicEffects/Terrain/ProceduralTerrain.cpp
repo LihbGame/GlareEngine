@@ -186,11 +186,12 @@ void ProceduralTerrain::LoadMaterialTextures(ID3D12GraphicsCommandList* CmdList)
         // Store SRV indices via global descriptor table
         if (textures.size() >= 5)
         {
-            mLayerSRVIndices[layer][0] = AddToGlobalTextureSRVDescriptor(textures[eBaseColor]->GetSRV());
-            mLayerSRVIndices[layer][1] = AddToGlobalTextureSRVDescriptor(textures[eNormal]->GetSRV());
-            mLayerSRVIndices[layer][2] = AddToGlobalTextureSRVDescriptor(textures[eMetallicRoughness]->GetSRV());
-            mLayerSRVIndices[layer][3] = AddToGlobalTextureSRVDescriptor(textures[eMetallicRoughness]->GetSRV());
-            mLayerSRVIndices[layer][4] = AddToGlobalTextureSRVDescriptor(textures[eOcclusion]->GetSRV());
+            // PBR texture order from CreatePBRTextures: [0]albedo [1]normal [2]ao [3]metallic [4]roughness
+            mLayerSRVIndices[layer][0] = AddToGlobalTextureSRVDescriptor(textures[0]->GetSRV()); // albedo
+            mLayerSRVIndices[layer][1] = AddToGlobalTextureSRVDescriptor(textures[1]->GetSRV()); // normal
+            mLayerSRVIndices[layer][2] = AddToGlobalTextureSRVDescriptor(textures[4]->GetSRV()); // roughness
+            mLayerSRVIndices[layer][3] = AddToGlobalTextureSRVDescriptor(textures[3]->GetSRV()); // metallic
+            mLayerSRVIndices[layer][4] = AddToGlobalTextureSRVDescriptor(textures[2]->GetSRV()); // ao
         }
     }
 }

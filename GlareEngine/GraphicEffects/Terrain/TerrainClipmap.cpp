@@ -143,50 +143,6 @@ void TerrainClipmap::CreateTileResources(ID3D12GraphicsCommandList* CmdList)
     }
 }
 
-void TerrainClipmap::BuildSharedGeometry(ID3D12GraphicsCommandList* CmdList)
-{
-    // Build a grid of quad patch control points
-    // Each quad = 4 vertices, forming a patch for tessellation
-    UINT vertCount = mTileSize * mTileSize;
-    UINT patchCount = (mTileSize - 1) * (mTileSize - 1);
-    mIndexCount = patchCount * 4;
-
-    // Vertices: grid positions + bounds
-    vector<Vertices::Terrain> vertices(vertCount);
-    for (UINT i = 0; i < mTileSize; i++)
-    {
-        for (UINT j = 0; j < mTileSize; j++)
-        {
-            UINT idx = i * mTileSize + j;
-            vertices[idx].Position = XMFLOAT3((float)j, 0.0f, (float)i);
-            vertices[idx].Tex = XMFLOAT2((float)j / (mTileSize - 1), (float)i / (mTileSize - 1));
-            vertices[idx].BoundsY = XMFLOAT2(0, 0); // Updated after height generation
-        }
-    }
-
-    // Indices: 4 indices per quad patch
-    vector<USHORT> indices(mIndexCount);
-    UINT k = 0;
-    for (UINT i = 0; i < mTileSize - 1; i++)
-    {
-        for (UINT j = 0; j < mTileSize - 1; j++)
-        {
-            indices[k++] = i * mTileSize + j;
-            indices[k++] = i * mTileSize + j + 1;
-            indices[k++] = (i + 1) * mTileSize + j;
-            indices[k++] = (i + 1) * mTileSize + j + 1;
-        }
-    }
-
-    UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertices::Terrain);
-    UINT ibByteSize = (UINT)indices.size() * sizeof(USHORT);
-
-    mSharedVB = EngineUtility::CreateDefaultBuffer(
-        g_Device, CmdList, vertices.data(), vbByteSize, mSharedVBUploader);
-    mSharedIB = EngineUtility::CreateDefaultBuffer(
-        g_Device, CmdList, indices.data(), ibByteSize, mSharedIBUploader);
-}
-
 XMINT2 TerrainClipmap::WorldToGrid(const XMFLOAT3& WorldPos, UINT Level) const
 {
     float cellSize = mCellSizeBase * (1u << Level) * mTileSize;

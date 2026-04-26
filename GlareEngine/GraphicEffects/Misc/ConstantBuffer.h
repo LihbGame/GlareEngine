@@ -172,7 +172,7 @@ struct TerrainConstants
 
 
 // Procedural terrain constants for GPU generation
-struct ProceduralTerrainNoiseCB
+__declspec(align(256)) struct ProceduralTerrainNoiseCB
 {
     XMFLOAT3    CameraPosition      = { 0,0,0 };
     float       CellSize            = 1.0f;

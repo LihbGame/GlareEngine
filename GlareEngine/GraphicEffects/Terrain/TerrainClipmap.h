@@ -91,14 +91,6 @@ private:
     ComPtr<ID3D12DescriptorHeap> mTileDescriptorHeap;
     UINT mDescriptorHeapSize = 0;
 
-    // Shared geometry (same quad patch grid for all tiles)
-    ComPtr<ID3D12Resource> mSharedVB;
-    ComPtr<ID3D12Resource> mSharedIB;
-    ComPtr<ID3D12Resource> mSharedVBUploader;
-    ComPtr<ID3D12Resource> mSharedIBUploader;
-    UINT mIndexCount = 0;
-
-    void BuildSharedGeometry(ID3D12GraphicsCommandList* CmdList);
     void CreateTileGPUResources(ClipmapTile* Tile, ID3D12GraphicsCommandList* CmdList);
     CD3DX12_CPU_DESCRIPTOR_HANDLE AllocateTileDescriptor();
     UINT mNextDescriptorIndex = 0;
