@@ -64,8 +64,8 @@ float4 main(ClipmapDomainOut pin) : SV_TARGET
     surf.V = normalize(gTerrainEyePosW - pin.PosW);
     surf.c_diff = mat.Albedo;
     surf.c_spec = lerp(DielectricSpecular, mat.Albedo, mat.Metallic);
-    surf.roughness = mat.Roughness;
-    surf.alpha = mat.Roughness * mat.Roughness;
+    surf.roughness = max(mat.Roughness, 0.04);
+    surf.alpha = surf.roughness * surf.roughness;
     surf.alphaSqr = surf.alpha * surf.alpha;
     surf.NdotV = max(dot(surf.N, surf.V), 0.001);
     surf.worldPos = pin.PosW;
@@ -92,8 +92,9 @@ float4 main(ClipmapDomainOut pin) : SV_TARGET
         // Diffuse (Lambertian)
         float3 diffuse = surf.c_diff / PI;
 
-        // Specular (GGX)
-        float D = surf.alphaSqr / (PI * pow(surf.alphaSqr + light.NdotH * light.NdotH * (1.0 - surf.alphaSqr), 2.0));
+        // Specular (GGX) - clamped denominator to prevent NaN
+        float denom = PI * pow(surf.alphaSqr + light.NdotH * light.NdotH * (1.0 - surf.alphaSqr), 2.0);
+        float D = surf.alphaSqr / max(denom, 1e-7);
         float k = (surf.roughness + 1.0) * (surf.roughness + 1.0) / 8.0;
         float G_V = surf.NdotV / (surf.NdotV * (1.0 - k) + k);
         float G_L = light.NdotL / (light.NdotL * (1.0 - k) + k);
