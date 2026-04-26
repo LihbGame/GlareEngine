@@ -309,8 +309,12 @@ namespace GlareEngine
 
 	void Display::PreparePresent()
 	{
-		if (Render::GetAntiAliasingType() == Render::AntiAliasingType::FSR||
-			Render::GetAntiAliasingType() == Render::AntiAliasingType::DLSS)
+		bool fsrReady = Render::GetAntiAliasingType() == Render::AntiAliasingType::FSR &&
+		                FSR::GetInstance()->IsReady();
+		bool dlssReady = Render::GetAntiAliasingType() == Render::AntiAliasingType::DLSS &&
+		                 DLSS::GetInstance()->IsDLSSInitialized();
+
+		if (fsrReady || dlssReady)
 		{
 			CurrentSceneColorBuffer = &g_SceneFullScreenBuffer;
 		}

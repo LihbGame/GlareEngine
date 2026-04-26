@@ -25,9 +25,15 @@ public:
 
 	void CreateSwapChain(ffx::CreateContextDescFrameGenerationSwapChainForHwndDX12& createSwapChainDesc);
 
-	bool UpscalerEnabled() 
+	bool UpscalerEnabled()
 	{
 		return m_UpscalerEnabled;
+	}
+
+	// Returns true only if FSR context was successfully created and can produce output
+	bool IsReady()
+	{
+		return m_UpscalingContext != nullptr;
 	}
 	void EnableUpscaling(bool enabled) 
 	{

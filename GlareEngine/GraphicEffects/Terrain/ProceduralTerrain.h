@@ -6,6 +6,7 @@
 #include "Graphics/TextureManager.h"
 #include "Graphics/RootSignature.h"
 #include "Graphics/PipelineState.h"
+#include "Graphics/Render.h"
 #include "TerrainClipmap.h"
 #include "TerrainNoiseGenerator.h"
 
@@ -39,6 +40,7 @@ private:
     // Render pipeline
     RootSignature   mTerrainRootSig;
     GraphicsPSO     mTerrainPSO;
+    GraphicsPSO     mTerrainDeferredPSO;
     GraphicsPSO     mTerrainShadowPSO;
 
     // Constant buffer

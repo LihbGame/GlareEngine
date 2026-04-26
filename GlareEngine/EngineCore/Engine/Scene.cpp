@@ -789,6 +789,11 @@ void Scene::ForwardRendering(RasterRenderPipelineType ForwardRenderPipeline)
 					
 				// Terrain pass
 				Context.PIXBeginEvent(L"Terrain");
+				if (gRasterRenderPipelineType == RasterRenderPipelineType::TBDR ||
+					gRasterRenderPipelineType == RasterRenderPipelineType::CBDR)
+				{
+					Context.SetRenderTargets(GBUFFER_Count, GetGBufferRTV(Context), g_SceneDepthBuffer.GetDSV());
+				}
 				for (auto& obj : m_pRenderObjectsType[(int)ObjectType::Terrain])
 				{
 					if (obj->GetVisible())
@@ -1002,6 +1007,11 @@ void Scene::DeferredRendering(RasterRenderPipelineType DeferredRenderPipeline)
 				
 				// Terrain pass
 				Context.PIXBeginEvent(L"Terrain");
+				if (gRasterRenderPipelineType == RasterRenderPipelineType::TBDR ||
+					gRasterRenderPipelineType == RasterRenderPipelineType::CBDR)
+				{
+					Context.SetRenderTargets(GBUFFER_Count, GetGBufferRTV(Context), g_SceneDepthBuffer.GetDSV());
+				}
 				for (auto& obj : m_pRenderObjectsType[(int)ObjectType::Terrain])
 				{
 					if (obj->GetVisible())

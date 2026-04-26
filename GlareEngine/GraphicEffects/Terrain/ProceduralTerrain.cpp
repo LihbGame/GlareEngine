@@ -14,6 +14,7 @@
 #include "CompiledShaders/TerrainClipmapHS.h"
 #include "CompiledShaders/TerrainClipmapDS.h"
 #include "CompiledShaders/TerrainClipmapPS.h"
+#include "CompiledShaders/TerrainClipmapDeferredPS.h"
 
 using namespace DirectX;
 
@@ -163,6 +164,27 @@ void ProceduralTerrain::BuildPipelineState(ID3D12GraphicsCommandList*)
     mTerrainPSO.SetBlendState(CD3DX12_BLEND_DESC(D3D12_DEFAULT));
     mTerrainPSO.SetRasterizerState(CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT));
     mTerrainPSO.Finalize();
+
+    // Deferred rendering PSO — outputs to GBuffer (6 render targets)
+    if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBDR ||
+        Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBDR)
+    {
+        mTerrainDeferredPSO.SetRootSignature(mTerrainRootSig);
+        mTerrainDeferredPSO.SetVertexShader(g_pTerrainClipmapVS, sizeof(g_pTerrainClipmapVS));
+        mTerrainDeferredPSO.SetHullShader(g_pTerrainClipmapHS, sizeof(g_pTerrainClipmapHS));
+        mTerrainDeferredPSO.SetDomainShader(g_pTerrainClipmapDS, sizeof(g_pTerrainClipmapDS));
+        mTerrainDeferredPSO.SetPixelShader(g_pTerrainClipmapDeferredPS, sizeof(g_pTerrainClipmapDeferredPS));
+        mTerrainDeferredPSO.SetInputLayout(_countof(layout), layout);
+        mTerrainDeferredPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH);
+        mTerrainDeferredPSO.SetSampleMask(0xFFFFFFFF);
+        mTerrainDeferredPSO.SetRenderTargetFormats(
+            Render::GBUFFER_Count, Render::GBufferFormat,
+            g_SceneDepthBuffer.GetFormat());
+        mTerrainDeferredPSO.SetDepthStencilState(DepthStateReadWriteReversed);
+        mTerrainDeferredPSO.SetBlendState(CD3DX12_BLEND_DESC(D3D12_DEFAULT));
+        mTerrainDeferredPSO.SetRasterizerState(CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT));
+        mTerrainDeferredPSO.Finalize();
+    }
 }
 
 void ProceduralTerrain::LoadMaterialTextures(ID3D12GraphicsCommandList* CmdList)
@@ -281,8 +303,16 @@ void ProceduralTerrain::UpdateConstantBuffer()
 
 void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 {
+    GraphicsPSO* pso = &mTerrainPSO;
+    if (!SpecificPSO &&
+        (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBDR ||
+         Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBDR))
+    {
+        pso = &mTerrainDeferredPSO;
+    }
+
     Context.SetRootSignature(mTerrainRootSig);
-    Context.SetPipelineState(SpecificPSO ? *SpecificPSO : mTerrainPSO);
+    Context.SetPipelineState(SpecificPSO ? *SpecificPSO : *pso);
 
     // Bind main pass CB (b0) for lights/ambient/shadow
     if (mMainCBData && mMainCBSize > 0)
