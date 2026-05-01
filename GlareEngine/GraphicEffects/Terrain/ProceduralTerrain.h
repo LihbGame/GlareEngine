@@ -43,6 +43,9 @@ private:
     GraphicsPSO     mTerrainPSO;
     GraphicsPSO     mTerrainDeferredPSO;
     GraphicsPSO     mTerrainShadowPSO;
+    GraphicsPSO     mTerrainPSO_Wireframe;
+    GraphicsPSO     mTerrainDeferredPSO_Wireframe;
+    GraphicsPSO     mTerrainShadowPSO_Wireframe;
 
     // Constant buffer
     ProceduralTerrainConstants mConstants;

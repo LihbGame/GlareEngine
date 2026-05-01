@@ -233,6 +233,38 @@ void TerrainClipmap::MarkTileClean(ClipmapTile* Tile)
     if (Tile) Tile->IsDirty = false;
 }
 
+bool TerrainClipmap::IsCoveredByFinerLevel(const ClipmapTile* Tile) const
+{
+    if (!Tile || Tile->LODLevel == 0) return false;
+
+    UINT finerLevel = Tile->LODLevel - 1;
+    if (finerLevel >= mClipmapLevels) return false;
+
+    const ClipmapLevel& finer = mLevels[finerLevel];
+    if (!finer.Initialized) return false;
+
+    // This tile's world-space bounds
+    float cellSize = mCellSizeBase * (1u << Tile->LODLevel);
+    float tileWorldSize = (float)mTileSize * cellSize;
+    float tileMinX = (float)Tile->GridCoord.x * tileWorldSize;
+    float tileMaxX = tileMinX + tileWorldSize;
+    float tileMinZ = (float)Tile->GridCoord.y * tileWorldSize;
+    float tileMaxZ = tileMinZ + tileWorldSize;
+
+    // Finer level's total world-space coverage
+    float finerCellSize = mCellSizeBase * (1u << finerLevel);
+    float finerTileWorldSize = (float)mTileSize * finerCellSize;
+    int halfTiles = 2; // 5/2 = 2 (tiles go from origin-2 to origin+2)
+    float finerMinX = ((float)finer.CurrentOrigin.x - (float)halfTiles) * finerTileWorldSize;
+    float finerMaxX = ((float)finer.CurrentOrigin.x + (float)(halfTiles + 1)) * finerTileWorldSize;
+    float finerMinZ = ((float)finer.CurrentOrigin.y - (float)halfTiles) * finerTileWorldSize;
+    float finerMaxZ = ((float)finer.CurrentOrigin.y + (float)(halfTiles + 1)) * finerTileWorldSize;
+
+    // Tile is covered if entirely within finer level's bounds
+    return tileMinX >= finerMinX && tileMaxX <= finerMaxX &&
+           tileMinZ >= finerMinZ && tileMaxZ <= finerMaxZ;
+}
+
 void TerrainClipmap::ActivateTilesForLevel(UINT Level, const XMINT2& NewOrigin)
 {
     if (Level >= mClipmapLevels) return;

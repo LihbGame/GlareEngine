@@ -59,7 +59,7 @@ ProceduralTerrain::ProceduralTerrain(
             vertices[idx].Tex = XMFLOAT2(
                 (float)j / (float)(Info.TileSize - 1),
                 (float)i / (float)(Info.TileSize - 1));
-            vertices[idx].BoundsY = XMFLOAT2(0.0f, Info.HeightScale);
+            vertices[idx].BoundsY = XMFLOAT2(-Info.HeightScale, Info.HeightScale);
         }
     }
 
@@ -150,6 +150,11 @@ void ProceduralTerrain::BuildPipelineState(ID3D12GraphicsCommandList*)
         { "BOUNDY",   0, DXGI_FORMAT_R32G32_FLOAT,    0, 20, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
 
+    D3D12_RASTERIZER_DESC wireframeRaster = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+    wireframeRaster.CullMode = D3D12_CULL_MODE_NONE;
+    wireframeRaster.FillMode = D3D12_FILL_MODE_WIREFRAME;
+
+    // Forward PSO (solid)
     mTerrainPSO.SetRootSignature(mTerrainRootSig);
     mTerrainPSO.SetVertexShader(g_pTerrainClipmapVS, sizeof(g_pTerrainClipmapVS));
     mTerrainPSO.SetHullShader(g_pTerrainClipmapHS, sizeof(g_pTerrainClipmapHS));
@@ -165,6 +170,11 @@ void ProceduralTerrain::BuildPipelineState(ID3D12GraphicsCommandList*)
     mTerrainPSO.SetRasterizerState(CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT));
     mTerrainPSO.Finalize();
 
+    // Forward PSO (wireframe)
+    mTerrainPSO_Wireframe = mTerrainPSO;
+    mTerrainPSO_Wireframe.SetRasterizerState(wireframeRaster);
+    mTerrainPSO_Wireframe.Finalize();
+
     // Depth-only PSO for Z-prepass (VS+HS+DS, no pixel shader)
     mTerrainShadowPSO.SetRootSignature(mTerrainRootSig);
     mTerrainShadowPSO.SetVertexShader(g_pTerrainClipmapVS, sizeof(g_pTerrainClipmapVS));
@@ -178,6 +188,11 @@ void ProceduralTerrain::BuildPipelineState(ID3D12GraphicsCommandList*)
     mTerrainShadowPSO.SetRasterizerState(CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT));
     mTerrainShadowPSO.SetRenderTargetFormats(0, nullptr, g_SceneDepthBuffer.GetFormat());
     mTerrainShadowPSO.Finalize();
+
+    // Depth-only PSO (wireframe)
+    mTerrainShadowPSO_Wireframe = mTerrainShadowPSO;
+    mTerrainShadowPSO_Wireframe.SetRasterizerState(wireframeRaster);
+    mTerrainShadowPSO_Wireframe.Finalize();
 
     // Deferred rendering PSO — outputs to GBuffer (6 render targets)
     if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBDR ||
@@ -198,6 +213,11 @@ void ProceduralTerrain::BuildPipelineState(ID3D12GraphicsCommandList*)
         mTerrainDeferredPSO.SetBlendState(CD3DX12_BLEND_DESC(D3D12_DEFAULT));
         mTerrainDeferredPSO.SetRasterizerState(CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT));
         mTerrainDeferredPSO.Finalize();
+
+        // Deferred PSO (wireframe)
+        mTerrainDeferredPSO_Wireframe = mTerrainDeferredPSO;
+        mTerrainDeferredPSO_Wireframe.SetRasterizerState(wireframeRaster);
+        mTerrainDeferredPSO_Wireframe.Finalize();
     }
 }
 
@@ -317,12 +337,18 @@ void ProceduralTerrain::UpdateConstantBuffer()
 
 void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 {
+    bool isWireframe = Render::gCommonProperty.IsWireframe;
+
     GraphicsPSO* pso = &mTerrainPSO;
     if (!SpecificPSO &&
         (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBDR ||
          Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBDR))
     {
-        pso = &mTerrainDeferredPSO;
+        pso = isWireframe ? &mTerrainDeferredPSO_Wireframe : &mTerrainDeferredPSO;
+    }
+    else if (isWireframe)
+    {
+        pso = &mTerrainPSO_Wireframe;
     }
 
     Context.SetRootSignature(mTerrainRootSig);
@@ -369,6 +395,12 @@ void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
     {
         ClipmapTile* tile = activeTiles[i];
         if (!tile || !tile->HeightMap)
+        {
+            continue;
+        }
+
+        // Skip tiles entirely covered by a finer LOD level
+        if (mClipmap->IsCoveredByFinerLevel(tile))
         {
             continue;
         }
@@ -430,7 +462,7 @@ void ProceduralTerrain::DrawShadow(GraphicsContext& Context, GraphicsPSO* Specif
 void ProceduralTerrain::DrawDepthOnly(GraphicsContext& Context)
 {
     Context.SetRootSignature(mTerrainRootSig);
-    Context.SetPipelineState(mTerrainShadowPSO);
+    Context.SetPipelineState(Render::gCommonProperty.IsWireframe ? mTerrainShadowPSO_Wireframe : mTerrainShadowPSO);
 
     // Bind depth-only output target
     Context.SetDepthStencilTarget(g_SceneDepthBuffer.GetDSV());
@@ -466,6 +498,9 @@ void ProceduralTerrain::DrawDepthOnly(GraphicsContext& Context)
     {
         ClipmapTile* tile = activeTiles[i];
         if (!tile || !tile->HeightMap) continue;
+
+        // Skip tiles entirely covered by a finer LOD level
+        if (mClipmap->IsCoveredByFinerLevel(tile)) continue;
 
         mConstants.HeightMapIndex = tile->HeightSRVIndex;
         mConstants.NormalMapIndex = tile->NormalSRVIndex;

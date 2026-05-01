@@ -79,6 +79,10 @@ float TerrainRidgeNoise(float2 pos)
 
 float ComputeHeight(float2 worldXZ)
 {
+    // Low-frequency continental base (large-scale mountains/valleys)
+    float continental = TerrainFBM(worldXZ * gNoiseScale * 0.1);
+    float baseMask = smoothstep(0.2, 0.8, continental);
+
     // Domain warping for organic shapes
     float2 warp = float2(
         TerrainFBM(worldXZ * gNoiseWarpScale + float2(0.0, 0.0)),
@@ -86,7 +90,7 @@ float ComputeHeight(float2 worldXZ)
     );
     float2 warpedXZ = worldXZ + warp * gNoiseWarpStrength;
 
-    // Base FBM terrain
+    // Mid-frequency FBM terrain
     float baseHeight = TerrainFBM(warpedXZ * gNoiseScale);
 
     // Ridge noise for mountains
@@ -95,9 +99,12 @@ float ComputeHeight(float2 worldXZ)
     // Blend base and ridge based on another noise layer
     float ridgeMask = smoothstep(0.3, 0.7, TerrainFBM(worldXZ * gNoiseScale * 0.3));
 
-    float height = lerp(baseHeight, ridge, ridgeMask) * gNoiseHeightScale;
+    // Continental base modulates amplitude: flat in low areas, tall in high areas
+    float detail = lerp(baseHeight, ridge, ridgeMask);
+    float height = lerp(detail * 0.3, detail * 1.5, baseMask) * gNoiseHeightScale;
 
-    return height;
+    // Clamp to stay within the normalization range used by height storage/DS
+    return clamp(height, -gNoiseHeightScale, gNoiseHeightScale);
 }
 
 float4 ComputeMaterialWeights(float height, float slope, float2 worldXZ)

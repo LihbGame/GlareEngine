@@ -29,7 +29,7 @@ ClipmapPatchTess CalcClipmapPatchConstants(
     float3 vMin = float3(min(worldPos[0].x, worldPos[2].x), minY, min(worldPos[0].z, worldPos[2].z));
     float3 vMax = float3(max(worldPos[1].x, worldPos[3].x), maxY, max(worldPos[1].z, worldPos[3].z));
     float3 boxCenter = 0.5 * (vMin + vMax);
-    float3 boxExtents = 0.5 * (vMax - vMin);
+    float3 boxExtents = 0.5 * (vMax - vMin) + float3(cellSize, 0, cellSize);
 
     if (AABBOutsideFrustumTest(boxCenter, boxExtents, gTerrainFrustumPlanes))
     {
@@ -61,7 +61,7 @@ ClipmapPatchTess CalcClipmapPatchConstants(
 
 [domain("quad")]
 [partitioning("fractional_even")]
-[outputtopology("triangle_cw")]
+[outputtopology("triangle_ccw")]
 [outputcontrolpoints(4)]
 [patchconstantfunc("CalcClipmapPatchConstants")]
 [maxtessfactor(64.0)]

@@ -54,6 +54,10 @@ public:
     void MarkTileClean(ClipmapTile* Tile);
     void ActivateTilesForLevel(UINT Level, const XMINT2& NewOrigin);
 
+    // Returns true if this tile's world-space bounds are entirely
+    // inside the next finer level's active tile coverage (should be skipped).
+    bool IsCoveredByFinerLevel(const ClipmapTile* Tile) const;
+
     // Per-frame access
     UINT GetClipmapLevels() const { return mClipmapLevels; }
     UINT GetTileSize() const { return mTileSize; }
