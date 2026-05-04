@@ -128,7 +128,8 @@ cbuffer TerrainNoiseCB : register(b0)
 
 float2x2 StochasticRotation(float2 worldPos)
 {
-    float angle = random12(worldPos * 0.137) * PI2;
+    // random22 scrambles both axes — avoids directional streaks from random12's 1D projection
+    float angle = random22(worldPos * 0.137).x * PI2;
     float s, c;
     sincos(angle, s, c);
     return float2x2(c, -s, s, c);
@@ -144,7 +145,8 @@ float3 SampleStochastic(int srvIndex, float2 baseUV, float2 worldPos)
     float3 s1 = gSRVMap[srvIndex].Sample(gSamplerAnisoWrap, uv1).rgb;
     float3 s2 = gSRVMap[srvIndex].Sample(gSamplerAnisoWrap, uv2).rgb;
 
-    float blend = random12(baseUV * 7.41 + worldPos * 0.03);
+    // Decorrelated 2D hash — avoids streak artifacts from 1D-projected random12
+    float blend = random22(worldPos * float2(1.23, 0.58) + 17.3).x;
     blend = smoothstep(0.5 - gStochasticSharpness * 0.5,
                        0.5 + gStochasticSharpness * 0.5, blend);
 
@@ -161,7 +163,7 @@ float SampleStochasticScalar(int srvIndex, float2 baseUV, float2 worldPos)
     float s1 = gSRVMap[srvIndex].Sample(gSamplerAnisoWrap, uv1).r;
     float s2 = gSRVMap[srvIndex].Sample(gSamplerAnisoWrap, uv2).r;
 
-    float blend = random12(baseUV * 7.41 + worldPos * 0.03);
+    float blend = random22(worldPos * float2(1.23, 0.58) + 17.3).x;
     blend = smoothstep(0.5 - gStochasticSharpness * 0.5,
                        0.5 + gStochasticSharpness * 0.5, blend);
 
@@ -178,7 +180,7 @@ float3 SampleStochasticNormal(int srvIndex, float2 baseUV, float2 worldPos)
     float3 s1 = gSRVMap[srvIndex].Sample(gSamplerAnisoWrap, uv1).rgb;
     float3 s2 = gSRVMap[srvIndex].Sample(gSamplerAnisoWrap, uv2).rgb;
 
-    float blend = random12(baseUV * 7.41 + worldPos * 0.03);
+    float blend = random22(worldPos * float2(1.23, 0.58) + 17.3).x;
     blend = smoothstep(0.5 - gStochasticSharpness * 0.5,
                        0.5 + gStochasticSharpness * 0.5, blend);
 

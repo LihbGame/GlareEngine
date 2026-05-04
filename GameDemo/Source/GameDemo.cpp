@@ -255,8 +255,8 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			mProceduralTerrain->SetName(L"Procedural Terrain");
 
 			//Terrain scene: dedicated scene with only terrain + sky
-			gScenes.back()->AddObjectToScene(mProceduralTerrain.get());
-			gScenes.back()->Finalize();
+			gScenes[5]->AddObjectToScene(mProceduralTerrain.get());
+			gScenes[5]->Finalize();
 
 			InitializeContext.Finish(true);
 
