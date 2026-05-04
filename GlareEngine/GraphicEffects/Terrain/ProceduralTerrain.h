@@ -75,10 +75,10 @@ private:
     float mStoneSlopeUI = 0.6f;
     float mTexScaleUI = 50.0f;
     float mRoughnessScaleUI = 3.0f;
-    float mMinTessFactorUI = 4.0f;
-    float mMaxTessFactorUI = 24.0f;
-    float mMinTessDistUI = 5.0f;
-    float mMaxTessDistUI = 800.0f;
+    float mMinTessFactorUI = 1.0f;
+    float mMaxTessFactorUI = 2.0f;
+    float mMinTessDistUI = 1.0f;
+    float mMaxTessDistUI = 100.0f;
 
     // Cached main pass CB data (set by Scene before Draw)
     const void* mMainCBData = nullptr;

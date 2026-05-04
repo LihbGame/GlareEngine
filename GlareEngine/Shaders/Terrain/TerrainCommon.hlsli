@@ -5,6 +5,7 @@
 
 #define TERRAIN_CLIPMAP_LEVELS  10
 #define TERRAIN_TILE_SIZE       64
+#define TERRAIN_HEIGHTMAP_SIZE  128
 #define TERRAIN_NUM_LAYERS      5
 
 // --- Clipmap vertex structures ---
@@ -51,6 +52,8 @@ struct ClipmapDomainOut
     float2  TileUV      : TEXCOORD0;
     float2  WorldXZ     : TEXCOORD1;
     float4  MatWeights  : TEXCOORD2;   // 5th weight = 1 - sum
+    float3  CurPosition : TEXCOORD3;
+    float3  PrePosition : TEXCOORD4;
 };
 
 // --- Terrain render constant buffer ---
@@ -87,6 +90,11 @@ cbuffer ProceduralTerrainCB : register(b1)
     float       gFinerLevelMaxZ;
     float       gTerrainRoughnessScale;
     float       gTerrainMetallicScale;
+    float2      _PadMV;
+    // Previous frame data for motion vector computation
+    float4x4    gTerrainPreViewProj;
+    float2      gTerrainPreJitter;
+    float2      gTerrainCurJitter;
 };
 
 // --- Noise generation constant buffer ---
@@ -97,6 +105,7 @@ cbuffer TerrainNoiseCB : register(b0)
     float   gNoiseCellSize;
     int2    gNoiseTileOffset;
     int     gNoiseTileSize;
+    int     gNoiseHeightmapSize;
     float   gNoiseHeightScale;
     float   gNoiseScale;
     uint    gNoiseSeed;
@@ -189,12 +198,19 @@ float CalcClipmapTessFactor(float3 p)
 
 // --- Bicubic Catmull-Rom sampling ---
 
+// Convert tile UV [0,1] to heightmap UV for correct texel lookup
+float2 TileToHeightmapUV(float2 tileUV)
+{
+    return (tileUV * (float)TERRAIN_TILE_SIZE + 0.5) / (float)TERRAIN_HEIGHTMAP_SIZE;
+}
+
 float SampleHeightBicubic(float2 tileUV)
 {
-    float texSize = (float)TERRAIN_TILE_SIZE;
+    float2 hmUV = TileToHeightmapUV(tileUV);
+    float texSize = (float)TERRAIN_HEIGHTMAP_SIZE;
     float invTexSize = 1.0 / texSize;
 
-    float2 pixelPos = tileUV * texSize - 0.5;
+    float2 pixelPos = hmUV * texSize - 0.5;
     float2 base = floor(pixelPos);
     float2 t = pixelPos - base;
     float2 t2 = t * t;

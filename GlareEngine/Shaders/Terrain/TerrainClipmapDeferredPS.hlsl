@@ -66,5 +66,6 @@ void main(ClipmapDomainOut pin,
     GBUFFER_Normal       = float4((bumpedNormalW + 1.0) / 2.0, 1.0);
     GBUFFER_Emissive     = float3(0, 0, 0);
     GBUFFER_WorldTangent = float4((T + 1.0) / 2.0, 1.0);
-    GBUFFER_MotionVector = float2(0, 0);
+    float2 cancelJitter = gTerrainPreJitter - gTerrainCurJitter;
+    GBUFFER_MotionVector = (((pin.PrePosition.xy / pin.PrePosition.z) - (pin.CurPosition.xy / pin.CurPosition.z)) - cancelJitter) * float2(0.5, -0.5);
 }

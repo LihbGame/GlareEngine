@@ -178,6 +178,7 @@ __declspec(align(256)) struct ProceduralTerrainNoiseCB
     float       CellSize            = 1.0f;
     XMINT2      TileOffset          = { 0, 0 };
     int         TileSize            = 64;
+    int         HeightmapSize       = 128;
     float       HeightScale         = 200.0f;
     float       NoiseScale          = 0.05f;
     UINT        Seed                = 42;
@@ -234,13 +235,23 @@ __declspec(align(256)) struct ProceduralTerrainConstants
     float       FinerLevelMaxZ           = 0.0f;
     float       RoughnessScale           = 3.0f;
     float       MetallicScale            = 0.3f;
+    // HLSL packs float2 _PadMV to next 16-byte row (offset 672),
+    // and float4x4 gTerrainPreViewProj needs 16-byte alignment (offset 688).
+    // Explicit padding matches HLSL cbuffer layout.
+    float       _PadRow41               = 0; // pad current 16-byte row
+    float       _PadMV[2]                = {};
+    float       _PadBeforePreVP[2]       = {}; // pad to 16-byte align PreViewProj
+    // Previous frame data for motion vector computation
+    XMFLOAT4X4  PreViewProj              = MathHelper::Identity4x4();
+    XMFLOAT2    PreJitterOffset          = { 0.0f, 0.0f };
+    XMFLOAT2    CurJitterOffset          = { 0.0f, 0.0f };
 };
 
 struct ProceduralTerrainInitInfo
 {
     UINT        ClipmapLevels       = 10;
     UINT        TileSize            = 64;
-    UINT        HeightmapSize       = 127;
+    UINT        HeightmapSize       = 128;
     float       CellSizeBase        = 1.0f;
     float       HeightScale         = 2000.0f;
     float       NoiseScale          = 0.001f;

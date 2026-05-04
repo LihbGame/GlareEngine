@@ -23,15 +23,18 @@ ClipmapDomainOut main(
         tileUV.y * TERRAIN_TILE_SIZE * cellSize + tileOffsetWorld.y
     );
 
+    // Convert tile UV to heightmap UV for correct texel lookup
+    float2 hmUV = TileToHeightmapUV(tileUV);
+
     // Sample heightmap and denormalize from [0,1] to world-space height
-    float height = (SampleTerrainHeight(tileUV) - 0.5) * 2.0 * gTerrainHeightScale;
+    float height = (SampleTerrainHeight(hmUV) - 0.5) * 2.0 * gTerrainHeightScale;
 
     // Construct world position
     dout.PosW = float3(worldXZ.x, height, worldXZ.y);
     dout.WorldXZ = worldXZ;
 
     // Sample packed normal and reconstruct
-    float2 packedNormal = SampleTerrainNormal(tileUV);
+    float2 packedNormal = SampleTerrainNormal(hmUV);
     float3 normal = normalize(float3(packedNormal.x, 1.0, packedNormal.y));
 
     // Build tangent from world-space X axis, orthogonalized against normal
@@ -42,13 +45,18 @@ ClipmapDomainOut main(
     dout.TangentW = tangent;
 
     // Sample material weights
-    dout.MatWeights = SampleMaterialWeights(tileUV);
+    dout.MatWeights = SampleMaterialWeights(hmUV);
 
     // Shadow coordinates
     dout.ShadowPosH = mul(float4(dout.PosW, 1.0), gShadowTransform);
 
     // Project to clip space
     dout.PosH = mul(gTerrainViewProj,float4(dout.PosW, 1.0));
+
+    // Motion vectors: current and previous clip positions
+    dout.CurPosition = dout.PosH.xyw;
+    float4 prePosH = mul(gTerrainPreViewProj, float4(dout.PosW, 1.0));
+    dout.PrePosition = prePosH.xyw;
 
     dout.TileUV = tileUV;
 

@@ -40,6 +40,7 @@ public:
     TerrainClipmap(
         UINT ClipmapLevels,
         UINT TileSize,
+        UINT HeightmapSize,
         float CellSizeBase,
         ID3D12Device* Device);
 
@@ -76,6 +77,7 @@ private:
 
     UINT mClipmapLevels;
     UINT mTileSize;
+    UINT mHeightmapSize;
     float mCellSizeBase;
 
     ID3D12Device* mDevice = nullptr;

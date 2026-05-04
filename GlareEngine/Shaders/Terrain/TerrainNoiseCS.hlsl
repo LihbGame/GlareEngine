@@ -140,7 +140,7 @@ float4 ComputeMaterialWeights(float height, float slope, float2 worldXZ)
 [numthreads(8, 8, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
-    if (DTid.x >= (uint)gNoiseTileSize || DTid.y >= (uint)gNoiseTileSize)
+    if (DTid.x >= (uint)gNoiseHeightmapSize || DTid.y >= (uint)gNoiseHeightmapSize)
         return;
 
     // Compute world position for this texel

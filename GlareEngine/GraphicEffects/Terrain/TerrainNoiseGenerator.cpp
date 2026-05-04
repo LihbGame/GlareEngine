@@ -16,6 +16,7 @@ TerrainNoiseGenerator::TerrainNoiseGenerator(
     , mHeightScale(Info.HeightScale)
     , mNoiseScale(Info.NoiseScale)
     , mTileSize(Info.TileSize)
+    , mHeightmapSize(Info.HeightmapSize)
 {
     BuildRootSignature(Device);
     BuildPipelineState(Device, CmdList);
@@ -84,6 +85,7 @@ void TerrainNoiseGenerator::GenerateTiles(
         mNoiseCBData.TileOffset = { tile->GridCoord.x * (int)mTileSize,
                                      tile->GridCoord.y * (int)mTileSize };
         mNoiseCBData.TileSize = mTileSize;
+        mNoiseCBData.HeightmapSize = mHeightmapSize;
         mNoiseCBData.HeightScale = mHeightScale;
         mNoiseCBData.NoiseScale = mNoiseScale;
         mNoiseCBData.Seed = mSeed;
@@ -139,8 +141,8 @@ void TerrainNoiseGenerator::GenerateTiles(
         Context.SetDynamicDescriptor(1, 1, tile->NormalUAV);
         Context.SetDynamicDescriptor(1, 2, tile->WeightUAV);
 
-        // Dispatch: 2D, one thread per texel, numthreads(8,8,1)
-        Context.Dispatch2D(mTileSize, mTileSize, 8, 8);
+        // Dispatch: one thread per heightmap texel
+        Context.Dispatch2D(mHeightmapSize, mHeightmapSize, 8, 8);
     }
 
     // UAV barrier to ensure all compute writes complete

@@ -7,10 +7,12 @@ using namespace DirectX;
 TerrainClipmap::TerrainClipmap(
     UINT ClipmapLevels,
     UINT TileSize,
+    UINT HeightmapSize,
     float CellSizeBase,
     ID3D12Device* Device)
     : mClipmapLevels(ClipmapLevels)
     , mTileSize(TileSize)
+    , mHeightmapSize(HeightmapSize)
     , mCellSizeBase(CellSizeBase)
     , mDevice(Device)
 {
@@ -56,11 +58,11 @@ CD3DX12_CPU_DESCRIPTOR_HANDLE TerrainClipmap::AllocateTileDescriptor()
 
 void TerrainClipmap::CreateTileGPUResources(ClipmapTile* Tile, ID3D12GraphicsCommandList*)
 {
-    UINT texSize = mTileSize;
+    UINT texSize = mHeightmapSize;
 
-    // Height map: R16_FLOAT
+    // Height map: R32_FLOAT for full precision
     D3D12_RESOURCE_DESC heightDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-        DXGI_FORMAT_R16_FLOAT, texSize, texSize, 1, 1);
+        DXGI_FORMAT_R32_FLOAT, texSize, texSize, 1, 1);
     heightDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
     CD3DX12_HEAP_PROPERTIES defaultHeap(D3D12_HEAP_TYPE_DEFAULT);
@@ -95,7 +97,7 @@ void TerrainClipmap::CreateTileGPUResources(ClipmapTile* Tile, ID3D12GraphicsCom
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
     srvDesc.Texture2D.MipLevels = 1;
-    srvDesc.Format = DXGI_FORMAT_R16_FLOAT;
+    srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
     mDevice->CreateShaderResourceView(Tile->HeightMap.Get(), &srvDesc, Tile->HeightSRV);
 
     Tile->NormalSRV = AllocateTileDescriptor();
@@ -110,7 +112,7 @@ void TerrainClipmap::CreateTileGPUResources(ClipmapTile* Tile, ID3D12GraphicsCom
     Tile->HeightUAV = AllocateTileDescriptor();
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-    uavDesc.Format = DXGI_FORMAT_R16_FLOAT;
+    uavDesc.Format = DXGI_FORMAT_R32_FLOAT;
     mDevice->CreateUnorderedAccessView(Tile->HeightMap.Get(), nullptr, &uavDesc, Tile->HeightUAV);
 
     Tile->NormalUAV = AllocateTileDescriptor();

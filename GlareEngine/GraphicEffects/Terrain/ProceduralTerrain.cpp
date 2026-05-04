@@ -30,17 +30,17 @@ ProceduralTerrain::ProceduralTerrain(
     mHeightScaleUI = Info.HeightScale;
     mTexScaleUI = 50.0f;
     mRoughnessScaleUI = 3.0f;
-    mMinTessFactorUI = 4.0f;
-    mMaxTessFactorUI = 24.0f;
-    mMinTessDistUI = 5.0f;
-    mMaxTessDistUI = 800.0f;
+    mMinTessFactorUI = 1.0f;
+    mMaxTessFactorUI = 2.0f;
+    mMinTessDistUI = 1.0f;
+    mMaxTessDistUI = 100.0f;
     mWarpStrengthUI = 30.0f;
     mSnowHeightUI = 150.0f;
     mStoneSlopeUI = 0.6f;
 
     // Create clipmap manager
     mClipmap = make_unique<TerrainClipmap>(
-        Info.ClipmapLevels, Info.TileSize, Info.CellSizeBase, g_Device);
+        Info.ClipmapLevels, Info.TileSize, Info.HeightmapSize, Info.CellSizeBase, g_Device);
 
     // Create GPU tile resources
     mClipmap->CreateTileResources(CmdList);
@@ -307,7 +307,7 @@ void ProceduralTerrain::Update(float dt, GraphicsContext* Context)
         ClipmapTile* dbgTile = debugActiveTiles[0];
         if (dbgTile && dbgTile->HeightMap)
         {
-            float hmSize = (float)mInitInfo.TileSize;
+            float hmSize = (float)mInitInfo.HeightmapSize;
             EngineGUI::AddRenderPassVisualizeTexture("Terrain", "HeightMap",
                 hmSize, hmSize, dbgTile->HeightSRV);
             EngineGUI::AddRenderPassVisualizeTexture("Terrain", "NormalMap",
@@ -355,6 +355,11 @@ void ProceduralTerrain::UpdateConstantBuffer()
         mConstants.LayerMetallicIndices[i].Index = mLayerSRVIndices[i][3];
         mConstants.LayerAOIndices[i].Index = mLayerSRVIndices[i][4];
     }
+
+    // Previous frame data for motion vector computation (DLSS/FSR)
+    XMStoreFloat4x4(&mConstants.PreViewProj, camera->GetPreViewProj());
+    mConstants.PreJitterOffset = camera->GetPreJitter();
+    mConstants.CurJitterOffset = camera->GetCurJitter();
 }
 
 void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
@@ -613,7 +618,7 @@ void ProceduralTerrain::DrawUI()
 {
     if (ImGui::CollapsingHeader("Procedural Terrain", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        ImGui::SliderFloat("Noise Scale", &mNoiseScaleUI, 0.001f, 0.1f);
+        ImGui::SliderFloat("Noise Scale", &mNoiseScaleUI, 0.001f, 0.005f);
         ImGui::SliderFloat("Height Scale", &mHeightScaleUI, 10.0f, 3000.0f);
         ImGui::SliderFloat("Tex Scale", &mTexScaleUI, 1.0f, 200.0f);
         ImGui::SliderFloat("Roughness Scale", &mRoughnessScaleUI, 0.1f, 10.0f);
