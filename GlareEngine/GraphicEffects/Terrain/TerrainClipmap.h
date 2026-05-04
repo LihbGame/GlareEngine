@@ -63,6 +63,8 @@ public:
     UINT GetTileSize() const { return mTileSize; }
     float GetCellSize(UINT Level) const { return mCellSizeBase * (1u << Level); }
     float GetCellSizeBase() const { return mCellSizeBase; }
+    XMINT2 GetLevelOrigin(UINT Level) const;
+    bool IsLevelInitialized(UINT Level) const;
 
     // Get tile for a given level and grid coord
     ClipmapTile* GetTile(UINT Level, XMINT2 GridCoord);

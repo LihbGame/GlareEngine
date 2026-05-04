@@ -68,11 +68,17 @@ private:
     UINT mVertexStride = 0;
 
     // ImGui parameters
-    float mNoiseScaleUI = 0.05f;
-    float mHeightScaleUI = 200.0f;
+    float mNoiseScaleUI = 0.001f;
+    float mHeightScaleUI = 2000.0f;
     float mWarpStrengthUI = 30.0f;
     float mSnowHeightUI = 150.0f;
     float mStoneSlopeUI = 0.6f;
+    float mTexScaleUI = 50.0f;
+    float mRoughnessScaleUI = 3.0f;
+    float mMinTessFactorUI = 4.0f;
+    float mMaxTessFactorUI = 24.0f;
+    float mMinTessDistUI = 5.0f;
+    float mMaxTessDistUI = 800.0f;
 
     // Cached main pass CB data (set by Scene before Draw)
     const void* mMainCBData = nullptr;

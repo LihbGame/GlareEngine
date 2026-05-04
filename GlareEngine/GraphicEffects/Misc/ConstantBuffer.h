@@ -218,23 +218,34 @@ __declspec(align(256)) struct ProceduralTerrainConstants
     // Per-tile positioning data (separate ints for HLSL packing alignment)
     int         TileGridOffsetX    = 0;
     int         TileGridOffsetY    = 0;
-    // Material layer SRV indices
-    int         LayerAlbedoIndices[5]    = {};
-    int         LayerNormalIndices[5]    = {};
-    int         LayerRoughnessIndices[5] = {};
-    int         LayerMetallicIndices[5]  = {};
-    int         LayerAOIndices[5]        = {};
+    int         _PadTileOffset[3]  = {}; // Padding for int4 16-byte alignment
+    // Material layer SRV indices (padded to match HLSL cbuffer array packing:
+    // HLSL pads each int array element to 16 bytes, so int[5] = 80 bytes)
+    struct { int Index; int _Pad[3]; } LayerAlbedoIndices[5]    = {};
+    struct { int Index; int _Pad[3]; } LayerNormalIndices[5]    = {};
+    struct { int Index; int _Pad[3]; } LayerRoughnessIndices[5] = {};
+    struct { int Index; int _Pad[3]; } LayerMetallicIndices[5]  = {};
+    struct { int Index; int _Pad[3]; } LayerAOIndices[5]        = {};
+    // Finer LOD level coverage bounds for patch-level clipping in HS
+    int         HasFinerLevel            = 0;
+    float       FinerLevelMinX           = 0.0f;
+    float       FinerLevelMaxX           = 0.0f;
+    float       FinerLevelMinZ           = 0.0f;
+    float       FinerLevelMaxZ           = 0.0f;
+    float       RoughnessScale           = 3.0f;
+    float       MetallicScale            = 0.3f;
 };
 
 struct ProceduralTerrainInitInfo
 {
     UINT        ClipmapLevels       = 10;
     UINT        TileSize            = 64;
+    UINT        HeightmapSize       = 127;
     float       CellSizeBase        = 1.0f;
-    float       HeightScale         = 200.0f;
-    float       NoiseScale          = 0.05f;
+    float       HeightScale         = 2000.0f;
+    float       NoiseScale          = 0.001f;
     UINT        Seed                = 42;
-    string      LayerMapNames[5]    = { "grass","darkdirt","stone","lightdirt","snow" };
+    string      LayerMapNames[5]    = { "grass","lightdirt","darkdirt","stone","snow" };
     string      LayerAssetPath;
 };
 

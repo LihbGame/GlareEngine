@@ -41,6 +41,7 @@ public:
 	bool	IsShowModel()const { return show_model; }
 	bool	IsShowWater()const { return show_water; }
 	bool	IsShowSky()const { return show_sky; }
+	void	SetShowSky(bool val) { show_sky = val; }
 	bool	IsShowFog()const { return FogEnabled; }
 	bool	IsShowTerrain() const { return show_HeightMapTerrain; }
 	bool	IsShowDebugMesh() const { return show_DebugMesh; }

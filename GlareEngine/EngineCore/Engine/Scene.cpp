@@ -788,6 +788,8 @@ void Scene::ForwardRendering(RasterRenderPipelineType ForwardRenderPipeline)
 					//Sky
 					if (m_pRenderObjectsType[(int)ObjectType::Sky].front()->GetVisible())
 					{
+						Context.SetRootSignature(*m_pRootSignature);
+						Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gTextureHeap.GetHeapPointer());
 						Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &mSceneView.mMainConstants);
 						m_pRenderObjectsType[(int)ObjectType::Sky].front()->Draw(Context);
 					}
@@ -926,6 +928,8 @@ void Scene::DeferredRendering(RasterRenderPipelineType DeferredRenderPipeline)
 
 			if (m_pRenderObjectsType[(int)ObjectType::Sky].front()->GetVisible())
 			{
+				Context.SetRootSignature(*m_pRootSignature);
+				Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gTextureHeap.GetHeapPointer());
 				Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &mSceneView.mMainConstants);
 				m_pRenderObjectsType[(int)ObjectType::Sky].front()->Draw(Context);
 			}
@@ -1017,6 +1021,8 @@ void Scene::DeferredRendering(RasterRenderPipelineType DeferredRenderPipeline)
 					Context.SetViewportAndScissor(mSceneView.m_MainViewport, mSceneView.m_MainScissor);
 					if (m_pRenderObjectsType[(int)ObjectType::Sky].front()->GetVisible())
 					{
+						Context.SetRootSignature(*m_pRootSignature);
+						Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gTextureHeap.GetHeapPointer());
 						Context.SetDynamicConstantBufferView((int)RootSignatureType::eMainConstantBuffer, sizeof(MainConstants), &mSceneView.mMainConstants);
 						m_pRenderObjectsType[(int)ObjectType::Sky].front()->Draw(Context);
 					}

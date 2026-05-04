@@ -268,6 +268,9 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 
 			//Copy Descriptors Texture Heap
 			Render::CopyTextureHeap();
+
+			//Enable sky after all scenes are fully loaded
+			mEngineUI->SetShowSky(true);
 		});
 
 		//Copy Descriptors Texture Heap

@@ -56,11 +56,11 @@ CD3DX12_CPU_DESCRIPTOR_HANDLE TerrainClipmap::AllocateTileDescriptor()
 
 void TerrainClipmap::CreateTileGPUResources(ClipmapTile* Tile, ID3D12GraphicsCommandList*)
 {
-    UINT tileSize = mTileSize;
+    UINT texSize = mTileSize;
 
     // Height map: R16_FLOAT
     D3D12_RESOURCE_DESC heightDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-        DXGI_FORMAT_R16_FLOAT, tileSize, tileSize, 1, 1);
+        DXGI_FORMAT_R16_FLOAT, texSize, texSize, 1, 1);
     heightDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
     CD3DX12_HEAP_PROPERTIES defaultHeap(D3D12_HEAP_TYPE_DEFAULT);
@@ -71,7 +71,7 @@ void TerrainClipmap::CreateTileGPUResources(ClipmapTile* Tile, ID3D12GraphicsCom
 
     // Normal map: RG16_FLOAT
     D3D12_RESOURCE_DESC normalDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-        DXGI_FORMAT_R16G16_FLOAT, tileSize, tileSize, 1, 1);
+        DXGI_FORMAT_R16G16_FLOAT, texSize, texSize, 1, 1);
     normalDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
     ThrowIfFailed(mDevice->CreateCommittedResource(
@@ -81,7 +81,7 @@ void TerrainClipmap::CreateTileGPUResources(ClipmapTile* Tile, ID3D12GraphicsCom
 
     // Material weight map: RGBA8_UNORM
     D3D12_RESOURCE_DESC weightDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-        DXGI_FORMAT_R8G8B8A8_UNORM, tileSize, tileSize, 1, 1);
+        DXGI_FORMAT_R8G8B8A8_UNORM, texSize, texSize, 1, 1);
     weightDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
     ThrowIfFailed(mDevice->CreateCommittedResource(
@@ -263,6 +263,18 @@ bool TerrainClipmap::IsCoveredByFinerLevel(const ClipmapTile* Tile) const
     // Tile is covered if entirely within finer level's bounds
     return tileMinX >= finerMinX && tileMaxX <= finerMaxX &&
            tileMinZ >= finerMinZ && tileMaxZ <= finerMaxZ;
+}
+
+XMINT2 TerrainClipmap::GetLevelOrigin(UINT Level) const
+{
+    if (Level >= mClipmapLevels) return { 0, 0 };
+    return mLevels[Level].CurrentOrigin;
+}
+
+bool TerrainClipmap::IsLevelInitialized(UINT Level) const
+{
+    if (Level >= mClipmapLevels) return false;
+    return mLevels[Level].Initialized;
 }
 
 void TerrainClipmap::ActivateTilesForLevel(UINT Level, const XMINT2& NewOrigin)

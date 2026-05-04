@@ -74,11 +74,19 @@ cbuffer ProceduralTerrainCB : register(b1)
     int         gTerrainWeightMapIndex;
     int         gTerrainTileOffsetX;     // grid coord * TileSize
     int         gTerrainTileOffsetY;     // grid coord * TileSize
-    int         gTerrainLayerAlbedo[5];
-    int         gTerrainLayerNormal[5];
-    int         gTerrainLayerRoughness[5];
-    int         gTerrainLayerMetallic[5];
-    int         gTerrainLayerAO[5];
+    int4        gTerrainLayerAlbedo[5];
+    int4        gTerrainLayerNormal[5];
+    int4        gTerrainLayerRoughness[5];
+    int4        gTerrainLayerMetallic[5];
+    int4        gTerrainLayerAO[5];
+    // Finer LOD level coverage bounds for patch-level clipping
+    int         gHasFinerLevel;
+    float       gFinerLevelMinX;
+    float       gFinerLevelMaxX;
+    float       gFinerLevelMinZ;
+    float       gFinerLevelMaxZ;
+    float       gTerrainRoughnessScale;
+    float       gTerrainMetallicScale;
 };
 
 // --- Noise generation constant buffer ---
@@ -179,11 +187,53 @@ float CalcClipmapTessFactor(float3 p)
     return tess;
 }
 
+// --- Bicubic Catmull-Rom sampling ---
+
+float SampleHeightBicubic(float2 tileUV)
+{
+    float texSize = (float)TERRAIN_TILE_SIZE;
+    float invTexSize = 1.0 / texSize;
+
+    float2 pixelPos = tileUV * texSize - 0.5;
+    float2 base = floor(pixelPos);
+    float2 t = pixelPos - base;
+    float2 t2 = t * t;
+    float2 t3 = t2 * t;
+
+    // Catmull-Rom weights (t in [0,1], interpolates between P1 and P2)
+    float2 w0 = (-t3 + 2.0 * t2 - t) * 0.5;
+    float2 w1 = (3.0 * t3 - 5.0 * t2 + 2.0) * 0.5;
+    float2 w2 = (-3.0 * t3 + 4.0 * t2 + t) * 0.5;
+    float2 w3 = (t3 - t2) * 0.5;
+
+    float4 wy = float4(w0.y, w1.y, w2.y, w3.y);
+    float4 wx = float4(w0.x, w1.x, w2.x, w3.x);
+
+    float result = 0.0;
+    [unroll]
+    for (int j = 0; j < 4; j++)
+    {
+        float rowW = wy[j];
+        [unroll]
+        for (int i = 0; i < 4; i++)
+        {
+            float2 sampleUV = (base + float2(i - 1, j - 1) + 0.5) * invTexSize;
+            result += gSRVMap[gTerrainHeightMapIndex].SampleLevel(gSamplerLinearClamp, sampleUV, 0).r * wx[i] * rowW;
+        }
+    }
+    return result;
+}
+
 // --- Terrain height sampling for domain shader ---
+
+float SampleHeightLinear(float2 tileUV)
+{
+    return gSRVMap[gTerrainHeightMapIndex].SampleLevel(gSamplerLinearClamp, tileUV, 0).r;
+}
 
 float SampleTerrainHeight(float2 tileUV)
 {
-    return gSRVMap[gTerrainHeightMapIndex].SampleLevel(gSamplerLinearClamp, tileUV, 0).r;
+    return SampleHeightLinear(tileUV);
 }
 
 float2 SampleTerrainNormal(float2 tileUV)

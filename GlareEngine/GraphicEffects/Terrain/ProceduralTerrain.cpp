@@ -25,6 +25,19 @@ ProceduralTerrain::ProceduralTerrain(
 {
     mObjectType = ObjectType::Terrain;
 
+    // Initialize UI parameters from init info so first frame uses correct values
+    mNoiseScaleUI = Info.NoiseScale;
+    mHeightScaleUI = Info.HeightScale;
+    mTexScaleUI = 50.0f;
+    mRoughnessScaleUI = 3.0f;
+    mMinTessFactorUI = 4.0f;
+    mMaxTessFactorUI = 24.0f;
+    mMinTessDistUI = 5.0f;
+    mMaxTessDistUI = 800.0f;
+    mWarpStrengthUI = 30.0f;
+    mSnowHeightUI = 150.0f;
+    mStoneSlopeUI = 0.6f;
+
     // Create clipmap manager
     mClipmap = make_unique<TerrainClipmap>(
         Info.ClipmapLevels, Info.TileSize, Info.CellSizeBase, g_Device);
@@ -194,7 +207,7 @@ void ProceduralTerrain::BuildPipelineState(ID3D12GraphicsCommandList*)
     mTerrainShadowPSO_Wireframe.SetRasterizerState(wireframeRaster);
     mTerrainShadowPSO_Wireframe.Finalize();
 
-    // Deferred rendering PSO — outputs to GBuffer (6 render targets)
+    // Deferred rendering PSO - outputs to GBuffer (6 render targets)
     if (Render::gRasterRenderPipelineType == RasterRenderPipelineType::TBDR ||
         Render::gRasterRenderPipelineType == RasterRenderPipelineType::CBDR)
     {
@@ -264,6 +277,14 @@ void ProceduralTerrain::Update(float dt, GraphicsContext* Context)
     // Update clipmap based on camera position
     mClipmap->Update(camPos);
 
+    // Propagate UI params to noise generator before tile generation
+    if (mNoiseGen)
+    {
+        mNoiseGen->SetNoiseScale(mNoiseScaleUI);
+        mNoiseGen->SetHeightScale(mHeightScaleUI);
+    }
+    mInitInfo.HeightScale = mHeightScaleUI;
+
     // Generate dirty tiles via compute
     const auto& dirtyTiles = mClipmap->GetDirtyTiles();
     if (!dirtyTiles.empty() && Context)
@@ -286,13 +307,13 @@ void ProceduralTerrain::Update(float dt, GraphicsContext* Context)
         ClipmapTile* dbgTile = debugActiveTiles[0];
         if (dbgTile && dbgTile->HeightMap)
         {
-            float tileSz = (float)mInitInfo.TileSize;
+            float hmSize = (float)mInitInfo.TileSize;
             EngineGUI::AddRenderPassVisualizeTexture("Terrain", "HeightMap",
-                tileSz, tileSz, dbgTile->HeightSRV);
+                hmSize, hmSize, dbgTile->HeightSRV);
             EngineGUI::AddRenderPassVisualizeTexture("Terrain", "NormalMap",
-                tileSz, tileSz, dbgTile->NormalSRV);
+                hmSize, hmSize, dbgTile->NormalSRV);
             EngineGUI::AddRenderPassVisualizeTexture("Terrain", "MaterialWeights",
-                tileSz, tileSz, dbgTile->WeightSRV);
+                hmSize, hmSize, dbgTile->WeightSRV);
         }
     }
 #endif
@@ -311,12 +332,13 @@ void ProceduralTerrain::UpdateConstantBuffer()
     XMMATRIX viewProj = camera->GetView() * camera->GetProj();
     XMStoreFloat4x4(&mConstants.ViewProj, viewProj);
     mConstants.EyePosW = camera->GetPosition3f();
-    mConstants.MinTessDistance = 10.0f;
-    mConstants.MaxTessDistance = 500.0f;
-    mConstants.MinTessFactor = 2.0f;
-    mConstants.MaxTessFactor = 6.0f;
-    mConstants.HeightScale = mInitInfo.HeightScale;
-    mConstants.TexScale = 50.0f;
+    mConstants.MinTessDistance = mMinTessDistUI;
+    mConstants.MaxTessDistance = mMaxTessDistUI;
+    mConstants.MinTessFactor = mMinTessFactorUI;
+    mConstants.MaxTessFactor = mMaxTessFactorUI;
+    mConstants.HeightScale = mHeightScaleUI;
+    mConstants.TexScale = mTexScaleUI;
+    mConstants.RoughnessScale = mRoughnessScaleUI;
     mConstants.StochasticSharpness = 0.95f;
 
     // Extract frustum planes
@@ -324,14 +346,14 @@ void ProceduralTerrain::UpdateConstantBuffer()
     ExtractFrustumPlanes(planes, viewProj);
     memcpy(mConstants.gWorldFrustumPlanes, planes, sizeof(planes));
 
-    // Material SRV indices
+    // Material SRV indices (using .Index to match padded HLSL cbuffer layout)
     for (int i = 0; i < 5; i++)
     {
-        mConstants.LayerAlbedoIndices[i] = mLayerSRVIndices[i][0];
-        mConstants.LayerNormalIndices[i] = mLayerSRVIndices[i][1];
-        mConstants.LayerRoughnessIndices[i] = mLayerSRVIndices[i][2];
-        mConstants.LayerMetallicIndices[i] = mLayerSRVIndices[i][3];
-        mConstants.LayerAOIndices[i] = mLayerSRVIndices[i][4];
+        mConstants.LayerAlbedoIndices[i].Index = mLayerSRVIndices[i][0];
+        mConstants.LayerNormalIndices[i].Index = mLayerSRVIndices[i][1];
+        mConstants.LayerRoughnessIndices[i].Index = mLayerSRVIndices[i][2];
+        mConstants.LayerMetallicIndices[i].Index = mLayerSRVIndices[i][3];
+        mConstants.LayerAOIndices[i].Index = mLayerSRVIndices[i][4];
     }
 }
 
@@ -413,6 +435,27 @@ void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
         mConstants.CellSize = mClipmap->GetCellSize(tile->LODLevel);
         mConstants.TileGridOffsetX = tile->GridCoord.x * (int)mInitInfo.TileSize;
         mConstants.TileGridOffsetY = tile->GridCoord.y * (int)mInitInfo.TileSize;
+
+        // Compute finer LOD level coverage bounds for patch-level clipping.
+        // Shrink bounds by one coarse cell to create overlap zone at LOD boundary,
+        // preventing gaps between LOD levels.
+        if (tile->LODLevel > 0 && mClipmap->IsLevelInitialized(tile->LODLevel - 1))
+        {
+            UINT finerLevel = tile->LODLevel - 1;
+            float finerCellSize = mClipmap->GetCellSize(finerLevel);
+            float finerTileWorldSize = (float)mInitInfo.TileSize * finerCellSize;
+            float coarseCellSize = mClipmap->GetCellSize(tile->LODLevel);
+            XMINT2 finerOrigin = mClipmap->GetLevelOrigin(finerLevel);
+            mConstants.HasFinerLevel = 1;
+            mConstants.FinerLevelMinX = ((float)finerOrigin.x - 2.0f) * finerTileWorldSize + coarseCellSize;
+            mConstants.FinerLevelMaxX = ((float)finerOrigin.x + 3.0f) * finerTileWorldSize - coarseCellSize;
+            mConstants.FinerLevelMinZ = ((float)finerOrigin.y - 2.0f) * finerTileWorldSize + coarseCellSize;
+            mConstants.FinerLevelMaxZ = ((float)finerOrigin.y + 3.0f) * finerTileWorldSize - coarseCellSize;
+        }
+        else
+        {
+            mConstants.HasFinerLevel = 0;
+        }
 
         // Upload to ring buffer slot (avoids overwriting in-flight CB data)
         UINT8* pData = nullptr;
@@ -510,6 +553,26 @@ void ProceduralTerrain::DrawDepthOnly(GraphicsContext& Context)
         mConstants.TileGridOffsetX = tile->GridCoord.x * (int)mInitInfo.TileSize;
         mConstants.TileGridOffsetY = tile->GridCoord.y * (int)mInitInfo.TileSize;
 
+        // Compute finer LOD level coverage bounds for patch-level clipping.
+        // Shrink bounds by one coarse cell to create overlap zone at LOD boundary.
+        if (tile->LODLevel > 0 && mClipmap->IsLevelInitialized(tile->LODLevel - 1))
+        {
+            UINT finerLevel = tile->LODLevel - 1;
+            float finerCellSize = mClipmap->GetCellSize(finerLevel);
+            float finerTileWorldSize = (float)mInitInfo.TileSize * finerCellSize;
+            float coarseCellSize = mClipmap->GetCellSize(tile->LODLevel);
+            XMINT2 finerOrigin = mClipmap->GetLevelOrigin(finerLevel);
+            mConstants.HasFinerLevel = 1;
+            mConstants.FinerLevelMinX = ((float)finerOrigin.x - 2.0f) * finerTileWorldSize + coarseCellSize;
+            mConstants.FinerLevelMaxX = ((float)finerOrigin.x + 3.0f) * finerTileWorldSize - coarseCellSize;
+            mConstants.FinerLevelMinZ = ((float)finerOrigin.y - 2.0f) * finerTileWorldSize + coarseCellSize;
+            mConstants.FinerLevelMaxZ = ((float)finerOrigin.y + 3.0f) * finerTileWorldSize - coarseCellSize;
+        }
+        else
+        {
+            mConstants.HasFinerLevel = 0;
+        }
+
         UINT8* pData = nullptr;
         D3D12_RANGE readRange = { 0, 0 };
         D3D12_RANGE writeRange = { ringIndex * cbAlignedSize, (ringIndex + 1) * cbAlignedSize };
@@ -551,17 +614,16 @@ void ProceduralTerrain::DrawUI()
     if (ImGui::CollapsingHeader("Procedural Terrain", ImGuiTreeNodeFlags_DefaultOpen))
     {
         ImGui::SliderFloat("Noise Scale", &mNoiseScaleUI, 0.001f, 0.1f);
-        ImGui::SliderFloat("Height Scale", &mHeightScaleUI, 10.0f, 500.0f);
+        ImGui::SliderFloat("Height Scale", &mHeightScaleUI, 10.0f, 3000.0f);
+        ImGui::SliderFloat("Tex Scale", &mTexScaleUI, 1.0f, 200.0f);
+        ImGui::SliderFloat("Roughness Scale", &mRoughnessScaleUI, 0.1f, 10.0f);
+        ImGui::SliderFloat("Min Tess Factor", &mMinTessFactorUI, 1.0f, 16.0f);
+        ImGui::SliderFloat("Max Tess Factor", &mMaxTessFactorUI, 2.0f, 64.0f);
+        ImGui::SliderFloat("Min Tess Dist", &mMinTessDistUI, 1.0f, 100.0f);
+        ImGui::SliderFloat("Max Tess Dist", &mMaxTessDistUI, 100.0f, 2000.0f);
         ImGui::SliderFloat("Warp Strength", &mWarpStrengthUI, 0.0f, 100.0f);
         ImGui::SliderFloat("Snow Height", &mSnowHeightUI, 50.0f, 300.0f);
         ImGui::SliderFloat("Stone Slope", &mStoneSlopeUI, 0.1f, 1.0f);
-
-        // Propagate UI params to noise generator
-        if (mNoiseGen)
-        {
-            mNoiseGen->SetNoiseScale(mNoiseScaleUI);
-            mNoiseGen->SetHeightScale(mHeightScaleUI);
-        }
 
         ImGui::Separator();
         ImGui::Text("Active Tiles: %d", (int)mClipmap->GetActiveTiles().size());

@@ -13,9 +13,9 @@ PBRParams BlendMaterialLayers(float4 weights, float2 tiledUV, float2 worldXZ)
 {
     PBRParams result = (PBRParams)0;
     float w[5];
-    w[0] = weights.r; // lightdirt
-    w[1] = weights.g; // darkdirt
-    w[2] = weights.b; // grass
+    w[0] = weights.r; // grass
+    w[1] = weights.g; // lightdirt
+    w[2] = weights.b; // darkdirt
     w[3] = weights.a; // stone
     w[4] = max(0, 1.0 - w[0] - w[1] - w[2] - w[3]); // snow
 
@@ -24,11 +24,11 @@ PBRParams BlendMaterialLayers(float4 weights, float2 tiledUV, float2 worldXZ)
     {
         if (w[i] < 0.01) continue;
 
-        float3 albedo = SampleStochastic(gTerrainLayerAlbedo[i], tiledUV, worldXZ);
-        float3 normalSample = SampleStochasticNormal(gTerrainLayerNormal[i], tiledUV, worldXZ);
-        float roughness = SampleStochasticScalar(gTerrainLayerRoughness[i], tiledUV, worldXZ);
-        float metallic = SampleStochasticScalar(gTerrainLayerMetallic[i], tiledUV, worldXZ);
-        float ao = SampleStochasticScalar(gTerrainLayerAO[i], tiledUV, worldXZ);
+        float3 albedo = SampleStochastic(gTerrainLayerAlbedo[i].x, tiledUV, worldXZ);
+        float3 normalSample = SampleStochasticNormal(gTerrainLayerNormal[i].x, tiledUV, worldXZ);
+        float roughness = SampleStochasticScalar(gTerrainLayerRoughness[i].x, tiledUV, worldXZ) * gTerrainRoughnessScale;
+        float metallic = SampleStochasticScalar(gTerrainLayerMetallic[i].x, tiledUV, worldXZ) * gTerrainMetallicScale;
+        float ao = SampleStochasticScalar(gTerrainLayerAO[i].x, tiledUV, worldXZ);
 
         result.Albedo += albedo * w[i];
         result.Normal += normalSample * w[i];
@@ -57,12 +57,12 @@ void main(ClipmapDomainOut pin,
     float3 N = normalize(pin.NormalW);
     float3 T = normalize(pin.TangentW);
     T = normalize(T - dot(T, N) * N);
-    float3 B = cross(N, T);
+    float3 B = normalize(cross(N, T));
     float3x3 TBN = float3x3(T, B, N);
     float3 bumpedNormalW = normalize(mul(normalT, TBN));
 
     GBUFFER_BaseColor    = float4(mat.Albedo, mat.AO);
-    GBUFFER_MSR          = float4(mat.Metallic, 1.0, mat.Roughness, 1);
+    GBUFFER_MSR          = float4(saturate(mat.Metallic), 1.0, saturate(mat.Roughness), 1);
     GBUFFER_Normal       = float4((bumpedNormalW + 1.0) / 2.0, 1.0);
     GBUFFER_Emissive     = float3(0, 0, 0);
     GBUFFER_WorldTangent = float4((T + 1.0) / 2.0, 1.0);

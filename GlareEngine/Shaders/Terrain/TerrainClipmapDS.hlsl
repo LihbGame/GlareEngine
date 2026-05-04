@@ -34,9 +34,8 @@ ClipmapDomainOut main(
     float2 packedNormal = SampleTerrainNormal(tileUV);
     float3 normal = normalize(float3(packedNormal.x, 1.0, packedNormal.y));
 
-    // Build tangent frame from normal
-    float3 up = abs(normal.y) < 0.999 ? float3(0, 1, 0) : float3(1, 0, 0);
-    float3 tangent = normalize(cross(up, normal));
+    // Build tangent from world-space X axis, orthogonalized against normal
+    float3 tangent = normalize(float3(1.0, 0.0, 0.0) - normal.x * normal);
     float3 bitangent = cross(normal, tangent);
 
     dout.NormalW = normal;
