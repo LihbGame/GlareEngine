@@ -253,14 +253,15 @@ void ProceduralTerrain::LoadMaterialTextures(ID3D12GraphicsCommandList* CmdList)
             MathHelper::Identity4x4());
 
         // Store SRV indices via global descriptor table
-        if (textures.size() >= 5)
+        if (textures.size() >= 6)
         {
-            // PBR texture order from CreatePBRTextures: [0]albedo [1]normal [2]ao [3]metallic [4]roughness
+            // PBR texture order from CreatePBRTextures: [0]albedo [1]normal [2]ao [3]metallic [4]roughness [5]height
             mLayerSRVIndices[layer][0] = AddToGlobalTextureSRVDescriptor(textures[0]->GetSRV()); // albedo
             mLayerSRVIndices[layer][1] = AddToGlobalTextureSRVDescriptor(textures[1]->GetSRV()); // normal
             mLayerSRVIndices[layer][2] = AddToGlobalTextureSRVDescriptor(textures[4]->GetSRV()); // roughness
             mLayerSRVIndices[layer][3] = AddToGlobalTextureSRVDescriptor(textures[3]->GetSRV()); // metallic
             mLayerSRVIndices[layer][4] = AddToGlobalTextureSRVDescriptor(textures[2]->GetSRV()); // ao
+            mLayerSRVIndices[layer][5] = AddToGlobalTextureSRVDescriptor(textures[5]->GetSRV()); // height
         }
     }
 }
@@ -354,7 +355,14 @@ void ProceduralTerrain::UpdateConstantBuffer()
         mConstants.LayerRoughnessIndices[i].Index = mLayerSRVIndices[i][2];
         mConstants.LayerMetallicIndices[i].Index = mLayerSRVIndices[i][3];
         mConstants.LayerAOIndices[i].Index = mLayerSRVIndices[i][4];
+        mConstants.LayerHeightIndices[i].Index = mLayerSRVIndices[i][5];
     }
+
+    // Parallax mapping
+    mConstants.ParallaxEnabled = mParallaxEnabledUI ? 1 : 0;
+    mConstants.ParallaxHeightScale = mParallaxHeightScaleUI;
+    mConstants.ParallaxStartDist = mParallaxStartDistUI;
+    mConstants.ParallaxEndDist = mParallaxEndDistUI;
 
     // Previous frame data for motion vector computation (DLSS/FSR)
     XMStoreFloat4x4(&mConstants.PreViewProj, camera->GetPreViewProj());
@@ -639,6 +647,15 @@ void ProceduralTerrain::DrawUI()
         ImGui::SliderFloat("Warp Strength", &mWarpStrengthUI, 0.0f, 100.0f);
         ImGui::SliderFloat("Snow Height", &mSnowHeightUI, 50.0f, 300.0f);
         ImGui::SliderFloat("Stone Slope", &mStoneSlopeUI, 0.1f, 1.0f);
+
+        ImGui::Separator();
+        ImGui::Checkbox("Parallax Mapping", &mParallaxEnabledUI);
+        if (mParallaxEnabledUI)
+        {
+            ImGui::SliderFloat("POM Height", &mParallaxHeightScaleUI, 0.001f, 0.2f);
+            ImGui::SliderFloat("POM Near Dist", &mParallaxStartDistUI, 1.0f, 200.0f);
+            ImGui::SliderFloat("POM Far Dist", &mParallaxEndDistUI, 50.0f, 1000.0f);
+        }
 
         ImGui::Separator();
         ImGui::Text("Active Tiles: %d", (int)mClipmap->GetActiveTiles().size());

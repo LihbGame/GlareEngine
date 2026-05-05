@@ -52,8 +52,8 @@ private:
     ComPtr<ID3D12Resource>     mConstantBuffer;
     D3D12_GPU_VIRTUAL_ADDRESS  mCBGPU = 0;
 
-    // Material layer SRV indices: [layer][albedo, normal, roughness, metallic, AO]
-    int mLayerSRVIndices[5][5] = {};
+    // Material layer SRV indices: [layer][albedo, normal, roughness, metallic, AO, height]
+    int mLayerSRVIndices[5][6] = {};
     int mLayerMaterialIndices[5] = {};
 
     // Init info
@@ -79,6 +79,12 @@ private:
     float mMaxTessFactorUI = 2.0f;
     float mMinTessDistUI = 1.0f;
     float mMaxTessDistUI = 100.0f;
+
+    // Parallax mapping
+    bool  mParallaxEnabledUI = false;
+    float mParallaxHeightScaleUI = 0.04f;
+    float mParallaxStartDistUI = 50.0f;
+    float mParallaxEndDistUI = 300.0f;
 
     // Debug: render only a specific LOD level (-1 = all)
     int mDebugLODLevel = -1;

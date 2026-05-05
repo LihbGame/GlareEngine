@@ -5,31 +5,49 @@ RWTexture2D<float>      gOutputHeightMap      : register(u0);
 RWTexture2D<float2>     gOutputNormalMap      : register(u1);
 RWTexture2D<float4>     gOutputMaterialWeights : register(u2);
 
+// Material weight computation.
+// Layer indices match C++ texture order: 0=grass, 1=lightdirt, 2=darkdirt, 3=stone, 4=snow
 float4 ComputeMaterialWeights(float height, float slope, float2 worldXZ)
 {
-    float transitionNoise = GradientNoise(worldXZ * 0.05);
+    float macroNoise = GradientNoise(worldXZ * 0.008);
+    float microNoise = GradientNoise(worldXZ * 0.05);
 
-    // Layer indices: 0=lightdirt, 1=darkdirt, 2=grass, 3=stone, 4=snow
-    float snow = smoothstep(
-        gNoiseSnowHeight - gNoiseSnowTransition,
-        gNoiseSnowHeight + gNoiseSnowTransition,
-        height);
+    float snowH = gNoiseSnowHeight;
 
-    float stone = smoothstep(
+    // Snow: high elevation
+    float snow = smoothstep(snowH - gNoiseSnowTransition, snowH + gNoiseSnowTransition, height);
+
+    // Stone: steep slopes + high elevation
+    float slopeStone = smoothstep(
         gNoiseStoneSlope - gNoiseStoneTransition,
         gNoiseStoneSlope + gNoiseStoneTransition,
         slope);
+    float heightStone = smoothstep(snowH * 0.7, snowH * 0.95,
+        height + macroNoise * snowH * 0.2);
+    float stone = max(slopeStone, heightStone) * (1.0 - snow);
 
-    float grassMask = smoothstep(0.2, 0.6, transitionNoise + 0.5 - slope * 2.0);
-    float darkDirtMask = smoothstep(-0.1, 0.3, transitionNoise - 0.2) * (1.0 - grassMask);
+    // Grass: moderate slopes, wide height band, noise-gated
+    float grassBand = smoothstep(-snowH * 0.3, snowH * 0.1, height)
+                    * (1.0 - smoothstep(snowH * 0.55, snowH * 0.8, height));
+    float grassSlope = 1.0 - smoothstep(0.15, 0.5, slope);
+    float grassNoise = smoothstep(0.3, 0.55, microNoise * 0.5 + 0.5);
+    float grass = grassBand * grassSlope * grassNoise * (1.0 - snow) * (1.0 - stone);
 
-    // Priority-based weight computation
+    // Dark dirt: low-lying valleys
+    float darkDirtHeight = 1.0 - smoothstep(-snowH * 0.5, -snowH * 0.1,
+        height + macroNoise * snowH * 0.1);
+    float darkDirt = darkDirtHeight * (1.0 - snow) * (1.0 - stone) * (1.0 - grass);
+
+    // Light dirt: default base layer
+    float lightDirt = max(0.0, 1.0 - snow - stone - grass - darkDirt);
+
+    // Pack into RGBA matching texture layer order: grass, lightdirt, darkdirt, stone
     float w[5];
+    w[0] = grass;
+    w[1] = lightDirt;
+    w[2] = darkDirt;
+    w[3] = stone;
     w[4] = snow;
-    w[3] = (1.0 - snow) * stone;
-    w[2] = (1.0 - snow) * (1.0 - stone) * grassMask;
-    w[1] = (1.0 - snow) * (1.0 - stone) * (1.0 - grassMask) * darkDirtMask;
-    w[0] = max(0.0, 1.0 - w[1] - w[2] - w[3] - w[4]);
 
     float sum = w[0] + w[1] + w[2] + w[3] + w[4] + 0.0001;
     return float4(w[0] / sum, w[1] / sum, w[2] / sum, w[3] / sum);
@@ -44,32 +62,17 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // Compute world position for this texel
     float2 worldXZ = (gNoiseTileOffset + (int2)DTid.xy) * gNoiseCellSize;
 
-    // Generate height using shared noise function
-    float height = ComputeTerrainHeight(worldXZ,
+    // Single evaluation: height + analytical gradient (replaces 5 separate height evaluations)
+    float3 result = ComputeTerrainHeightWithDerivatives(worldXZ,
         gNoiseScale, gNoiseSeed, gNoiseOctaves,
         gNoiseLacunarity, gNoisePersistence,
         gNoiseWarpStrength, gNoiseWarpScale, gNoiseHeightScale);
 
-    // Compute normal via finite differences
-    float eps = gNoiseCellSize;
-    float hL = ComputeTerrainHeight(worldXZ + float2(-eps, 0),
-        gNoiseScale, gNoiseSeed, gNoiseOctaves,
-        gNoiseLacunarity, gNoisePersistence,
-        gNoiseWarpStrength, gNoiseWarpScale, gNoiseHeightScale);
-    float hR = ComputeTerrainHeight(worldXZ + float2( eps, 0),
-        gNoiseScale, gNoiseSeed, gNoiseOctaves,
-        gNoiseLacunarity, gNoisePersistence,
-        gNoiseWarpStrength, gNoiseWarpScale, gNoiseHeightScale);
-    float hD = ComputeTerrainHeight(worldXZ + float2(0, -eps),
-        gNoiseScale, gNoiseSeed, gNoiseOctaves,
-        gNoiseLacunarity, gNoisePersistence,
-        gNoiseWarpStrength, gNoiseWarpScale, gNoiseHeightScale);
-    float hU = ComputeTerrainHeight(worldXZ + float2(0,  eps),
-        gNoiseScale, gNoiseSeed, gNoiseOctaves,
-        gNoiseLacunarity, gNoisePersistence,
-        gNoiseWarpStrength, gNoiseWarpScale, gNoiseHeightScale);
+    float height = result.x;
+    float2 gradient = result.yz; // (dh/dworldX, dh/dworldZ)
 
-    float3 normal = normalize(float3(hL - hR, 2.0 * eps, hD - hU));
+    // Surface normal from analytical gradient: N = normalize(-dh/dx, 1, -dh/dz)
+    float3 normal = normalize(float3(-gradient.x, 1.0, -gradient.y));
     float slope = 1.0 - normal.y; // 0=flat, 1=vertical
 
     // Compute material weights
@@ -79,7 +82,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float2 packedNormal = normal.xz;
 
     // Write outputs
-    // Store height normalized to [0, 1] for R32_FLOAT
     gOutputHeightMap[DTid.xy] = height / (2.0 * gNoiseHeightScale) + 0.5;
     gOutputNormalMap[DTid.xy] = packedNormal;
     gOutputMaterialWeights[DTid.xy] = weights;

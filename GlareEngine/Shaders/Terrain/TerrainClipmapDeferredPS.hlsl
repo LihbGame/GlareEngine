@@ -13,11 +13,11 @@ PBRParams BlendMaterialLayers(float4 weights, float2 tiledUV, float2 worldXZ)
 {
     PBRParams result = (PBRParams)0;
     float w[5];
-    w[0] = weights.r; // grass
-    w[1] = weights.g; // lightdirt
-    w[2] = weights.b; // darkdirt
-    w[3] = weights.a; // stone
-    w[4] = max(0, 1.0 - w[0] - w[1] - w[2] - w[3]); // snow
+    w[0] = weights.r; // grass (layer 0)
+    w[1] = weights.g; // lightdirt (layer 1)
+    w[2] = weights.b; // darkdirt (layer 2)
+    w[3] = weights.a; // stone (layer 3)
+    w[4] = max(0, 1.0 - w[0] - w[1] - w[2] - w[3]); // snow (layer 4)
 
     [unroll]
     for (int i = 0; i < TERRAIN_NUM_LAYERS; i++)
@@ -50,15 +50,23 @@ void main(ClipmapDomainOut pin,
 {
     float2 tiledUV = pin.WorldXZ / gTerrainTexScale;
 
-    PBRParams mat = BlendMaterialLayers(pin.MatWeights, tiledUV, pin.WorldXZ);
-
-    // Decode normal from blended normal map sample
-    float3 normalT = 2.0 * mat.Normal - 1.0;
+    // Compute TBN for parallax mapping
     float3 N = normalize(pin.NormalW);
     float3 T = normalize(pin.TangentW);
     T = normalize(T - dot(T, N) * N);
     float3 B = normalize(cross(N, T));
     float3x3 TBN = float3x3(T, B, N);
+
+    // Parallax displacement using tangent-space view direction
+    float3 viewDirWS = normalize(gTerrainEyePosW - pin.PosW);
+    float3 viewDirTS = mul(TBN, viewDirWS);
+    float distToCamera = distance(pin.PosW, gTerrainEyePosW);
+    tiledUV = TerrainParallaxMapping(tiledUV, viewDirTS, pin.MatWeights, distToCamera);
+
+    PBRParams mat = BlendMaterialLayers(pin.MatWeights, tiledUV, pin.WorldXZ);
+
+    // Decode normal from blended normal map sample (TBN already computed above)
+    float3 normalT = 2.0 * mat.Normal - 1.0;
     float3 bumpedNormalW = normalize(mul(normalT, TBN));
 
     GBUFFER_BaseColor    = float4(mat.Albedo, mat.AO);
