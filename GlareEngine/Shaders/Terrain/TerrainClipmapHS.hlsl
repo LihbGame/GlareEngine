@@ -1,5 +1,13 @@
 #include "TerrainCommon.hlsli"
 
+// Snap to nearest power of 2 (minimum 1) for cross-LOD edge alignment.
+// LOD N's tess = 2^N * LOD 0's tess, guaranteeing coarse edge vertices
+// align with fine edge vertices (T_coarse = 2 * T_fine).
+float SnapToPow2(float x)
+{
+    return exp2(round(log2(max(x, 1.0))));
+}
+
 ClipmapPatchTess CalcClipmapPatchConstants(
     InputPatch<ClipmapVertexOut, 4> patch,
     uint patchID : SV_PrimitiveID)
@@ -42,25 +50,32 @@ ClipmapPatchTess CalcClipmapPatchConstants(
         return pt;
     }
 
-    // Distance-based tessellation
+    // Distance-based tessellation inversely scaled by LOD level.
+    // LOD N divides raw tess by 2^N, so coarser levels get fewer subdivisions.
+    // After pow2 snapping: T_coarse = T_fine / 2, guaranteeing aligned vertices
+    // (every coarse vertex coincides with a fine vertex).
+    float invLodScale = 1.0 / exp2((float)gClipmapLevel);
+
     float3 e0 = 0.5 * (worldPos[0] + worldPos[2]);
     float3 e1 = 0.5 * (worldPos[0] + worldPos[1]);
     float3 e2 = 0.5 * (worldPos[1] + worldPos[3]);
     float3 e3 = 0.5 * (worldPos[2] + worldPos[3]);
     float3 center = 0.25 * (worldPos[0] + worldPos[1] + worldPos[2] + worldPos[3]);
 
-    pt.EdgeTess[0] = CalcClipmapTessFactor(e0);
-    pt.EdgeTess[1] = CalcClipmapTessFactor(e1);
-    pt.EdgeTess[2] = CalcClipmapTessFactor(e2);
-    pt.EdgeTess[3] = CalcClipmapTessFactor(e3);
-    pt.InsideTess[0] = CalcClipmapTessFactor(center);
-    pt.InsideTess[1] = pt.InsideTess[0];
+    pt.EdgeTess[0] = SnapToPow2(CalcClipmapTessFactor(e0) * invLodScale);
+    pt.EdgeTess[1] = SnapToPow2(CalcClipmapTessFactor(e1) * invLodScale);
+    pt.EdgeTess[2] = SnapToPow2(CalcClipmapTessFactor(e2) * invLodScale);
+    pt.EdgeTess[3] = SnapToPow2(CalcClipmapTessFactor(e3) * invLodScale);
+
+    float centerTess = SnapToPow2(CalcClipmapTessFactor(center) * invLodScale);
+    pt.InsideTess[0] = centerTess;
+    pt.InsideTess[1] = centerTess;
 
     return pt;
 }
 
 [domain("quad")]
-[partitioning("fractional_even")]
+[partitioning("integer")]
 [outputtopology("triangle_ccw")]
 [outputcontrolpoints(4)]
 [patchconstantfunc("CalcClipmapPatchConstants")]

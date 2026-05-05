@@ -62,7 +62,7 @@ void main(ClipmapDomainOut pin,
     float3 bumpedNormalW = normalize(mul(normalT, TBN));
 
     GBUFFER_BaseColor    = float4(mat.Albedo, mat.AO);
-    GBUFFER_MSR          = float4(saturate(mat.Metallic), 1.0, saturate(mat.Roughness), 1);
+    GBUFFER_MSR          = float4(saturate(mat.Metallic), 1.0, saturate(max(mat.Roughness, 0.3)), 1);
     GBUFFER_Normal       = float4((bumpedNormalW + 1.0) / 2.0, 1.0);
     GBUFFER_Emissive     = float3(0, 0, 0);
     GBUFFER_WorldTangent = float4((T + 1.0) / 2.0, 1.0);

@@ -360,6 +360,7 @@ void ProceduralTerrain::UpdateConstantBuffer()
     XMStoreFloat4x4(&mConstants.PreViewProj, camera->GetPreViewProj());
     mConstants.PreJitterOffset = camera->GetPreJitter();
     mConstants.CurJitterOffset = camera->GetCurJitter();
+
 }
 
 void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
@@ -422,6 +423,12 @@ void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
     {
         ClipmapTile* tile = activeTiles[i];
         if (!tile || !tile->HeightMap)
+        {
+            continue;
+        }
+
+        // Debug: filter to a single LOD level
+        if (mDebugLODLevel >= 0 && tile->LODLevel != mDebugLODLevel)
         {
             continue;
         }
@@ -547,6 +554,9 @@ void ProceduralTerrain::DrawDepthOnly(GraphicsContext& Context)
         ClipmapTile* tile = activeTiles[i];
         if (!tile || !tile->HeightMap) continue;
 
+        // Debug: filter to a single LOD level
+        if (mDebugLODLevel >= 0 && tile->LODLevel != mDebugLODLevel) continue;
+
         // Skip tiles entirely covered by a finer LOD level
         if (mClipmap->IsCoveredByFinerLevel(tile)) continue;
 
@@ -633,6 +643,15 @@ void ProceduralTerrain::DrawUI()
         ImGui::Separator();
         ImGui::Text("Active Tiles: %d", (int)mClipmap->GetActiveTiles().size());
         ImGui::Text("Dirty Tiles: %d", (int)mClipmap->GetDirtyTiles().size());
+
+        // Debug LOD filter: -1 = render all levels, 0-9 = single level
+        const char* lodLabels[] = {
+            "All Levels", "LOD 0", "LOD 1", "LOD 2", "LOD 3",
+            "LOD 4", "LOD 5", "LOD 6", "LOD 7", "LOD 8", "LOD 9"
+        };
+        int lodSelection = mDebugLODLevel + 1; // shift -1..9 to 0..10
+        if (ImGui::Combo("Debug LOD", &lodSelection, lodLabels, IM_ARRAYSIZE(lodLabels)))
+            mDebugLODLevel = lodSelection - 1;
 
         // Show debug info for first active tile
         const auto& activeTiles = mClipmap->GetActiveTiles();

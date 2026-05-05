@@ -68,7 +68,7 @@ private:
     UINT mVertexStride = 0;
 
     // ImGui parameters
-    float mNoiseScaleUI = 0.001f;
+    float mNoiseScaleUI = 0.003f;
     float mHeightScaleUI = 2000.0f;
     float mWarpStrengthUI = 30.0f;
     float mSnowHeightUI = 150.0f;
@@ -79,6 +79,9 @@ private:
     float mMaxTessFactorUI = 2.0f;
     float mMinTessDistUI = 1.0f;
     float mMaxTessDistUI = 100.0f;
+
+    // Debug: render only a specific LOD level (-1 = all)
+    int mDebugLODLevel = -1;
 
     // Cached main pass CB data (set by Scene before Draw)
     const void* mMainCBData = nullptr;

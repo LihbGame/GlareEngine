@@ -254,7 +254,7 @@ struct ProceduralTerrainInitInfo
     UINT        HeightmapSize       = 128;
     float       CellSizeBase        = 1.0f;
     float       HeightScale         = 2000.0f;
-    float       NoiseScale          = 0.001f;
+    float       NoiseScale          = 0.003f;
     UINT        Seed                = 42;
     string      LayerMapNames[5]    = { "grass","lightdirt","darkdirt","stone","snow" };
     string      LayerAssetPath;
