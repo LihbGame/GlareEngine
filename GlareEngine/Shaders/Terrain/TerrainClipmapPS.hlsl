@@ -45,22 +45,16 @@ float4 main(ClipmapDomainOut pin) : SV_TARGET
 {
     float2 tiledUV = pin.WorldXZ / gTerrainTexScale;
 
-    // Compute TBN for parallax mapping
+    // Compute TBN for normal map decoding
     float3 N = normalize(pin.NormalW);
     float3 T = normalize(pin.TangentW);
     T = normalize(T - dot(T, N) * N);
     float3 B = normalize(cross(N, T));
     float3x3 TBN = float3x3(T, B, N);
 
-    // Parallax displacement
-    float3 viewDirWS = normalize(gTerrainEyePosW - pin.PosW);
-    float3 viewDirTS = mul(TBN, viewDirWS);
-    float distToCamera = distance(pin.PosW, gTerrainEyePosW);
-    tiledUV = TerrainParallaxMapping(tiledUV, viewDirTS, pin.MatWeights, distToCamera);
-
     PBRParams mat = BlendMaterialLayers(pin.MatWeights, tiledUV, pin.WorldXZ);
 
-    // Decode normal from blended normal map sample (TBN already computed above)
+    // Decode normal from blended normal map sample
     float3 normalT = 2.0 * mat.Normal - 1.0;
     float3 bumpedNormalW = normalize(mul(normalT, TBN));
 

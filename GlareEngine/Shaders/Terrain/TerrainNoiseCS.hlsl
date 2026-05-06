@@ -62,14 +62,14 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // Compute world position for this texel
     float2 worldXZ = (gNoiseTileOffset + (int2)DTid.xy) * gNoiseCellSize;
 
-    // Single evaluation: height + analytical gradient (replaces 5 separate height evaluations)
+    // Single evaluation: height + analytical gradient
     float3 result = ComputeTerrainHeightWithDerivatives(worldXZ,
         gNoiseScale, gNoiseSeed, gNoiseOctaves,
         gNoiseLacunarity, gNoisePersistence,
         gNoiseWarpStrength, gNoiseWarpScale, gNoiseHeightScale);
 
     float height = result.x;
-    float2 gradient = result.yz; // (dh/dworldX, dh/dworldZ)
+    float2 gradient = result.yz;
 
     // Surface normal from analytical gradient: N = normalize(-dh/dx, 1, -dh/dz)
     float3 normal = normalize(float3(-gradient.x, 1.0, -gradient.y));

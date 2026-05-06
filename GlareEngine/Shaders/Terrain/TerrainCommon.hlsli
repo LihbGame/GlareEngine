@@ -82,11 +82,6 @@ cbuffer ProceduralTerrainCB : register(b1)
     int4        gTerrainLayerRoughness[5];
     int4        gTerrainLayerMetallic[5];
     int4        gTerrainLayerAO[5];
-    int4        gTerrainLayerHeight[5];
-    int         gParallaxEnabled;
-    float       gParallaxHeightScale;
-    float       gParallaxStartDist;
-    float       gParallaxEndDist;
     // Finer LOD level coverage bounds for patch-level clipping
     int         gHasFinerLevel;
     float       gFinerLevelMinX;
@@ -267,71 +262,6 @@ float2 SampleTerrainNormal(float2 tileUV)
 float4 SampleMaterialWeights(float2 tileUV)
 {
     return gSRVMap[gTerrainWeightMapIndex].SampleLevel(gSamplerLinearClamp, tileUV, 0);
-}
-
-// --- Parallax Occlusion Mapping with distance optimization ---
-
-float2 TerrainParallaxMapping(
-    float2 baseUV,
-    float3 viewDirTS,
-    float4 weights,
-    float  distToCamera)
-{
-    if (!gParallaxEnabled)
-        return baseUV;
-
-    // Distance-based layer count: near = 32, far = 4, beyond range = skip
-    float distFactor = saturate((distToCamera - gParallaxStartDist) /
-                                (gParallaxEndDist - gParallaxStartDist));
-    float maxLayers = 32.0;
-    float minLayers = 4.0;
-    float numLayers = lerp(maxLayers, minLayers, distFactor);
-
-    // Reduce at grazing angles
-    float angle = abs(dot(float3(0.0, 0.0, 1.0), viewDirTS));
-    numLayers = lerp(numLayers, max(minLayers, numLayers * 0.5), angle);
-    if (numLayers < 2.0)
-        return baseUV;
-
-    // Find dominant material layer for height sampling
-    float maxWeight = -1.0;
-    int dominant = 0;
-    float w[5];
-    w[0] = weights.r;
-    w[1] = weights.g;
-    w[2] = weights.b;
-    w[3] = weights.a;
-    w[4] = max(0.0, 1.0 - w[0] - w[1] - w[2] - w[3]);
-    [unroll]
-    for (int i = 0; i < 5; i++)
-    {
-        if (w[i] > maxWeight) { maxWeight = w[i]; dominant = i; }
-    }
-    int heightSRV = gTerrainLayerHeight[dominant].x;
-
-    float layerDepth = 1.0 / numLayers;
-    float2 P = viewDirTS.xy / viewDirTS.z * gParallaxHeightScale;
-    float2 deltaUV = P / numLayers;
-
-    float2 currentUV = baseUV;
-    float currentLayerDepth = 0.0;
-    float currentHeight = 1.0 - gSRVMap[heightSRV].SampleLevel(gSamplerLinearClamp, currentUV, 0).r;
-
-    [loop]
-    while (currentLayerDepth < currentHeight)
-    {
-        currentUV -= deltaUV;
-        currentHeight = 1.0 - gSRVMap[heightSRV].SampleLevel(gSamplerLinearClamp, currentUV, 0).r;
-        currentLayerDepth += layerDepth;
-    }
-
-    // Linear interpolation between layers for smooth transition
-    float2 prevUV = currentUV + deltaUV;
-    float afterDepth = currentHeight - currentLayerDepth;
-    float beforeDepth = (1.0 - gSRVMap[heightSRV].SampleLevel(gSamplerLinearClamp, prevUV, 0).r)
-                      - currentLayerDepth + layerDepth;
-    float blend = afterDepth / (afterDepth - beforeDepth);
-    return prevUV * blend + currentUV * (1.0 - blend);
 }
 
 #endif // TERRAIN_COMMON_HLSLI

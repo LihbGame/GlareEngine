@@ -227,11 +227,6 @@ __declspec(align(256)) struct ProceduralTerrainConstants
     struct { int Index; int _Pad[3]; } LayerRoughnessIndices[5] = {};
     struct { int Index; int _Pad[3]; } LayerMetallicIndices[5]  = {};
     struct { int Index; int _Pad[3]; } LayerAOIndices[5]        = {};
-    struct { int Index; int _Pad[3]; } LayerHeightIndices[5]    = {};
-    int         ParallaxEnabled     = 0;
-    float       ParallaxHeightScale = 0.04f;
-    float       ParallaxStartDist   = 50.0f;
-    float       ParallaxEndDist     = 300.0f;
     // Finer LOD level coverage bounds for patch-level clipping in HS
     int         HasFinerLevel            = 0;
     float       FinerLevelMinX           = 0.0f;

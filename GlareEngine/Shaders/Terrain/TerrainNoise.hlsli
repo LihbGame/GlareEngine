@@ -27,7 +27,7 @@ float TerrainFBMImpl(float2 pos, uint octaves, float lacunarity, float persisten
     float frequency = 1.0;
     float maxValue = 0.0;
 
-    pos += seedOffset * 1000.0;
+    pos += seedOffset * 10.0;
 
     float2x2 rot = { 0.8, 0.6, -0.6, 0.8 };
 
@@ -53,7 +53,7 @@ float TerrainRidgeNoiseImpl(float2 pos, uint octaves, float lacunarity, float pe
     float frequency = 1.0;
     float maxValue = 0.0;
 
-    pos += seedOffset * 800.0;
+    pos += seedOffset * 8.0;
 
     float2x2 rot = { 0.8, 0.6, -0.6, 0.8 };
 
@@ -124,7 +124,7 @@ float ComputeTerrainHeight(
 //       Use ComputeTerrainHeightWithDerivatives (not ComputeTerrainHeight) to avoid mismatches.
 float3 TerrainFBMDerivImpl(float2 pos, uint octaves, float lacunarity, float persistence, float seedOffset)
 {
-    pos += seedOffset * 1000.0;
+    pos += seedOffset * 10.0;
 
     const float2x2 rot = { 0.8, 0.6, -0.6, 0.8 };
     const float2x2 rotT = { 0.8, -0.6, 0.6, 0.8 }; // transpose = inverse for rotation
@@ -167,7 +167,7 @@ float3 TerrainFBMDerivImpl(float2 pos, uint octaves, float lacunarity, float per
 // --- Ridge noise with derivative modulation and analytical gradient ---
 float3 TerrainRidgeNoiseDerivImpl(float2 pos, uint octaves, float lacunarity, float persistence, float seedOffset)
 {
-    pos += seedOffset * 800.0;
+    pos += seedOffset * 8.0;
 
     const float2x2 rot = { 0.8, 0.6, -0.6, 0.8 };
     const float2x2 rotT = { 0.8, -0.6, 0.6, 0.8 };
