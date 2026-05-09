@@ -32,7 +32,7 @@ public:
         bool EnableSharpening = true;
         float Sharpness = 0.0f;
         NVSDK_NGX_PerfQuality_Value Quality = NVSDK_NGX_PerfQuality_Value_MaxPerf;
-        NVSDK_NGX_DLSS_Hint_Render_Preset RenderPreset = NVSDK_NGX_DLSS_Hint_Render_Preset_K;
+        NVSDK_NGX_DLSS_Hint_Render_Preset RenderPreset = NVSDK_NGX_DLSS_Hint_Render_Preset_F;
     };
 
     // Quality mode presets and their scale ratios
