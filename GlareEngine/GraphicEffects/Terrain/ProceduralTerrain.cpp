@@ -56,22 +56,26 @@ ProceduralTerrain::ProceduralTerrain(
     LoadMaterialTextures(CmdList);
 
     // Build shared patch geometry
-    UINT patchVerts = Info.TileSize * Info.TileSize;
-    UINT patchQuads = (Info.TileSize - 1) * (Info.TileSize - 1);
+    // Grid is (TileSize+2) x (TileSize+2): interior TileSize x TileSize
+    // plus 1 extra row/column on each side for LOD skirt border quads.
+    UINT gridSize = Info.TileSize + 2;
+    UINT patchVerts = gridSize * gridSize;
+    UINT patchQuads = (gridSize - 1) * (gridSize - 1);
     mIndexCount = patchQuads * 4;
     mVertexStride = sizeof(Vertices::Terrain);
 
-    // Vertex buffer: simple grid with Position(float3), Tex(float2), BoundsY(float2)
+    // Vertex buffer: Position(float3), Tex(float2), BoundsY(float2)
+    // Interior vertices: tileUV in [0,1]. Border vertices: tileUV outside [0,1].
     vector<Vertices::Terrain> vertices(patchVerts);
-    for (UINT i = 0; i < Info.TileSize; i++)
+    for (UINT i = 0; i < gridSize; i++)
     {
-        for (UINT j = 0; j < Info.TileSize; j++)
+        for (UINT j = 0; j < gridSize; j++)
         {
-            UINT idx = i * Info.TileSize + j;
-            vertices[idx].Position = XMFLOAT3((float)j, 0.0f, (float)i);
+            UINT idx = i * gridSize + j;
+            vertices[idx].Position = XMFLOAT3((float)j - 1.0f, 0.0f, (float)i - 1.0f);
             vertices[idx].Tex = XMFLOAT2(
-                (float)j / (float)(Info.TileSize - 1),
-                (float)i / (float)(Info.TileSize - 1));
+                ((float)j - 1.0f) / (float)(Info.TileSize - 1),
+                ((float)i - 1.0f) / (float)(Info.TileSize - 1));
             vertices[idx].BoundsY = XMFLOAT2(-Info.HeightScale, Info.HeightScale);
         }
     }
@@ -79,14 +83,14 @@ ProceduralTerrain::ProceduralTerrain(
     // Index buffer: 4 indices per quad patch
     vector<USHORT> indices(mIndexCount);
     UINT k = 0;
-    for (UINT i = 0; i < Info.TileSize - 1; i++)
+    for (UINT i = 0; i < gridSize - 1; i++)
     {
-        for (UINT j = 0; j < Info.TileSize - 1; j++)
+        for (UINT j = 0; j < gridSize - 1; j++)
         {
-            indices[k++] = (USHORT)(i * Info.TileSize + j);
-            indices[k++] = (USHORT)(i * Info.TileSize + j + 1);
-            indices[k++] = (USHORT)((i + 1) * Info.TileSize + j);
-            indices[k++] = (USHORT)((i + 1) * Info.TileSize + j + 1);
+            indices[k++] = (USHORT)(i * gridSize + j);
+            indices[k++] = (USHORT)(i * gridSize + j + 1);
+            indices[k++] = (USHORT)((i + 1) * gridSize + j);
+            indices[k++] = (USHORT)((i + 1) * gridSize + j + 1);
         }
     }
 
@@ -398,7 +402,7 @@ void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
     // Set vertex and index buffers
     D3D12_VERTEX_BUFFER_VIEW vbv = {};
     vbv.BufferLocation = mVertexBuffer->GetGPUVirtualAddress();
-    vbv.SizeInBytes = (UINT)(mVertexStride * mInitInfo.TileSize * mInitInfo.TileSize);
+    vbv.SizeInBytes = (UINT)(mVertexStride * (mInitInfo.TileSize + 2) * (mInitInfo.TileSize + 2));
     vbv.StrideInBytes = mVertexStride;
 
     D3D12_INDEX_BUFFER_VIEW ibv = {};
@@ -469,6 +473,8 @@ void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
             mConstants.HasFinerLevel = 0;
         }
 
+        ComputeSkirtFlags(tile);
+
         // Upload to ring buffer slot (avoids overwriting in-flight CB data)
         UINT8* pData = nullptr;
         D3D12_RANGE readRange = { 0, 0 };
@@ -509,6 +515,50 @@ void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
     }
 }
 
+void ProceduralTerrain::ComputeSkirtFlags(const ClipmapTile* tile)
+{
+    mConstants.SkirtEdgeFlags = 0;
+    mConstants.SkirtDepth = mHeightScaleUI * 0.005f;
+
+    // Only coarser tiles (LOD > 0) can have LOD boundary edges
+    if (tile->LODLevel == 0)
+        return;
+
+    UINT finerLevel = tile->LODLevel - 1;
+    if (!mClipmap->IsLevelInitialized(finerLevel))
+        return;
+
+    // Compute this tile's world-space bounds
+    float cellSize = mClipmap->GetCellSize(tile->LODLevel);
+    float tileWorldSize = (float)mInitInfo.TileSize * cellSize;
+    float tileMinX = (float)tile->GridCoord.x * tileWorldSize;
+    float tileMaxX = tileMinX + tileWorldSize;
+    float tileMinZ = (float)tile->GridCoord.y * tileWorldSize;
+    float tileMaxZ = tileMinZ + tileWorldSize;
+
+    // Finer level's 5x5 coverage bounds
+    float finerCellSize = mClipmap->GetCellSize(finerLevel);
+    float finerTileWorldSize = (float)mInitInfo.TileSize * finerCellSize;
+    XMINT2 finerOrigin = mClipmap->GetLevelOrigin(finerLevel);
+    int halfTiles = 2;
+    float finerMinX = ((float)finerOrigin.x - (float)halfTiles) * finerTileWorldSize;
+    float finerMaxX = ((float)finerOrigin.x + (float)(halfTiles + 1)) * finerTileWorldSize;
+    float finerMinZ = ((float)finerOrigin.y - (float)halfTiles) * finerTileWorldSize;
+    float finerMaxZ = ((float)finerOrigin.y + (float)(halfTiles + 1)) * finerTileWorldSize;
+
+    // For each edge, check if the finer level's coverage extends beyond that edge.
+    // If the finer level is present on a given side, that's an LOD boundary → skirt needed
+    // to hide the resolution discontinuity between coarse and fine mesh.
+    // Left edge: finer level extends to the left of this tile
+    if (finerMinX < tileMinX) mConstants.SkirtEdgeFlags |= 1u;
+    // Right edge: finer level extends to the right of this tile
+    if (finerMaxX > tileMaxX) mConstants.SkirtEdgeFlags |= 2u;
+    // Top edge: finer level extends above this tile
+    if (finerMinZ < tileMinZ) mConstants.SkirtEdgeFlags |= 4u;
+    // Bottom edge: finer level extends below this tile
+    if (finerMaxZ > tileMaxZ) mConstants.SkirtEdgeFlags |= 8u;
+}
+
 void ProceduralTerrain::DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificShadowPSO)
 {
     // TODO: Phase 4 - shadow rendering for procedural terrain
@@ -532,7 +582,7 @@ void ProceduralTerrain::DrawDepthOnly(GraphicsContext& Context)
     // Set vertex and index buffers
     D3D12_VERTEX_BUFFER_VIEW vbv = {};
     vbv.BufferLocation = mVertexBuffer->GetGPUVirtualAddress();
-    vbv.SizeInBytes = (UINT)(mVertexStride * mInitInfo.TileSize * mInitInfo.TileSize);
+    vbv.SizeInBytes = (UINT)(mVertexStride * (mInitInfo.TileSize + 2) * (mInitInfo.TileSize + 2));
     vbv.StrideInBytes = mVertexStride;
 
     D3D12_INDEX_BUFFER_VIEW ibv = {};
@@ -587,6 +637,8 @@ void ProceduralTerrain::DrawDepthOnly(GraphicsContext& Context)
         {
             mConstants.HasFinerLevel = 0;
         }
+
+        ComputeSkirtFlags(tile);
 
         UINT8* pData = nullptr;
         D3D12_RANGE readRange = { 0, 0 };

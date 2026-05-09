@@ -235,12 +235,11 @@ __declspec(align(256)) struct ProceduralTerrainConstants
     float       FinerLevelMaxZ           = 0.0f;
     float       RoughnessScale           = 3.0f;
     float       MetallicScale            = 0.3f;
-    // HLSL packs float2 _PadMV to next 16-byte row (offset 672),
-    // and float4x4 gTerrainPreViewProj needs 16-byte alignment (offset 688).
-    // Explicit padding matches HLSL cbuffer layout.
-    float       _PadRow41               = 0; // pad current 16-byte row
-    float       _PadMV[2]                = {};
-    float       _PadBeforePreVP[2]       = {}; // pad to 16-byte align PreViewProj
+    float       SkirtDepth               = 50.0f;
+    UINT        SkirtEdgeFlags           = 0;
+    // Pad to match HLSL cbuffer: RoughnessScale + MetallicScale + SkirtDepth + SkirtEdgeFlags
+    // fill one 16-byte word, then _PadMV(float2) + implicit pad fills the next.
+    float       _PadMV[3]                = {};
     // Previous frame data for motion vector computation
     XMFLOAT4X4  PreViewProj              = MathHelper::Identity4x4();
     XMFLOAT2    PreJitterOffset          = { 0.0f, 0.0f };

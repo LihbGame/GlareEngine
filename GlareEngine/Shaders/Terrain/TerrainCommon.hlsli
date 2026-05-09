@@ -90,6 +90,8 @@ cbuffer ProceduralTerrainCB : register(b1)
     float       gFinerLevelMaxZ;
     float       gTerrainRoughnessScale;
     float       gTerrainMetallicScale;
+    float       gTerrainSkirtDepth;
+    uint        gTerrainSkirtEdgeFlags;
     float2      _PadMV;
     // Previous frame data for motion vector computation
     float4x4    gTerrainPreViewProj;

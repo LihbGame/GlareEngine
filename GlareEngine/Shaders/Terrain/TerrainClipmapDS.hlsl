@@ -15,19 +15,44 @@ ClipmapDomainOut main(
         uv.y
     );
 
-    // Compute world XZ from tile UV + constant buffer tile grid offset
+    // Detect which edge this vertex is on (border vertices have tileUV outside [0,1])
+    bool isLeft   = tileUV.x < 0.0;
+    bool isRight  = tileUV.x > 1.0;
+    bool isTop    = tileUV.y < 0.0;
+    bool isBottom = tileUV.y > 1.0;
+
+    // Check if this vertex's edge has a skirt flag (LOD boundary).
+    // If yes, extend worldXZ outward to overlap with finer LOD geometry.
+    // If no (same-LOD neighbor), clamp to tile edge to avoid z-fighting.
+    bool leftSkirt   = isLeft   && (gTerrainSkirtEdgeFlags & 1u);
+    bool rightSkirt  = isRight  && (gTerrainSkirtEdgeFlags & 2u);
+    bool topSkirt    = isTop    && (gTerrainSkirtEdgeFlags & 4u);
+    bool bottomSkirt = isBottom && (gTerrainSkirtEdgeFlags & 8u);
+    bool anySkirt    = leftSkirt || rightSkirt || topSkirt || bottomSkirt;
+
+    // Use raw tileUV for skirt edges (outward extension), clamped for same-LOD (degenerate quad)
+    float2 effectiveUV = anySkirt ? tileUV : clamp(tileUV, 0.0, 1.0);
+
+    // Compute world XZ from effective UV + constant buffer tile grid offset
     float cellSize = gTerrainCellSize;
     float2 tileOffsetWorld = float2(gTerrainTileOffsetX, gTerrainTileOffsetY) * cellSize;
     float2 worldXZ = float2(
-        tileUV.x * TERRAIN_TILE_SIZE * cellSize + tileOffsetWorld.x,
-        tileUV.y * TERRAIN_TILE_SIZE * cellSize + tileOffsetWorld.y
+        effectiveUV.x * TERRAIN_TILE_SIZE * cellSize + tileOffsetWorld.x,
+        effectiveUV.y * TERRAIN_TILE_SIZE * cellSize + tileOffsetWorld.y
     );
 
-    // Convert tile UV to heightmap UV for correct texel lookup
-    float2 hmUV = TileToHeightmapUV(tileUV);
+    // Convert tile UV to heightmap UV — always clamp to [0,1] for sampling
+    float2 clampedTileUV = clamp(tileUV, 0.0, 1.0);
+    float2 hmUV = TileToHeightmapUV(clampedTileUV);
 
     // Sample heightmap and denormalize from [0,1] to world-space height
     float height = (SampleTerrainHeight(hmUV) - 0.5) * 2.0 * gTerrainHeightScale;
+
+    // Push skirt vertices downward to hide LOD seam gaps
+    if (leftSkirt)   height -= gTerrainSkirtDepth;
+    if (rightSkirt)  height -= gTerrainSkirtDepth;
+    if (topSkirt)    height -= gTerrainSkirtDepth;
+    if (bottomSkirt) height -= gTerrainSkirtDepth;
 
     // Construct world position
     dout.PosW = float3(worldXZ.x, height, worldXZ.y);

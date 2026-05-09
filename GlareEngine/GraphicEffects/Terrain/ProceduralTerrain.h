@@ -33,6 +33,7 @@ private:
     void BuildPipelineState(ID3D12GraphicsCommandList* CmdList);
     void LoadMaterialTextures(ID3D12GraphicsCommandList* CmdList);
     void UpdateConstantBuffer();
+    void ComputeSkirtFlags(const ClipmapTile* tile);
 
     // Subsystems
     unique_ptr<TerrainClipmap>          mClipmap;
