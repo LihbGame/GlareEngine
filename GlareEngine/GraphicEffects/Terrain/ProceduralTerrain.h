@@ -56,6 +56,8 @@ private:
     // Material layer SRV indices: [layer][albedo, normal, roughness, metallic, AO]
     int mLayerSRVIndices[5][5] = {};
     int mLayerMaterialIndices[5] = {};
+    // Per-layer height map SRV indices for height-based blending
+    int mLayerHeightSRVIndices[5] = {};
 
     // Init info
     ProceduralTerrainInitInfo mInitInfo;

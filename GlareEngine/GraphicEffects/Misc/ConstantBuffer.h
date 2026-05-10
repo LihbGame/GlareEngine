@@ -251,6 +251,7 @@ __declspec(align(256)) struct ProceduralTerrainConstants
     struct { int Index; int _Pad[3]; } DetailAlbedoIndices[5]    = {};
     struct { int Index; int _Pad[3]; } DetailNormalIndices[5]    = {};
     struct { int Index; int _Pad[3]; } DetailRoughnessIndices[5] = {};
+    struct { int Index; int _Pad[3]; } LayerHeightIndices[5]    = {};
 };
 
 struct ProceduralTerrainInitInfo

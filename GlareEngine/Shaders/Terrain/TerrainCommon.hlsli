@@ -104,6 +104,7 @@ cbuffer ProceduralTerrainCB : register(b1)
     int4        gDetailLayerAlbedo[5];
     int4        gDetailLayerNormal[5];
     int4        gDetailLayerRoughness[5];
+    int4        gTerrainLayerHeight[5];
 };
 
 // --- Noise generation constant buffer ---

@@ -63,8 +63,10 @@ PBRParams BlendMaterialLayers(float4 weights, float2 tiledUV, float2 worldXZ, fl
         layerRoughness[i] = roughness;
         layerMetallic[i] = metallic;
         layerAO[i] = ao;
-        // Use luminance as per-pixel height for transition sharpness
-        layerHeight[i] = dot(albedo, float3(0.299, 0.587, 0.114));
+        // Use height map for transition sharpness
+        layerHeight[i] = gTerrainLayerHeight[i].x > 0
+            ? SampleStochasticScalar(gTerrainLayerHeight[i].x, tiledUV, worldXZ)
+            : dot(albedo, float3(0.299, 0.587, 0.114));
     }
 
     // Height-based weight adjustment: brighter texels punch through in transition zones
