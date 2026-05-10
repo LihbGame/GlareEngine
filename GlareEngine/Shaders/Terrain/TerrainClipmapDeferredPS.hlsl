@@ -32,19 +32,17 @@ PBRParams BlendMaterialLayers(float4 weights, float2 tiledUV, float2 worldXZ, fl
         float metallic = SampleStochasticScalar(gTerrainLayerMetallic[i].x, tiledUV, worldXZ) * gTerrainMetallicScale;
         float ao = SampleStochasticScalar(gTerrainLayerAO[i].x, tiledUV, worldXZ);
 
-        // Detail overlay with distance fade
+        // Detail overlay with distance fade (reuse base texture at higher tiling)
         if (detailFade > 0.0 && gDetailLayerAlbedo[i].x > 0)
         {
             float3 detailAlb = SampleStochastic(gDetailLayerAlbedo[i].x, detailUV, worldXZ);
             float3 detailNrm = SampleStochasticNormal(gDetailLayerNormal[i].x, detailUV, worldXZ);
             float  detailRgh = SampleStochasticScalar(gDetailLayerRoughness[i].x, detailUV, worldXZ);
 
-            // Albedo: multiply with bias (0.5 = neutral, preserves base)
-            albedo = lerp(albedo, albedo * (detailAlb * 2.0), detailFade);
-            // Normal: direct blend (detail replaces base near camera)
+            // Direct lerp: same texture at higher frequency, no darkening
+            albedo = lerp(albedo, detailAlb, detailFade);
             normalSample = lerp(normalSample, detailNrm, detailFade);
-            // Roughness: multiply with bias (0.5 = neutral)
-            roughness = lerp(roughness, roughness * (detailRgh * 2.0), detailFade);
+            roughness = lerp(roughness, detailRgh * gTerrainRoughnessScale, detailFade);
         }
 
         result.Albedo += albedo * w[i];
@@ -74,7 +72,7 @@ void main(ClipmapDomainOut pin,
     float3 B = normalize(cross(N, T));
     float3x3 TBN = float3x3(T, B, N);
 
-    float detailFade = saturate(1.0 - distance(pin.PosW, gTerrainEyePosW) / gDetailFadeDistance);
+    float detailFade = saturate(1.0 - distance(pin.PosW, gTerrainEyePosW) / gDetailFadeDistance) * 0.8;
     PBRParams mat = BlendMaterialLayers(pin.MatWeights, tiledUV, pin.WorldXZ, detailFade);
 
     // Decode normal from blended normal map sample

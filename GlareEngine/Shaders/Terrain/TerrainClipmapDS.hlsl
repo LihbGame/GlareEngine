@@ -22,16 +22,30 @@ ClipmapDomainOut main(
     bool isBottom = tileUV.y > 1.0;
 
     // Check if this vertex's edge has a skirt flag (LOD boundary).
-    // If yes, extend worldXZ outward to overlap with finer LOD geometry.
-    // If no (same-LOD neighbor), clamp to tile edge to avoid z-fighting.
+    // Vertical skirt: XZ clamped to tile edge, only Y pushed down.
+    // Non-skirt border: fully clamp to degenerate quad (avoid z-fighting).
     bool leftSkirt   = isLeft   && (gTerrainSkirtEdgeFlags & 1u);
     bool rightSkirt  = isRight  && (gTerrainSkirtEdgeFlags & 2u);
     bool topSkirt    = isTop    && (gTerrainSkirtEdgeFlags & 4u);
     bool bottomSkirt = isBottom && (gTerrainSkirtEdgeFlags & 8u);
     bool anySkirt    = leftSkirt || rightSkirt || topSkirt || bottomSkirt;
 
-    // Use raw tileUV for skirt edges (outward extension), clamped for same-LOD (degenerate quad)
-    float2 effectiveUV = anySkirt ? tileUV : clamp(tileUV, 0.0, 1.0);
+    float2 effectiveUV = tileUV;
+    if (anySkirt)
+    {
+        // Clamp skirt axes to tile edge for vertical wall
+        if (leftSkirt)   effectiveUV.x = 0.0;
+        if (rightSkirt)  effectiveUV.x = 1.0;
+        if (topSkirt)    effectiveUV.y = 0.0;
+        if (bottomSkirt) effectiveUV.y = 1.0;
+        // Clamp remaining out-of-bounds axes (corners with partial skirt)
+        if (!leftSkirt && !rightSkirt) effectiveUV.x = clamp(effectiveUV.x, 0.0, 1.0);
+        if (!topSkirt && !bottomSkirt) effectiveUV.y = clamp(effectiveUV.y, 0.0, 1.0);
+    }
+    else
+    {
+        effectiveUV = clamp(tileUV, 0.0, 1.0);
+    }
 
     // Compute world XZ from effective UV + constant buffer tile grid offset
     float cellSize = gTerrainCellSize;
