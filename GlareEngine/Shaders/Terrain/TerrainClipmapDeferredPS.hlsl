@@ -11,7 +11,6 @@ struct PBRParams
 
 PBRParams BlendMaterialLayers(float4 weights, float2 tiledUV, float2 worldXZ, float detailFade)
 {
-    PBRParams result = (PBRParams)0;
     float w[5];
     w[0] = weights.r; // grass (layer 0)
     w[1] = weights.g; // lightdirt (layer 1)
@@ -21,10 +20,24 @@ PBRParams BlendMaterialLayers(float4 weights, float2 tiledUV, float2 worldXZ, fl
 
     float2 detailUV = worldXZ / gDetailScale;
 
+    // Sample all active layers first (needed for height-based blending)
+    float3 layerAlbedo[5];
+    float3 layerNormal[5];
+    float  layerRoughness[5];
+    float  layerMetallic[5];
+    float  layerAO[5];
+    float  layerHeight[5];
+
     [unroll]
     for (int i = 0; i < TERRAIN_NUM_LAYERS; i++)
     {
-        if (w[i] < 0.01) continue;
+        if (w[i] < 0.01)
+        {
+            layerAlbedo[i] = 0; layerNormal[i] = 0;
+            layerRoughness[i] = 0; layerMetallic[i] = 0;
+            layerAO[i] = 0; layerHeight[i] = 0;
+            continue;
+        }
 
         float3 albedo = SampleStochastic(gTerrainLayerAlbedo[i].x, tiledUV, worldXZ);
         float3 normalSample = SampleStochasticNormal(gTerrainLayerNormal[i].x, tiledUV, worldXZ);
@@ -45,11 +58,41 @@ PBRParams BlendMaterialLayers(float4 weights, float2 tiledUV, float2 worldXZ, fl
             roughness = lerp(roughness, detailRgh * gTerrainRoughnessScale, detailFade);
         }
 
-        result.Albedo += albedo * w[i];
-        result.Normal += normalSample * w[i];
-        result.Roughness += roughness * w[i];
-        result.Metallic += metallic * w[i];
-        result.AO += ao * w[i];
+        layerAlbedo[i] = albedo;
+        layerNormal[i] = normalSample;
+        layerRoughness[i] = roughness;
+        layerMetallic[i] = metallic;
+        layerAO[i] = ao;
+        // Use luminance as per-pixel height for transition sharpness
+        layerHeight[i] = dot(albedo, float3(0.299, 0.587, 0.114));
+    }
+
+    // Height-based weight adjustment: brighter texels punch through in transition zones
+    float blendSharpness = 2.0;
+    float adjustedW[5];
+    float totalW = 0.0;
+
+    [unroll]
+    for (int j = 0; j < TERRAIN_NUM_LAYERS; j++)
+    {
+        if (w[j] < 0.01) { adjustedW[j] = 0; continue; }
+        adjustedW[j] = w[j] * (layerHeight[j] * blendSharpness + 0.01);
+        totalW += adjustedW[j];
+    }
+
+    PBRParams result = (PBRParams)0;
+    if (totalW > 0.0)
+    {
+        [unroll]
+        for (int k = 0; k < TERRAIN_NUM_LAYERS; k++)
+        {
+            float fw = adjustedW[k] / totalW;
+            result.Albedo += layerAlbedo[k] * fw;
+            result.Normal += layerNormal[k] * fw;
+            result.Roughness += layerRoughness[k] * fw;
+            result.Metallic += layerMetallic[k] * fw;
+            result.AO += layerAO[k] * fw;
+        }
     }
 
     return result;
