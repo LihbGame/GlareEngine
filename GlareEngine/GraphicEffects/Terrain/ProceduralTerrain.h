@@ -56,8 +56,6 @@ private:
     // Material layer SRV indices: [layer][albedo, normal, roughness, metallic, AO]
     int mLayerSRVIndices[5][5] = {};
     int mLayerMaterialIndices[5] = {};
-    // Detail layer SRV indices: [layer][detail_albedo, detail_normal, detail_roughness]
-    int mDetailSRVIndices[5][3] = {};
 
     // Init info
     ProceduralTerrainInitInfo mInitInfo;

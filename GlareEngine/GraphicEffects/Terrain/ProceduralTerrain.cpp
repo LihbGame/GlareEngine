@@ -258,16 +258,6 @@ void ProceduralTerrain::LoadMaterialTextures(ID3D12GraphicsCommandList* CmdList)
             mLayerSRVIndices[layer][4] = AddToGlobalTextureSRVDescriptor(textures[2]->GetSRV()); // ao
         }
 
-        // Load detail textures: <name>_detail_albedo/normal/roughness.dds
-        string detailFilename = mInitInfo.LayerAssetPath + mInitInfo.LayerMapNames[layer] + "_detail";
-        vector<Texture*> detailTextures;
-        texMgr->CreatePBRTextures(detailFilename, detailTextures);
-        if (detailTextures.size() >= 5)
-        {
-            mDetailSRVIndices[layer][0] = AddToGlobalTextureSRVDescriptor(detailTextures[0]->GetSRV()); // detail albedo
-            mDetailSRVIndices[layer][1] = AddToGlobalTextureSRVDescriptor(detailTextures[1]->GetSRV()); // detail normal
-            mDetailSRVIndices[layer][2] = AddToGlobalTextureSRVDescriptor(detailTextures[4]->GetSRV()); // detail roughness
-        }
     }
 }
 
@@ -367,14 +357,14 @@ void ProceduralTerrain::UpdateConstantBuffer()
     mConstants.PreJitterOffset = camera->GetPreJitter();
     mConstants.CurJitterOffset = camera->GetCurJitter();
 
-    // Detail texture parameters
+    // Detail texture parameters (reuse base textures with higher tiling frequency)
     mConstants.DetailScale = mDetailScaleUI;
     mConstants.DetailFadeDistance = mDetailFadeDistanceUI;
     for (int i = 0; i < 5; i++)
     {
-        mConstants.DetailAlbedoIndices[i].Index = mDetailSRVIndices[i][0];
-        mConstants.DetailNormalIndices[i].Index = mDetailSRVIndices[i][1];
-        mConstants.DetailRoughnessIndices[i].Index = mDetailSRVIndices[i][2];
+        mConstants.DetailAlbedoIndices[i].Index = mLayerSRVIndices[i][0];    // reuse base albedo
+        mConstants.DetailNormalIndices[i].Index = mLayerSRVIndices[i][1];    // reuse base normal
+        mConstants.DetailRoughnessIndices[i].Index = mLayerSRVIndices[i][2]; // reuse base roughness
     }
 }
 
