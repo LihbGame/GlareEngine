@@ -28,15 +28,6 @@ ProceduralTerrain::ProceduralTerrain(
     // Initialize UI parameters from init info so first frame uses correct values
     mNoiseScaleUI = Info.NoiseScale;
     mHeightScaleUI = Info.HeightScale;
-    mTexScaleUI = 50.0f;
-    mRoughnessScaleUI = 3.0f;
-    mMinTessFactorUI = 1.0f;
-    mMaxTessFactorUI = 2.0f;
-    mMinTessDistUI = 1.0f;
-    mMaxTessDistUI = 100.0f;
-    mWarpStrengthUI = 30.0f;
-    mSnowHeightUI = 150.0f;
-    mStoneSlopeUI = 0.6f;
 
     // Create clipmap manager
     mClipmap = make_unique<TerrainClipmap>(
@@ -266,6 +257,17 @@ void ProceduralTerrain::LoadMaterialTextures(ID3D12GraphicsCommandList* CmdList)
             mLayerSRVIndices[layer][3] = AddToGlobalTextureSRVDescriptor(textures[3]->GetSRV()); // metallic
             mLayerSRVIndices[layer][4] = AddToGlobalTextureSRVDescriptor(textures[2]->GetSRV()); // ao
         }
+
+        // Load detail textures: <name>_detail_albedo/normal/roughness.dds
+        string detailFilename = mInitInfo.LayerAssetPath + mInitInfo.LayerMapNames[layer] + "_detail";
+        vector<Texture*> detailTextures;
+        texMgr->CreatePBRTextures(detailFilename, detailTextures);
+        if (detailTextures.size() >= 5)
+        {
+            mDetailSRVIndices[layer][0] = AddToGlobalTextureSRVDescriptor(detailTextures[0]->GetSRV()); // detail albedo
+            mDetailSRVIndices[layer][1] = AddToGlobalTextureSRVDescriptor(detailTextures[1]->GetSRV()); // detail normal
+            mDetailSRVIndices[layer][2] = AddToGlobalTextureSRVDescriptor(detailTextures[4]->GetSRV()); // detail roughness
+        }
     }
 }
 
@@ -365,6 +367,15 @@ void ProceduralTerrain::UpdateConstantBuffer()
     mConstants.PreJitterOffset = camera->GetPreJitter();
     mConstants.CurJitterOffset = camera->GetCurJitter();
 
+    // Detail texture parameters
+    mConstants.DetailScale = mDetailScaleUI;
+    mConstants.DetailFadeDistance = mDetailFadeDistanceUI;
+    for (int i = 0; i < 5; i++)
+    {
+        mConstants.DetailAlbedoIndices[i].Index = mDetailSRVIndices[i][0];
+        mConstants.DetailNormalIndices[i].Index = mDetailSRVIndices[i][1];
+        mConstants.DetailRoughnessIndices[i].Index = mDetailSRVIndices[i][2];
+    }
 }
 
 void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
@@ -684,6 +695,8 @@ void ProceduralTerrain::DrawUI()
         ImGui::SliderFloat("Height Scale", &mHeightScaleUI, 10.0f, 3000.0f);
         ImGui::SliderFloat("Tex Scale", &mTexScaleUI, 1.0f, 200.0f);
         ImGui::SliderFloat("Roughness Scale", &mRoughnessScaleUI, 0.1f, 10.0f);
+        ImGui::SliderFloat("Detail Scale", &mDetailScaleUI, 1.0f, 100.0f);
+        ImGui::SliderFloat("Detail Fade Dist", &mDetailFadeDistanceUI, 5.0f, 200.0f);
         ImGui::SliderFloat("Min Tess Factor", &mMinTessFactorUI, 1.0f, 16.0f);
         ImGui::SliderFloat("Max Tess Factor", &mMaxTessFactorUI, 2.0f, 64.0f);
         ImGui::SliderFloat("Min Tess Dist", &mMinTessDistUI, 1.0f, 100.0f);

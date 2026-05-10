@@ -244,6 +244,13 @@ __declspec(align(256)) struct ProceduralTerrainConstants
     XMFLOAT4X4  PreViewProj              = MathHelper::Identity4x4();
     XMFLOAT2    PreJitterOffset          = { 0.0f, 0.0f };
     XMFLOAT2    CurJitterOffset          = { 0.0f, 0.0f };
+    // Detail texture parameters
+    float       DetailScale              = 20.0f;
+    float       DetailFadeDistance       = 50.0f;
+    int         _PadDetail[2]            = {};
+    struct { int Index; int _Pad[3]; } DetailAlbedoIndices[5]    = {};
+    struct { int Index; int _Pad[3]; } DetailNormalIndices[5]    = {};
+    struct { int Index; int _Pad[3]; } DetailRoughnessIndices[5] = {};
 };
 
 struct ProceduralTerrainInitInfo

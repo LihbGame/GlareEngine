@@ -56,6 +56,8 @@ private:
     // Material layer SRV indices: [layer][albedo, normal, roughness, metallic, AO]
     int mLayerSRVIndices[5][5] = {};
     int mLayerMaterialIndices[5] = {};
+    // Detail layer SRV indices: [layer][detail_albedo, detail_normal, detail_roughness]
+    int mDetailSRVIndices[5][3] = {};
 
     // Init info
     ProceduralTerrainInitInfo mInitInfo;
@@ -74,12 +76,16 @@ private:
     float mWarpStrengthUI = 30.0f;
     float mSnowHeightUI = 150.0f;
     float mStoneSlopeUI = 0.6f;
-    float mTexScaleUI = 50.0f;
+    float mTexScaleUI = 200.0f;
     float mRoughnessScaleUI = 3.0f;
     float mMinTessFactorUI = 1.0f;
     float mMaxTessFactorUI = 2.0f;
     float mMinTessDistUI = 1.0f;
     float mMaxTessDistUI = 100.0f;
+
+    // Detail texture parameters
+    float mDetailScaleUI = 20.0f;
+    float mDetailFadeDistanceUI = 50.0f;
 
     // Debug: render only a specific LOD level (-1 = all)
     int mDebugLODLevel = -1;

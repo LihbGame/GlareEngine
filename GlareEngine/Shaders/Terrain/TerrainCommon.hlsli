@@ -97,6 +97,13 @@ cbuffer ProceduralTerrainCB : register(b1)
     float4x4    gTerrainPreViewProj;
     float2      gTerrainPreJitter;
     float2      gTerrainCurJitter;
+    // Detail texture parameters
+    float       gDetailScale;
+    float       gDetailFadeDistance;
+    int2        _PadDetail;
+    int4        gDetailLayerAlbedo[5];
+    int4        gDetailLayerNormal[5];
+    int4        gDetailLayerRoughness[5];
 };
 
 // --- Noise generation constant buffer ---
