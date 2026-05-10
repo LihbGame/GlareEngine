@@ -86,6 +86,7 @@ private:
     // Detail texture parameters
     float mDetailScaleUI = 20.0f;
     float mDetailFadeDistanceUI = 50.0f;
+    bool  mUseHeightBlendUI = true;
 
     // Debug: render only a specific LOD level (-1 = all)
     int mDebugLODLevel = -1;

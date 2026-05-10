@@ -100,7 +100,8 @@ cbuffer ProceduralTerrainCB : register(b1)
     // Detail texture parameters
     float       gDetailScale;
     float       gDetailFadeDistance;
-    int2        _PadDetail;
+    int        gTerrainUseHeightBlend;
+    int        _PadDetail;
     int4        gDetailLayerAlbedo[5];
     int4        gDetailLayerNormal[5];
     int4        gDetailLayerRoughness[5];

@@ -247,7 +247,8 @@ __declspec(align(256)) struct ProceduralTerrainConstants
     // Detail texture parameters
     float       DetailScale              = 20.0f;
     float       DetailFadeDistance       = 50.0f;
-    int         _PadDetail[2]            = {};
+    int         UseHeightBlend           = 1;
+    int         _PadDetail               = {};
     struct { int Index; int _Pad[3]; } DetailAlbedoIndices[5]    = {};
     struct { int Index; int _Pad[3]; } DetailNormalIndices[5]    = {};
     struct { int Index; int _Pad[3]; } DetailRoughnessIndices[5] = {};

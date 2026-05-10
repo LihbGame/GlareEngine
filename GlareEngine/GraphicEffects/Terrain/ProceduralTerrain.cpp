@@ -366,6 +366,7 @@ void ProceduralTerrain::UpdateConstantBuffer()
     // Detail texture parameters (reuse base textures with higher tiling frequency)
     mConstants.DetailScale = mDetailScaleUI;
     mConstants.DetailFadeDistance = mDetailFadeDistanceUI;
+    mConstants.UseHeightBlend = mUseHeightBlendUI ? 1 : 0;
     for (int i = 0; i < 5; i++)
     {
         mConstants.DetailAlbedoIndices[i].Index = mLayerSRVIndices[i][0];    // reuse base albedo
@@ -693,6 +694,7 @@ void ProceduralTerrain::DrawUI()
         ImGui::SliderFloat("Roughness Scale", &mRoughnessScaleUI, 0.1f, 10.0f);
         ImGui::SliderFloat("Detail Scale", &mDetailScaleUI, 1.0f, 100.0f);
         ImGui::SliderFloat("Detail Fade Dist", &mDetailFadeDistanceUI, 5.0f, 200.0f);
+        ImGui::Checkbox("Height Blend", &mUseHeightBlendUI);
         ImGui::SliderFloat("Min Tess Factor", &mMinTessFactorUI, 1.0f, 16.0f);
         ImGui::SliderFloat("Max Tess Factor", &mMaxTessFactorUI, 2.0f, 64.0f);
         ImGui::SliderFloat("Min Tess Dist", &mMinTessDistUI, 1.0f, 100.0f);
