@@ -360,6 +360,11 @@ namespace GlareEngine
 			NestedTimingTree::PopProfilingMarker(Context);
 		}
 
+		void EndFrame()
+		{
+			GPUTimeManager::Resolve();
+		}
+
 		bool IsPaused()
 		{
 			return Paused;

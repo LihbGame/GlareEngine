@@ -23,7 +23,14 @@ TerrainNoiseGenerator::TerrainNoiseGenerator(
     CreateConstantBuffer();
 }
 
-TerrainNoiseGenerator::~TerrainNoiseGenerator() = default;
+TerrainNoiseGenerator::~TerrainNoiseGenerator()
+{
+    if (mConstantBuffer && mMappedCB)
+    {
+        mConstantBuffer->Unmap(0, nullptr);
+        mMappedCB = nullptr;
+    }
+}
 
 void TerrainNoiseGenerator::BuildRootSignature(ID3D12Device* Device)
 {
@@ -55,6 +62,7 @@ void TerrainNoiseGenerator::CreateConstantBuffer()
         nullptr, IID_PPV_ARGS(&mConstantBuffer)));
 
     mConstantBufferGPU = mConstantBuffer->GetGPUVirtualAddress();
+    ThrowIfFailed(mConstantBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mMappedCB)));
 }
 
 void TerrainNoiseGenerator::GenerateTiles(
@@ -101,12 +109,7 @@ void TerrainNoiseGenerator::GenerateTiles(
         mNoiseCBData.LODLevel = tile->LODLevel;
 
         // Upload CB to ring buffer slot
-        UINT8* pData = nullptr;
-        D3D12_RANGE readRange = { 0, 0 };
-        D3D12_RANGE writeRange = { ringIndex * cbAlignedSize, (ringIndex + 1) * cbAlignedSize };
-        mConstantBuffer->Map(0, &readRange, (void**)&pData);
-        memcpy(pData + ringIndex * cbAlignedSize, &mNoiseCBData, sizeof(ProceduralTerrainNoiseCB));
-        mConstantBuffer->Unmap(0, &writeRange);
+        memcpy(mMappedCB + ringIndex * cbAlignedSize, &mNoiseCBData, sizeof(ProceduralTerrainNoiseCB));
 
         D3D12_GPU_VIRTUAL_ADDRESS cbAddr = mConstantBufferGPU + ringIndex * cbAlignedSize;
         ringIndex = (ringIndex + 1) % cRingBufferSize;

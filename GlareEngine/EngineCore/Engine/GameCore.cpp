@@ -145,6 +145,8 @@ namespace GlareEngine
 			//Present
 			Display::Present();
 
+			EngineProfiling::EndFrame();
+
 			bool isDone = Game.IsDone();
 
 #if USE_RUNTIME_PSO

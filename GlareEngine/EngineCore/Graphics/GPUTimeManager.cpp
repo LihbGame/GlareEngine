@@ -108,18 +108,15 @@ void GPUTimeManager::BeginReadBack(void)
 
 void GPUTimeManager::EndReadBack(void)
 {
-	//用空范围取消映射以指示没有任何内容被CPU写入 
 	D3D12_RANGE EmptyRange = {};
 	sm_ReadBackBuffer->Unmap(0, &EmptyRange);
 	sm_TimeStampBuffer = nullptr;
+}
 
+void GPUTimeManager::Resolve(void)
+{
 	CommandContext& Context = CommandContext::Begin();
-	for (UINT i = 0; i < sm_NumTimers * 2; i++)
-	{
-		Context.InsertTimeStamp(sm_QueryHeap, i);
-	}
 	Context.ResolveTimeStamps(sm_ReadBackBuffer, sm_QueryHeap, sm_NumTimers * 2);
-
 	sm_Fence = Context.Finish();
 }
 

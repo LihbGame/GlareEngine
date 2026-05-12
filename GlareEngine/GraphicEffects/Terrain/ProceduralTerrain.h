@@ -43,7 +43,8 @@ private:
     RootSignature   mTerrainRootSig;
     GraphicsPSO     mTerrainPSO;
     GraphicsPSO     mTerrainDeferredPSO;
-    GraphicsPSO     mTerrainShadowPSO;
+    GraphicsPSO     mTerrainShadowPSO;          // Z-prepass (reversed depth, scene depth buffer)
+    GraphicsPSO     mTerrainCastShadowPSO;      // Shadow map pass (standard depth, D32 shadow buffer)
     GraphicsPSO     mTerrainPSO_Wireframe;
     GraphicsPSO     mTerrainDeferredPSO_Wireframe;
     GraphicsPSO     mTerrainShadowPSO_Wireframe;
@@ -52,6 +53,7 @@ private:
     ProceduralTerrainConstants mConstants;
     ComPtr<ID3D12Resource>     mConstantBuffer;
     D3D12_GPU_VIRTUAL_ADDRESS  mCBGPU = 0;
+    uint8_t*                   mMappedCB = nullptr;
 
     // Material layer SRV indices: [layer][albedo, normal, roughness, metallic, AO]
     int mLayerSRVIndices[5][5] = {};
@@ -61,6 +63,9 @@ private:
 
     // Init info
     ProceduralTerrainInitInfo mInitInfo;
+
+    // Cached shadow VP matrix (set by Scene before shadow pass)
+    XMFLOAT4X4      mCachedShadowVP = MathHelper::Identity4x4();
 
     // Shared geometry
     ComPtr<ID3D12Resource> mVertexBuffer;
@@ -100,4 +105,5 @@ public:
         mMainCBData = data;
         mMainCBSize = size;
     }
+    void CacheShadowVP(const XMFLOAT4X4& shadowVP) { mCachedShadowVP = shadowVP; }
 };

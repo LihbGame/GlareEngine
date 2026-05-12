@@ -7,6 +7,7 @@ namespace GlareEngine
 	namespace EngineProfiling
 	{
 		void Update();
+		void EndFrame();
 
 		void BeginBlock(const std::wstring& name, CommandContext* Context = nullptr);
 		void EndBlock(CommandContext* Context = nullptr);

@@ -48,6 +48,7 @@ private:
     ComPtr<ID3D12Resource>          mConstantBuffer;
     ProceduralTerrainNoiseCB        mNoiseCBData;
     D3D12_GPU_VIRTUAL_ADDRESS       mConstantBufferGPU = 0;
+    uint8_t*                        mMappedCB = nullptr;
 
     // Parameters
     UINT    mSeed           = 42;

@@ -64,7 +64,7 @@ PBRParams BlendMaterialLayers(float4 weights, float2 tiledUV, float2 worldXZ, fl
         layerMetallic[i] = metallic;
         layerAO[i] = ao;
         // Use height map for transition sharpness (fallback to luminance if disabled)
-        layerHeight[i] = (gTerrainUseHeightBlend && gTerrainLayerHeight[i].x > 0)
+        layerHeight[i] = (gTerrainUseHeightBlend)
             ? SampleStochasticScalar(gTerrainLayerHeight[i].x, tiledUV, worldXZ)
             : dot(albedo, float3(0.299, 0.587, 0.114));
     }

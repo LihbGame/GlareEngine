@@ -142,8 +142,8 @@ void Scene::VisibleUpdateForType()
 
 	for (auto& object : m_pRenderObjects)
 	{
-		//update Model shadow visible
-		if (object->mObjectType == ObjectType::Model)
+		//update Model/Terrain shadow visible
+		if (object->mObjectType == ObjectType::Model || object->mObjectType == ObjectType::Terrain)
 		{
 			object->SetShadowRenderFlag(ShadowVisible && object->GetShadowFlag());
 		}
@@ -508,6 +508,11 @@ void Scene::ForwardRendering()
 	const vector<MaterialConstant>& MaterialData = MaterialManager::GetMaterialInstance()->GetMaterialsConstantBuffer();
 	Context.SetDynamicSRV((int)RootSignatureType::eMaterialConstantData, sizeof(MaterialConstant) * MaterialData.size(), MaterialData.data());
 
+	// Cache shadow VP for terrain before shadow pass
+	for (auto& obj : m_pRenderObjectsType[(int)ObjectType::Terrain])
+		if (obj->GetVisible())
+			static_cast<ProceduralTerrain*>(obj)->CacheShadowVP(m_pShadowMap->GetViewProj());
+
 	Context.PIXBeginEvent(L"Shadow Pass");
 	CreateShadowMap(Context,m_pRenderObjects);
 	Context.PIXEndEvent();
@@ -751,6 +756,26 @@ void Scene::ForwardRendering(RasterRenderPipelineType ForwardRenderPipeline)
 
 				//Sun Shadow Map
 				CreateShadowMapForGLTF(Context);
+
+				// Terrain shadow — append to existing model shadow depth (do NOT clear)
+				{
+					auto& shadowBuf = m_pShadowMap->GetShadowBuffer();
+					Context.TransitionResource(shadowBuf, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+					Context.SetDepthStencilTarget(shadowBuf.GetDSV());
+					Context.SetViewportAndScissor(m_pShadowMap->Viewport(), m_pShadowMap->ScissorRect());
+
+					for (auto& obj : m_pRenderObjectsType[(int)ObjectType::Terrain])
+					{
+						if (obj->GetVisible() && obj->GetShadowRenderFlag())
+						{
+							static_cast<ProceduralTerrain*>(obj)->CacheShadowVP(m_pShadowMap->GetViewProj());
+							obj->DrawShadow(Context);
+						}
+					}
+					// Restore scene root signature (DrawShadow changed it to terrain's)
+					Context.SetRootSignature(*m_pRootSignature);
+					Context.TransitionResource(shadowBuf, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
+				}
 
 				//Base Pass
 				{
@@ -999,6 +1024,26 @@ void Scene::DeferredRendering(RasterRenderPipelineType DeferredRenderPipeline)
 
 			//Sun Shadow Map
 			CreateShadowMapForGLTF(Context);
+
+			// Terrain shadow — append to existing model shadow depth (do NOT clear)
+			{
+				auto& shadowBuf = m_pShadowMap->GetShadowBuffer();
+				Context.TransitionResource(shadowBuf, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+				Context.SetDepthStencilTarget(shadowBuf.GetDSV());
+				Context.SetViewportAndScissor(m_pShadowMap->Viewport(), m_pShadowMap->ScissorRect());
+
+				for (auto& obj : m_pRenderObjectsType[(int)ObjectType::Terrain])
+				{
+					if (obj->GetVisible() && obj->GetShadowRenderFlag())
+					{
+						static_cast<ProceduralTerrain*>(obj)->CacheShadowVP(m_pShadowMap->GetViewProj());
+						obj->DrawShadow(Context);
+					}
+				}
+				// Restore scene root signature (DrawShadow changed it to terrain's)
+				Context.SetRootSignature(*m_pRootSignature);
+				Context.TransitionResource(shadowBuf, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
+			}
 
 			//Base Pass
 			{
