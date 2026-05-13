@@ -13,6 +13,7 @@
 #include "CompiledShaders/TerrainClipmapVS.h"
 #include "CompiledShaders/TerrainClipmapHS.h"
 #include "CompiledShaders/TerrainClipmapDS.h"
+#include "CompiledShaders/TerrainClipmapShadowDS.h"
 #include "CompiledShaders/TerrainClipmapPS.h"
 #include "CompiledShaders/TerrainClipmapDeferredPS.h"
 
@@ -219,7 +220,7 @@ void ProceduralTerrain::BuildPipelineState(ID3D12GraphicsCommandList*)
     mTerrainCastShadowPSO.SetRootSignature(mTerrainRootSig);
     mTerrainCastShadowPSO.SetVertexShader(g_pTerrainClipmapVS, sizeof(g_pTerrainClipmapVS));
     mTerrainCastShadowPSO.SetHullShader(g_pTerrainClipmapHS, sizeof(g_pTerrainClipmapHS));
-    mTerrainCastShadowPSO.SetDomainShader(g_pTerrainClipmapDS, sizeof(g_pTerrainClipmapDS));
+    mTerrainCastShadowPSO.SetDomainShader(g_pTerrainClipmapShadowDS, sizeof(g_pTerrainClipmapShadowDS));
     mTerrainCastShadowPSO.SetInputLayout(_countof(layout), layout);
     mTerrainCastShadowPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH);
     mTerrainCastShadowPSO.SetSampleMask(0xFFFFFFFF);
