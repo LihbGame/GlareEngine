@@ -22,7 +22,7 @@ namespace GlareEngine
 	};
 
 
-	//��¼ÿ֡��״̬
+	// Per-frame stat history
 	class StatHistory
 	{
 	public:
@@ -89,23 +89,26 @@ namespace GlareEngine
 	{
 	public:
 
-		GPUTimer()
-		{
-			m_TimerIndex = GPUTimeManager::NewTimer();
-		}
+		GPUTimer() : m_TimerIndex(kInvalidTimerIndex) {}
 
 		void Start(CommandContext& Context)
 		{
+			if (m_TimerIndex == kInvalidTimerIndex)
+				m_TimerIndex = GPUTimeManager::NewTimer();
 			GPUTimeManager::StartTimer(Context, m_TimerIndex);
 		}
 
 		void Stop(CommandContext& Context)
 		{
+			if (m_TimerIndex == kInvalidTimerIndex)
+				m_TimerIndex = GPUTimeManager::NewTimer();
 			GPUTimeManager::StopTimer(Context, m_TimerIndex);
 		}
 
 		float GetTime(void)
 		{
+			if (m_TimerIndex == kInvalidTimerIndex)
+				return 0.0f;
 			return GPUTimeManager::GetTime(m_TimerIndex);
 		}
 
@@ -114,11 +117,11 @@ namespace GlareEngine
 			return m_TimerIndex;
 		}
 	private:
-
+		static const uint32_t kInvalidTimerIndex = UINT32_MAX;
 		uint32_t m_TimerIndex;
 	};
 
-	//�ݹ�ʱ����
+	// Hierarchical timing tree
 	class NestedTimingTree
 	{
 	public:
@@ -275,19 +278,19 @@ namespace GlareEngine
 
 			uint32_t FrameIndex = (uint32_t)GlareEngine::Display::GetFrameCount();
 
-			//��ʼGPU Time Buffer �Ķ�ȡ
+				// Begin reading GPU Time Buffer
 			GPUTimeManager::BeginReadBack();
-			//ͳ��ʱ���������н���ʱ��
+				// Gather timing data across all profiling nodes
 			sm_RootScope.GatherTimes(FrameIndex);
-			//��¼ÿ֡��ʱ��timer��0-1��¼�˱�֡��ʱ��
+				// Record per-frame delta (timer 0-1 bracket the frame)
 			s_FrameDelta.RecordStat(FrameIndex, GPUTimeManager::GetTime(0));
-			//����GPU Time Buffer �Ķ�ȡ
+				// Finish reading GPU Time Buffer
 			GPUTimeManager::EndReadBack();
 
 			float TotalCPUTime, TotalGPUTime;
-			//ͳ��һ֡��GPU,CPU�ܺķ�ʱ��
+				// Sum inclusive GPU and CPU times for the frame
 			sm_RootScope.SumInclusiveTimes(TotalCPUTime, TotalGPUTime);
-			//��¼CPU��GPU�ܺķ�ʱ��
+				// Record total CPU and GPU inclusive times
 			s_TotalCPUTime.RecordStat(FrameIndex, TotalCPUTime);
 			s_TotalGPUTime.RecordStat(FrameIndex, TotalGPUTime);
 		}
