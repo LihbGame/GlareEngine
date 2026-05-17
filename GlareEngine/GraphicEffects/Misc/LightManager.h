@@ -45,6 +45,7 @@ namespace GlareEngine
 		extern bool bEnableConeLight;
 		extern bool bEnableDirectionalLight;
 		extern bool bEnableAreaLightTwoSide;
+		extern float gShadowIntensity;
 		
 		extern StructuredBuffer m_LightBuffer;
 		extern StructuredBuffer m_LightGrid;

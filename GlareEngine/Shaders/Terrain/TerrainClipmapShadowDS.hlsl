@@ -70,6 +70,5 @@ ShadowDomainOut main(
 
     // Project to shadow clip space (ViewProj contains light VP)
     dout.PosH = mul(gTerrainViewProj, float4(posW, 1.0));
-
     return dout;
 }

@@ -15,7 +15,7 @@ float CalcShadowFactor(float4 shadowPosH)
     float depth = shadowPosH.z;
 
     uint width, height, numMips;
-    gSRVMap[48].GetDimensions(0, width, height, numMips);
+    gSRVMap[gShadowMapIndex].GetDimensions(0, width, height, numMips);
 
     // Texel size.
     float dx = 1.0f / (float)width;

@@ -232,6 +232,7 @@ namespace GlareEngine
 		bool bEnableConeLight = true;
 		bool bEnableDirectionalLight = true;
 		bool bEnableAreaLightTwoSide = true;
+		float gShadowIntensity = 1.0f;
 
 		uint32_t AreaLightLTC1SRVIndex;
 		uint32_t AreaLightLTC2SRVIndex;
@@ -861,6 +862,7 @@ void Lighting::DrawUI()
 	if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::Checkbox("Directional Light", &bEnableDirectionalLight);
+		ImGui::SliderFloat("Shadow Intensity", &gShadowIntensity, 0.0f, 1.0f);
 		ImGui::Checkbox("Tiled Base Light", &bEnableTiledBaseLight);
 		if (bEnableTiledBaseLight)
 		{

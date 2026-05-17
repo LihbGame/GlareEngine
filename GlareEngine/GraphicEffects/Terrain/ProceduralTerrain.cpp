@@ -109,6 +109,14 @@ ProceduralTerrain::ProceduralTerrain(
         nullptr, IID_PPV_ARGS(&mConstantBuffer)));
     mCBGPU = mConstantBuffer->GetGPUVirtualAddress();
     ThrowIfFailed(mConstantBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mMappedCB)));
+
+    // Create shadow pass constant buffer (separate ring buffer to prevent main pass overwrite)
+    ThrowIfFailed(g_Device->CreateCommittedResource(
+        &uploadHeap, D3D12_HEAP_FLAG_NONE, &cbDesc,
+        D3D12_RESOURCE_STATE_GENERIC_READ,
+        nullptr, IID_PPV_ARGS(&mShadowConstantBuffer)));
+    mShadowCBGPU = mShadowConstantBuffer->GetGPUVirtualAddress();
+    ThrowIfFailed(mShadowConstantBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mMappedShadowCB)));
 }
 
 ProceduralTerrain::~ProceduralTerrain()
@@ -117,6 +125,11 @@ ProceduralTerrain::~ProceduralTerrain()
     {
         mConstantBuffer->Unmap(0, nullptr);
         mMappedCB = nullptr;
+    }
+    if (mShadowConstantBuffer && mMappedShadowCB)
+    {
+        mShadowConstantBuffer->Unmap(0, nullptr);
+        mMappedShadowCB = nullptr;
     }
 }
 
@@ -226,7 +239,7 @@ void ProceduralTerrain::BuildPipelineState(ID3D12GraphicsCommandList*)
     mTerrainCastShadowPSO.SetSampleMask(0xFFFFFFFF);
     mTerrainCastShadowPSO.SetDepthStencilState(DepthStateReadWrite);
     mTerrainCastShadowPSO.SetBlendState(CD3DX12_BLEND_DESC(D3D12_DEFAULT));
-    mTerrainCastShadowPSO.SetRasterizerState(RasterizerShadowCW);
+    mTerrainCastShadowPSO.SetRasterizerState(RasterizerShadowTwoSided);
     mTerrainCastShadowPSO.SetRenderTargetFormats(0, nullptr, DXGI_FORMAT_D32_FLOAT);
     mTerrainCastShadowPSO.Finalize();
 
@@ -590,6 +603,40 @@ void ProceduralTerrain::ComputeSkirtFlags(const ClipmapTile* tile)
     if (finerMaxZ > tileMaxZ) mConstants.SkirtEdgeFlags |= 8u;
 }
 
+void ProceduralTerrain::ComputeSkirtFlagsFor(const ClipmapTile* tile, ProceduralTerrainConstants& outConstants)
+{
+    outConstants.SkirtEdgeFlags = 0;
+    outConstants.SkirtDepth = mHeightScaleUI * 0.005f;
+
+    if (tile->LODLevel == 0)
+        return;
+
+    UINT finerLevel = tile->LODLevel - 1;
+    if (!mClipmap->IsLevelInitialized(finerLevel))
+        return;
+
+    float cellSize = mClipmap->GetCellSize(tile->LODLevel);
+    float tileWorldSize = (float)mInitInfo.TileSize * cellSize;
+    float tileMinX = (float)tile->GridCoord.x * tileWorldSize;
+    float tileMaxX = tileMinX + tileWorldSize;
+    float tileMinZ = (float)tile->GridCoord.y * tileWorldSize;
+    float tileMaxZ = tileMinZ + tileWorldSize;
+
+    float finerCellSize = mClipmap->GetCellSize(finerLevel);
+    float finerTileWorldSize = (float)mInitInfo.TileSize * finerCellSize;
+    XMINT2 finerOrigin = mClipmap->GetLevelOrigin(finerLevel);
+    int halfTiles = 2;
+    float finerMinX = ((float)finerOrigin.x - (float)halfTiles) * finerTileWorldSize;
+    float finerMaxX = ((float)finerOrigin.x + (float)(halfTiles + 1)) * finerTileWorldSize;
+    float finerMinZ = ((float)finerOrigin.y - (float)halfTiles) * finerTileWorldSize;
+    float finerMaxZ = ((float)finerOrigin.y + (float)(halfTiles + 1)) * finerTileWorldSize;
+
+    if (finerMinX < tileMinX) outConstants.SkirtEdgeFlags |= 1u;
+    if (finerMaxX > tileMaxX) outConstants.SkirtEdgeFlags |= 2u;
+    if (finerMinZ < tileMinZ) outConstants.SkirtEdgeFlags |= 4u;
+    if (finerMaxZ > tileMaxZ) outConstants.SkirtEdgeFlags |= 8u;
+}
+
 void ProceduralTerrain::DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificShadowPSO)
 {
     // Ignore SpecificShadowPSO — it's designed for models, terrain uses its own tessellation PSO
@@ -619,13 +666,16 @@ void ProceduralTerrain::DrawShadow(GraphicsContext& Context, GraphicsPSO* Specif
     Context.SetIndexBuffer(ibv);
     Context.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST);
 
-    // Override ViewProj with light VP for shadow projection.
-    // GetViewProj() returns pre-transposed matrix; un-transpose to match our CB format
-    // (UpdateConstantBuffer stores ViewProj without transpose, DS uses mul(M,v) = M^T*v).
-    // EyePosW stays as camera position for distance-based tessellation quality.
-    XMFLOAT4X4 savedViewProj = mConstants.ViewProj;
+    // Prepare shadow constants with light VP.
+    // Copy current per-frame constants as base, then override ViewProj and frustum planes.
+    mShadowConstants = mConstants;
     XMMATRIX shadowVP = XMLoadFloat4x4(&mCachedShadowVP);
-    XMStoreFloat4x4(&mConstants.ViewProj, XMMatrixTranspose(shadowVP));
+    XMStoreFloat4x4(&mShadowConstants.ViewProj, XMMatrixTranspose(shadowVP));
+
+    // Replace camera frustum planes with light frustum planes for correct shadow culling
+    XMFLOAT4 lightFrustumPlanes[6];
+    ExtractFrustumPlanes(lightFrustumPlanes, shadowVP);
+    memcpy(mShadowConstants.gWorldFrustumPlanes, lightFrustumPlanes, sizeof(lightFrustumPlanes));
 
     const UINT cbAlignedSize = Math::AlignUp(sizeof(ProceduralTerrainConstants), 256u);
     const UINT cRingBufferSize = 256;
@@ -640,13 +690,13 @@ void ProceduralTerrain::DrawShadow(GraphicsContext& Context, GraphicsPSO* Specif
         if (mClipmap->IsCoveredByFinerLevel(tile)) continue;
 
         // Per-tile constants
-        mConstants.HeightMapIndex = tile->HeightSRVIndex;
-        mConstants.NormalMapIndex = tile->NormalSRVIndex;
-        mConstants.MaterialWeightMapIndex = tile->WeightSRVIndex;
-        mConstants.ClipmapLevel = tile->LODLevel;
-        mConstants.CellSize = mClipmap->GetCellSize(tile->LODLevel);
-        mConstants.TileGridOffsetX = tile->GridCoord.x * (int)mInitInfo.TileSize;
-        mConstants.TileGridOffsetY = tile->GridCoord.y * (int)mInitInfo.TileSize;
+        mShadowConstants.HeightMapIndex = tile->HeightSRVIndex;
+        mShadowConstants.NormalMapIndex = tile->NormalSRVIndex;
+        mShadowConstants.MaterialWeightMapIndex = tile->WeightSRVIndex;
+        mShadowConstants.ClipmapLevel = tile->LODLevel;
+        mShadowConstants.CellSize = mClipmap->GetCellSize(tile->LODLevel);
+        mShadowConstants.TileGridOffsetX = tile->GridCoord.x * (int)mInitInfo.TileSize;
+        mShadowConstants.TileGridOffsetY = tile->GridCoord.y * (int)mInitInfo.TileSize;
 
         // Finer LOD level coverage bounds
         if (tile->LODLevel > 0 && mClipmap->IsLevelInitialized(tile->LODLevel - 1))
@@ -656,23 +706,23 @@ void ProceduralTerrain::DrawShadow(GraphicsContext& Context, GraphicsPSO* Specif
             float finerTileWorldSize = (float)mInitInfo.TileSize * finerCellSize;
             float coarseCellSize = mClipmap->GetCellSize(tile->LODLevel);
             XMINT2 finerOrigin = mClipmap->GetLevelOrigin(finerLevel);
-            mConstants.HasFinerLevel = 1;
-            mConstants.FinerLevelMinX = ((float)finerOrigin.x - 2.0f) * finerTileWorldSize + coarseCellSize;
-            mConstants.FinerLevelMaxX = ((float)finerOrigin.x + 3.0f) * finerTileWorldSize - coarseCellSize;
-            mConstants.FinerLevelMinZ = ((float)finerOrigin.y - 2.0f) * finerTileWorldSize + coarseCellSize;
-            mConstants.FinerLevelMaxZ = ((float)finerOrigin.y + 3.0f) * finerTileWorldSize - coarseCellSize;
+            mShadowConstants.HasFinerLevel = 1;
+            mShadowConstants.FinerLevelMinX = ((float)finerOrigin.x - 2.0f) * finerTileWorldSize + coarseCellSize;
+            mShadowConstants.FinerLevelMaxX = ((float)finerOrigin.x + 3.0f) * finerTileWorldSize - coarseCellSize;
+            mShadowConstants.FinerLevelMinZ = ((float)finerOrigin.y - 2.0f) * finerTileWorldSize + coarseCellSize;
+            mShadowConstants.FinerLevelMaxZ = ((float)finerOrigin.y + 3.0f) * finerTileWorldSize - coarseCellSize;
         }
         else
         {
-            mConstants.HasFinerLevel = 0;
+            mShadowConstants.HasFinerLevel = 0;
         }
 
-        ComputeSkirtFlags(tile);
+        ComputeSkirtFlagsFor(tile, mShadowConstants);
 
-        // Upload to ring buffer slot
-        memcpy(mMappedCB + ringIndex * cbAlignedSize, &mConstants, sizeof(ProceduralTerrainConstants));
+        // Upload to shadow ring buffer (separate from main pass ring buffer)
+        memcpy(mMappedShadowCB + ringIndex * cbAlignedSize, &mShadowConstants, sizeof(ProceduralTerrainConstants));
 
-        D3D12_GPU_VIRTUAL_ADDRESS tileCBAddr = mCBGPU + ringIndex * cbAlignedSize;
+        D3D12_GPU_VIRTUAL_ADDRESS tileCBAddr = mShadowCBGPU + ringIndex * cbAlignedSize;
         ringIndex = (ringIndex + 1) % cRingBufferSize;
 
         Context.SetConstantBuffer(1, tileCBAddr);
@@ -700,9 +750,6 @@ void ProceduralTerrain::DrawShadow(GraphicsContext& Context, GraphicsPSO* Specif
 
         Context.DrawIndexed(mIndexCount);
     }
-
-    // Restore original ViewProj for main pass
-    mConstants.ViewProj = savedViewProj;
 }
 
 void ProceduralTerrain::DrawDepthOnly(GraphicsContext& Context)

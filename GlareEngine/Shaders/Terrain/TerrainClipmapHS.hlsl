@@ -39,16 +39,16 @@ ClipmapPatchTess CalcClipmapPatchConstants(
     float3 boxCenter = 0.5 * (vMin + vMax);
     float3 boxExtents = 0.5 * (vMax - vMin) + float3(cellSize, 0, cellSize);
 
-    if (AABBOutsideFrustumTest(boxCenter, boxExtents, gTerrainFrustumPlanes))
-    {
-        pt.EdgeTess[0] = 0;
-        pt.EdgeTess[1] = 0;
-        pt.EdgeTess[2] = 0;
-        pt.EdgeTess[3] = 0;
-        pt.InsideTess[0] = 0;
-        pt.InsideTess[1] = 0;
-        return pt;
-    }
+    //if (AABBOutsideFrustumTest(boxCenter, boxExtents, gTerrainFrustumPlanes))
+    //{
+    //    pt.EdgeTess[0] = 0;
+    //    pt.EdgeTess[1] = 0;
+    //    pt.EdgeTess[2] = 0;
+    //    pt.EdgeTess[3] = 0;
+    //    pt.InsideTess[0] = 0;
+    //    pt.InsideTess[1] = 0;
+    //    return pt;
+    //}
 
     // Distance-based tessellation inversely scaled by LOD level.
     // LOD N divides raw tess by 2^N, so coarser levels get fewer subdivisions.

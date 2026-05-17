@@ -72,6 +72,15 @@ void Scene::Update(float DeltaTime)
 		}
 	}
 
+	//Update shadow scene bounds to follow camera (snap to texel grid to prevent shadow swimming)
+	{
+		XMFLOAT3 camPos = mSceneView.m_pCamera->GetPosition3f();
+		float worldUnitsPerTexel = (2.0f * 700.0f) / (float)m_pShadowMap->Width();
+		float snappedX = floorf(camPos.x / worldUnitsPerTexel) * worldUnitsPerTexel;
+		float snappedZ = floorf(camPos.z / worldUnitsPerTexel) * worldUnitsPerTexel;
+		//m_pShadowMap->SetSceneBoundCenter(XMFLOAT3(snappedX, 0.0f, snappedZ));
+	}
+
 	//Update shadow map
 	m_pShadowMap->Update(DeltaTime);
 
@@ -414,6 +423,7 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 	
 	//Shadow Map 
 	mSceneView.mMainConstants.mShadowMapIndex = m_pShadowMap->GetShadowMapIndex();
+	mSceneView.mMainConstants.gShadowIntensity = Lighting::gShadowIntensity;
 
 	assert(GlobleSRVIndex::gSkyCubeSRVIndex >= 0);
 	assert(GlobleSRVIndex::gBakingDiffuseCubeIndex >= 0);

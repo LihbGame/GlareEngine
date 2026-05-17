@@ -46,7 +46,6 @@ struct ClipmapDomainOut
 {
     float4  PosH        : SV_POSITION;
     float3  PosW        : POSITION0;
-    float4  ShadowPosH  : POSITION1;
     float3  NormalW     : NORMAL;
     float3  TangentW    : TANGENT;
     float2  TileUV      : TEXCOORD0;

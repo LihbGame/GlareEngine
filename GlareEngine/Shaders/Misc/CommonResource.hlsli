@@ -147,6 +147,8 @@ cbuffer MainPass : register(b0)
     
     float2      gCurJitterOffset;
     float2      gPreJitterOffset;
+
+    float       gShadowIntensity;
 };
 
 struct AreaLightInstanceData

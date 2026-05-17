@@ -34,6 +34,7 @@ private:
     void LoadMaterialTextures(ID3D12GraphicsCommandList* CmdList);
     void UpdateConstantBuffer();
     void ComputeSkirtFlags(const ClipmapTile* tile);
+    void ComputeSkirtFlagsFor(const ClipmapTile* tile, ProceduralTerrainConstants& outConstants);
 
     // Subsystems
     unique_ptr<TerrainClipmap>          mClipmap;
@@ -49,11 +50,17 @@ private:
     GraphicsPSO     mTerrainDeferredPSO_Wireframe;
     GraphicsPSO     mTerrainShadowPSO_Wireframe;
 
-    // Constant buffer
+    // Constant buffer (main pass ring buffer)
     ProceduralTerrainConstants mConstants;
     ComPtr<ID3D12Resource>     mConstantBuffer;
     D3D12_GPU_VIRTUAL_ADDRESS  mCBGPU = 0;
     uint8_t*                   mMappedCB = nullptr;
+
+    // Shadow pass constant buffer (separate to avoid ring buffer overwrite by main pass)
+    ProceduralTerrainConstants mShadowConstants;
+    ComPtr<ID3D12Resource>     mShadowConstantBuffer;
+    D3D12_GPU_VIRTUAL_ADDRESS  mShadowCBGPU = 0;
+    uint8_t*                   mMappedShadowCB = nullptr;
 
     // Material layer SRV indices: [layer][albedo, normal, roughness, metallic, AO]
     int mLayerSRVIndices[5][5] = {};

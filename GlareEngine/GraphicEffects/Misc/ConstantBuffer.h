@@ -151,6 +151,8 @@ __declspec(align(16))struct MainConstants
 
 	XMFLOAT2    gCurJitterOffset;
 	XMFLOAT2    gPreJitterOffset;
+
+	float       gShadowIntensity = 1.0f;
 };
 
 

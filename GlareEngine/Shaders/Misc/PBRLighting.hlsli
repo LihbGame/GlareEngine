@@ -371,7 +371,8 @@ float3 ComputeLighting(in DirectionalLight lights[MAX_DIR_LIGHTS], in SurfacePro
     {
         for (i = 0; i < gDirectionalLightsCount; ++i)
         {
-            lights[i].Strength *= smoothstep(0.0f, 1.0f, Surface.ShadowFactor);
+            float shadow = smoothstep(0.0f, 1.0f, Surface.ShadowFactor);
+            lights[i].Strength *= lerp(1.0f, shadow, gShadowIntensity);
             LightProperties lightProperties = GetLightProperties(lights[i], Surface);
             LightResult += ComputeDirectionalLight(lightProperties, Surface);
         }
