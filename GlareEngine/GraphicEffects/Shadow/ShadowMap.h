@@ -52,6 +52,8 @@ public:
 
 	XMFLOAT4X4 GetViewProj() const { return mConstantBuffer.gShadowViewProj; }
 
+	XMFLOAT4X4 GetViewProjNoTranspose() const { return mLightViewProj; }
+
 	XMFLOAT4X4 GetShadowTransform()const { return mShadowTransform; }
 private:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetDSV()const { return mShadowBuffer.GetDSV(); }
@@ -74,24 +76,25 @@ private:
 
 	bool IsShadowTransformed = true;
 
-	//光照的影响范围
+	// Light influence bounds
 	DirectX::BoundingSphere mSceneBounds;
-	//光照投影近远面z值
+	// Light projection depth range
 	float mLightNearZ = 0.0f;
 	float mLightFarZ = 0.0f;
-	//光的世界位置
+	// Light world-space position
 	XMFLOAT3 mLightPosW;
-	//用于shadow map 的转换矩阵
+	// Shadow map transform matrices
 	XMFLOAT4X4 mLightView = MathHelper::Identity4x4();
 	XMFLOAT4X4 mLightProj = MathHelper::Identity4x4();
+	XMFLOAT4X4 mLightViewProj = MathHelper::Identity4x4();
 	XMFLOAT4X4 mShadowTransform = MathHelper::Identity4x4();
-	//光的旋转角度(可实时变化)
+	// Light rotation angle
 	float mLightRotationAngle = 0.0f;
-	//基础光方向
+	// Base light direction
 	XMFLOAT3 mBaseLightDirection;
-	//旋转后光的方向
+	// Rotated light direction
 	XMFLOAT3 mRotatedLightDirection;
-	//constant buffer
+	// Constant buffer
 	ShadowConstantBuffer mConstantBuffer;
 	int mShadowMapIndex = 0;
 };

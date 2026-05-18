@@ -188,6 +188,11 @@ void ProceduralTerrain::BuildPipelineState(ID3D12GraphicsCommandList*)
     wireframeRaster.CullMode = D3D12_CULL_MODE_NONE;
     wireframeRaster.FillMode = D3D12_FILL_MODE_WIREFRAME;
 
+    D3D12_RASTERIZER_DESC terrainShadowRaster = RasterizerShadowTwoSided;
+    terrainShadowRaster.DepthBias = 4096;
+    terrainShadowRaster.SlopeScaledDepthBias = 1.0f;
+    terrainShadowRaster.DepthBiasClamp = 0.0f;
+
     // Forward PSO (solid)
     mTerrainPSO.SetRootSignature(mTerrainRootSig);
     mTerrainPSO.SetVertexShader(g_pTerrainClipmapVS, sizeof(g_pTerrainClipmapVS));
@@ -239,7 +244,7 @@ void ProceduralTerrain::BuildPipelineState(ID3D12GraphicsCommandList*)
     mTerrainCastShadowPSO.SetSampleMask(0xFFFFFFFF);
     mTerrainCastShadowPSO.SetDepthStencilState(DepthStateReadWrite);
     mTerrainCastShadowPSO.SetBlendState(CD3DX12_BLEND_DESC(D3D12_DEFAULT));
-    mTerrainCastShadowPSO.SetRasterizerState(RasterizerShadowTwoSided);
+    mTerrainCastShadowPSO.SetRasterizerState(terrainShadowRaster);
     mTerrainCastShadowPSO.SetRenderTargetFormats(0, nullptr, DXGI_FORMAT_D32_FLOAT);
     mTerrainCastShadowPSO.Finalize();
 
@@ -591,8 +596,7 @@ void ProceduralTerrain::ComputeSkirtFlags(const ClipmapTile* tile)
     float finerMaxZ = ((float)finerOrigin.y + (float)(halfTiles + 1)) * finerTileWorldSize;
 
     // For each edge, check if the finer level's coverage extends beyond that edge.
-    // If the finer level is present on a given side, that's an LOD boundary → skirt needed
-    // to hide the resolution discontinuity between coarse and fine mesh.
+    // If the finer level is present on a given side, add a skirt to hide the LOD discontinuity.
     // Left edge: finer level extends to the left of this tile
     if (finerMinX < tileMinX) mConstants.SkirtEdgeFlags |= 1u;
     // Right edge: finer level extends to the right of this tile
@@ -639,7 +643,7 @@ void ProceduralTerrain::ComputeSkirtFlagsFor(const ClipmapTile* tile, Procedural
 
 void ProceduralTerrain::DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificShadowPSO)
 {
-    // Ignore SpecificShadowPSO — it's designed for models, terrain uses its own tessellation PSO
+    // Ignore SpecificShadowPSO because terrain uses its own tessellation PSO.
     Context.SetRootSignature(mTerrainRootSig);
     Context.SetPipelineState(mTerrainCastShadowPSO);
 
@@ -670,7 +674,7 @@ void ProceduralTerrain::DrawShadow(GraphicsContext& Context, GraphicsPSO* Specif
     // Copy current per-frame constants as base, then override ViewProj and frustum planes.
     mShadowConstants = mConstants;
     XMMATRIX shadowVP = XMLoadFloat4x4(&mCachedShadowVP);
-    XMStoreFloat4x4(&mShadowConstants.ViewProj, XMMatrixTranspose(shadowVP));
+    XMStoreFloat4x4(&mShadowConstants.ViewProj, shadowVP);
 
     // Replace camera frustum planes with light frustum planes for correct shadow culling
     XMFLOAT4 lightFrustumPlanes[6];

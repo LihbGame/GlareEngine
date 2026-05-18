@@ -57,7 +57,7 @@ void ShadowMap::Update(float DeltaTime)
 	float n = sphereCenterLS.z - this->mSceneBounds.Radius;
 	float r = sphereCenterLS.x + this->mSceneBounds.Radius;
 	float t = sphereCenterLS.y + this->mSceneBounds.Radius;
-	float f = sphereCenterLS.z + this->mSceneBounds.Radius * 10;
+	float f = sphereCenterLS.z + this->mSceneBounds.Radius;
 
 	this->mLightNearZ = n;
 	this->mLightFarZ = f;
@@ -76,6 +76,7 @@ void ShadowMap::Update(float DeltaTime)
 	XMStoreFloat4x4(&this->mShadowTransform, S);
 
 	XMMATRIX ShadowViewProj = XMMatrixMultiply(lightView, lightProj);
+	XMStoreFloat4x4(&mLightViewProj, ShadowViewProj);
 	XMStoreFloat4x4(&mConstantBuffer.gShadowViewProj, XMMatrixTranspose(ShadowViewProj));
 }
 

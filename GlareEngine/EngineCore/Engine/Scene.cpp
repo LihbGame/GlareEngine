@@ -75,10 +75,12 @@ void Scene::Update(float DeltaTime)
 	//Update shadow scene bounds to follow camera (snap to texel grid to prevent shadow swimming)
 	{
 		XMFLOAT3 camPos = mSceneView.m_pCamera->GetPosition3f();
-		float worldUnitsPerTexel = (2.0f * 700.0f) / (float)m_pShadowMap->Width();
+		float shadowRadius = m_pRenderObjectsType[(int)ObjectType::Terrain].empty() ? 700.0f : 3000.0f;
+		m_pShadowMap->SetSceneBoundRadius(shadowRadius);
+		float worldUnitsPerTexel = (2.0f * shadowRadius) / (float)m_pShadowMap->Width();
 		float snappedX = floorf(camPos.x / worldUnitsPerTexel) * worldUnitsPerTexel;
 		float snappedZ = floorf(camPos.z / worldUnitsPerTexel) * worldUnitsPerTexel;
-		//m_pShadowMap->SetSceneBoundCenter(XMFLOAT3(snappedX, 0.0f, snappedZ));
+		m_pShadowMap->SetSceneBoundCenter(XMFLOAT3(snappedX, 0.0f, snappedZ));
 	}
 
 	//Update shadow map
@@ -521,7 +523,7 @@ void Scene::ForwardRendering()
 	// Cache shadow VP for terrain before shadow pass
 	for (auto& obj : m_pRenderObjectsType[(int)ObjectType::Terrain])
 		if (obj->GetVisible())
-			static_cast<ProceduralTerrain*>(obj)->CacheShadowVP(m_pShadowMap->GetViewProj());
+			static_cast<ProceduralTerrain*>(obj)->CacheShadowVP(m_pShadowMap->GetViewProjNoTranspose());
 
 	Context.PIXBeginEvent(L"Shadow Pass");
 	CreateShadowMap(Context,m_pRenderObjects);
@@ -767,7 +769,7 @@ void Scene::ForwardRendering(RasterRenderPipelineType ForwardRenderPipeline)
 				//Sun Shadow Map
 				CreateShadowMapForGLTF(Context);
 
-				// Terrain shadow — append to existing model shadow depth (do NOT clear)
+				// Terrain shadow appends to existing model shadow depth without clearing.
 				{
 					auto& shadowBuf = m_pShadowMap->GetShadowBuffer();
 					Context.TransitionResource(shadowBuf, D3D12_RESOURCE_STATE_DEPTH_WRITE);
@@ -778,7 +780,7 @@ void Scene::ForwardRendering(RasterRenderPipelineType ForwardRenderPipeline)
 					{
 						if (obj->GetVisible() && obj->GetShadowRenderFlag())
 						{
-							static_cast<ProceduralTerrain*>(obj)->CacheShadowVP(m_pShadowMap->GetViewProj());
+							static_cast<ProceduralTerrain*>(obj)->CacheShadowVP(m_pShadowMap->GetViewProjNoTranspose());
 							obj->DrawShadow(Context);
 						}
 					}
@@ -1035,7 +1037,7 @@ void Scene::DeferredRendering(RasterRenderPipelineType DeferredRenderPipeline)
 			//Sun Shadow Map
 			CreateShadowMapForGLTF(Context);
 
-			// Terrain shadow — append to existing model shadow depth (do NOT clear)
+			// Terrain shadow appends to existing model shadow depth without clearing.
 			{
 				auto& shadowBuf = m_pShadowMap->GetShadowBuffer();
 				Context.TransitionResource(shadowBuf, D3D12_RESOURCE_STATE_DEPTH_WRITE);
@@ -1046,7 +1048,7 @@ void Scene::DeferredRendering(RasterRenderPipelineType DeferredRenderPipeline)
 				{
 					if (obj->GetVisible() && obj->GetShadowRenderFlag())
 					{
-						static_cast<ProceduralTerrain*>(obj)->CacheShadowVP(m_pShadowMap->GetViewProj());
+						static_cast<ProceduralTerrain*>(obj)->CacheShadowVP(m_pShadowMap->GetViewProjNoTranspose());
 						obj->DrawShadow(Context);
 					}
 				}
