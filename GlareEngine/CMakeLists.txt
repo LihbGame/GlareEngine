@@ -7,6 +7,7 @@ file(GLOB ENGINE_RESOURCE CONFIGURE_DEPENDS ${ENGINE_ROOT_DIR}/Resource/GlareEng
 file(GLOB DEPENDENCES_SOURCES CONFIGURE_DEPENDS ${ENGINE_ROOT_DIR}/Dependences/include/)
 file(GLOB_RECURSE SHADER_SOURCES CONFIGURE_DEPENDS ${ENGINE_ROOT_DIR}/Shaders/*.hlsl)
 file(GLOB_RECURSE SHADER_HEAD CONFIGURE_DEPENDS ${ENGINE_ROOT_DIR}/Shaders/*.hlsli)
+list(FILTER SHADER_SOURCES EXCLUDE REGEX "TerrainNoiseCS\\.hlsl$")
 file(GLOB_RECURSE HEADER_FILES CONFIGURE_DEPENDS ${ENGINE_ROOT_DIR}/*.h)
 file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS ${ENGINE_ROOT_DIR}/*.cpp)
 file(GLOB_RECURSE PACKAGE_FILES CONFIGURE_DEPENDS ${GLAREENGINE_ROOT_DIR}/packages/*.h)
@@ -80,7 +81,22 @@ add_custom_command(
     COMMENT "Compiling TerrainClipmapShadowDS.hlsl with dxc"
 )
 
+add_custom_command(
+    OUTPUT "${COMPILED_SHADER_DIR}/TerrainNoiseCS.h"
+    COMMAND ${DXC_PATH} -T cs_6_6 -E main -HV 2021 -Zi -Qembed_debug -Od
+            -Fh "${COMPILED_SHADER_DIR}/TerrainNoiseCS.h"
+            -Vn g_pTerrainNoiseCS
+            "${ENGINE_ROOT_DIR}/Shaders/Terrain/TerrainNoiseCS.hlsl"
+            -I "${ENGINE_ROOT_DIR}/Shaders"
+    DEPENDS "${ENGINE_ROOT_DIR}/Shaders/Terrain/TerrainNoiseCS.hlsl"
+            "${ENGINE_ROOT_DIR}/Shaders/Terrain/TerrainNoise.hlsli"
+            "${ENGINE_ROOT_DIR}/Shaders/Terrain/TerrainCommon.hlsli"
+            "${ENGINE_ROOT_DIR}/Shaders/Misc/CommonResource.hlsli"
+    COMMENT "Compiling TerrainNoiseCS.hlsl with dxc"
+)
+
 file(GLOB_RECURSE CS_SHADER_SOURCES ${ENGINE_ROOT_DIR}/Shaders/*CS.hlsl)
+list(FILTER CS_SHADER_SOURCES EXCLUDE REGEX "TerrainNoiseCS\\.hlsl$")
 set_source_files_properties(${CS_SHADER_SOURCES} PROPERTIES VS_SHADER_TYPE Compute)
 
 # Ray Tracing Shaders (lib_6_6)
@@ -91,6 +107,7 @@ add_library(${TARGET_NAME} ${ENGINE_RESOURCE} ${HEADER_FILES} ${SOURCE_FILES} ${
     "${COMPILED_SHADER_DIR}/TerrainClipmapHS.h"
     "${COMPILED_SHADER_DIR}/TerrainClipmapDS.h"
     "${COMPILED_SHADER_DIR}/TerrainClipmapShadowDS.h"
+    "${COMPILED_SHADER_DIR}/TerrainNoiseCS.h"
 )
 
 add_custom_command(TARGET ${TARGET_NAME} COMMAND ${CMAKE_COMMAND} -E copy_directory ${GLAREENGINE_ROOT_DIR}/Resource

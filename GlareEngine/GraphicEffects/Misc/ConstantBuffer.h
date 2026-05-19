@@ -187,16 +187,16 @@ __declspec(align(256)) struct ProceduralTerrainNoiseCB
     UINT        Octaves             = 7;
     float       Lacunarity          = 2.0f;
     float       Persistence         = 0.5f;
-    float       WarpStrength        = 30.0f;
+    float       WarpStrength        = 30.0f;   // kept for CB layout alignment (hardcoded in shaders)
     float       WarpScale           = 0.02f;
     float       SnowHeight          = 150.0f;
     float       SnowTransition      = 20.0f;
     float       StoneSlope          = 0.6f;
     float       StoneTransition     = 0.15f;
     int         LODLevel            = 0;
+    int         HighFreqLayers      = 2;
     float       Pad0                = 0;
     float       Pad1                = 0;
-    float       Pad2                = 0;
 };
 
 // Procedural terrain render constants

@@ -66,7 +66,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float3 result = ComputeTerrainHeightWithDerivatives(worldXZ,
         gNoiseScale, gNoiseSeed, gNoiseOctaves,
         gNoiseLacunarity, gNoisePersistence,
-        gNoiseWarpStrength, gNoiseWarpScale, gNoiseHeightScale);
+        gNoiseWarpScale, gNoiseHeightScale,
+        gNoiseHighFreqLayers);
 
     float height = result.x;
     float2 gradient = result.yz;

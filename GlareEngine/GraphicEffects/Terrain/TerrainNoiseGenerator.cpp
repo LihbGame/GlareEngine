@@ -100,8 +100,9 @@ void TerrainNoiseGenerator::GenerateTiles(
         mNoiseCBData.Octaves = mOctaves;
         mNoiseCBData.Lacunarity = mLacunarity;
         mNoiseCBData.Persistence = mPersistence;
-        mNoiseCBData.WarpStrength = mWarpStrength;
         mNoiseCBData.WarpScale = mWarpScale;
+
+        mNoiseCBData.HighFreqLayers = mHighFreqLayers;
         mNoiseCBData.SnowHeight = mSnowHeight;
         mNoiseCBData.SnowTransition = mSnowTransition;
         mNoiseCBData.StoneSlope = mStoneSlope;

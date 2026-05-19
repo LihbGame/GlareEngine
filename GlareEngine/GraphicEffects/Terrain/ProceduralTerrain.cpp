@@ -329,8 +329,19 @@ void ProceduralTerrain::Update(float dt, GraphicsContext* Context)
     {
         mNoiseGen->SetNoiseScale(mNoiseScaleUI);
         mNoiseGen->SetHeightScale(mHeightScaleUI);
+        mNoiseGen->SetHighFreqLayers(mHighFreqLayersUI);
     }
     mInitInfo.HeightScale = mHeightScaleUI;
+
+    // Detect noise parameter changes and force full tile regeneration
+    if (mNoiseScaleUI != mPrevNoiseScale || mHeightScaleUI != mPrevHeightScale ||
+        (float)mHighFreqLayersUI != mPrevHighFreqLayers)
+    {
+        mClipmap->ForceRegenerateAll();
+        mPrevNoiseScale = mNoiseScaleUI;
+        mPrevHeightScale = mHeightScaleUI;
+        mPrevHighFreqLayers = (float)mHighFreqLayersUI;
+    }
 
     // Generate dirty tiles via compute
     const auto& dirtyTiles = mClipmap->GetDirtyTiles();
@@ -379,9 +390,9 @@ void ProceduralTerrain::UpdateConstantBuffer()
     XMMATRIX viewProj = camera->GetView() * camera->GetProj();
     XMStoreFloat4x4(&mConstants.ViewProj, viewProj);
     mConstants.EyePosW = camera->GetPosition3f();
-    mConstants.MinTessDistance = mMinTessDistUI;
+    mConstants.MinTessDistance = 1.0f;
     mConstants.MaxTessDistance = mMaxTessDistUI;
-    mConstants.MinTessFactor = mMinTessFactorUI;
+    mConstants.MinTessFactor = 2.0f;
     mConstants.MaxTessFactor = mMaxTessFactorUI;
     mConstants.HeightScale = mHeightScaleUI;
     mConstants.TexScale = mTexScaleUI;
@@ -867,49 +878,46 @@ void ProceduralTerrain::DrawUI()
 {
     if (ImGui::CollapsingHeader("Procedural Terrain", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        ImGui::SliderFloat("Noise Scale", &mNoiseScaleUI, 0.001f, 0.005f);
-        ImGui::SliderFloat("Height Scale", &mHeightScaleUI, 10.0f, 3000.0f);
-        ImGui::SliderFloat("Tex Scale", &mTexScaleUI, 1.0f, 200.0f);
-        ImGui::SliderFloat("Roughness Scale", &mRoughnessScaleUI, 0.1f, 10.0f);
-        ImGui::SliderFloat("Detail Scale", &mDetailScaleUI, 1.0f, 100.0f);
-        ImGui::SliderFloat("Detail Fade Dist", &mDetailFadeDistanceUI, 5.0f, 200.0f);
-        ImGui::Checkbox("Height Blend", &mUseHeightBlendUI);
-        ImGui::SliderFloat("Min Tess Factor", &mMinTessFactorUI, 1.0f, 16.0f);
-        ImGui::SliderFloat("Max Tess Factor", &mMaxTessFactorUI, 2.0f, 64.0f);
-        ImGui::SliderFloat("Min Tess Dist", &mMinTessDistUI, 1.0f, 100.0f);
-        ImGui::SliderFloat("Max Tess Dist", &mMaxTessDistUI, 100.0f, 2000.0f);
-        ImGui::SliderFloat("Warp Strength", &mWarpStrengthUI, 0.0f, 100.0f);
-        ImGui::SliderFloat("Snow Height", &mSnowHeightUI, 50.0f, 300.0f);
-        ImGui::SliderFloat("Stone Slope", &mStoneSlopeUI, 0.1f, 1.0f);
+        if (ImGui::TreeNode("Generation"))
+        {
+            ImGui::SliderFloat("Noise Scale", &mNoiseScaleUI, 0.001f, 0.005f);
+            ImGui::SliderFloat("Height Scale", &mHeightScaleUI, 10.0f, 3000.0f);
+            ImGui::SliderInt("High Freq Layers", &mHighFreqLayersUI, 0, 8);
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Tessellation"))
+        {
+            ImGui::SliderFloat("Max Tess Factor", &mMaxTessFactorUI, 2.0f, 32.0f);
+            ImGui::SliderFloat("Tess Distance", &mMaxTessDistUI, 50.0f, 2000.0f);
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Materials"))
+        {
+            ImGui::SliderFloat("Tex Scale", &mTexScaleUI, 1.0f, 200.0f);
+            ImGui::SliderFloat("Roughness Scale", &mRoughnessScaleUI, 0.1f, 10.0f);
+            ImGui::SliderFloat("Snow Height", &mSnowHeightUI, 50.0f, 300.0f);
+            ImGui::SliderFloat("Stone Slope", &mStoneSlopeUI, 0.1f, 1.0f);
+            ImGui::SliderFloat("Detail Scale", &mDetailScaleUI, 1.0f, 100.0f);
+            ImGui::SliderFloat("Detail Fade Dist", &mDetailFadeDistanceUI, 5.0f, 200.0f);
+            ImGui::Checkbox("Height Blend", &mUseHeightBlendUI);
+            ImGui::TreePop();
+        }
 
         ImGui::Separator();
-        ImGui::Text("Active Tiles: %d", (int)mClipmap->GetActiveTiles().size());
-        ImGui::Text("Dirty Tiles: %d", (int)mClipmap->GetDirtyTiles().size());
+        ImGui::Text("Active Tiles: %d  Dirty: %d",
+            (int)mClipmap->GetActiveTiles().size(),
+            (int)mClipmap->GetDirtyTiles().size());
 
         // Debug LOD filter: -1 = render all levels, 0-9 = single level
         const char* lodLabels[] = {
             "All Levels", "LOD 0", "LOD 1", "LOD 2", "LOD 3",
             "LOD 4", "LOD 5", "LOD 6", "LOD 7", "LOD 8", "LOD 9"
         };
-        int lodSelection = mDebugLODLevel + 1; // shift -1..9 to 0..10
+        int lodSelection = mDebugLODLevel + 1;
         if (ImGui::Combo("Debug LOD", &lodSelection, lodLabels, IM_ARRAYSIZE(lodLabels)))
             mDebugLODLevel = lodSelection - 1;
-
-        // Show debug info for first active tile
-        const auto& activeTiles = mClipmap->GetActiveTiles();
-        if (!activeTiles.empty())
-        {
-            ClipmapTile* tile = activeTiles[0];
-            ImGui::Separator();
-            ImGui::Text("Debug Tile (first active):");
-            ImGui::Text("  Grid: (%d, %d)  LOD: %d",
-                tile->GridCoord.x, tile->GridCoord.y, tile->LODLevel);
-            ImGui::Text("  CellSize: %.2f  Dirty: %s",
-                mClipmap->GetCellSize(tile->LODLevel),
-                tile->IsDirty ? "yes" : "no");
-            ImGui::Text("  HeightSRV: %d  NormalSRV: %d  WeightSRV: %d",
-                tile->HeightSRVIndex, tile->NormalSRVIndex, tile->WeightSRVIndex);
-        }
     }
 }
 

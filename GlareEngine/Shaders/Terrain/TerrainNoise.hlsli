@@ -75,6 +75,8 @@ float TerrainRidgeNoiseImpl(float2 pos, uint octaves, float lacunarity, float pe
 }
 
 // --- Full height evaluation ---
+// highFreqLayers: number of extra high-frequency noise layers stacked on top.
+//   0 = smooth, 8 = maximum fine detail. Each layer doubles frequency and halves amplitude.
 float ComputeTerrainHeight(
     float2 worldXZ,
     float noiseScale,
@@ -82,14 +84,14 @@ float ComputeTerrainHeight(
     uint octaves,
     float lacunarity,
     float persistence,
-    float warpStrength,
     float warpScale,
-    float heightScale)
+    float heightScale,
+    uint highFreqLayers)
 {
     float seedOffset = TNoiseHash2D(float2(seed, seed * 1.37));
     float seedOffset2 = TNoiseHash2D(float2(seed * 2.17, seed * 0.73));
 
-    // Low-frequency continental base
+    // Continental base
     float continental = TerrainFBMImpl(worldXZ * noiseScale * 0.1, octaves, lacunarity, persistence, seedOffset);
     float baseMask = smoothstep(0.2, 0.8, continental);
 
@@ -98,7 +100,7 @@ float ComputeTerrainHeight(
         TerrainFBMImpl(worldXZ * warpScale + float2(0.0, 0.0), octaves, lacunarity, persistence, seedOffset),
         TerrainFBMImpl(worldXZ * warpScale + float2(5.2, 1.3), octaves, lacunarity, persistence, seedOffset)
     );
-    float2 warpedXZ = worldXZ + warp * warpStrength;
+    float2 warpedXZ = worldXZ + warp * 30.0;
 
     // Mid-frequency FBM terrain
     float baseHeight = TerrainFBMImpl(warpedXZ * noiseScale, octaves, lacunarity, persistence, seedOffset);
@@ -112,6 +114,18 @@ float ComputeTerrainHeight(
     // Continental base modulates amplitude
     float detail = lerp(baseHeight, ridge, ridgeMask);
     float height = lerp(detail * 0.3, detail * 1.5, baseMask) * heightScale;
+
+    // High-frequency detail layers: progressively finer noise stacked on top.
+    // Each layer doubles frequency and halves amplitude (FBM continuation).
+    [unroll]
+    for (uint h = 0; h < 8; h++)
+    {
+        if (h >= highFreqLayers) break;
+        float freq = 8.0 * pow(lacunarity, float(h));
+        float amp = 0.5 * pow(persistence, float(h));
+        float bump = GradientNoise(warpedXZ * noiseScale * freq);
+        height += bump * amp * heightScale * 0.02;
+    }
 
     return clamp(height, -heightScale, heightScale);
 }
@@ -210,6 +224,7 @@ float3 TerrainRidgeNoiseDerivImpl(float2 pos, uint octaves, float lacunarity, fl
 
 // --- Full height evaluation with analytical gradient ---
 // Returns float3: .x = height, .yz = gradient (dh/dworldX, dh/dworldZ)
+// highFreqLayers: number of extra high-frequency noise layers (0=smooth, 8=max detail)
 float3 ComputeTerrainHeightWithDerivatives(
     float2 worldXZ,
     float noiseScale,
@@ -217,14 +232,14 @@ float3 ComputeTerrainHeightWithDerivatives(
     uint octaves,
     float lacunarity,
     float persistence,
-    float warpStrength,
     float warpScale,
-    float heightScale)
+    float heightScale,
+    uint highFreqLayers)
 {
     float seedOffset = TNoiseHash2D(float2(seed, seed * 1.37));
     float seedOffset2 = TNoiseHash2D(float2(seed * 2.17, seed * 0.73));
 
-    // Continental base (value only, used as mask)
+    // Continental base
     float continental = TerrainFBMImpl(worldXZ * noiseScale * 0.1, octaves, lacunarity, persistence, seedOffset);
     float baseMask = smoothstep(0.2, 0.8, continental);
 
@@ -232,7 +247,7 @@ float3 ComputeTerrainHeightWithDerivatives(
     float3 warpX = TerrainFBMDerivImpl(worldXZ * warpScale, octaves, lacunarity, persistence, seedOffset);
     float3 warpZ = TerrainFBMDerivImpl(worldXZ * warpScale + float2(5.2, 1.3), octaves, lacunarity, persistence, seedOffset);
     float2 warp = float2(warpX.x, warpZ.x);
-    float2 warpedXZ = worldXZ + warp * warpStrength;
+    float2 warpedXZ = worldXZ + warp * 30.0;
 
     // Main terrain with gradient
     float3 terrain = TerrainFBMDerivImpl(warpedXZ * noiseScale, octaves, lacunarity, persistence, seedOffset);
@@ -255,10 +270,23 @@ float3 ComputeTerrainHeightWithDerivatives(
     float height = lerp(detail * 0.3, detail * 1.5, baseMask) * heightScale;
     float2 grad = lerp(detailGrad * 0.3, detailGrad * 1.5, baseMask) * heightScale;
 
+    // High-frequency detail layers: progressively finer noise with gradient.
+    [unroll]
+    for (uint h = 0; h < 8; h++)
+    {
+        if (h >= highFreqLayers) break;
+        float freq = 8.0 * pow(lacunarity, float(h));
+        float amp = 0.5 * pow(persistence, float(h));
+        float hfScale = noiseScale * freq;
+        float3 bump = GradientNoised(warpedXZ * hfScale);
+        height += bump.x * amp * heightScale * 0.02;
+        grad += bump.yz * hfScale * amp * heightScale * 0.02;
+    }
+
     // Chain rule through domain warping:
-    // J = d(warpedXZ)/d(worldXZ) = I + warpStrength * warpScale * J_warp
+    // J = d(warpedXZ)/d(worldXZ) = I + 30.0 * warpScale * J_warp
     // gradient_wrt_worldXZ = J^T * gradient_wrt_warpedXZ
-    float ws = warpStrength * warpScale;
+    float ws = 30.0 * warpScale;
     float2x2 chainJacT = float2x2(
         1.0 + ws * warpX.y, ws * warpZ.y,
         ws * warpX.z,        1.0 + ws * warpZ.z

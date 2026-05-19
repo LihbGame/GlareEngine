@@ -85,15 +85,13 @@ private:
     // ImGui parameters
     float mNoiseScaleUI = 0.003f;
     float mHeightScaleUI = 2000.0f;
-    float mWarpStrengthUI = 30.0f;
+    int mHighFreqLayersUI = 2;
     float mSnowHeightUI = 150.0f;
     float mStoneSlopeUI = 0.6f;
     float mTexScaleUI = 200.0f;
     float mRoughnessScaleUI = 3.0f;
-    float mMinTessFactorUI = 1.0f;
-    float mMaxTessFactorUI = 2.0f;
-    float mMinTessDistUI = 1.0f;
-    float mMaxTessDistUI = 100.0f;
+    float mMaxTessFactorUI = 4.0f;
+    float mMaxTessDistUI = 500.0f;
 
     // Detail texture parameters
     float mDetailScaleUI = 20.0f;
@@ -102,6 +100,12 @@ private:
 
     // Debug: render only a specific LOD level (-1 = all)
     int mDebugLODLevel = -1;
+
+    // Tracked previous-frame noise params to detect changes and trigger regeneration
+    float mPrevNoiseScale = 0.003f;
+    float mPrevHeightScale = 2000.0f;
+    float mPrevHighFreqLayers = 2.0f;
+
 
     // Cached main pass CB data (set by Scene before Draw)
     const void* mMainCBData = nullptr;

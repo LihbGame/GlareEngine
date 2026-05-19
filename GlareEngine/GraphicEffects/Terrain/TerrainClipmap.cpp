@@ -235,6 +235,19 @@ void TerrainClipmap::MarkTileClean(ClipmapTile* Tile)
     if (Tile) Tile->IsDirty = false;
 }
 
+void TerrainClipmap::ForceRegenerateAll()
+{
+    mDirtyTiles.clear();
+    for (ClipmapTile* tile : mActiveTiles)
+    {
+        if (tile && tile->HeightMap)
+        {
+            tile->IsDirty = true;
+            mDirtyTiles.push_back(tile);
+        }
+    }
+}
+
 bool TerrainClipmap::IsCoveredByFinerLevel(const ClipmapTile* Tile) const
 {
     if (!Tile || Tile->LODLevel == 0) return false;

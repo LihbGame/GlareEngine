@@ -122,14 +122,15 @@ cbuffer TerrainNoiseCB : register(b0)
     uint    gNoiseOctaves;
     float   gNoiseLacunarity;
     float   gNoisePersistence;
-    float   gNoiseWarpStrength;
+    float   gNoiseWarpPad0;          // was WarpStrength (hardcoded in noise functions)
     float   gNoiseWarpScale;
+
     float   gNoiseSnowHeight;
     float   gNoiseSnowTransition;
     float   gNoiseStoneSlope;
     float   gNoiseStoneTransition;
     int     gNoiseLODLevel;
-    float   gNoisePad0;
+    uint    gNoiseHighFreqLayers;
     float   gNoisePad1;
     float   gNoisePad2;
 };

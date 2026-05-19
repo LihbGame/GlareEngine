@@ -29,6 +29,8 @@ public:
     void SetSeed(UINT Seed) { mSeed = Seed; }
     void SetHeightScale(float Scale) { mHeightScale = Scale; }
     void SetNoiseScale(float Scale) { mNoiseScale = Scale; }
+    void SetHighFreqLayers(int Layers) { mHighFreqLayers = Layers; }
+
 
     // Get root signature for PSO creation
     RootSignature& GetRootSignature() { return mRootSig; }
@@ -57,8 +59,8 @@ private:
     UINT    mOctaves        = 7;
     float   mLacunarity     = 2.0f;
     float   mPersistence    = 0.5f;
-    float   mWarpStrength   = 30.0f;
     float   mWarpScale      = 0.02f;
+    int     mHighFreqLayers    = 2;
     float   mSnowHeight     = 150.0f;
     float   mSnowTransition = 20.0f;
     float   mStoneSlope     = 0.6f;

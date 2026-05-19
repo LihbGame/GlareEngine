@@ -53,6 +53,7 @@ public:
     const vector<ClipmapTile*>& GetActiveTiles() const { return mActiveTiles; }
 
     void MarkTileClean(ClipmapTile* Tile);
+    void ForceRegenerateAll();
     void ActivateTilesForLevel(UINT Level, const XMINT2& NewOrigin);
 
     // Returns true if this tile's world-space bounds are entirely
