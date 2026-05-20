@@ -66,7 +66,7 @@ private:
     int mLayerSRVIndices[5][5] = {};
     int mLayerMaterialIndices[5] = {};
     // Per-layer height map SRV indices for height-based blending
-    int mLayerHeightSRVIndices[5] = {};
+    int mLayerHeightSRVIndices[5] = { -1, -1, -1, -1, -1 };
 
     // Init info
     ProceduralTerrainInitInfo mInitInfo;
@@ -89,13 +89,14 @@ private:
     float mSnowHeightUI = 150.0f;
     float mStoneSlopeUI = 0.6f;
     float mTexScaleUI = 200.0f;
-    float mRoughnessScaleUI = 3.0f;
+    float mRoughnessScaleUI = 9.0f;
+    float mStochasticStrengthUI = 0.35f;
     float mMaxTessFactorUI = 4.0f;
     float mMaxTessDistUI = 500.0f;
 
     // Detail texture parameters
     float mDetailScaleUI = 20.0f;
-    float mDetailFadeDistanceUI = 50.0f;
+    float mDetailFadeDistanceUI = 500.0f;
     bool  mUseHeightBlendUI = true;
 
     // Debug: render only a specific LOD level (-1 = all)

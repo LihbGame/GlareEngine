@@ -212,7 +212,7 @@ __declspec(align(256)) struct ProceduralTerrainConstants
     float       CellSize            = 1.0f;
     float       HeightScale         = 200.0f;
     float       TexScale            = 50.0f;
-    float       StochasticSharpness = 0.95f;
+    float       StochasticSharpness = 0.35f;
     XMFLOAT4    gWorldFrustumPlanes[6];
     // Per-tile SRV indices set dynamically
     int         HeightMapIndex      = 0;
@@ -254,7 +254,7 @@ __declspec(align(256)) struct ProceduralTerrainConstants
     struct { int Index; int _Pad[3]; } DetailAlbedoIndices[5]    = {};
     struct { int Index; int _Pad[3]; } DetailNormalIndices[5]    = {};
     struct { int Index; int _Pad[3]; } DetailRoughnessIndices[5] = {};
-    struct { int Index; int _Pad[3]; } LayerHeightIndices[5]    = {};
+    struct { int Index = -1; int _Pad[3] = {}; } LayerHeightIndices[5];
 };
 
 struct ProceduralTerrainInitInfo

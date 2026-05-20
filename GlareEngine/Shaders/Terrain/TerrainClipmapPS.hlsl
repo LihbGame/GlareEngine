@@ -9,7 +9,7 @@ struct PBRParams
     float   AO;
 };
 
-PBRParams BlendMaterialLayers(float4 weights, float2 tiledUV, float2 worldXZ)
+PBRParams BlendMaterialLayers(float4 weights, float2 tiledUV, float2 tiledUvDx, float2 tiledUvDy, float2 worldXZ)
 {
     PBRParams result = (PBRParams)0;
     float w[5];
@@ -25,11 +25,11 @@ PBRParams BlendMaterialLayers(float4 weights, float2 tiledUV, float2 worldXZ)
     {
         if (w[i] < 0.01) continue;
 
-        float3 albedo = SampleStochastic(gTerrainLayerAlbedo[i].x, tiledUV, worldXZ);
-        float3 normalSample = SampleStochasticNormal(gTerrainLayerNormal[i].x, tiledUV, worldXZ);
-        float roughness = SampleStochasticScalar(gTerrainLayerRoughness[i].x, tiledUV, worldXZ) * gTerrainRoughnessScale;
-        float metallic = SampleStochasticScalar(gTerrainLayerMetallic[i].x, tiledUV, worldXZ) * gTerrainMetallicScale;
-        float ao = SampleStochasticScalar(gTerrainLayerAO[i].x, tiledUV, worldXZ);
+        float3 albedo = SampleStableStochastic(gTerrainLayerAlbedo[i].x, tiledUV, tiledUvDx, tiledUvDy);
+        float3 normalSample = SampleStableStochastic(gTerrainLayerNormal[i].x, tiledUV, tiledUvDx, tiledUvDy);
+        float roughness = SampleStableStochasticScalar(gTerrainLayerRoughness[i].x, tiledUV, tiledUvDx, tiledUvDy) * gTerrainRoughnessScale;
+        float metallic = SampleStableStochasticScalar(gTerrainLayerMetallic[i].x, tiledUV, tiledUvDx, tiledUvDy) * gTerrainMetallicScale;
+        float ao = SampleStableStochasticScalar(gTerrainLayerAO[i].x, tiledUV, tiledUvDx, tiledUvDy);
 
         result.Albedo += albedo * w[i];
         result.Normal += normalSample * w[i];
@@ -44,6 +44,8 @@ PBRParams BlendMaterialLayers(float4 weights, float2 tiledUV, float2 worldXZ)
 float4 main(ClipmapDomainOut pin) : SV_TARGET
 {
     float2 tiledUV = pin.WorldXZ / gTerrainTexScale;
+    float2 tiledUvDx = ddx(tiledUV);
+    float2 tiledUvDy = ddy(tiledUV);
 
     // Compute TBN for normal map decoding
     float3 N = normalize(pin.NormalW);
@@ -52,10 +54,9 @@ float4 main(ClipmapDomainOut pin) : SV_TARGET
     float3 B = normalize(cross(N, T));
     float3x3 TBN = float3x3(T, B, N);
 
-    PBRParams mat = BlendMaterialLayers(pin.MatWeights, tiledUV, pin.WorldXZ);
+    PBRParams mat = BlendMaterialLayers(pin.MatWeights, tiledUV, tiledUvDx, tiledUvDy, pin.WorldXZ);
 
-    // Decode normal from blended normal map sample
-    float3 normalT = 2.0 * mat.Normal - 1.0;
+    float3 normalT = normalize(2.0 * mat.Normal - 1.0);
     float3 bumpedNormalW = normalize(mul(normalT, TBN));
 
     // Simple directional light for forward path

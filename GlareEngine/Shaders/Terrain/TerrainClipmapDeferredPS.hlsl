@@ -9,7 +9,15 @@ struct PBRParams
     float   AO;
 };
 
-PBRParams BlendMaterialLayers(float4 weights, float2 tiledUV, float2 worldXZ, float detailFade)
+PBRParams BlendMaterialLayers(
+    float4 weights,
+    float2 tiledUV,
+    float2 tiledUvDx,
+    float2 tiledUvDy,
+    float2 worldXZ,
+    float detailFade,
+    float2 detailUvDx,
+    float2 detailUvDy)
 {
     float w[5];
     w[0] = weights.r; // grass (layer 0)
@@ -39,18 +47,18 @@ PBRParams BlendMaterialLayers(float4 weights, float2 tiledUV, float2 worldXZ, fl
             continue;
         }
 
-        float3 albedo = SampleStochastic(gTerrainLayerAlbedo[i].x, tiledUV, worldXZ);
-        float3 normalSample = SampleStochasticNormal(gTerrainLayerNormal[i].x, tiledUV, worldXZ);
-        float roughness = SampleStochasticScalar(gTerrainLayerRoughness[i].x, tiledUV, worldXZ) * gTerrainRoughnessScale;
-        float metallic = SampleStochasticScalar(gTerrainLayerMetallic[i].x, tiledUV, worldXZ) * gTerrainMetallicScale;
-        float ao = SampleStochasticScalar(gTerrainLayerAO[i].x, tiledUV, worldXZ);
+        float3 albedo = SampleStableStochastic(gTerrainLayerAlbedo[i].x, tiledUV, tiledUvDx, tiledUvDy);
+        float3 normalSample = SampleStableStochastic(gTerrainLayerNormal[i].x, tiledUV, tiledUvDx, tiledUvDy);
+        float roughness = SampleStableStochasticScalar(gTerrainLayerRoughness[i].x, tiledUV, tiledUvDx, tiledUvDy) * gTerrainRoughnessScale;
+        float metallic = SampleStableStochasticScalar(gTerrainLayerMetallic[i].x, tiledUV, tiledUvDx, tiledUvDy) * gTerrainMetallicScale;
+        float ao = SampleStableStochasticScalar(gTerrainLayerAO[i].x, tiledUV, tiledUvDx, tiledUvDy);
 
         // Detail overlay with distance fade (reuse base texture at higher tiling)
         if (detailFade > 0.0 && gDetailLayerAlbedo[i].x > 0)
         {
-            float3 detailAlb = SampleStochastic(gDetailLayerAlbedo[i].x, detailUV, worldXZ);
-            float3 detailNrm = SampleStochasticNormal(gDetailLayerNormal[i].x, detailUV, worldXZ);
-            float  detailRgh = SampleStochasticScalar(gDetailLayerRoughness[i].x, detailUV, worldXZ);
+            float3 detailAlb = SampleStableStochastic(gDetailLayerAlbedo[i].x, detailUV, detailUvDx, detailUvDy);
+            float3 detailNrm = SampleStableStochastic(gDetailLayerNormal[i].x, detailUV, detailUvDx, detailUvDy);
+            float  detailRgh = SampleStableStochasticScalar(gDetailLayerRoughness[i].x, detailUV, detailUvDx, detailUvDy);
 
             // Direct lerp: same texture at higher frequency, no darkening
             albedo = lerp(albedo, detailAlb, detailFade);
@@ -64,8 +72,8 @@ PBRParams BlendMaterialLayers(float4 weights, float2 tiledUV, float2 worldXZ, fl
         layerMetallic[i] = metallic;
         layerAO[i] = ao;
         // Use height map for transition sharpness (fallback to luminance if disabled)
-        layerHeight[i] = (gTerrainUseHeightBlend)
-            ? SampleStochasticScalar(gTerrainLayerHeight[i].x, tiledUV, worldXZ)
+        layerHeight[i] = (gTerrainUseHeightBlend && gTerrainLayerHeight[i].x >= 0)
+            ? SampleStableStochasticScalar(gTerrainLayerHeight[i].x, tiledUV, tiledUvDx, tiledUvDy)
             : dot(albedo, float3(0.299, 0.587, 0.114));
     }
 
@@ -109,6 +117,11 @@ void main(ClipmapDomainOut pin,
     out float2 GBUFFER_MotionVector : SV_Target5)
 {
     float2 tiledUV = pin.WorldXZ / gTerrainTexScale;
+    float2 tiledUvDx = ddx(tiledUV);
+    float2 tiledUvDy = ddy(tiledUV);
+    float2 detailUV = pin.WorldXZ / gDetailScale;
+    float2 detailUvDx = ddx(detailUV);
+    float2 detailUvDy = ddy(detailUV);
 
     // Compute TBN for normal map decoding
     float3 N = normalize(pin.NormalW);
@@ -118,10 +131,17 @@ void main(ClipmapDomainOut pin,
     float3x3 TBN = float3x3(T, B, N);
 
     float detailFade = saturate(1.0 - distance(pin.PosW, gTerrainEyePosW) / gDetailFadeDistance) * 0.8;
-    PBRParams mat = BlendMaterialLayers(pin.MatWeights, tiledUV, pin.WorldXZ, detailFade);
+    PBRParams mat = BlendMaterialLayers(
+        pin.MatWeights,
+        tiledUV,
+        tiledUvDx,
+        tiledUvDy,
+        pin.WorldXZ,
+        detailFade,
+        detailUvDx,
+        detailUvDy);
 
-    // Decode normal from blended normal map sample
-    float3 normalT = 2.0 * mat.Normal - 1.0;
+    float3 normalT = normalize(2.0 * mat.Normal - 1.0);
     float3 bumpedNormalW = normalize(mul(normalT, TBN));
 
     GBUFFER_BaseColor    = float4(mat.Albedo, mat.AO);

@@ -139,7 +139,7 @@ cbuffer TerrainNoiseCB : register(b0)
 
 float2x2 StochasticRotation(float2 worldPos)
 {
-    // random22 scrambles both axes — avoids directional streaks from random12's 1D projection
+    // random22 scrambles both axes and avoids directional streaks from random12's 1D projection.
     float angle = random22(worldPos * 0.137).x * PI2;
     float s, c;
     sincos(angle, s, c);
@@ -156,7 +156,7 @@ float3 SampleStochastic(int srvIndex, float2 baseUV, float2 worldPos)
     float3 s1 = gSRVMap[srvIndex].Sample(gSamplerAnisoWrap, uv1).rgb;
     float3 s2 = gSRVMap[srvIndex].Sample(gSamplerAnisoWrap, uv2).rgb;
 
-    // Decorrelated 2D hash — avoids streak artifacts from 1D-projected random12
+    // Decorrelated 2D hash avoids streak artifacts from 1D-projected random12.
     float blend = random22(worldPos * float2(1.23, 0.58) + 17.3).x;
     blend = smoothstep(0.5 - gStochasticSharpness * 0.5,
                        0.5 + gStochasticSharpness * 0.5, blend);
@@ -196,6 +196,53 @@ float3 SampleStochasticNormal(int srvIndex, float2 baseUV, float2 worldPos)
                        0.5 + gStochasticSharpness * 0.5, blend);
 
     return lerp(s1, s2, blend);
+}
+
+float2 GetStableStochasticOffset(float2 cell, float seed)
+{
+    return (random22(cell + seed) - 0.5) * saturate(gStochasticSharpness);
+}
+
+float2 GetStableStochasticWeights(float2 baseUV)
+{
+    float2 f = frac(baseUV);
+    return f * f * (3.0 - 2.0 * f);
+}
+
+float3 SampleStableStochastic(int srvIndex, float2 baseUV, float2 uvDx, float2 uvDy)
+{
+    if (gStochasticSharpness <= 0.001)
+    {
+        return gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, baseUV, uvDx, uvDy).rgb;
+    }
+
+    float2 cell = floor(baseUV);
+    float2 w = GetStableStochasticWeights(baseUV);
+
+    float3 s00 = gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, baseUV + GetStableStochasticOffset(cell, 11.0), uvDx, uvDy).rgb;
+    float3 s10 = gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, baseUV + GetStableStochasticOffset(cell + float2(1.0, 0.0), 11.0), uvDx, uvDy).rgb;
+    float3 s01 = gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, baseUV + GetStableStochasticOffset(cell + float2(0.0, 1.0), 11.0), uvDx, uvDy).rgb;
+    float3 s11 = gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, baseUV + GetStableStochasticOffset(cell + float2(1.0, 1.0), 11.0), uvDx, uvDy).rgb;
+
+    return lerp(lerp(s00, s10, w.x), lerp(s01, s11, w.x), w.y);
+}
+
+float SampleStableStochasticScalar(int srvIndex, float2 baseUV, float2 uvDx, float2 uvDy)
+{
+    if (gStochasticSharpness <= 0.001)
+    {
+        return gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, baseUV, uvDx, uvDy).r;
+    }
+
+    float2 cell = floor(baseUV);
+    float2 w = GetStableStochasticWeights(baseUV);
+
+    float s00 = gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, baseUV + GetStableStochasticOffset(cell, 23.0), uvDx, uvDy).r;
+    float s10 = gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, baseUV + GetStableStochasticOffset(cell + float2(1.0, 0.0), 23.0), uvDx, uvDy).r;
+    float s01 = gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, baseUV + GetStableStochasticOffset(cell + float2(0.0, 1.0), 23.0), uvDx, uvDy).r;
+    float s11 = gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, baseUV + GetStableStochasticOffset(cell + float2(1.0, 1.0), 23.0), uvDx, uvDy).r;
+
+    return lerp(lerp(s00, s10, w.x), lerp(s01, s11, w.x), w.y);
 }
 
 // --- Clipmap tessellation factor ---

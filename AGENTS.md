@@ -1,51 +1,30 @@
-# AGENTS.md
+# Repository Guidelines
 
-This file provides guidance to Codex when working in this repository.
+## Project Structure & Module Organization
 
-## Project Overview
+GlareEngine is a Windows x64 DirectX 12 rendering engine written in C++20. Core engine code lives in `GlareEngine/EngineCore/`; rendering features live in `GlareEngine/GraphicEffects/`; HLSL shaders live in `GlareEngine/Shaders/`, usually mirroring the rendering module layout. `GameDemo/` is the main executable, `EngineDemo_Old/` is legacy sample code, and shared runtime assets are under `Resource/`. Native dependencies and SDK files are kept in `packages/` and `GlareEngine/Dependences/`.
 
-GlareEngine is a DirectX 12 rendering engine written in C++20 for Windows x64 with Visual Studio 2022. It supports tiled forward, tiled deferred, and clustered deferred rendering paths with PBR, DXR, DLSS, and FSR.
+## Build, Test, and Development Commands
 
-## Build System
+- `cmake -B build -G "Visual Studio 17 2022" -A x64`: configure the Visual Studio 2022 x64 build.
+- `cmake --build build --config Debug`: build the engine and demos with debug symbols.
+- `cmake --build build --config Release`: build optimized binaries.
+- `Build_Windows.bat`: project-provided Windows build helper.
 
-- CMake minimum version: 3.15.
-- Configure: `cmake -B build -G "Visual Studio 17 2022" -A x64`.
-- Build: `cmake --build build --config Release` or `cmake --build build --config Debug`.
-- Output directories: `bin/Release/` and `bin/Debug/`.
-- Startup project: `GameDemo`.
-- Shaders are compiled by CMake with dxc and emitted as headers under `GlareEngine/Shaders/CompiledShaders/`.
+Build outputs are generated under `build/` and runtime binaries under `bin/Debug/` or `bin/Release/`. CMake compiles shaders with `dxc` and emits generated headers in `GlareEngine/Shaders/CompiledShaders/`.
 
-## Build Targets
+## Coding Style & Naming Conventions
 
-- `GlareEngine`: core static library.
-- `GameDemo`: main executable.
-- `EngineDemo_Old`: legacy demo executable.
+Use C++20 and the existing engine abstractions before adding new interfaces. Keep comments in English. `_HAS_STD_BYTE=0` is defined globally, so avoid `std::byte`; use `uint8_t` or `BYTE`. HLSL file suffixes define shader type: `*VS.hlsl`, `*PS.hlsl`, `*CS.hlsl`, `*HS.hlsl`, `*DS.hlsl`, and `*GS.hlsl`. Be careful with matrix conventions: verify CPU-side transposition before changing HLSL `mul` operand order.
 
-## Shader Conventions
+## Testing Guidelines
 
-- HLSL files live under `GlareEngine/Shaders/`.
-- Shader type is determined by filename suffix:
-  - `*VS.hlsl`: vertex shader.
-  - `*PS.hlsl`: pixel shader.
-  - `*CS.hlsl`: compute shader.
-  - `*GS.hlsl`: geometry shader.
-  - `*HS.hlsl`: hull shader.
-  - `*DS.hlsl`: domain shader.
-- Compiled shader headers are included by the C++ files that need them.
-- If the scene renders dark, try shader model 5.1 instead of 6.6 in `GlareEngine/CMakeLists.txt`.
+There is no dedicated unit test suite in this repository. Treat successful Debug and Release builds as the minimum validation. For rendering changes, verify the affected path visually and, when possible, inspect the pass in RenderDoc. Confirm shader headers are regenerated when shader sources or includes change.
 
-## Architecture
+## Commit & Pull Request Guidelines
 
-- `GlareEngine/EngineCore/`: app framework, graphics abstraction, math, and model systems.
-- `GlareEngine/GraphicEffects/`: rendering modules such as Shadow, Terrain, GI, DXR, Sky, PostProcessing, and InstanceModel.
-- `GlareEngine/Shaders/`: HLSL code organized to mirror rendering features.
-- `GameDemo/`: demo application.
-- `EngineDemo_Old/`: legacy demo.
-- `Resource/`: shared assets.
-- `packages/` and `Dependences/`: native dependencies and SDKs.
+Recent commits use short, imperative summaries such as `Fix terrain shadow rendering and add shadow intensity control`. Keep commit messages focused on one change. Pull requests should describe the rendering path or subsystem touched, list validation steps, and include screenshots or captures for visual changes. Link related issues when available.
 
-## Important Notes
+## Agent-Specific Instructions
 
-- `_HAS_STD_BYTE=0` is defined globally; avoid `std::byte`.
-- Code comments should be in English.
-- C++ and HLSL matrix storage and multiplication order differ across paths in this codebase. Always verify CPU-side transposition before changing HLSL `mul` operand order.
+Do not skip build/link verification after code changes. Check changed files for mojibake before submitting. Prefer existing module patterns in `GlareEngine/GraphicEffects/` and shader resource conventions in `GlareEngine/Shaders/`.

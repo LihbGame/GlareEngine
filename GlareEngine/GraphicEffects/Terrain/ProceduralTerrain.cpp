@@ -397,7 +397,7 @@ void ProceduralTerrain::UpdateConstantBuffer()
     mConstants.HeightScale = mHeightScaleUI;
     mConstants.TexScale = mTexScaleUI;
     mConstants.RoughnessScale = mRoughnessScaleUI;
-    mConstants.StochasticSharpness = 0.95f;
+    mConstants.StochasticSharpness = mStochasticStrengthUI;
 
     // Extract frustum planes
     XMFLOAT4 planes[6];
@@ -897,10 +897,11 @@ void ProceduralTerrain::DrawUI()
         {
             ImGui::SliderFloat("Tex Scale", &mTexScaleUI, 1.0f, 200.0f);
             ImGui::SliderFloat("Roughness Scale", &mRoughnessScaleUI, 0.1f, 10.0f);
+            ImGui::SliderFloat("Stochastic Strength", &mStochasticStrengthUI, 0.0f, 1.0f);
             ImGui::SliderFloat("Snow Height", &mSnowHeightUI, 50.0f, 300.0f);
             ImGui::SliderFloat("Stone Slope", &mStoneSlopeUI, 0.1f, 1.0f);
             ImGui::SliderFloat("Detail Scale", &mDetailScaleUI, 1.0f, 100.0f);
-            ImGui::SliderFloat("Detail Fade Dist", &mDetailFadeDistanceUI, 5.0f, 200.0f);
+            ImGui::SliderFloat("Detail Fade Dist", &mDetailFadeDistanceUI, 5.0f, 1000.0f);
             ImGui::Checkbox("Height Blend", &mUseHeightBlendUI);
             ImGui::TreePop();
         }
