@@ -93,6 +93,7 @@ private:
     float mStochasticStrengthUI = 0.35f;
     float mMaxTessFactorUI = 4.0f;
     float mMaxTessDistUI = 500.0f;
+    float mTessScaleUI = 1.0f;
 
     // Detail texture parameters
     float mDetailScaleUI = 20.0f;

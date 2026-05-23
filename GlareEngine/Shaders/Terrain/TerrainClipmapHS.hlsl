@@ -33,12 +33,14 @@ ClipmapPatchTess CalcClipmapPatchConstants(
     float3 e3 = 0.5 * (worldPos[2] + worldPos[3]);
     float3 center = 0.25 * (worldPos[0] + worldPos[1] + worldPos[2] + worldPos[3]);
 
-    pt.EdgeTess[0] = max(CalcClipmapTessFactor(e0) * invLodScale, 2.0);
-    pt.EdgeTess[1] = max(CalcClipmapTessFactor(e1) * invLodScale, 2.0);
-    pt.EdgeTess[2] = max(CalcClipmapTessFactor(e2) * invLodScale, 2.0);
-    pt.EdgeTess[3] = max(CalcClipmapTessFactor(e3) * invLodScale, 2.0);
+    float globalTessScale = max(gTerrainTessScale, 0.01);
+    float minScaledTess = max(gTerrainMinTess * globalTessScale, 1.0);
+    pt.EdgeTess[0] = clamp(CalcClipmapTessFactor(e0) * invLodScale * globalTessScale, minScaledTess, 64.0);
+    pt.EdgeTess[1] = clamp(CalcClipmapTessFactor(e1) * invLodScale * globalTessScale, minScaledTess, 64.0);
+    pt.EdgeTess[2] = clamp(CalcClipmapTessFactor(e2) * invLodScale * globalTessScale, minScaledTess, 64.0);
+    pt.EdgeTess[3] = clamp(CalcClipmapTessFactor(e3) * invLodScale * globalTessScale, minScaledTess, 64.0);
 
-    float centerTess = max(CalcClipmapTessFactor(center) * invLodScale, 2.0);
+    float centerTess = clamp(CalcClipmapTessFactor(center) * invLodScale * globalTessScale, minScaledTess, 64.0);
     pt.InsideTess[0] = centerTess;
     pt.InsideTess[1] = centerTess;
 

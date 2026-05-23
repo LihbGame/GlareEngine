@@ -5,7 +5,7 @@
 
 #define TERRAIN_CLIPMAP_LEVELS  10
 #define TERRAIN_TILE_SIZE       64
-#define TERRAIN_HEIGHTMAP_SIZE  128
+#define TERRAIN_HEIGHTMAP_SIZE  256
 #define TERRAIN_NUM_LAYERS      5
 
 // --- Clipmap vertex structures ---
@@ -65,11 +65,13 @@ cbuffer ProceduralTerrainCB : register(b1)
     float       gTerrainMaxTessDist;
     float       gTerrainMinTess;
     float       gTerrainMaxTess;
+    float       gTerrainTessScale;
     int         gClipmapLevel;
     float       gTerrainCellSize;
     float       gTerrainHeightScale;
     float       gTerrainTexScale;
     float       gStochasticSharpness;
+    float3      _PadTessScale;
     float4      gTerrainFrustumPlanes[6];
     int         gTerrainHeightMapIndex;
     int         gTerrainNormalMapIndex;
@@ -261,7 +263,7 @@ float CalcClipmapTessFactor(float3 p)
 // Convert tile UV [0,1] to heightmap UV for correct texel lookup
 float2 TileToHeightmapUV(float2 tileUV)
 {
-    return (tileUV * (float)TERRAIN_TILE_SIZE + 0.5) / (float)TERRAIN_HEIGHTMAP_SIZE;
+    return (tileUV * (float)(TERRAIN_HEIGHTMAP_SIZE - 1) + 0.5) / (float)TERRAIN_HEIGHTMAP_SIZE;
 }
 
 float SampleHeightBicubic(float2 tileUV)

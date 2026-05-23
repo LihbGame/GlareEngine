@@ -9,8 +9,8 @@ RWTexture2D<float4>     gOutputMaterialWeights : register(u2);
 // Layer indices match C++ texture order: 0=grass, 1=lightdirt, 2=darkdirt, 3=stone, 4=snow
 float4 ComputeMaterialWeights(float height, float slope, float2 worldXZ)
 {
-    float macroNoise = GradientNoise(worldXZ * 0.008);
-    float microNoise = GradientNoise(worldXZ * 0.05);
+    float macroNoise = TerrainGradientNoise(worldXZ * 0.008);
+    float microNoise = TerrainGradientNoise(worldXZ * 0.05);
 
     float snowH = gNoiseSnowHeight;
 
@@ -59,8 +59,9 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (DTid.x >= (uint)gNoiseHeightmapSize || DTid.y >= (uint)gNoiseHeightmapSize)
         return;
 
-    // Compute world position for this texel
-    float2 worldXZ = (gNoiseTileOffset + (int2)DTid.xy) * gNoiseCellSize;
+    // Map the full heightmap resolution across one terrain tile.
+    float2 tileUV = (float2)DTid.xy / max((float)(gNoiseHeightmapSize - 1), 1.0);
+    float2 worldXZ = ((float2)gNoiseTileOffset + tileUV * (float)gNoiseTileSize) * gNoiseCellSize;
 
     // Single evaluation: height + analytical gradient
     float3 result = ComputeTerrainHeightWithDerivatives(worldXZ,

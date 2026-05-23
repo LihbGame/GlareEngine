@@ -394,6 +394,7 @@ void ProceduralTerrain::UpdateConstantBuffer()
     mConstants.MaxTessDistance = mMaxTessDistUI;
     mConstants.MinTessFactor = 2.0f;
     mConstants.MaxTessFactor = mMaxTessFactorUI;
+    mConstants.TessScale = mTessScaleUI;
     mConstants.HeightScale = mHeightScaleUI;
     mConstants.TexScale = mTexScaleUI;
     mConstants.RoughnessScale = mRoughnessScaleUI;
@@ -888,6 +889,7 @@ void ProceduralTerrain::DrawUI()
 
         if (ImGui::TreeNode("Tessellation"))
         {
+            ImGui::SliderFloat("Tess Scale", &mTessScaleUI, 0.25f, 4.0f);
             ImGui::SliderFloat("Max Tess Factor", &mMaxTessFactorUI, 2.0f, 32.0f);
             ImGui::SliderFloat("Tess Distance", &mMaxTessDistUI, 50.0f, 2000.0f);
             ImGui::TreePop();

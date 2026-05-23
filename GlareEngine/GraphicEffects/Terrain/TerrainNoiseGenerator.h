@@ -66,5 +66,5 @@ private:
     float   mStoneSlope     = 0.6f;
     float   mStoneTransition = 0.15f;
     UINT    mTileSize       = 64;
-    UINT    mHeightmapSize  = 128;
+    UINT    mHeightmapSize  = 256;
 };

@@ -180,7 +180,7 @@ __declspec(align(256)) struct ProceduralTerrainNoiseCB
     float       CellSize            = 1.0f;
     XMINT2      TileOffset          = { 0, 0 };
     int         TileSize            = 64;
-    int         HeightmapSize       = 128;
+    int         HeightmapSize       = 256;
     float       HeightScale         = 200.0f;
     float       NoiseScale          = 0.05f;
     UINT        Seed                = 42;
@@ -208,11 +208,13 @@ __declspec(align(256)) struct ProceduralTerrainConstants
     float       MaxTessDistance     = 500.0f;
     float       MinTessFactor       = 2.0f;
     float       MaxTessFactor       = 6.0f;
+    float       TessScale           = 1.0f;
     int         ClipmapLevel        = 0;
     float       CellSize            = 1.0f;
     float       HeightScale         = 200.0f;
     float       TexScale            = 50.0f;
     float       StochasticSharpness = 0.35f;
+    float       _PadTessScale[3]    = {};
     XMFLOAT4    gWorldFrustumPlanes[6];
     // Per-tile SRV indices set dynamically
     int         HeightMapIndex      = 0;
@@ -261,7 +263,7 @@ struct ProceduralTerrainInitInfo
 {
     UINT        ClipmapLevels       = 10;
     UINT        TileSize            = 64;
-    UINT        HeightmapSize       = 128;
+    UINT        HeightmapSize       = 256;
     float       CellSizeBase        = 1.0f;
     float       HeightScale         = 2000.0f;
     float       NoiseScale          = 0.003f;
