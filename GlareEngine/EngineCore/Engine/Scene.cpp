@@ -75,12 +75,12 @@ void Scene::Update(float DeltaTime)
 	//Update shadow scene bounds to follow camera (snap to texel grid to prevent shadow swimming)
 	{
 		XMFLOAT3 camPos = mSceneView.m_pCamera->GetPosition3f();
-		float shadowRadius = m_pRenderObjectsType[(int)ObjectType::Terrain].empty() ? 700.0f : 3000.0f;
+		float shadowRadius = 700.0f;
 		m_pShadowMap->SetSceneBoundRadius(shadowRadius);
 		float worldUnitsPerTexel = (2.0f * shadowRadius) / (float)m_pShadowMap->Width();
 		float snappedX = floorf(camPos.x / worldUnitsPerTexel) * worldUnitsPerTexel;
 		float snappedZ = floorf(camPos.z / worldUnitsPerTexel) * worldUnitsPerTexel;
-		m_pShadowMap->SetSceneBoundCenter(XMFLOAT3(snappedX, 0.0f, snappedZ));
+		//m_pShadowMap->SetSceneBoundCenter(XMFLOAT3(snappedX, 0.0f, snappedZ));
 	}
 
 	//Update shadow map
@@ -190,16 +190,6 @@ void Scene::SetSceneLights(DirectionalLight* light, int DirectionalLightsCount)
 	mSceneView.mMainConstants.gDirectionalLightsCount = DirectionalLightsCount;
 	int CopySize = DirectionalLightsCount * sizeof(DirectionalLight);
 	memcpy_s(mSceneLights, CopySize, light, CopySize);
-
-	if (mName == "Sponza")
-	{
-		mSceneView.mMainConstants.gIsIndoorScene = true;
-		mSceneLights[0].Strength = { 20.0f, 20.0f, 20.0f };
-	}
-	else if (mName == "Blue Tree")
-	{
-		mSceneLights[0].Strength = { 5.0f,  5.0f,  5.0f };
-	}
 }
 
 void Scene::SetRootSignature(RootSignature* rootSignature)

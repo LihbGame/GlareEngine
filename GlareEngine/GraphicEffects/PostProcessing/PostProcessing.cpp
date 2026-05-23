@@ -104,7 +104,7 @@ namespace ScreenProcessing
 	ColorBuffer* LastPostprocessRT		= nullptr;
 	ColorBuffer* CurrentPostprocessRT	= nullptr;
 
-	bool  EnableEyeAdaptation		= true;
+	bool  EnableEyeAdaptation		= false;
 	bool  BloomEnable				= true;
 	bool  HighQualityBloom			= true;			// High quality blurs 5 octaves of bloom; low quality only blurs 3.
 	NumVar BloomThreshold(1.5f, 0.0f, 8.0f);		// The threshold luminance above which a pixel will start to bloom
@@ -118,7 +118,7 @@ namespace ScreenProcessing
 	bool EnableAdaptation			= true;
 	bool DrawHistogram				= false;
 
-	NumVar TargetLuminance(0.05f, 0.01f, 0.99f);
+	NumVar TargetLuminance(0.5f, 0.01f, 0.99f);
 	NumVar AdaptationTranform(0.02f, 0.01f, 1.0f);
 	NumVar Exposure(2.0f, -8.0f, 8.0f);
 	

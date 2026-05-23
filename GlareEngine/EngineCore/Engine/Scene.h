@@ -83,7 +83,7 @@ public:
 	vector<RenderObject*> GetRenderObjects() { return m_pGLTFRenderObjects; }
 	vector<RenderObject*> GetRenderObjects(ObjectType objectType) { return m_pRenderObjectsType[(int)objectType]; }
 
-	SceneView GetSceneView() { return mSceneView; }
+	SceneView& GetSceneView() { return mSceneView; }
 
 	void Finalize();
 	

@@ -132,7 +132,7 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 	//Sky Initialize
 	mSky = make_unique<CSky>(CommandList, 5.0f, 20, 20);
 	//Shadow map Initialize
-	mShadowMap = make_unique<ShadowMap>(XMFLOAT3(0.3f, -0.195f, 0.3f), SHADOWMAPSIZE, SHADOWMAPSIZE);
+	mShadowMap = make_unique<ShadowMap>(XMFLOAT3(-0.57735f, -0.47735f, -0.57735f), SHADOWMAPSIZE, SHADOWMAPSIZE);
 	//Create PBR Materials
 	SimpleModelGenerator::GetInstance(CommandList)->CreatePBRMaterials();
 	//Initialize Render
@@ -176,15 +176,30 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			//set camera
 			scene->SetCamera(mCamera.get());
 
-			//set scene lights
 			if (scene->GetName() == "Sponza")
 			{
+				SceneLights[0].Strength = { 20.0f, 20.0f, 20.0f };
 				scene->SetSceneLights(SceneLights);
+				scene->GetSceneView().mMainConstants.gIsIndoorScene = true;
+			}
+			else if (scene->GetName() == "Blue Tree")
+			{
+				SceneLights[0].Strength = { 5.0f,  5.0f,  5.0f };
+				scene->SetSceneLights(SceneLights, sizeof(SceneLights) / sizeof(DirectionalLight));
+			}
+			else if (scene->GetName() == "Terrain")
+			{
+				SceneLights[0].Strength = { 3.5f, 3.5f, 3.5f };
+				SceneLights[1].Strength = { 1.5f, 1.5f, 1.5f };
+				SceneLights[2].Strength = { 1.5f, 1.5f, 1.5f };
+				scene->SetSceneLights(SceneLights, sizeof(SceneLights) / sizeof(DirectionalLight));
+				scene->GetSceneView().mMainConstants.gIsIndoorScene = true;
 			}
 			else
 			{
 				scene->SetSceneLights(SceneLights, sizeof(SceneLights) / sizeof(DirectionalLight));
 			}
+
 			//set Shadow map 
 			scene->SetShadowMap(mShadowMap.get());
 			//add hdr Sky
@@ -253,7 +268,6 @@ void App::InitializeScene(ID3D12GraphicsCommandList* CommandList,GraphicsContext
 			terrainInfo.LayerAssetPath = EngineGlobal::TerrainAssetPath;
 			mProceduralTerrain = make_unique<ProceduralTerrain>(CommandList, terrainInfo);
 			mProceduralTerrain->SetName(L"Procedural Terrain");
-
 			//Terrain scene: dedicated scene with only terrain + sky
 			gScenes[5]->AddObjectToScene(mProceduralTerrain.get());
 			gScenes[5]->Finalize();
