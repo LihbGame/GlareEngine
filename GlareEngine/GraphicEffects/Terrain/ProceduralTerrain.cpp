@@ -1,6 +1,7 @@
 #include "ProceduralTerrain.h"
 
 #include <algorithm>
+#include <cmath>
 #include "Engine/EngineUtility.h"
 #include "Engine/EngineGlobal.h"
 #include "Engine/Scene.h"
@@ -20,6 +21,34 @@
 #include "CompiledShaders/TerrainClipmapDeferredPS.h"
 
 using namespace DirectX;
+
+namespace
+{
+    bool SamePlane(const XMFLOAT4& left, const XMFLOAT4& right)
+    {
+        return left.x == right.x &&
+               left.y == right.y &&
+               left.z == right.z &&
+               left.w == right.w;
+    }
+
+    void SortTiles(vector<ClipmapTile*>& tiles)
+    {
+        std::sort(tiles.begin(), tiles.end(),
+            [](const ClipmapTile* left, const ClipmapTile* right)
+            {
+                if (left->LODLevel != right->LODLevel)
+                {
+                    return left->LODLevel < right->LODLevel;
+                }
+                if (left->GridCoord.y != right->GridCoord.y)
+                {
+                    return left->GridCoord.y < right->GridCoord.y;
+                }
+                return left->GridCoord.x < right->GridCoord.x;
+            });
+    }
+}
 
 ProceduralTerrain::ProceduralTerrain(
     ID3D12GraphicsCommandList* CmdList,
@@ -447,139 +476,230 @@ void ProceduralTerrain::UpdateConstantBuffer()
 
 void ProceduralTerrain::UpdateCulling(GraphicsContext* Context)
 {
-    mCullingItems.clear();
-    mVisibleTiles.clear();
-    mVisibleTileSet.clear();
-
     const auto& activeTiles = mClipmap->GetActiveTiles();
     if (activeTiles.empty())
     {
         mCullingTree.Clear();
+        mCullingItems.clear();
+        mVisibleTiles.clear();
+        mVisibleTileSet.clear();
+        mVisibleCullingItems.clear();
         mCullingDebugPixels.clear();
         mCullingDebugTextureValid = false;
+        mPrevCullingTileStates.clear();
+        mHasPrevCullingFrustum = false;
         return;
     }
 
-    bool hasBounds = false;
-    SceneCullingBounds worldBounds = {};
-    uint32_t itemId = 0;
-
-    for (ClipmapTile* tile : activeTiles)
+    vector<CullingTileState> tileStates;
+    tileStates.reserve(activeTiles.size());
+    for (const ClipmapTile* tile : activeTiles)
     {
-        if (!tile || !tile->HeightMap)
+        CullingTileState state;
+        state.Tile = tile;
+        if (tile)
         {
-            continue;
+            state.GridCoord = tile->GridCoord;
+            state.LODLevel = tile->LODLevel;
+            state.HasHeightMap = tile->HeightMap != nullptr;
         }
+        tileStates.push_back(state);
+    }
 
-        const float cellSize = mClipmap->GetCellSize(tile->LODLevel);
-        const float tileWorldSize = (float)mInitInfo.TileSize * cellSize;
-        const float skirtDepth = mHeightScaleUI * 0.005f;
+    bool activeTilesChanged = tileStates.size() != mPrevCullingTileStates.size();
+    if (!activeTilesChanged)
+    {
+        for (size_t i = 0; i < tileStates.size(); ++i)
+        {
+            const CullingTileState& current = tileStates[i];
+            const CullingTileState& previous = mPrevCullingTileStates[i];
+            if (current.Tile != previous.Tile ||
+                current.GridCoord.x != previous.GridCoord.x ||
+                current.GridCoord.y != previous.GridCoord.y ||
+                current.LODLevel != previous.LODLevel ||
+                current.HasHeightMap != previous.HasHeightMap)
+            {
+                activeTilesChanged = true;
+                break;
+            }
+        }
+    }
 
-        const float cullMinHeight = (std::max)(
-            -mHeightScaleUI - skirtDepth,
-            (std::min)(mCullingMinHeightUI, mCullingMaxHeightUI) - mCullingHeightPaddingUI - skirtDepth);
-        const float cullMaxHeight = (std::min)(
-            mHeightScaleUI,
-            (std::max)(mCullingMinHeightUI, mCullingMaxHeightUI) + mCullingHeightPaddingUI);
-        SceneCullingBounds bounds;
-        bounds.Min = {
-            (float)tile->GridCoord.x * tileWorldSize,
-            cullMinHeight,
-            (float)tile->GridCoord.y * tileWorldSize
-        };
-        bounds.Max = {
-            bounds.Min.x + tileWorldSize,
-            cullMaxHeight,
-            bounds.Min.z + tileWorldSize
-        };
+    bool frustumChanged = !mHasPrevCullingFrustum;
+    if (!frustumChanged)
+    {
+        for (int i = 0; i < 6; ++i)
+        {
+            if (!SamePlane(mConstants.gWorldFrustumPlanes[i], mPrevCullingFrustumPlanes[i]))
+            {
+                frustumChanged = true;
+                break;
+            }
+        }
+    }
 
-        SceneCullingItem item;
-        item.Id = itemId++;
-        item.UserData = tile;
-        item.Bounds = bounds;
-        item.Mask = 1u << (std::min)(tile->LODLevel, 31);
-        mCullingItems.push_back(item);
+    const bool treeSettingsChanged =
+        mCullingMaxDepthUI != mPrevCullingMaxDepthUI ||
+        mCullingMaxItemsPerLeafUI != mPrevCullingMaxItemsPerLeafUI ||
+        mHeightScaleUI != mPrevCullingHeightScaleUI ||
+        mCullingMinHeightUI != mPrevCullingMinHeightUI ||
+        mCullingMaxHeightUI != mPrevCullingMaxHeightUI ||
+        mCullingHeightPaddingUI != mPrevCullingHeightPaddingUI;
+    const bool cullingModeChanged = mEnableQuadtreeCullingUI != mPrevEnableQuadtreeCullingUI;
+    const bool debugLODChanged = mDebugLODLevel != mPrevDebugLODLevel;
+    const bool debugTextureModeChanged = mShowCullingDebugTextureUI != mPrevShowCullingDebugTextureUI;
+    const bool rebuildTree = activeTilesChanged || treeSettingsChanged || mCullingTree.IsEmpty();
+    const bool refreshVisibleTiles =
+        rebuildTree ||
+        frustumChanged ||
+        cullingModeChanged ||
+        debugLODChanged ||
+        (debugTextureModeChanged && mShowCullingDebugTextureUI);
+
+    SceneCullingBounds worldBounds = mCullingWorldBounds;
+    bool hasBounds = false;
+    vector<SceneCullingItem> newCullingItems;
+    if (rebuildTree)
+    {
+        uint32_t itemId = 0;
+        for (ClipmapTile* tile : activeTiles)
+        {
+            if (!tile || !tile->HeightMap)
+            {
+                continue;
+            }
+
+            const float cellSize = mClipmap->GetCellSize(tile->LODLevel);
+            const float tileWorldSize = (float)mInitInfo.TileSize * cellSize;
+            const float skirtDepth = mHeightScaleUI * 0.005f;
+
+            const float cullMinHeight = (std::max)(
+                -mHeightScaleUI - skirtDepth,
+                (std::min)(mCullingMinHeightUI, mCullingMaxHeightUI) - mCullingHeightPaddingUI - skirtDepth);
+            const float cullMaxHeight = (std::min)(
+                mHeightScaleUI,
+                (std::max)(mCullingMinHeightUI, mCullingMaxHeightUI) + mCullingHeightPaddingUI);
+            SceneCullingBounds bounds;
+            bounds.Min = {
+                (float)tile->GridCoord.x * tileWorldSize,
+                cullMinHeight,
+                (float)tile->GridCoord.y * tileWorldSize
+            };
+            bounds.Max = {
+                bounds.Min.x + tileWorldSize,
+                cullMaxHeight,
+                bounds.Min.z + tileWorldSize
+            };
+
+            SceneCullingItem item;
+            item.Id = itemId++;
+            item.UserData = tile;
+            item.Bounds = bounds;
+            item.Mask = 1u << (std::min)(tile->LODLevel, 31);
+            newCullingItems.push_back(item);
+
+            if (!hasBounds)
+            {
+                worldBounds = bounds;
+                hasBounds = true;
+            }
+            else
+            {
+                worldBounds.Min.x = (std::min)(worldBounds.Min.x, bounds.Min.x);
+                worldBounds.Min.y = (std::min)(worldBounds.Min.y, bounds.Min.y);
+                worldBounds.Min.z = (std::min)(worldBounds.Min.z, bounds.Min.z);
+                worldBounds.Max.x = (std::max)(worldBounds.Max.x, bounds.Max.x);
+                worldBounds.Max.y = (std::max)(worldBounds.Max.y, bounds.Max.y);
+                worldBounds.Max.z = (std::max)(worldBounds.Max.z, bounds.Max.z);
+            }
+        }
 
         if (!hasBounds)
         {
-            worldBounds = bounds;
-            hasBounds = true;
+            mCullingTree.Clear();
+            mCullingItems.clear();
+            mVisibleTiles.clear();
+            mVisibleTileSet.clear();
+            mVisibleCullingItems.clear();
+            mCullingDebugTextureValid = false;
+            mPrevCullingTileStates = std::move(tileStates);
+            return;
+        }
+
+        const float minSide = (std::max)(worldBounds.Max.x - worldBounds.Min.x, worldBounds.Max.z - worldBounds.Min.z);
+        const float centerX = 0.5f * (worldBounds.Min.x + worldBounds.Max.x);
+        const float centerZ = 0.5f * (worldBounds.Min.z + worldBounds.Max.z);
+        const float halfSide = (std::max)(1.0f, minSide * 0.5f);
+        worldBounds.Min.x = centerX - halfSide;
+        worldBounds.Max.x = centerX + halfSide;
+        worldBounds.Min.z = centerZ - halfSide;
+        worldBounds.Max.z = centerZ + halfSide;
+
+        mCullingWorldBounds = worldBounds;
+        mCullingItems = std::move(newCullingItems);
+
+        mCullingTree.Build(
+            mCullingItems,
+            worldBounds,
+            (uint32_t)(std::max)(1, mCullingMaxDepthUI),
+            (uint32_t)(std::max)(1, mCullingMaxItemsPerLeafUI));
+    }
+
+    if (refreshVisibleTiles)
+    {
+        mVisibleTiles.clear();
+        mVisibleTileSet.clear();
+
+        if (mEnableQuadtreeCullingUI)
+        {
+            QueryVisibleTiles(mConstants.gWorldFrustumPlanes, mVisibleTiles);
         }
         else
         {
-            worldBounds.Min.x = (std::min)(worldBounds.Min.x, bounds.Min.x);
-            worldBounds.Min.y = (std::min)(worldBounds.Min.y, bounds.Min.y);
-            worldBounds.Min.z = (std::min)(worldBounds.Min.z, bounds.Min.z);
-            worldBounds.Max.x = (std::max)(worldBounds.Max.x, bounds.Max.x);
-            worldBounds.Max.y = (std::max)(worldBounds.Max.y, bounds.Max.y);
-            worldBounds.Max.z = (std::max)(worldBounds.Max.z, bounds.Max.z);
-        }
-    }
-
-    if (!hasBounds)
-    {
-        mCullingTree.Clear();
-        mCullingDebugTextureValid = false;
-        return;
-    }
-
-    const float minSide = (std::max)(worldBounds.Max.x - worldBounds.Min.x, worldBounds.Max.z - worldBounds.Min.z);
-    const float centerX = 0.5f * (worldBounds.Min.x + worldBounds.Max.x);
-    const float centerZ = 0.5f * (worldBounds.Min.z + worldBounds.Max.z);
-    const float halfSide = (std::max)(1.0f, minSide * 0.5f);
-    worldBounds.Min.x = centerX - halfSide;
-    worldBounds.Max.x = centerX + halfSide;
-    worldBounds.Min.z = centerZ - halfSide;
-    worldBounds.Max.z = centerZ + halfSide;
-    mCullingWorldBounds = worldBounds;
-
-    mCullingTree.Build(
-        mCullingItems,
-        worldBounds,
-        (uint32_t)(std::max)(1, mCullingMaxDepthUI),
-        (uint32_t)(std::max)(1, mCullingMaxItemsPerLeafUI));
-
-    if (mEnableQuadtreeCullingUI)
-    {
-        QueryVisibleTiles(mConstants.gWorldFrustumPlanes, mVisibleTiles);
-    }
-    else
-    {
-        for (const SceneCullingItem& item : mCullingItems)
-        {
-            ClipmapTile* tile = static_cast<ClipmapTile*>(item.UserData);
-            if (tile)
+            for (const SceneCullingItem& item : mCullingItems)
             {
-                mVisibleTiles.push_back(tile);
+                ClipmapTile* tile = static_cast<ClipmapTile*>(item.UserData);
+                if (tile)
+                {
+                    mVisibleTiles.push_back(tile);
+                }
             }
         }
-    }
 
-    std::sort(mVisibleTiles.begin(), mVisibleTiles.end(),
-        [](const ClipmapTile* left, const ClipmapTile* right)
+        SortTiles(mVisibleTiles);
+
+        for (ClipmapTile* tile : mVisibleTiles)
         {
-            if (left->LODLevel != right->LODLevel)
-            {
-                return left->LODLevel < right->LODLevel;
-            }
-            if (left->GridCoord.y != right->GridCoord.y)
-            {
-                return left->GridCoord.y < right->GridCoord.y;
-            }
-            return left->GridCoord.x < right->GridCoord.x;
-        });
-
-    for (ClipmapTile* tile : mVisibleTiles)
-    {
-        mVisibleTileSet.insert(tile);
+            mVisibleTileSet.insert(tile);
+        }
     }
 
 #ifdef DEBUG
-    if (mShowCullingDebugTextureUI)
+    const bool refreshDebugTexture =
+        mShowCullingDebugTextureUI &&
+        (refreshVisibleTiles ||
+         rebuildTree ||
+         treeSettingsChanged ||
+         debugTextureModeChanged ||
+         !mCullingDebugTextureValid);
+    if (refreshDebugTexture)
     {
         UpdateCullingDebugTexture(Context);
     }
 #endif
+
+    mPrevCullingTileStates = std::move(tileStates);
+    memcpy(mPrevCullingFrustumPlanes, mConstants.gWorldFrustumPlanes, sizeof(mPrevCullingFrustumPlanes));
+    mHasPrevCullingFrustum = true;
+    mPrevEnableQuadtreeCullingUI = mEnableQuadtreeCullingUI;
+    mPrevShowCullingDebugTextureUI = mShowCullingDebugTextureUI;
+    mPrevDebugLODLevel = mDebugLODLevel;
+    mPrevCullingMaxDepthUI = mCullingMaxDepthUI;
+    mPrevCullingMaxItemsPerLeafUI = mCullingMaxItemsPerLeafUI;
+    mPrevCullingHeightScaleUI = mHeightScaleUI;
+    mPrevCullingMinHeightUI = mCullingMinHeightUI;
+    mPrevCullingMaxHeightUI = mCullingMaxHeightUI;
+    mPrevCullingHeightPaddingUI = mCullingHeightPaddingUI;
 }
 
 void ProceduralTerrain::QueryVisibleTiles(const XMFLOAT4 FrustumPlanes[6], vector<ClipmapTile*>& VisibleTiles)
@@ -622,11 +742,12 @@ void ProceduralTerrain::UpdateCullingDebugTexture(GraphicsContext* Context)
 {
     constexpr uint32_t debugSize = 256;
     constexpr uint32_t colorBackground = 0xFF1E1E1Eu;
-    constexpr uint32_t colorCulled = 0xFF3030D0u;
-    constexpr uint32_t colorVisible = 0xFF40C060u;
+    constexpr uint32_t colorOutsideFrustum = 0xFF303030u;
+    constexpr uint32_t colorInFrustum = 0xFF3030D0u;
     constexpr uint32_t colorCovered = 0xFFD08030u;
     constexpr uint32_t colorFiltered = 0xFF808080u;
     constexpr uint32_t colorIntersecting = 0xFF40D0D0u;
+    constexpr uint32_t colorFrustum = 0xFFFF40FFu;
     constexpr uint32_t colorGrid = 0xFFFFFFFFu;
 
     mCullingDebugPixels.assign(debugSize * debugSize, colorBackground);
@@ -647,6 +768,46 @@ void ProceduralTerrain::UpdateCullingDebugTexture(GraphicsContext* Context)
         float v = (z - minZ) * invDepth;
         v = std::clamp(v, 0.0f, 1.0f);
         return (int)((1.0f - v) * (float)(debugSize - 1));
+    };
+    auto testBounds = [&](const SceneCullingBounds& bounds)
+    {
+        bool fullyInside = true;
+        const XMFLOAT3 center =
+        {
+            0.5f * (bounds.Min.x + bounds.Max.x),
+            0.5f * (bounds.Min.y + bounds.Max.y),
+            0.5f * (bounds.Min.z + bounds.Max.z)
+        };
+        const XMFLOAT3 extents =
+        {
+            0.5f * (bounds.Max.x - bounds.Min.x),
+            0.5f * (bounds.Max.y - bounds.Min.y),
+            0.5f * (bounds.Max.z - bounds.Min.z)
+        };
+
+        for (const XMFLOAT4& plane : mConstants.gWorldFrustumPlanes)
+        {
+            const float radius =
+                extents.x * std::abs(plane.x) +
+                extents.y * std::abs(plane.y) +
+                extents.z * std::abs(plane.z);
+            const float distance =
+                plane.x * center.x +
+                plane.y * center.y +
+                plane.z * center.z +
+                plane.w;
+
+            if (distance + radius < 0.0f)
+            {
+                return SceneCullingResult::Culled;
+            }
+            if (distance - radius < 0.0f)
+            {
+                fullyInside = false;
+            }
+        }
+
+        return fullyInside ? SceneCullingResult::Visible : SceneCullingResult::Intersecting;
     };
     auto fillRect = [&](const SceneCullingBounds& bounds, uint32_t color)
     {
@@ -691,6 +852,97 @@ void ProceduralTerrain::UpdateCullingDebugTexture(GraphicsContext* Context)
             mCullingDebugPixels[y * debugSize + x1] = color;
         }
     };
+    auto drawPixel = [&](int x, int y, uint32_t color)
+    {
+        if (x < 0 || x >= (int)debugSize || y < 0 || y >= (int)debugSize)
+        {
+            return;
+        }
+        mCullingDebugPixels[y * debugSize + x] = color;
+    };
+    auto drawLine = [&](const XMFLOAT2& start, const XMFLOAT2& end, uint32_t color)
+    {
+        int x0 = toPixelX(start.x);
+        int y0 = toPixelY(start.y);
+        const int x1 = toPixelX(end.x);
+        const int y1 = toPixelY(end.y);
+
+        const int dx = std::abs(x1 - x0);
+        const int sx = x0 < x1 ? 1 : -1;
+        const int dy = -std::abs(y1 - y0);
+        const int sy = y0 < y1 ? 1 : -1;
+        int error = dx + dy;
+
+        for (;;)
+        {
+            drawPixel(x0, y0, color);
+            drawPixel(x0 + 1, y0, color);
+            drawPixel(x0, y0 + 1, color);
+
+            if (x0 == x1 && y0 == y1)
+            {
+                break;
+            }
+
+            const int e2 = 2 * error;
+            if (e2 >= dy)
+            {
+                error += dy;
+                x0 += sx;
+            }
+            if (e2 <= dx)
+            {
+                error += dx;
+                y0 += sy;
+            }
+        }
+    };
+    auto planeDistanceXZ = [](const XMFLOAT4& plane, const XMFLOAT2& point)
+    {
+        return plane.x * point.x + plane.z * point.y + plane.w;
+    };
+    auto clipPolygonToPlane = [&](const vector<XMFLOAT2>& polygon, const XMFLOAT4& plane)
+    {
+        vector<XMFLOAT2> clipped;
+        if (polygon.empty())
+        {
+            return clipped;
+        }
+
+        XMFLOAT2 previous = polygon.back();
+        float previousDistance = planeDistanceXZ(plane, previous);
+        bool previousInside = previousDistance >= 0.0f;
+
+        for (const XMFLOAT2& current : polygon)
+        {
+            const float currentDistance = planeDistanceXZ(plane, current);
+            const bool currentInside = currentDistance >= 0.0f;
+
+            if (currentInside != previousInside)
+            {
+                const float denom = previousDistance - currentDistance;
+                if (std::abs(denom) > 0.000001f)
+                {
+                    const float t = previousDistance / denom;
+                    clipped.push_back({
+                        previous.x + (current.x - previous.x) * t,
+                        previous.y + (current.y - previous.y) * t
+                    });
+                }
+            }
+
+            if (currentInside)
+            {
+                clipped.push_back(current);
+            }
+
+            previous = current;
+            previousDistance = currentDistance;
+            previousInside = currentInside;
+        }
+
+        return clipped;
+    };
 
     for (const SceneCullingItem& item : mCullingItems)
     {
@@ -700,12 +952,13 @@ void ProceduralTerrain::UpdateCullingDebugTexture(GraphicsContext* Context)
             continue;
         }
 
-        uint32_t color = mVisibleTileSet.contains(tile) ? colorVisible : colorCulled;
+        const SceneCullingResult frustumResult = testBounds(item.Bounds);
+        uint32_t color = frustumResult == SceneCullingResult::Culled ? colorOutsideFrustum : colorInFrustum;
         if (mDebugLODLevel >= 0 && tile->LODLevel != mDebugLODLevel)
         {
             color = colorFiltered;
         }
-        else if (mClipmap->IsCoveredByFinerLevel(tile))
+        else if (frustumResult != SceneCullingResult::Culled && mClipmap->IsCoveredByFinerLevel(tile))
         {
             color = colorCovered;
         }
@@ -714,7 +967,8 @@ void ProceduralTerrain::UpdateCullingDebugTexture(GraphicsContext* Context)
 
     for (const SceneQuadtreeDebugNode& node : mCullingTree.GetDebugNodes())
     {
-        if (node.Result == SceneCullingResult::Intersecting)
+        const SceneCullingResult nodeResult = testBounds(node.Bounds);
+        if (nodeResult == SceneCullingResult::Intersecting)
         {
             drawRect(node.Bounds, colorIntersecting);
         }
@@ -722,6 +976,39 @@ void ProceduralTerrain::UpdateCullingDebugTexture(GraphicsContext* Context)
         {
             drawRect(node.Bounds, colorGrid);
         }
+    }
+
+    vector<XMFLOAT2> frustumPolygon =
+    {
+        { mCullingWorldBounds.Min.x, mCullingWorldBounds.Min.z },
+        { mCullingWorldBounds.Max.x, mCullingWorldBounds.Min.z },
+        { mCullingWorldBounds.Max.x, mCullingWorldBounds.Max.z },
+        { mCullingWorldBounds.Min.x, mCullingWorldBounds.Max.z }
+    };
+
+    for (const XMFLOAT4& plane : mConstants.gWorldFrustumPlanes)
+    {
+        const float xzNormalLengthSq = plane.x * plane.x + plane.z * plane.z;
+        if (xzNormalLengthSq <= 0.000001f)
+        {
+            if (plane.w < 0.0f)
+            {
+                frustumPolygon.clear();
+                break;
+            }
+            continue;
+        }
+
+        frustumPolygon = clipPolygonToPlane(frustumPolygon, plane);
+        if (frustumPolygon.empty())
+        {
+            break;
+        }
+    }
+
+    for (size_t i = 0; i < frustumPolygon.size(); ++i)
+    {
+        drawLine(frustumPolygon[i], frustumPolygon[(i + 1) % frustumPolygon.size()], colorFrustum);
     }
 
     if (!Context)

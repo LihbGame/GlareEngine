@@ -120,6 +120,14 @@ private:
     float mCullingHeightPaddingUI = 0.0f;
 
     // Scene-independent quadtree culling data.
+    struct CullingTileState
+    {
+        const ClipmapTile* Tile = nullptr;
+        XMINT2 GridCoord = { 0, 0 };
+        int LODLevel = 0;
+        bool HasHeightMap = false;
+    };
+
     SceneQuadtreeCulling mCullingTree;
     vector<SceneCullingItem> mCullingItems;
     vector<ClipmapTile*> mVisibleTiles;
@@ -130,6 +138,18 @@ private:
     ComPtr<ID3D12Resource> mCullingDebugTextureResource;
     D3D12_CPU_DESCRIPTOR_HANDLE mCullingDebugSRV = { D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN };
     bool mCullingDebugTextureValid = false;
+    vector<CullingTileState> mPrevCullingTileStates;
+    XMFLOAT4 mPrevCullingFrustumPlanes[6] = {};
+    bool mHasPrevCullingFrustum = false;
+    bool mPrevEnableQuadtreeCullingUI = true;
+    bool mPrevShowCullingDebugTextureUI = true;
+    int mPrevDebugLODLevel = -1;
+    int mPrevCullingMaxDepthUI = 6;
+    int mPrevCullingMaxItemsPerLeafUI = 4;
+    float mPrevCullingHeightScaleUI = 2000.0f;
+    float mPrevCullingMinHeightUI = -300.0f;
+    float mPrevCullingMaxHeightUI = 600.0f;
+    float mPrevCullingHeightPaddingUI = 0.0f;
 
     // Tracked previous-frame noise params to detect changes and trigger regeneration
     float mPrevNoiseScale = 0.003f;
