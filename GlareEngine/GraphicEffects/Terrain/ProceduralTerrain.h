@@ -1,4 +1,5 @@
 #pragma once
+#include <unordered_set>
 #include "Misc/RenderObject.h"
 #include "Misc/ConstantBuffer.h"
 #include "Engine/EngineUtility.h"
@@ -7,6 +8,7 @@
 #include "Graphics/RootSignature.h"
 #include "Graphics/PipelineState.h"
 #include "Graphics/Render.h"
+#include "Engine/SceneQuadtreeCulling.h"
 #include "TerrainClipmap.h"
 #include "TerrainNoiseGenerator.h"
 
@@ -33,6 +35,13 @@ private:
     void BuildPipelineState(ID3D12GraphicsCommandList* CmdList);
     void LoadMaterialTextures(ID3D12GraphicsCommandList* CmdList);
     void UpdateConstantBuffer();
+    void UpdateCulling(GraphicsContext* Context);
+    void QueryVisibleTiles(const XMFLOAT4 FrustumPlanes[6], vector<ClipmapTile*>& VisibleTiles);
+    const vector<ClipmapTile*>& GetMainRenderTiles() const;
+    void UpdateCullingDebugTexture(GraphicsContext* Context);
+    void EnsureCullingDebugTextureResources();
+    D3D12_CPU_DESCRIPTOR_HANDLE GetCullingDebugSRV() const { return mCullingDebugSRV; }
+    bool HasCullingDebugTexture() const { return mCullingDebugTextureValid && mCullingDebugTextureResource != nullptr && mCullingDebugSRV.ptr != D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN; }
     void ComputeSkirtFlags(const ClipmapTile* tile);
     void ComputeSkirtFlagsFor(const ClipmapTile* tile, ProceduralTerrainConstants& outConstants);
 
@@ -102,6 +111,25 @@ private:
 
     // Debug: render only a specific LOD level (-1 = all)
     int mDebugLODLevel = -1;
+    bool mEnableQuadtreeCullingUI = true;
+    bool mShowCullingDebugTextureUI = true;
+    int mCullingMaxDepthUI = 6;
+    int mCullingMaxItemsPerLeafUI = 4;
+    float mCullingMinHeightUI = -300.0f;
+    float mCullingMaxHeightUI = 600.0f;
+    float mCullingHeightPaddingUI = 0.0f;
+
+    // Scene-independent quadtree culling data.
+    SceneQuadtreeCulling mCullingTree;
+    vector<SceneCullingItem> mCullingItems;
+    vector<ClipmapTile*> mVisibleTiles;
+    vector<const SceneCullingItem*> mVisibleCullingItems;
+    unordered_set<const ClipmapTile*> mVisibleTileSet;
+    vector<uint32_t> mCullingDebugPixels;
+    SceneCullingBounds mCullingWorldBounds;
+    ComPtr<ID3D12Resource> mCullingDebugTextureResource;
+    D3D12_CPU_DESCRIPTOR_HANDLE mCullingDebugSRV = { D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN };
+    bool mCullingDebugTextureValid = false;
 
     // Tracked previous-frame noise params to detect changes and trigger regeneration
     float mPrevNoiseScale = 0.003f;
