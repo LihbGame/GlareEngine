@@ -71,9 +71,9 @@ void TerrainClipmap::CreateTileGPUResources(ClipmapTile* Tile, ID3D12GraphicsCom
         D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
         nullptr, IID_PPV_ARGS(&Tile->HeightMap)));
 
-    // Normal map: RG16_FLOAT
+    // Normal map: RGB stores the terrain normal in world-space X/Y/Z.
     D3D12_RESOURCE_DESC normalDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-        DXGI_FORMAT_R16G16_FLOAT, texSize, texSize, 1, 1);
+        DXGI_FORMAT_R16G16B16A16_FLOAT, texSize, texSize, 1, 1);
     normalDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
     ThrowIfFailed(mDevice->CreateCommittedResource(
@@ -101,7 +101,7 @@ void TerrainClipmap::CreateTileGPUResources(ClipmapTile* Tile, ID3D12GraphicsCom
     mDevice->CreateShaderResourceView(Tile->HeightMap.Get(), &srvDesc, Tile->HeightSRV);
 
     Tile->NormalSRV = AllocateTileDescriptor();
-    srvDesc.Format = DXGI_FORMAT_R16G16_FLOAT;
+    srvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
     mDevice->CreateShaderResourceView(Tile->NormalMap.Get(), &srvDesc, Tile->NormalSRV);
 
     Tile->WeightSRV = AllocateTileDescriptor();
@@ -116,7 +116,7 @@ void TerrainClipmap::CreateTileGPUResources(ClipmapTile* Tile, ID3D12GraphicsCom
     mDevice->CreateUnorderedAccessView(Tile->HeightMap.Get(), nullptr, &uavDesc, Tile->HeightUAV);
 
     Tile->NormalUAV = AllocateTileDescriptor();
-    uavDesc.Format = DXGI_FORMAT_R16G16_FLOAT;
+    uavDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
     mDevice->CreateUnorderedAccessView(Tile->NormalMap.Get(), nullptr, &uavDesc, Tile->NormalUAV);
 
     Tile->WeightUAV = AllocateTileDescriptor();

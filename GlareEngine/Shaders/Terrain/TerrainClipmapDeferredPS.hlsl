@@ -14,10 +14,12 @@ PBRParams BlendMaterialLayers(
     float2 tiledUV,
     float2 tiledUvDx,
     float2 tiledUvDy,
-    float2 worldXZ,
+    float2 detailUV,
     float detailFade,
     float2 detailUvDx,
-    float2 detailUvDy)
+    float2 detailUvDy,
+    float3 viewDirT,
+    float parallaxFade)
 {
     float w[5];
     w[0] = weights.r; // grass (layer 0)
@@ -25,8 +27,6 @@ PBRParams BlendMaterialLayers(
     w[2] = weights.b; // darkdirt (layer 2)
     w[3] = weights.a; // stone (layer 3)
     w[4] = max(0, 1.0 - w[0] - w[1] - w[2] - w[3]); // snow (layer 4)
-
-    float2 detailUV = worldXZ / gDetailScale;
 
     // Sample all active layers first (needed for height-based blending)
     float3 layerAlbedo[5];
@@ -47,18 +47,34 @@ PBRParams BlendMaterialLayers(
             continue;
         }
 
-        float3 albedo = SampleStableStochastic(gTerrainLayerAlbedo[i].x, tiledUV, tiledUvDx, tiledUvDy);
-        float3 normalSample = SampleStableStochastic(gTerrainLayerNormal[i].x, tiledUV, tiledUvDx, tiledUvDy);
-        float roughness = SampleStableStochasticScalar(gTerrainLayerRoughness[i].x, tiledUV, tiledUvDx, tiledUvDy) * gTerrainRoughnessScale;
-        float metallic = SampleStableStochasticScalar(gTerrainLayerMetallic[i].x, tiledUV, tiledUvDx, tiledUvDy) * gTerrainMetallicScale;
-        float ao = SampleStableStochasticScalar(gTerrainLayerAO[i].x, tiledUV, tiledUvDx, tiledUvDy);
+        float layerParallaxFade = parallaxFade;
+        float2 layerUV = tiledUV;
+        float2 layerDetailUV = detailUV;
+        if (gTerrainUseParallax != 0 && gTerrainLayerHeight[i].x >= 0 && layerParallaxFade > 0.001)
+        {
+            layerDetailUV = ParallaxMapping((uint) gTerrainLayerHeight[i].x, layerDetailUV, viewDirT, gTerrainParallaxHeightScale * layerParallaxFade);
+        }
+
+        bool useAlignedSampling = (gTerrainUseParallax != 0 && gTerrainLayerHeight[i].x >= 0);
+
+        float3 albedo = SampleStableStochastic(gTerrainLayerAlbedo[i].x, layerUV, tiledUvDx, tiledUvDy);
+        float3 normalSample =SampleStableStochastic(gTerrainLayerNormal[i].x, layerUV, tiledUvDx, tiledUvDy);
+        float roughness =SampleStableStochasticScalar(gTerrainLayerRoughness[i].x, layerUV, tiledUvDx, tiledUvDy) * gTerrainRoughnessScale;
+        float metallic =SampleStableStochasticScalar(gTerrainLayerMetallic[i].x, layerUV, tiledUvDx, tiledUvDy) * gTerrainMetallicScale;
+        float ao = SampleStableStochasticScalar(gTerrainLayerAO[i].x, layerUV, tiledUvDx, tiledUvDy);
 
         // Detail overlay with distance fade (reuse base texture at higher tiling)
         if (detailFade > 0.0 && gDetailLayerAlbedo[i].x > 0)
         {
-            float3 detailAlb = SampleStableStochastic(gDetailLayerAlbedo[i].x, detailUV, detailUvDx, detailUvDy);
-            float3 detailNrm = SampleStableStochastic(gDetailLayerNormal[i].x, detailUV, detailUvDx, detailUvDy);
-            float  detailRgh = SampleStableStochasticScalar(gDetailLayerRoughness[i].x, detailUV, detailUvDx, detailUvDy);
+            float3 detailAlb = useAlignedSampling
+                ? gSRVMap[gDetailLayerAlbedo[i].x].SampleGrad(gSamplerAnisoWrap, layerDetailUV, detailUvDx, detailUvDy).rgb
+                : SampleStableStochastic(gDetailLayerAlbedo[i].x, layerDetailUV, detailUvDx, detailUvDy);
+            float3 detailNrm = useAlignedSampling
+                ? gSRVMap[gDetailLayerNormal[i].x].SampleGrad(gSamplerAnisoWrap, layerDetailUV, detailUvDx, detailUvDy).rgb
+                : SampleStableStochastic(gDetailLayerNormal[i].x, layerDetailUV, detailUvDx, detailUvDy);
+            float detailRgh = useAlignedSampling
+                ? gSRVMap[gDetailLayerRoughness[i].x].SampleGrad(gSamplerAnisoWrap, layerDetailUV, detailUvDx, detailUvDy).r
+                : SampleStableStochasticScalar(gDetailLayerRoughness[i].x, layerDetailUV, detailUvDx, detailUvDy);
 
             // Direct lerp: same texture at higher frequency, no darkening
             albedo = lerp(albedo, detailAlb, detailFade);
@@ -73,7 +89,9 @@ PBRParams BlendMaterialLayers(
         layerAO[i] = ao;
         // Use height map for transition sharpness (fallback to luminance if disabled)
         layerHeight[i] = (gTerrainUseHeightBlend && gTerrainLayerHeight[i].x >= 0)
-            ? SampleStableStochasticScalar(gTerrainLayerHeight[i].x, tiledUV, tiledUvDx, tiledUvDy)
+            ? (useAlignedSampling
+                ? gSRVMap[gTerrainLayerHeight[i].x].SampleGrad(gSamplerAnisoWrap, layerUV, tiledUvDx, tiledUvDy).r
+                : SampleStableStochasticScalar(gTerrainLayerHeight[i].x, layerUV, tiledUvDx, tiledUvDy))
             : dot(albedo, float3(0.299, 0.587, 0.114));
     }
 
@@ -127,19 +145,24 @@ void main(ClipmapDomainOut pin,
     float3 N = normalize(pin.NormalW);
     float3 T = normalize(pin.TangentW);
     T = normalize(T - dot(T, N) * N);
-    float3 B = normalize(cross(N, T));
+    float3 B = normalize(cross(T, N));
     float3x3 TBN = float3x3(T, B, N);
+    float3 viewDirT = mul(normalize(gTerrainEyePosW - pin.PosW), transpose(TBN));
+    float distToEye = distance(pin.PosW, gTerrainEyePosW);
+    float parallaxFade = saturate((gTerrainParallaxFadeEnd - distToEye) / max(gTerrainParallaxFadeEnd - gTerrainParallaxFadeStart, 1.0));
 
-    float detailFade = saturate(1.0 - distance(pin.PosW, gTerrainEyePosW) / gDetailFadeDistance) * 0.8;
+    float detailFade = saturate(1.0 - distToEye / gDetailFadeDistance) * 0.8;
     PBRParams mat = BlendMaterialLayers(
         pin.MatWeights,
         tiledUV,
         tiledUvDx,
         tiledUvDy,
-        pin.WorldXZ,
+        detailUV,
         detailFade,
         detailUvDx,
-        detailUvDy);
+        detailUvDy,
+        viewDirT,
+        parallaxFade);
 
     float3 normalT = normalize(2.0 * mat.Normal - 1.0);
     float3 bumpedNormalW = normalize(mul(normalT, TBN));

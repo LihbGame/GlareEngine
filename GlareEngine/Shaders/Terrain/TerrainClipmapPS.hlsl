@@ -51,7 +51,7 @@ float4 main(ClipmapDomainOut pin) : SV_TARGET
     float3 N = normalize(pin.NormalW);
     float3 T = normalize(pin.TangentW);
     T = normalize(T - dot(T, N) * N);
-    float3 B = normalize(cross(N, T));
+    float3 B = normalize(cross(T, N));
     float3x3 TBN = float3x3(T, B, N);
 
     PBRParams mat = BlendMaterialLayers(pin.MatWeights, tiledUV, tiledUvDx, tiledUvDy, pin.WorldXZ);

@@ -466,6 +466,10 @@ void ProceduralTerrain::UpdateConstantBuffer()
     mConstants.DetailScale = mDetailScaleUI;
     mConstants.DetailFadeDistance = mDetailFadeDistanceUI;
     mConstants.UseHeightBlend = mUseHeightBlendUI ? 1 : 0;
+    mConstants.ParallaxHeightScale = mParallaxHeightScaleUI;
+    mConstants.ParallaxFadeStart = mParallaxFadeStartUI;
+    mConstants.ParallaxFadeEnd = mParallaxFadeEndUI;
+    mConstants.UseTerrainParallax = mUseParallaxUI ? 1 : 0;
     for (int i = 0; i < 5; i++)
     {
         mConstants.DetailAlbedoIndices[i].Index = mLayerSRVIndices[i][0];    // reuse base albedo
@@ -1587,6 +1591,14 @@ void ProceduralTerrain::DrawUI()
             ImGui::SliderFloat("Detail Scale", &mDetailScaleUI, 1.0f, 100.0f);
             ImGui::SliderFloat("Detail Fade Dist", &mDetailFadeDistanceUI, 5.0f, 1000.0f);
             ImGui::Checkbox("Height Blend", &mUseHeightBlendUI);
+            ImGui::Checkbox("Parallax Mapping", &mUseParallaxUI);
+            ImGui::SliderFloat("Parallax Height", &mParallaxHeightScaleUI, 0.0f, 0.5f);
+            ImGui::SliderFloat("Parallax Fade Start", &mParallaxFadeStartUI, 1.0f, 1000.0f);
+            ImGui::SliderFloat("Parallax Fade End", &mParallaxFadeEndUI, 1.0f, 1500.0f);
+            if (mParallaxFadeEndUI <= mParallaxFadeStartUI + 1.0f)
+            {
+                mParallaxFadeEndUI = mParallaxFadeStartUI + 1.0f;
+            }
             ImGui::TreePop();
         }
 

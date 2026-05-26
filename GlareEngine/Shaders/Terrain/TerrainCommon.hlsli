@@ -101,8 +101,12 @@ cbuffer ProceduralTerrainCB : register(b1)
     // Detail texture parameters
     float       gDetailScale;
     float       gDetailFadeDistance;
-    int        gTerrainUseHeightBlend;
-    int        _PadDetail;
+    int         gTerrainUseHeightBlend;
+    int         _PadDetail;
+    float       gTerrainParallaxHeightScale;
+    float       gTerrainParallaxFadeStart;
+    float       gTerrainParallaxFadeEnd;
+    int         gTerrainUseParallax;
     int4        gDetailLayerAlbedo[5];
     int4        gDetailLayerNormal[5];
     int4        gDetailLayerRoughness[5];
@@ -314,9 +318,9 @@ float SampleTerrainHeight(float2 tileUV)
     return SampleHeightLinear(tileUV);
 }
 
-float2 SampleTerrainNormal(float2 tileUV)
+float3 SampleTerrainNormal(float2 tileUV)
 {
-    return gSRVMap[gTerrainNormalMapIndex].SampleLevel(gSamplerLinearClamp, tileUV, 0).rg;
+    return gSRVMap[gTerrainNormalMapIndex].SampleLevel(gSamplerLinearClamp, tileUV, 0).xyz;
 }
 
 float4 SampleMaterialWeights(float2 tileUV)

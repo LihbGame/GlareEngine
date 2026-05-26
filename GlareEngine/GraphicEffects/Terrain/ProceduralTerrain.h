@@ -73,7 +73,6 @@ private:
 
     // Material layer SRV indices: [layer][albedo, normal, roughness, metallic, AO]
     int mLayerSRVIndices[5][5] = {};
-    int mLayerMaterialIndices[5] = {};
     // Per-layer height map SRV indices for height-based blending
     int mLayerHeightSRVIndices[5] = { -1, -1, -1, -1, -1 };
 
@@ -108,6 +107,10 @@ private:
     float mDetailScaleUI = 20.0f;
     float mDetailFadeDistanceUI = 500.0f;
     bool  mUseHeightBlendUI = true;
+    bool  mUseParallaxUI = true;
+    float mParallaxHeightScaleUI = 0.012f;
+    float mParallaxFadeStartUI = 80.0f;
+    float mParallaxFadeEndUI = 250.0f;
 
     // Debug: render only a specific LOD level (-1 = all)
     int mDebugLODLevel = -1;

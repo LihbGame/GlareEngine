@@ -28,7 +28,7 @@ ClipmapDomainOut main(
     bool rightSkirt  = isRight  && (gTerrainSkirtEdgeFlags & 2u);
     bool topSkirt    = isTop    && (gTerrainSkirtEdgeFlags & 4u);
     bool bottomSkirt = isBottom && (gTerrainSkirtEdgeFlags & 8u);
-    bool anySkirt    = leftSkirt || rightSkirt || topSkirt || bottomSkirt;
+    bool anySkirt    = leftSkirt || rightSkirt || bottomSkirt || topSkirt;
 
     float2 effectiveUV = tileUV;
     if (anySkirt)
@@ -38,6 +38,7 @@ ClipmapDomainOut main(
         if (rightSkirt)  effectiveUV.x = 1.0;
         if (topSkirt)    effectiveUV.y = 0.0;
         if (bottomSkirt) effectiveUV.y = 1.0;
+
         // Clamp remaining out-of-bounds axes (corners with partial skirt)
         if (!leftSkirt && !rightSkirt) effectiveUV.x = clamp(effectiveUV.x, 0.0, 1.0);
         if (!topSkirt && !bottomSkirt) effectiveUV.y = clamp(effectiveUV.y, 0.0, 1.0);
@@ -55,7 +56,7 @@ ClipmapDomainOut main(
         effectiveUV.y * TERRAIN_TILE_SIZE * cellSize + tileOffsetWorld.y
     );
 
-    // Convert tile UV to heightmap UV — always clamp to [0,1] for sampling
+    // Convert tile UV to heightmap UV and clamp to [0,1] for sampling.
     float2 clampedTileUV = clamp(tileUV, 0.0, 1.0);
     float2 hmUV = TileToHeightmapUV(clampedTileUV);
 
@@ -72,13 +73,11 @@ ClipmapDomainOut main(
     dout.PosW = float3(worldXZ.x, height, worldXZ.y);
     dout.WorldXZ = worldXZ;
 
-    // Sample packed normal and reconstruct
-    float2 packedNormal = SampleTerrainNormal(hmUV);
-    float3 normal = normalize(float3(packedNormal.x, 1.0, packedNormal.y));
+    // Sample the generated normal map as a full XYZ world-space normal.
+    float3 normal = normalize(SampleTerrainNormal(hmUV));
 
-    // Build tangent from world-space X axis, orthogonalized against normal
+    // Build tangent from world-space X axis, orthogonalized against normal.
     float3 tangent = normalize(float3(1.0, 0.0, 0.0) - normal.x * normal);
-    float3 bitangent = cross(normal, tangent);
 
     dout.NormalW = normal;
     dout.TangentW = tangent;
@@ -87,7 +86,7 @@ ClipmapDomainOut main(
     dout.MatWeights = SampleMaterialWeights(hmUV);
 
     // Project to clip space
-    dout.PosH = mul(gTerrainViewProj,float4(dout.PosW, 1.0));
+    dout.PosH = mul(gTerrainViewProj, float4(dout.PosW, 1.0));
 
     // Motion vectors: current and previous clip positions
     dout.CurPosition = dout.PosH.xyw;

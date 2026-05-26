@@ -2,7 +2,7 @@
 #include "TerrainNoise.hlsli"
 
 RWTexture2D<float>      gOutputHeightMap      : register(u0);
-RWTexture2D<float2>     gOutputNormalMap      : register(u1);
+RWTexture2D<float4>     gOutputNormalMap      : register(u1);
 RWTexture2D<float4>     gOutputMaterialWeights : register(u2);
 
 // Material weight computation.
@@ -80,11 +80,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // Compute material weights
     float4 weights = ComputeMaterialWeights(height, slope, worldXZ);
 
-    // Pack normal (hemisphere encoding: normal is always pointing up)
-    float2 packedNormal = normal.xz;
-
     // Write outputs
     gOutputHeightMap[DTid.xy] = height / (2.0 * gNoiseHeightScale) + 0.5;
-    gOutputNormalMap[DTid.xy] = packedNormal;
+    gOutputNormalMap[DTid.xy] = float4(normal, 1.0);
     gOutputMaterialWeights[DTid.xy] = weights;
 }
