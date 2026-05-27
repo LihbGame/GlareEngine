@@ -102,7 +102,7 @@ cbuffer ProceduralTerrainCB : register(b1)
     float       gDetailScale;
     float       gDetailFadeDistance;
     int         gTerrainUseHeightBlend;
-    int         _PadDetail;
+    int         gTerrainUseTriplanar;
     float       gTerrainParallaxHeightScale;
     float       gTerrainParallaxFadeStart;
     float       gTerrainParallaxFadeEnd;
@@ -249,6 +249,137 @@ float SampleStableStochasticScalar(int srvIndex, float2 baseUV, float2 uvDx, flo
     float s11 = gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, baseUV + GetStableStochasticOffset(cell + float2(1.0, 1.0), 23.0), uvDx, uvDy).r;
 
     return lerp(lerp(s00, s10, w.x), lerp(s01, s11, w.x), w.y);
+}
+
+// --- Terrain material projection utilities ---
+
+#define TERRAIN_TRIPLANAR_FULL_SLOPE_Y  0.35
+#define TERRAIN_TRIPLANAR_START_SLOPE_Y 0.72
+#define TERRAIN_TRIPLANAR_BLEND_POWER   4.0
+
+float TerrainTriplanarFade(float3 normalW)
+{
+    float upness = abs(normalize(normalW).y);
+    float fade = saturate((TERRAIN_TRIPLANAR_START_SLOPE_Y - upness) /
+        max(TERRAIN_TRIPLANAR_START_SLOPE_Y - TERRAIN_TRIPLANAR_FULL_SLOPE_Y, 0.001));
+    return fade * fade * (3.0 - 2.0 * fade);
+}
+
+float3 TerrainTriplanarWeights(float3 normalW)
+{
+    float3 w = pow(max(abs(normalize(normalW)), 0.0001), TERRAIN_TRIPLANAR_BLEND_POWER);
+    return w / max(w.x + w.y + w.z, 0.0001);
+}
+
+float3 TerrainDecodeNormal(float3 normalSample)
+{
+    return normalize(normalSample * 2.0 - 1.0);
+}
+
+float3 TerrainPlanarNormalToWorld(float3 normalSample, float3x3 tbn)
+{
+    return normalize(mul(TerrainDecodeNormal(normalSample), tbn));
+}
+
+float3 TerrainTriplanarNormalToWorld(float3 normalSample, uint axis, float axisSign)
+{
+    float3 n = TerrainDecodeNormal(normalSample);
+
+    if (axis == 0)
+    {
+        return normalize(float3(n.z * axisSign, n.y, n.x));
+    }
+    if (axis == 1)
+    {
+        return normalize(float3(n.x, n.z * axisSign, n.y));
+    }
+
+    return normalize(float3(n.x, n.y, n.z * axisSign));
+}
+
+struct TerrainTriplanarUVSet
+{
+    float2 UvX;
+    float2 UvY;
+    float2 UvZ;
+    float2 DxX;
+    float2 DxY;
+    float2 DxZ;
+    float2 DyX;
+    float2 DyY;
+    float2 DyZ;
+    float3 Weights;
+    float3 SignN;
+};
+
+TerrainTriplanarUVSet TerrainBuildTriplanarUVSet(float3 posW, float3 posDx, float3 posDy, float3 normalW, float scale)
+{
+    TerrainTriplanarUVSet uvSet;
+    float invScale = 1.0 / max(scale, 0.001);
+    float3 dxPos = posDx * invScale;
+    float3 dyPos = posDy * invScale;
+
+    // X projects onto ZY, Y onto XZ, Z onto XY.
+    uvSet.UvX = posW.zy * invScale;
+    uvSet.UvY = posW.xz * invScale;
+    uvSet.UvZ = posW.xy * invScale;
+
+    uvSet.DxX = dxPos.zy;
+    uvSet.DxY = dxPos.xz;
+    uvSet.DxZ = dxPos.xy;
+
+    uvSet.DyX = dyPos.zy;
+    uvSet.DyY = dyPos.xz;
+    uvSet.DyZ = dyPos.xy;
+
+    uvSet.Weights = TerrainTriplanarWeights(normalW);
+    uvSet.SignN = float3(
+        normalW.x >= 0.0 ? 1.0 : -1.0,
+        normalW.y >= 0.0 ? 1.0 : -1.0,
+        normalW.z >= 0.0 ? 1.0 : -1.0);
+
+    return uvSet;
+}
+
+float3 TerrainSamplePlanarRGB(int srvIndex, float2 uv, float2 uvDx, float2 uvDy, bool alignedSampling)
+{
+    return alignedSampling
+        ? gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, uv, uvDx, uvDy).rgb
+        : SampleStableStochastic(srvIndex, uv, uvDx, uvDy);
+}
+
+float TerrainSamplePlanarScalar(int srvIndex, float2 uv, float2 uvDx, float2 uvDy, bool alignedSampling)
+{
+    return alignedSampling
+        ? gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, uv, uvDx, uvDy).r
+        : SampleStableStochasticScalar(srvIndex, uv, uvDx, uvDy);
+}
+
+float3 TerrainSampleTriplanarRGB(int srvIndex, TerrainTriplanarUVSet uvSet)
+{
+    float3 sx = gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, uvSet.UvX, uvSet.DxX, uvSet.DyX).rgb;
+    float3 sy = gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, uvSet.UvY, uvSet.DxY, uvSet.DyY).rgb;
+    float3 sz = gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, uvSet.UvZ, uvSet.DxZ, uvSet.DyZ).rgb;
+
+    return sx * uvSet.Weights.x + sy * uvSet.Weights.y + sz * uvSet.Weights.z;
+}
+
+float TerrainSampleTriplanarScalar(int srvIndex, TerrainTriplanarUVSet uvSet)
+{
+    float sx = gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, uvSet.UvX, uvSet.DxX, uvSet.DyX).r;
+    float sy = gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, uvSet.UvY, uvSet.DxY, uvSet.DyY).r;
+    float sz = gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, uvSet.UvZ, uvSet.DxZ, uvSet.DyZ).r;
+
+    return sx * uvSet.Weights.x + sy * uvSet.Weights.y + sz * uvSet.Weights.z;
+}
+
+float3 TerrainSampleTriplanarNormalW(int srvIndex, TerrainTriplanarUVSet uvSet)
+{
+    float3 nx = TerrainTriplanarNormalToWorld(gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, uvSet.UvX, uvSet.DxX, uvSet.DyX).rgb, 0, uvSet.SignN.x);
+    float3 ny = TerrainTriplanarNormalToWorld(gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, uvSet.UvY, uvSet.DxY, uvSet.DyY).rgb, 1, uvSet.SignN.y);
+    float3 nz = TerrainTriplanarNormalToWorld(gSRVMap[srvIndex].SampleGrad(gSamplerAnisoWrap, uvSet.UvZ, uvSet.DxZ, uvSet.DyZ).rgb, 2, uvSet.SignN.z);
+
+    return normalize(nx * uvSet.Weights.x + ny * uvSet.Weights.y + nz * uvSet.Weights.z);
 }
 
 // --- Clipmap tessellation factor ---

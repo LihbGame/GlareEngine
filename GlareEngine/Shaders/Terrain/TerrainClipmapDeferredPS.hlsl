@@ -3,7 +3,7 @@
 struct PBRParams
 {
     float3  Albedo;
-    float3  Normal;
+    float3  NormalW;
     float   Roughness;
     float   Metallic;
     float   AO;
@@ -18,6 +18,12 @@ PBRParams BlendMaterialLayers(
     float detailFade,
     float2 detailUvDx,
     float2 detailUvDy,
+    float3 posW,
+    float3 posDx,
+    float3 posDy,
+    float3 surfaceNormalW,
+    float3x3 tbn,
+    float3 viewDirW,
     float3 viewDirT,
     float parallaxFade)
 {
@@ -30,69 +36,183 @@ PBRParams BlendMaterialLayers(
 
     // Sample all active layers first (needed for height-based blending)
     float3 layerAlbedo[5];
-    float3 layerNormal[5];
+    float3 layerNormalW[5];
     float  layerRoughness[5];
     float  layerMetallic[5];
     float  layerAO[5];
     float  layerHeight[5];
+    float  triplanarFade = (gTerrainUseTriplanar != 0) ? TerrainTriplanarFade(surfaceNormalW) : 0.0;
+    bool   useTriplanarProjection = triplanarFade > 0.001;
+    bool   usePlanarProjection = triplanarFade < 0.999;
 
     [unroll]
     for (int i = 0; i < TERRAIN_NUM_LAYERS; i++)
     {
         if (w[i] < 0.01)
         {
-            layerAlbedo[i] = 0; layerNormal[i] = 0;
+            layerAlbedo[i] = 0; layerNormalW[i] = 0;
             layerRoughness[i] = 0; layerMetallic[i] = 0;
             layerAO[i] = 0; layerHeight[i] = 0;
             continue;
         }
 
         float layerParallaxFade = parallaxFade;
+        bool hasParallax = (gTerrainUseParallax != 0 && gTerrainLayerHeight[i].x >= 0 && layerParallaxFade > 0.001);
+        float planarParallaxFade = 1.0 - triplanarFade;
+        bool hasPlanarParallax = hasParallax && planarParallaxFade > 0.001;
         float2 layerUV = tiledUV;
         float2 layerDetailUV = detailUV;
-        if (gTerrainUseParallax != 0 && gTerrainLayerHeight[i].x >= 0 && layerParallaxFade > 0.001)
+        if (hasPlanarParallax)
         {
-            layerDetailUV = ParallaxMapping((uint) gTerrainLayerHeight[i].x, layerDetailUV, viewDirT, gTerrainParallaxHeightScale * layerParallaxFade);
+            layerDetailUV = ParallaxMapping((uint)gTerrainLayerHeight[i].x, detailUV, viewDirT,
+                gTerrainParallaxHeightScale * layerParallaxFade * planarParallaxFade);
         }
 
-        bool useAlignedSampling = (gTerrainUseParallax != 0 && gTerrainLayerHeight[i].x >= 0);
+        bool useAlignedSampling = hasPlanarParallax;
+        TerrainTriplanarUVSet baseTriplanarUV = (TerrainTriplanarUVSet)0;
 
-        float3 albedo = SampleStableStochastic(gTerrainLayerAlbedo[i].x, layerUV, tiledUvDx, tiledUvDy);
-        float3 normalSample =SampleStableStochastic(gTerrainLayerNormal[i].x, layerUV, tiledUvDx, tiledUvDy);
-        float roughness =SampleStableStochasticScalar(gTerrainLayerRoughness[i].x, layerUV, tiledUvDx, tiledUvDy) * gTerrainRoughnessScale;
-        float metallic =SampleStableStochasticScalar(gTerrainLayerMetallic[i].x, layerUV, tiledUvDx, tiledUvDy) * gTerrainMetallicScale;
-        float ao = SampleStableStochasticScalar(gTerrainLayerAO[i].x, layerUV, tiledUvDx, tiledUvDy);
+        float3 planarAlbedo = 0.0;
+        float3 planarNormalW = surfaceNormalW;
+        float planarRoughness = 0.0;
+        float planarMetallic = 0.0;
+        float planarAO = 0.0;
+
+        if (usePlanarProjection)
+        {
+            planarAlbedo = TerrainSamplePlanarRGB(gTerrainLayerAlbedo[i].x, layerUV, tiledUvDx, tiledUvDy, useAlignedSampling);
+            planarNormalW = TerrainPlanarNormalToWorld(TerrainSamplePlanarRGB(gTerrainLayerNormal[i].x, layerUV, tiledUvDx, tiledUvDy, useAlignedSampling), tbn);
+            planarRoughness = TerrainSamplePlanarScalar(gTerrainLayerRoughness[i].x, layerUV, tiledUvDx, tiledUvDy, useAlignedSampling) * gTerrainRoughnessScale;
+            planarMetallic = TerrainSamplePlanarScalar(gTerrainLayerMetallic[i].x, layerUV, tiledUvDx, tiledUvDy, useAlignedSampling) * gTerrainMetallicScale;
+            planarAO = TerrainSamplePlanarScalar(gTerrainLayerAO[i].x, layerUV, tiledUvDx, tiledUvDy, useAlignedSampling);
+        }
+
+        float3 triAlbedo = 0.0;
+        float3 triNormalW = surfaceNormalW;
+        float triRoughness = 0.0;
+        float triMetallic = 0.0;
+        float triAO = 0.0;
+
+        if (useTriplanarProjection)
+        {
+            baseTriplanarUV = TerrainBuildTriplanarUVSet(posW, posDx, posDy, surfaceNormalW, gTerrainTexScale);
+
+            triAlbedo = TerrainSampleTriplanarRGB(gTerrainLayerAlbedo[i].x, baseTriplanarUV);
+            triNormalW = TerrainSampleTriplanarNormalW(gTerrainLayerNormal[i].x, baseTriplanarUV);
+            triRoughness = TerrainSampleTriplanarScalar(gTerrainLayerRoughness[i].x, baseTriplanarUV) * gTerrainRoughnessScale;
+            triMetallic = TerrainSampleTriplanarScalar(gTerrainLayerMetallic[i].x, baseTriplanarUV) * gTerrainMetallicScale;
+            triAO = TerrainSampleTriplanarScalar(gTerrainLayerAO[i].x, baseTriplanarUV);
+        }
+
+        float3 albedo;
+        float3 normalW;
+        float roughness;
+        float metallic;
+        float ao;
+
+        if (useTriplanarProjection && usePlanarProjection)
+        {
+            albedo = lerp(planarAlbedo, triAlbedo, triplanarFade);
+            normalW = normalize(lerp(planarNormalW, triNormalW, triplanarFade));
+            roughness = lerp(planarRoughness, triRoughness, triplanarFade);
+            metallic = lerp(planarMetallic, triMetallic, triplanarFade);
+            ao = lerp(planarAO, triAO, triplanarFade);
+        }
+        else if (useTriplanarProjection)
+        {
+            albedo = triAlbedo;
+            normalW = triNormalW;
+            roughness = triRoughness;
+            metallic = triMetallic;
+            ao = triAO;
+        }
+        else
+        {
+            albedo = planarAlbedo;
+            normalW = planarNormalW;
+            roughness = planarRoughness;
+            metallic = planarMetallic;
+            ao = planarAO;
+        }
 
         // Detail overlay with distance fade (reuse base texture at higher tiling)
         if (detailFade > 0.0 && gDetailLayerAlbedo[i].x > 0)
         {
-            float3 detailAlb = useAlignedSampling
-                ? gSRVMap[gDetailLayerAlbedo[i].x].SampleGrad(gSamplerAnisoWrap, layerDetailUV, detailUvDx, detailUvDy).rgb
-                : SampleStableStochastic(gDetailLayerAlbedo[i].x, layerDetailUV, detailUvDx, detailUvDy);
-            float3 detailNrm = useAlignedSampling
-                ? gSRVMap[gDetailLayerNormal[i].x].SampleGrad(gSamplerAnisoWrap, layerDetailUV, detailUvDx, detailUvDy).rgb
-                : SampleStableStochastic(gDetailLayerNormal[i].x, layerDetailUV, detailUvDx, detailUvDy);
-            float detailRgh = useAlignedSampling
-                ? gSRVMap[gDetailLayerRoughness[i].x].SampleGrad(gSamplerAnisoWrap, layerDetailUV, detailUvDx, detailUvDy).r
-                : SampleStableStochasticScalar(gDetailLayerRoughness[i].x, layerDetailUV, detailUvDx, detailUvDy);
+            float3 planarDetailAlb = 0.0;
+            float3 planarDetailNrmW = surfaceNormalW;
+            float planarDetailRgh = 0.0;
+
+            if (usePlanarProjection)
+            {
+                planarDetailAlb = TerrainSamplePlanarRGB(gDetailLayerAlbedo[i].x, layerDetailUV, detailUvDx, detailUvDy, useAlignedSampling);
+                planarDetailNrmW = TerrainPlanarNormalToWorld(TerrainSamplePlanarRGB(gDetailLayerNormal[i].x, layerDetailUV, detailUvDx, detailUvDy, useAlignedSampling), tbn);
+                planarDetailRgh = TerrainSamplePlanarScalar(gDetailLayerRoughness[i].x, layerDetailUV, detailUvDx, detailUvDy, useAlignedSampling);
+            }
+
+            float3 triDetailAlb = 0.0;
+            float3 triDetailNrmW = surfaceNormalW;
+            float triDetailRgh = 0.0;
+
+            if (useTriplanarProjection)
+            {
+                TerrainTriplanarUVSet detailTriplanarUV = TerrainBuildTriplanarUVSet(posW, posDx, posDy, surfaceNormalW, gDetailScale);
+
+                triDetailAlb = TerrainSampleTriplanarRGB(gDetailLayerAlbedo[i].x, detailTriplanarUV);
+                triDetailNrmW = TerrainSampleTriplanarNormalW(gDetailLayerNormal[i].x, detailTriplanarUV);
+                triDetailRgh = TerrainSampleTriplanarScalar(gDetailLayerRoughness[i].x, detailTriplanarUV);
+            }
+
+            float3 detailAlb;
+            float3 detailNrmW;
+            float detailRgh;
+            if (useTriplanarProjection && usePlanarProjection)
+            {
+                detailAlb = lerp(planarDetailAlb, triDetailAlb, triplanarFade);
+                detailNrmW = normalize(lerp(planarDetailNrmW, triDetailNrmW, triplanarFade));
+                detailRgh = lerp(planarDetailRgh, triDetailRgh, triplanarFade);
+            }
+            else if (useTriplanarProjection)
+            {
+                detailAlb = triDetailAlb;
+                detailNrmW = triDetailNrmW;
+                detailRgh = triDetailRgh;
+            }
+            else
+            {
+                detailAlb = planarDetailAlb;
+                detailNrmW = planarDetailNrmW;
+                detailRgh = planarDetailRgh;
+            }
 
             // Direct lerp: same texture at higher frequency, no darkening
             albedo = lerp(albedo, detailAlb, detailFade);
-            normalSample = lerp(normalSample, detailNrm, detailFade);
+            normalW = normalize(lerp(normalW, detailNrmW, detailFade));
             roughness = lerp(roughness, detailRgh * gTerrainRoughnessScale, detailFade);
         }
 
         layerAlbedo[i] = albedo;
-        layerNormal[i] = normalSample;
+        layerNormalW[i] = normalW;
         layerRoughness[i] = roughness;
         layerMetallic[i] = metallic;
         layerAO[i] = ao;
+
         // Use height map for transition sharpness (fallback to luminance if disabled)
-        layerHeight[i] = (gTerrainUseHeightBlend && gTerrainLayerHeight[i].x >= 0)
-            ? (useAlignedSampling
-                ? gSRVMap[gTerrainLayerHeight[i].x].SampleGrad(gSamplerAnisoWrap, layerUV, tiledUvDx, tiledUvDy).r
-                : SampleStableStochasticScalar(gTerrainLayerHeight[i].x, layerUV, tiledUvDx, tiledUvDy))
-            : dot(albedo, float3(0.299, 0.587, 0.114));
+        if (gTerrainUseHeightBlend && gTerrainLayerHeight[i].x >= 0)
+        {
+            float planarHeight = usePlanarProjection
+                ? TerrainSamplePlanarScalar(gTerrainLayerHeight[i].x, layerUV, tiledUvDx, tiledUvDy, useAlignedSampling)
+                : 0.0;
+            float triHeight = useTriplanarProjection
+                ? TerrainSampleTriplanarScalar(gTerrainLayerHeight[i].x, baseTriplanarUV)
+                : 0.0;
+
+            layerHeight[i] = (useTriplanarProjection && usePlanarProjection)
+                ? lerp(planarHeight, triHeight, triplanarFade)
+                : (useTriplanarProjection ? triHeight : planarHeight);
+        }
+        else
+        {
+            layerHeight[i] = dot(albedo, float3(0.299, 0.587, 0.114));
+        }
     }
 
     // Height-based weight adjustment: brighter texels punch through in transition zones
@@ -116,11 +236,16 @@ PBRParams BlendMaterialLayers(
         {
             float fw = adjustedW[k] / totalW;
             result.Albedo += layerAlbedo[k] * fw;
-            result.Normal += layerNormal[k] * fw;
+            result.NormalW += layerNormalW[k] * fw;
             result.Roughness += layerRoughness[k] * fw;
             result.Metallic += layerMetallic[k] * fw;
             result.AO += layerAO[k] * fw;
         }
+        result.NormalW = normalize(result.NormalW);
+    }
+    else
+    {
+        result.NormalW = surfaceNormalW;
     }
 
     return result;
@@ -140,6 +265,8 @@ void main(ClipmapDomainOut pin,
     float2 detailUV = pin.WorldXZ / gDetailScale;
     float2 detailUvDx = ddx(detailUV);
     float2 detailUvDy = ddy(detailUV);
+    float3 posDx = ddx(pin.PosW);
+    float3 posDy = ddy(pin.PosW);
 
     // Compute TBN for normal map decoding
     float3 N = normalize(pin.NormalW);
@@ -147,7 +274,8 @@ void main(ClipmapDomainOut pin,
     T = normalize(T - dot(T, N) * N);
     float3 B = normalize(cross(T, N));
     float3x3 TBN = float3x3(T, B, N);
-    float3 viewDirT = mul(normalize(gTerrainEyePosW - pin.PosW), transpose(TBN));
+    float3 viewDirW = normalize(gTerrainEyePosW - pin.PosW);
+    float3 viewDirT = mul(viewDirW, transpose(TBN));
     float distToEye = distance(pin.PosW, gTerrainEyePosW);
     float parallaxFade = saturate((gTerrainParallaxFadeEnd - distToEye) / max(gTerrainParallaxFadeEnd - gTerrainParallaxFadeStart, 1.0));
 
@@ -161,11 +289,16 @@ void main(ClipmapDomainOut pin,
         detailFade,
         detailUvDx,
         detailUvDy,
+        pin.PosW,
+        posDx,
+        posDy,
+        N,
+        TBN,
+        viewDirW,
         viewDirT,
         parallaxFade);
 
-    float3 normalT = normalize(2.0 * mat.Normal - 1.0);
-    float3 bumpedNormalW = normalize(mul(normalT, TBN));
+    float3 bumpedNormalW = normalize(mat.NormalW);
 
     GBUFFER_BaseColor    = float4(mat.Albedo, mat.AO);
     GBUFFER_MSR          = float4(saturate(mat.Metallic), 1.0, saturate(max(mat.Roughness, 0.3)), 1);

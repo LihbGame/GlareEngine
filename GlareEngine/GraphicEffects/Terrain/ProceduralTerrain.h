@@ -96,7 +96,7 @@ private:
     int mHighFreqLayersUI = 2;
     float mSnowHeightUI = 150.0f;
     float mStoneSlopeUI = 0.6f;
-    float mTexScaleUI = 200.0f;
+    float mTexScaleUI = 100.0f;
     float mRoughnessScaleUI = 9.0f;
     float mStochasticStrengthUI = 0.35f;
     float mMaxTessFactorUI = 4.0f;
@@ -108,9 +108,10 @@ private:
     float mDetailFadeDistanceUI = 500.0f;
     bool  mUseHeightBlendUI = true;
     bool  mUseParallaxUI = true;
+    bool  mUseTriplanarUI = true;
     float mParallaxHeightScaleUI = 0.012f;
     float mParallaxFadeStartUI = 80.0f;
-    float mParallaxFadeEndUI = 250.0f;
+    float mParallaxFadeEndUI = 500.0f;
 
     // Debug: render only a specific LOD level (-1 = all)
     int mDebugLODLevel = -1;

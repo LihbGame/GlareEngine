@@ -466,6 +466,7 @@ void ProceduralTerrain::UpdateConstantBuffer()
     mConstants.DetailScale = mDetailScaleUI;
     mConstants.DetailFadeDistance = mDetailFadeDistanceUI;
     mConstants.UseHeightBlend = mUseHeightBlendUI ? 1 : 0;
+    mConstants.UseTriplanar = mUseTriplanarUI ? 1 : 0;
     mConstants.ParallaxHeightScale = mParallaxHeightScaleUI;
     mConstants.ParallaxFadeStart = mParallaxFadeStartUI;
     mConstants.ParallaxFadeEnd = mParallaxFadeEndUI;
@@ -1592,7 +1593,8 @@ void ProceduralTerrain::DrawUI()
             ImGui::SliderFloat("Detail Fade Dist", &mDetailFadeDistanceUI, 5.0f, 1000.0f);
             ImGui::Checkbox("Height Blend", &mUseHeightBlendUI);
             ImGui::Checkbox("Parallax Mapping", &mUseParallaxUI);
-            ImGui::SliderFloat("Parallax Height", &mParallaxHeightScaleUI, 0.0f, 0.5f);
+            ImGui::Checkbox("Triplanar Mapping", &mUseTriplanarUI);
+            ImGui::SliderFloat("Parallax Height", &mParallaxHeightScaleUI, 0.0f, 0.1f);
             ImGui::SliderFloat("Parallax Fade Start", &mParallaxFadeStartUI, 1.0f, 1000.0f);
             ImGui::SliderFloat("Parallax Fade End", &mParallaxFadeEndUI, 1.0f, 1500.0f);
             if (mParallaxFadeEndUI <= mParallaxFadeStartUI + 1.0f)

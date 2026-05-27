@@ -252,7 +252,7 @@ __declspec(align(256)) struct ProceduralTerrainConstants
     float       DetailScale              = 20.0f;
     float       DetailFadeDistance       = 50.0f;
     int         UseHeightBlend           = 1;
-    int         _PadDetail               = {};
+    int         UseTriplanar             = 1;
     float       ParallaxHeightScale      = 0.012f;
     float       ParallaxFadeStart        = 80.0f;
     float       ParallaxFadeEnd          = 250.0f;
