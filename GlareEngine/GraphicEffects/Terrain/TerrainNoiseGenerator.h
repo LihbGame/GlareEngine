@@ -29,7 +29,6 @@ public:
     void SetSeed(UINT Seed) { mSeed = Seed; }
     void SetHeightScale(float Scale) { mHeightScale = Scale; }
     void SetNoiseLayers(const TerrainNoiseLayerSettings* Layers, UINT Count);
-    void SetFilters(const TerrainFilterSettings* Filters, UINT Count);
 
     // Get root signature for PSO creation
     RootSignature& GetRootSignature() { return mRootSig; }
@@ -55,7 +54,6 @@ private:
     UINT    mSeed           = 42;
     float   mHeightScale    = 200.0f;
     TerrainNoiseLayerSettings mNoiseLayers[kTerrainNoiseMaxLayers];
-    TerrainFilterSettings mFilters[kTerrainFilterMaxLayers];
     float   mSnowHeight     = 150.0f;
     float   mSnowTransition = 20.0f;
     float   mStoneSlope     = 0.6f;

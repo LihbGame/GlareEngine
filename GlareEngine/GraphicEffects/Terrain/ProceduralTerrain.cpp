@@ -40,10 +40,6 @@ namespace
     const char* const kCombineOpLabels[] = { "Add", "Multiply", "Subtract", "Min", "Max", "Blend" };
     const char* const kPlacementLabels[] = { "World", "Rotated", "Mirrored" };
     const char* const kVoronoiModeLabels[] = { "F1 Distance", "Distance To Edge" };
-    const char* const kFilterTypeLabels[] =
-    {
-        "None", "Smooth", "Terrace", "Strata", "Distortion", "Sediment Fill", "Hydraulic Erosion"
-    };
 
     void HashBytes(uint64_t& hash, const void* data, size_t size)
     {
@@ -97,61 +93,6 @@ namespace
         ImGui::TreePop();
     }
 
-    void DrawTerrainFilterUI(const char* label, TerrainFilterSettings& filter)
-    {
-        if (!ImGui::TreeNode(label))
-        {
-            return;
-        }
-
-        ImGui::Checkbox("Enabled", &filter.Enabled);
-        ImGui::Combo("Type", &filter.FilterType, kFilterTypeLabels, IM_ARRAYSIZE(kFilterTypeLabels));
-        ImGui::Combo("Operation", &filter.CombineOp, kCombineOpLabels, IM_ARRAYSIZE(kCombineOpLabels));
-        ImGui::SliderFloat("Strength", &filter.Strength, 0.0f, 1.0f);
-
-        if (filter.FilterType == TerrainFilter_Smooth)
-        {
-            ImGui::SliderInt("Iterations", &filter.Iterations, 1, 4);
-            ImGui::SliderFloat("Radius", &filter.Radius, 1.0f, 256.0f);
-        }
-        else if (filter.FilterType == TerrainFilter_Terrace)
-        {
-            ImGui::SliderFloat("Step Height", &filter.Param0, 1.0f, 500.0f);
-            ImGui::SliderFloat("Smoothness", &filter.Param1, 0.0f, 1.0f);
-            ImGui::SliderFloat("Offset", &filter.Param2, -500.0f, 500.0f);
-        }
-        else if (filter.FilterType == TerrainFilter_Strata)
-        {
-            ImGui::SliderFloat("Spacing", &filter.Param0, 1.0f, 500.0f);
-            ImGui::SliderFloat("Amplitude", &filter.Param1, 0.0f, 200.0f);
-            ImGui::SliderFloat("Tilt", &filter.Param2, -0.5f, 0.5f);
-            ImGui::SliderFloat("Angle", &filter.Param3, -3.14159f, 3.14159f);
-        }
-        else if (filter.FilterType == TerrainFilter_Distortion)
-        {
-            ImGui::SliderFloat("Radius", &filter.Radius, 1.0f, 512.0f);
-            ImGui::DragFloat("Warp Frequency", &filter.Param0, 0.0001f, 0.00001f, 0.1f, "%.6f");
-            ImGui::SliderFloat("Warp Amplitude", &filter.Param1, 0.0f, 1.0f);
-        }
-        else if (filter.FilterType == TerrainFilter_SedimentFill)
-        {
-            ImGui::SliderInt("Iterations", &filter.Iterations, 1, 4);
-            ImGui::SliderFloat("Radius", &filter.Radius, 1.0f, 256.0f);
-            ImGui::SliderFloat("Fill Limit", &filter.Param0, 0.0f, 500.0f);
-        }
-        else if (filter.FilterType == TerrainFilter_HydraulicErosion)
-        {
-            ImGui::SliderInt("Iterations", &filter.Iterations, 1, 4);
-            ImGui::SliderFloat("Radius", &filter.Radius, 1.0f, 256.0f);
-            ImGui::SliderFloat("Rain", &filter.Param0, 0.0f, 2.0f);
-            ImGui::SliderFloat("Surface Erosion", &filter.Param1, 0.0f, 2.0f);
-            ImGui::SliderFloat("Max Erosion Depth", &filter.Param2, 0.0f, 500.0f);
-            ImGui::SliderFloat("Sediment Deposit", &filter.Param3, 0.0f, 2.0f);
-        }
-
-        ImGui::TreePop();
-    }
-
     bool SamePlane(const XMFLOAT4& left, const XMFLOAT4& right)
     {
         return left.x == right.x &&
@@ -192,7 +133,6 @@ ProceduralTerrain::ProceduralTerrain(
     // Initialize UI parameters from init info so first frame uses correct values
     mHeightScaleUI = Info.HeightScale;
     InitializeNoiseLayerPresets();
-    InitializeFilterPresets();
 
     // Create clipmap manager
     mClipmap = make_unique<TerrainClipmap>(
@@ -204,7 +144,6 @@ ProceduralTerrain::ProceduralTerrain(
     // Create noise generator
     mNoiseGen = make_unique<TerrainNoiseGenerator>(g_Device, CmdList, Info);
     mNoiseGen->SetNoiseLayers(mNoiseLayersUI, kTerrainNoiseMaxLayers);
-    mNoiseGen->SetFilters(mFiltersUI, kTerrainFilterMaxLayers);
 
     // Build render pipeline
     BuildRootSignature();
@@ -363,52 +302,6 @@ void ProceduralTerrain::InitializeNoiseLayerPresets()
     detail1.VoronoiMode = 1;
 }
 
-void ProceduralTerrain::InitializeFilterPresets()
-{
-    for (UINT i = 0; i < kTerrainFilterMaxLayers; ++i)
-    {
-        mFiltersUI[i] = TerrainFilterSettings();
-        mFiltersUI[i].Enabled = false;
-        mFiltersUI[i].FilterType = TerrainFilter_None;
-        mFiltersUI[i].CombineOp = TerrainCombine_Blend;
-        mFiltersUI[i].Iterations = 1;
-        mFiltersUI[i].Strength = 0.5f;
-        mFiltersUI[i].Radius = 16.0f;
-    }
-
-    TerrainFilterSettings& smooth = mFiltersUI[0];
-    smooth.FilterType = TerrainFilter_Smooth;
-    smooth.Strength = 0.35f;
-    smooth.Radius = 24.0f;
-    smooth.Iterations = 1;
-
-    TerrainFilterSettings& terrace = mFiltersUI[1];
-    terrace.FilterType = TerrainFilter_Terrace;
-    terrace.Strength = 0.45f;
-    terrace.Param0 = 80.0f;
-    terrace.Param1 = 0.35f;
-    terrace.Param2 = 0.0f;
-
-    TerrainFilterSettings& strata = mFiltersUI[2];
-    strata.FilterType = TerrainFilter_Strata;
-    strata.Strength = 0.35f;
-    strata.Param0 = 110.0f;
-    strata.Param1 = 18.0f;
-    strata.Param2 = 0.05f;
-    strata.Param3 = 0.0f;
-
-    TerrainFilterSettings& erosion = mFiltersUI[3];
-    erosion.Enabled = true;
-    erosion.FilterType = TerrainFilter_HydraulicErosion;
-    erosion.Strength = 0.75f;
-    erosion.Radius = 42.0f;
-    erosion.Param0 = 0.85f;
-    erosion.Param1 = 0.8f;
-    erosion.Param2 = 110.0f;
-    erosion.Param3 = 0.45f;
-    erosion.Iterations = 2;
-}
-
 uint64_t ProceduralTerrain::ComputeNoiseLayerStateHash() const
 {
     uint64_t hash = kFnvOffset;
@@ -437,21 +330,6 @@ uint64_t ProceduralTerrain::ComputeNoiseLayerStateHash() const
         HashFloat(hash, layer.Offset.y);
         HashFloat(hash, layer.Scale.x);
         HashFloat(hash, layer.Scale.y);
-    }
-
-    for (UINT i = 0; i < kTerrainFilterMaxLayers; ++i)
-    {
-        const TerrainFilterSettings& filter = mFiltersUI[i];
-        HashInt(hash, filter.Enabled ? 1 : 0);
-        HashInt(hash, filter.FilterType);
-        HashInt(hash, filter.CombineOp);
-        HashInt(hash, filter.Iterations);
-        HashFloat(hash, filter.Strength);
-        HashFloat(hash, filter.Radius);
-        HashFloat(hash, filter.Param0);
-        HashFloat(hash, filter.Param1);
-        HashFloat(hash, filter.Param2);
-        HashFloat(hash, filter.Param3);
     }
 
     return hash;
@@ -653,7 +531,6 @@ void ProceduralTerrain::Update(float dt, GraphicsContext* Context)
     {
         mNoiseGen->SetHeightScale(mHeightScaleUI);
         mNoiseGen->SetNoiseLayers(mNoiseLayersUI, kTerrainNoiseMaxLayers);
-        mNoiseGen->SetFilters(mFiltersUI, kTerrainFilterMaxLayers);
     }
     mInitInfo.HeightScale = mHeightScaleUI;
 
@@ -1884,19 +1761,6 @@ void ProceduralTerrain::DrawUI()
                 char label[32];
                 sprintf_s(label, "Detail %u", layerIndex);
                 DrawTerrainNoiseLayerUI(label, mNoiseLayersUI[noiseLayerIndex]);
-                ImGui::PopID();
-            }
-            ImGui::TreePop();
-        }
-
-        if (ImGui::TreeNode("Filters"))
-        {
-            for (UINT filterIndex = 0; filterIndex < kTerrainFilterMaxLayers; ++filterIndex)
-            {
-                ImGui::PushID((int)filterIndex + 1000);
-                char label[32];
-                sprintf_s(label, "Filter %u", filterIndex);
-                DrawTerrainFilterUI(label, mFiltersUI[filterIndex]);
                 ImGui::PopID();
             }
             ImGui::TreePop();

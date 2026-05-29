@@ -46,7 +46,6 @@ private:
     void ComputeSkirtFlags(const ClipmapTile* tile);
     void ComputeSkirtFlagsFor(const ClipmapTile* tile, ProceduralTerrainConstants& outConstants);
     void InitializeNoiseLayerPresets();
-    void InitializeFilterPresets();
     uint64_t ComputeNoiseLayerStateHash() const;
 
     // Subsystems
@@ -105,7 +104,6 @@ private:
     float mMaxTessDistUI = 500.0f;
     float mTessScaleUI = 1.0f;
     TerrainNoiseLayerSettings mNoiseLayersUI[kTerrainNoiseMaxLayers];
-    TerrainFilterSettings mFiltersUI[kTerrainFilterMaxLayers];
 
     // Detail texture parameters
     float mDetailScaleUI = 20.0f;

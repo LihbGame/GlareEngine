@@ -186,7 +186,6 @@ struct TerrainConstants
 constexpr UINT kTerrainNoiseMaxBaseLayers = 4;
 constexpr UINT kTerrainNoiseMaxDetailLayers = 4;
 constexpr UINT kTerrainNoiseMaxLayers = kTerrainNoiseMaxBaseLayers + kTerrainNoiseMaxDetailLayers;
-constexpr UINT kTerrainFilterMaxLayers = 4;
 
 enum TerrainNoiseType : int
 {
@@ -239,18 +238,6 @@ enum TerrainNoisePlacementMode : int
     TerrainPlacement_Count
 };
 
-enum TerrainFilterType : int
-{
-    TerrainFilter_None = 0,
-    TerrainFilter_Smooth,
-    TerrainFilter_Terrace,
-    TerrainFilter_Strata,
-    TerrainFilter_Distortion,
-    TerrainFilter_SedimentFill,
-    TerrainFilter_HydraulicErosion,
-    TerrainFilter_Count
-};
-
 struct TerrainNoiseLayerSettings
 {
     bool        Enabled        = false;
@@ -271,20 +258,6 @@ struct TerrainNoiseLayerSettings
     float       Rotation       = 0.0f;
     XMFLOAT2    Offset         = { 0.0f, 0.0f };
     XMFLOAT2    Scale          = { 1.0f, 1.0f };
-};
-
-struct TerrainFilterSettings
-{
-    bool        Enabled        = false;
-    int         FilterType     = TerrainFilter_None;
-    int         CombineOp      = TerrainCombine_Blend;
-    int         Iterations     = 1;
-    float       Strength       = 1.0f;
-    float       Radius         = 16.0f;
-    float       Param0         = 0.0f;
-    float       Param1         = 0.0f;
-    float       Param2         = 0.0f;
-    float       Param3         = 0.0f;
 };
 
 // Procedural terrain constants for GPU generation
@@ -311,15 +284,6 @@ __declspec(align(256)) struct ProceduralTerrainNoiseCB
     XMINT4      LayerCounts        = {
         (int)kTerrainNoiseMaxBaseLayers,
         (int)kTerrainNoiseMaxDetailLayers,
-        0,
-        0
-    };
-    XMINT4      FilterControls[kTerrainFilterMaxLayers] = {}; // enabled, type, combine op, iterations
-    XMFLOAT4    FilterParams0[kTerrainFilterMaxLayers]  = {}; // strength, radius, param0, param1
-    XMFLOAT4    FilterParams1[kTerrainFilterMaxLayers]  = {}; // param2, param3, reserved, reserved
-    XMINT4      FilterCounts        = {
-        (int)kTerrainFilterMaxLayers,
-        0,
         0,
         0
     };

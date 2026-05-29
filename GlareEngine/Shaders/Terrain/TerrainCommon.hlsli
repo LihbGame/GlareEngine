@@ -135,10 +135,6 @@ cbuffer TerrainNoiseCB : register(b0)
     float4  gNoiseLayerWarp[8];      // gain, warp amplitude, warp frequency, rotation
     float4  gNoiseLayerPlacement[8]; // offset xz, scale xz
     int4    gNoiseLayerCounts;       // base count, detail count, reserved
-    int4    gTerrainFilterControls[4]; // enabled, type, combine op, iterations
-    float4  gTerrainFilterParams0[4];  // strength, radius, param0, param1
-    float4  gTerrainFilterParams1[4];  // param2, param3, reserved, reserved
-    int4    gTerrainFilterCounts;      // filter count, reserved
 
     float   gNoiseSnowHeight;
     float   gNoiseSnowTransition;
