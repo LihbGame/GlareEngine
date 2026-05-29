@@ -34,6 +34,13 @@
 #define TERRAIN_PLACEMENT_ROTATED  1
 #define TERRAIN_PLACEMENT_MIRRORED 2
 
+#define TERRAIN_FILTER_NONE          0
+#define TERRAIN_FILTER_SMOOTH        1
+#define TERRAIN_FILTER_TERRACE       2
+#define TERRAIN_FILTER_STRATA        3
+#define TERRAIN_FILTER_DISTORTION    4
+#define TERRAIN_FILTER_SEDIMENT_FILL 5
+
 // --- Hash utilities ---
 float TNoiseHash2D(float2 p)
 {
@@ -502,21 +509,7 @@ float EvaluateNoiseStack(uint startLayer, uint layerCount, float2 worldXZ)
     return EvaluateNoiseStackWithGradient(startLayer, layerCount, worldXZ).x;
 }
 
-float ComputeTerrainHeight(
-    float2 worldXZ,
-    float heightScale)
-{
-    uint baseCount = (uint)clamp(gNoiseLayerCounts.x, 0, 4);
-    uint detailCount = (uint)clamp(gNoiseLayerCounts.y, 0, 4);
-
-    float baseValue = EvaluateNoiseStack(0, baseCount, worldXZ);
-    float detailValue = EvaluateNoiseStack(4, detailCount, worldXZ);
-    float height = (baseValue + detailValue) * heightScale;
-
-    return clamp(height, -heightScale, heightScale);
-}
-
-float3 ComputeTerrainHeightWithDerivatives(
+float3 ComputeTerrainRawHeightWithDerivatives(
     float2 worldXZ,
     float heightScale)
 {
@@ -528,6 +521,197 @@ float3 ComputeTerrainHeightWithDerivatives(
     float3 result = (baseResult + detailResult) * heightScale;
     result.x = clamp(result.x, -heightScale, heightScale);
     return result;
+}
+
+float ComputeTerrainRawHeight(float2 worldXZ, float heightScale)
+{
+    uint baseCount = (uint)clamp(gNoiseLayerCounts.x, 0, 4);
+    uint detailCount = (uint)clamp(gNoiseLayerCounts.y, 0, 4);
+
+    float baseValue = EvaluateNoiseStack(0, baseCount, worldXZ);
+    float detailValue = EvaluateNoiseStack(4, detailCount, worldXZ);
+    float height = (baseValue + detailValue) * heightScale;
+
+    return clamp(height, -heightScale, heightScale);
+}
+
+float TerrainCombineFilterHeight(float currentHeight, float candidateHeight, float strength, int op, float heightScale)
+{
+    strength = saturate(strength);
+
+    if (op == TERRAIN_COMBINE_SUBTRACT)
+    {
+        return currentHeight - (candidateHeight - currentHeight) * strength;
+    }
+    if (op == TERRAIN_COMBINE_MIN)
+    {
+        return lerp(currentHeight, min(currentHeight, candidateHeight), strength);
+    }
+    if (op == TERRAIN_COMBINE_MAX)
+    {
+        return lerp(currentHeight, max(currentHeight, candidateHeight), strength);
+    }
+    if (op == TERRAIN_COMBINE_MULTIPLY)
+    {
+        float normalizedDelta = (candidateHeight - currentHeight) / max(heightScale, 1.0);
+        return lerp(currentHeight, currentHeight * (1.0 + normalizedDelta), strength);
+    }
+
+    return lerp(currentHeight, candidateHeight, strength);
+}
+
+float TerrainApplySmoothFilter(float2 worldXZ, float currentHeight, float radius, int iterations, float heightScale)
+{
+    float height = currentHeight;
+    float sampleRadius = max(radius, gNoiseCellSize);
+    int iterationCount = clamp(iterations, 1, 4);
+
+    for (int i = 0; i < 4; ++i)
+    {
+        if (i >= iterationCount)
+        {
+            break;
+        }
+
+        float hL = ComputeTerrainRawHeight(worldXZ + float2(-sampleRadius, 0.0), heightScale);
+        float hR = ComputeTerrainRawHeight(worldXZ + float2(sampleRadius, 0.0), heightScale);
+        float hD = ComputeTerrainRawHeight(worldXZ + float2(0.0, -sampleRadius), heightScale);
+        float hU = ComputeTerrainRawHeight(worldXZ + float2(0.0, sampleRadius), heightScale);
+        float hLD = ComputeTerrainRawHeight(worldXZ + float2(-sampleRadius, -sampleRadius), heightScale);
+        float hRU = ComputeTerrainRawHeight(worldXZ + float2(sampleRadius, sampleRadius), heightScale);
+        float hLU = ComputeTerrainRawHeight(worldXZ + float2(-sampleRadius, sampleRadius), heightScale);
+        float hRD = ComputeTerrainRawHeight(worldXZ + float2(sampleRadius, -sampleRadius), heightScale);
+
+        height = (height + hL + hR + hD + hU + hLD + hRU + hLU + hRD) / 9.0;
+        sampleRadius *= 1.5;
+    }
+
+    return height;
+}
+
+float TerrainApplyTerraceFilter(float currentHeight, float stepHeight, float smoothness, float offset)
+{
+    float stepSize = max(stepHeight, 0.001);
+    float terracePosition = (currentHeight + offset) / stepSize;
+    float terraceBase = floor(terracePosition);
+    float terraceLocal = frac(terracePosition);
+    float transition = smoothstep(0.0, max(smoothness, 0.001), terraceLocal);
+    return (terraceBase + transition) * stepSize - offset;
+}
+
+float TerrainApplyStrataFilter(float2 worldXZ, float currentHeight, float spacing, float amplitude, float tilt, float angle)
+{
+    float2 dir = float2(cos(angle), sin(angle));
+    float bandCoord = (dot(worldXZ, dir) + currentHeight * tilt) / max(spacing, 0.001);
+    float band = sin(bandCoord * PI2);
+    float sharpenedBand = sign(band) * pow(abs(band), 0.65);
+    return currentHeight + sharpenedBand * amplitude;
+}
+
+float TerrainApplyDistortionFilter(float2 worldXZ, float radius, float warpFrequency, float warpAmplitude, float heightScale)
+{
+    float2 warpPos = worldXZ * max(warpFrequency, 0.00001) + (float)gNoiseSeed * 0.017;
+    float2 warp = float2(
+        TerrainGradientNoise(warpPos),
+        TerrainGradientNoise(warpPos + float2(17.3, 5.1)));
+    float2 distortedXZ = worldXZ + warp * radius * saturate(warpAmplitude);
+    return ComputeTerrainRawHeight(distortedXZ, heightScale);
+}
+
+float TerrainApplySedimentFillFilter(float2 worldXZ, float currentHeight, float radius, float fillLimit, int iterations, float heightScale)
+{
+    float height = currentHeight;
+    float sampleRadius = max(radius, gNoiseCellSize);
+    int iterationCount = clamp(iterations, 1, 4);
+
+    for (int i = 0; i < 4; ++i)
+    {
+        if (i >= iterationCount)
+        {
+            break;
+        }
+
+        float hL = ComputeTerrainRawHeight(worldXZ + float2(-sampleRadius, 0.0), heightScale);
+        float hR = ComputeTerrainRawHeight(worldXZ + float2(sampleRadius, 0.0), heightScale);
+        float hD = ComputeTerrainRawHeight(worldXZ + float2(0.0, -sampleRadius), heightScale);
+        float hU = ComputeTerrainRawHeight(worldXZ + float2(0.0, sampleRadius), heightScale);
+        float neighborhood = (hL + hR + hD + hU) * 0.25;
+        float fill = min(max(neighborhood - height, 0.0), max(fillLimit, 0.0));
+        height += fill;
+        sampleRadius *= 1.5;
+    }
+
+    return height;
+}
+
+float ApplyTerrainFilterStack(float2 worldXZ, float rawHeight, float heightScale)
+{
+    float height = rawHeight;
+    uint filterCount = (uint)clamp(gTerrainFilterCounts.x, 0, 4);
+
+    for (uint i = 0; i < 4; ++i)
+    {
+        if (i >= filterCount)
+        {
+            break;
+        }
+
+        int4 controls = gTerrainFilterControls[i];
+        if (controls.x == 0 || controls.y == TERRAIN_FILTER_NONE)
+        {
+            continue;
+        }
+
+        float4 params0 = gTerrainFilterParams0[i];
+        float4 params1 = gTerrainFilterParams1[i];
+        float strength = params0.x;
+        float radius = max(params0.y, gNoiseCellSize);
+        int iterations = controls.w;
+        float candidate = height;
+
+        if (controls.y == TERRAIN_FILTER_SMOOTH)
+        {
+            candidate = TerrainApplySmoothFilter(worldXZ, height, radius, iterations, heightScale);
+        }
+        else if (controls.y == TERRAIN_FILTER_TERRACE)
+        {
+            candidate = TerrainApplyTerraceFilter(height, params0.z, params0.w, params1.x);
+        }
+        else if (controls.y == TERRAIN_FILTER_STRATA)
+        {
+            candidate = TerrainApplyStrataFilter(worldXZ, height, params0.z, params0.w, params1.x, params1.y);
+        }
+        else if (controls.y == TERRAIN_FILTER_DISTORTION)
+        {
+            candidate = TerrainApplyDistortionFilter(worldXZ, radius, params0.z, params0.w, heightScale);
+        }
+        else if (controls.y == TERRAIN_FILTER_SEDIMENT_FILL)
+        {
+            candidate = TerrainApplySedimentFillFilter(worldXZ, height, radius, params0.z, iterations, heightScale);
+        }
+
+        height = TerrainCombineFilterHeight(height, candidate, strength, controls.z, heightScale);
+        height = clamp(height, -heightScale, heightScale);
+    }
+
+    return height;
+}
+
+float ComputeTerrainHeight(
+    float2 worldXZ,
+    float heightScale)
+{
+    float rawHeight = ComputeTerrainRawHeight(worldXZ, heightScale);
+    return ApplyTerrainFilterStack(worldXZ, rawHeight, heightScale);
+}
+
+float3 ComputeTerrainHeightWithDerivatives(
+    float2 worldXZ,
+    float heightScale)
+{
+    float3 rawResult = ComputeTerrainRawHeightWithDerivatives(worldXZ, heightScale);
+    rawResult.x = ApplyTerrainFilterStack(worldXZ, rawResult.x, heightScale);
+    return rawResult;
 }
 
 #endif // TERRAIN_NOISE_HLSLI

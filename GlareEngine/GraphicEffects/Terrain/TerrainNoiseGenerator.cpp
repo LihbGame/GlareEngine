@@ -44,6 +44,17 @@ void TerrainNoiseGenerator::SetNoiseLayers(const TerrainNoiseLayerSettings* Laye
     }
 }
 
+void TerrainNoiseGenerator::SetFilters(const TerrainFilterSettings* Filters, UINT Count)
+{
+    if (!Filters) return;
+
+    UINT filterCount = std::min<UINT>(Count, kTerrainFilterMaxLayers);
+    for (UINT i = 0; i < filterCount; ++i)
+    {
+        mFilters[i] = Filters[i];
+    }
+}
+
 void TerrainNoiseGenerator::BuildRootSignature(ID3D12Device* Device)
 {
     mRootSig.Reset(2, 0);
@@ -147,6 +158,35 @@ void TerrainNoiseGenerator::GenerateTiles(
                 layer.Offset.y,
                 layer.Scale.x,
                 layer.Scale.y
+            };
+        }
+
+        mNoiseCBData.FilterCounts = {
+            (int)kTerrainFilterMaxLayers,
+            0,
+            0,
+            0
+        };
+        for (UINT filterIndex = 0; filterIndex < kTerrainFilterMaxLayers; ++filterIndex)
+        {
+            const TerrainFilterSettings& filter = mFilters[filterIndex];
+            mNoiseCBData.FilterControls[filterIndex] = {
+                filter.Enabled ? 1 : 0,
+                filter.FilterType,
+                filter.CombineOp,
+                filter.Iterations
+            };
+            mNoiseCBData.FilterParams0[filterIndex] = {
+                filter.Strength,
+                filter.Radius,
+                filter.Param0,
+                filter.Param1
+            };
+            mNoiseCBData.FilterParams1[filterIndex] = {
+                filter.Param2,
+                filter.Param3,
+                0.0f,
+                0.0f
             };
         }
 
