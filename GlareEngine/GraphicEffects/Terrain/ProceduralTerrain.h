@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <unordered_set>
 #include "Misc/RenderObject.h"
 #include "Misc/ConstantBuffer.h"
@@ -44,6 +45,8 @@ private:
     bool HasCullingDebugTexture() const { return mCullingDebugTextureValid && mCullingDebugTextureResource != nullptr && mCullingDebugSRV.ptr != D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN; }
     void ComputeSkirtFlags(const ClipmapTile* tile);
     void ComputeSkirtFlagsFor(const ClipmapTile* tile, ProceduralTerrainConstants& outConstants);
+    void InitializeNoiseLayerPresets();
+    uint64_t ComputeNoiseLayerStateHash() const;
 
     // Subsystems
     unique_ptr<TerrainClipmap>          mClipmap;
@@ -91,9 +94,7 @@ private:
     UINT mVertexStride = 0;
 
     // ImGui parameters
-    float mNoiseScaleUI = 0.003f;
-    float mHeightScaleUI = 2000.0f;
-    int mHighFreqLayersUI = 2;
+    float mHeightScaleUI = 500.0f;
     float mSnowHeightUI = 150.0f;
     float mStoneSlopeUI = 0.6f;
     float mTexScaleUI = 100.0f;
@@ -102,6 +103,7 @@ private:
     float mMaxTessFactorUI = 4.0f;
     float mMaxTessDistUI = 500.0f;
     float mTessScaleUI = 1.0f;
+    TerrainNoiseLayerSettings mNoiseLayersUI[kTerrainNoiseMaxLayers];
 
     // Detail texture parameters
     float mDetailScaleUI = 20.0f;
@@ -154,9 +156,8 @@ private:
     float mPrevCullingHeightPaddingUI = 0.0f;
 
     // Tracked previous-frame noise params to detect changes and trigger regeneration
-    float mPrevNoiseScale = 0.003f;
     float mPrevHeightScale = 2000.0f;
-    float mPrevHighFreqLayers = 2.0f;
+    uint64_t mPrevNoiseLayerStateHash = 0;
 
 
     // Cached main pass CB data (set by Scene before Draw)

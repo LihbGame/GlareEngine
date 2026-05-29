@@ -183,6 +183,83 @@ struct TerrainConstants
 
 
 
+constexpr UINT kTerrainNoiseMaxBaseLayers = 4;
+constexpr UINT kTerrainNoiseMaxDetailLayers = 4;
+constexpr UINT kTerrainNoiseMaxLayers = kTerrainNoiseMaxBaseLayers + kTerrainNoiseMaxDetailLayers;
+
+enum TerrainNoiseType : int
+{
+    TerrainNoise_Billow = 0,
+    TerrainNoise_Gabor,
+    TerrainNoise_Perlin,
+    TerrainNoise_Phasor,
+    TerrainNoise_Ridged,
+    TerrainNoise_Simplex,
+    TerrainNoise_Value,
+    TerrainNoise_Voronoi,
+    TerrainNoise_Wave,
+    TerrainNoise_White,
+    TerrainNoise_Worley,
+    TerrainNoise_Count
+};
+
+enum TerrainNoiseFractalType : int
+{
+    TerrainFractal_Single = 0,
+    TerrainFractal_FBM,
+    TerrainFractal_Ridged,
+    TerrainFractal_Count
+};
+
+enum TerrainNoiseWarpMode : int
+{
+    TerrainWarp_None = 0,
+    TerrainWarp_Fixed,
+    TerrainWarp_Recursive,
+    TerrainWarp_Count
+};
+
+enum TerrainNoiseCombineOp : int
+{
+    TerrainCombine_Add = 0,
+    TerrainCombine_Multiply,
+    TerrainCombine_Subtract,
+    TerrainCombine_Min,
+    TerrainCombine_Max,
+    TerrainCombine_Blend,
+    TerrainCombine_Count
+};
+
+enum TerrainNoisePlacementMode : int
+{
+    TerrainPlacement_World = 0,
+    TerrainPlacement_Rotated,
+    TerrainPlacement_Mirrored,
+    TerrainPlacement_Count
+};
+
+struct TerrainNoiseLayerSettings
+{
+    bool        Enabled        = false;
+    int         NoiseType      = TerrainNoise_Perlin;
+    int         FractalType    = TerrainFractal_FBM;
+    int         WarpMode       = TerrainWarp_None;
+    int         CombineOp      = TerrainCombine_Add;
+    int         PlacementMode  = TerrainPlacement_World;
+    int         Octaves        = 4;
+    int         VoronoiMode    = 0;
+    float       Opacity        = 1.0f;
+    float       Amplitude      = 1.0f;
+    float       Frequency      = 1.0f;
+    float       Lacunarity     = 2.0f;
+    float       Gain           = 0.5f;
+    float       WarpAmplitude  = 0.0f;
+    float       WarpFrequency  = 1.0f;
+    float       Rotation       = 0.0f;
+    XMFLOAT2    Offset         = { 0.0f, 0.0f };
+    XMFLOAT2    Scale          = { 1.0f, 1.0f };
+};
+
 // Procedural terrain constants for GPU generation
 __declspec(align(256)) struct ProceduralTerrainNoiseCB
 {
@@ -192,21 +269,32 @@ __declspec(align(256)) struct ProceduralTerrainNoiseCB
     int         TileSize            = 64;
     int         HeightmapSize       = 256;
     float       HeightScale         = 200.0f;
-    float       NoiseScale          = 0.05f;
     UINT        Seed                = 42;
-    UINT        Octaves             = 7;
-    float       Lacunarity          = 2.0f;
-    float       Persistence         = 0.5f;
-    float       WarpStrength        = 30.0f;   // kept for CB layout alignment (hardcoded in shaders)
-    float       WarpScale           = 0.02f;
+    float       PadNoiseHeader0     = 0.0f;
+    float       PadNoiseHeader1     = 0.0f;
+    float       PadNoiseHeader2     = 0.0f;
+    float       PadNoiseHeader3     = 0.0f;
+    float       PadNoiseHeader4     = 0.0f;
+    float       PadNoiseHeader5     = 0.0f;
+    XMINT4      LayerControls[kTerrainNoiseMaxLayers] = {};   // enabled, noise type, fractal type, combine op
+    XMINT4      LayerOptions[kTerrainNoiseMaxLayers]  = {};   // warp mode, octaves, placement mode, voronoi mode
+    XMFLOAT4    LayerShape[kTerrainNoiseMaxLayers]    = {};   // opacity, amplitude, frequency, lacunarity
+    XMFLOAT4    LayerWarp[kTerrainNoiseMaxLayers]     = {};   // gain, warp amplitude, warp frequency, rotation
+    XMFLOAT4    LayerPlacement[kTerrainNoiseMaxLayers] = {};  // offset xz, scale xz
+    XMINT4      LayerCounts        = {
+        (int)kTerrainNoiseMaxBaseLayers,
+        (int)kTerrainNoiseMaxDetailLayers,
+        0,
+        0
+    };
     float       SnowHeight          = 150.0f;
     float       SnowTransition      = 20.0f;
     float       StoneSlope          = 0.6f;
     float       StoneTransition     = 0.15f;
     int         LODLevel            = 0;
-    int         HighFreqLayers      = 2;
-    float       Pad0                = 0;
-    float       Pad1                = 0;
+    int         PadNoiseFooter0     = 0;
+    float       PadNoiseFooter1     = 0.0f;
+    float       PadNoiseFooter2     = 0.0f;
 };
 
 // Procedural terrain render constants
@@ -278,8 +366,7 @@ struct ProceduralTerrainInitInfo
     UINT        TileSize            = 64;
     UINT        HeightmapSize       = 256;
     float       CellSizeBase        = 1.0f;
-    float       HeightScale         = 2000.0f;
-    float       NoiseScale          = 0.003f;
+    float       HeightScale         = 500.0f;
     UINT        Seed                = 42;
     string      LayerMapNames[5]    = { "grass","lightdirt","darkdirt","stone","snow" };
     string      LayerAssetPath;

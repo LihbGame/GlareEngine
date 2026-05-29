@@ -1,8 +1,38 @@
 #ifndef TERRAIN_NOISE_HLSLI
 #define TERRAIN_NOISE_HLSLI
 
-// Shared terrain noise functions for both CS generation and DS boundary evaluation.
-// All functions are parameterized to avoid cbuffer name conflicts.
+// Shared terrain noise functions for compute terrain generation.
+
+#define TERRAIN_NOISE_BILLOW   0
+#define TERRAIN_NOISE_GABOR    1
+#define TERRAIN_NOISE_PERLIN   2
+#define TERRAIN_NOISE_PHASOR   3
+#define TERRAIN_NOISE_RIDGED   4
+#define TERRAIN_NOISE_SIMPLEX  5
+#define TERRAIN_NOISE_VALUE    6
+#define TERRAIN_NOISE_VORONOI  7
+#define TERRAIN_NOISE_WAVE     8
+#define TERRAIN_NOISE_WHITE    9
+#define TERRAIN_NOISE_WORLEY   10
+
+#define TERRAIN_FRACTAL_SINGLE 0
+#define TERRAIN_FRACTAL_FBM    1
+#define TERRAIN_FRACTAL_RIDGED 2
+
+#define TERRAIN_WARP_NONE      0
+#define TERRAIN_WARP_FIXED     1
+#define TERRAIN_WARP_RECURSIVE 2
+
+#define TERRAIN_COMBINE_ADD      0
+#define TERRAIN_COMBINE_MULTIPLY 1
+#define TERRAIN_COMBINE_SUBTRACT 2
+#define TERRAIN_COMBINE_MIN      3
+#define TERRAIN_COMBINE_MAX      4
+#define TERRAIN_COMBINE_BLEND    5
+
+#define TERRAIN_PLACEMENT_WORLD    0
+#define TERRAIN_PLACEMENT_ROTATED  1
+#define TERRAIN_PLACEMENT_MIRRORED 2
 
 // --- Hash utilities ---
 float TNoiseHash2D(float2 p)
@@ -49,16 +79,21 @@ float2 TerrainRandom22(int2 p)
         TerrainHashToUnitFloat(TerrainHashUint(h ^ 0x68bc21ebu)));
 }
 
+float2 TerrainRandomGradient(int2 p)
+{
+    return normalize(TerrainRandom22(p) * 2.0 - 1.0);
+}
+
 float TerrainGradientNoise(float2 p)
 {
     int2 i = int2(floor(p));
     float2 f = frac(p);
     float2 u = f * f * (3.0 - 2.0 * f);
 
-    return lerp(lerp(dot(TerrainRandom22(i + int2(0, 0)), f - float2(0.0, 0.0)),
-                     dot(TerrainRandom22(i + int2(1, 0)), f - float2(1.0, 0.0)), u.x),
-                lerp(dot(TerrainRandom22(i + int2(0, 1)), f - float2(0.0, 1.0)),
-                     dot(TerrainRandom22(i + int2(1, 1)), f - float2(1.0, 1.0)), u.x), u.y);
+    return lerp(lerp(dot(TerrainRandomGradient(i + int2(0, 0)), f - float2(0.0, 0.0)),
+                     dot(TerrainRandomGradient(i + int2(1, 0)), f - float2(1.0, 0.0)), u.x),
+                lerp(dot(TerrainRandomGradient(i + int2(0, 1)), f - float2(0.0, 1.0)),
+                     dot(TerrainRandomGradient(i + int2(1, 1)), f - float2(1.0, 1.0)), u.x), u.y) * 1.65;
 }
 
 float3 TerrainGradientNoised(float2 p)
@@ -69,319 +104,430 @@ float3 TerrainGradientNoised(float2 p)
     float2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
     float2 du = 30.0 * f * f * (f * (f - 2.0) + 1.0);
 
-    float2 ga = TerrainRandom22(i + int2(0, 0));
-    float2 gb = TerrainRandom22(i + int2(1, 0));
-    float2 gc = TerrainRandom22(i + int2(0, 1));
-    float2 gd = TerrainRandom22(i + int2(1, 1));
+    float2 ga = TerrainRandomGradient(i + int2(0, 0));
+    float2 gb = TerrainRandomGradient(i + int2(1, 0));
+    float2 gc = TerrainRandomGradient(i + int2(0, 1));
+    float2 gd = TerrainRandomGradient(i + int2(1, 1));
 
     float va = dot(ga, f - float2(0.0, 0.0));
     float vb = dot(gb, f - float2(1.0, 0.0));
     float vc = dot(gc, f - float2(0.0, 1.0));
     float vd = dot(gd, f - float2(1.0, 1.0));
 
-    return float3(va + u.x * (vb - va) + u.y * (vc - va) + u.x * u.y * (va - vb - vc + vd),
+    float value = va + u.x * (vb - va) + u.y * (vc - va) + u.x * u.y * (va - vb - vc + vd);
+    float2 gradient =
         ga + u.x * (gb - ga) + u.y * (gc - ga) + u.x * u.y * (ga - gb - gc + gd) +
-        du * (u.yx * (va - vb - vc + vd) + float2(vb, vc) - va));
+        du * (u.yx * (va - vb - vc + vd) + float2(vb, vc) - va);
+
+    return float3(value * 1.65, gradient * 1.65);
 }
 
-// --- FBM with explicit parameters ---
-float TerrainFBMImpl(float2 pos, uint octaves, float lacunarity, float persistence, float seedOffset)
+float TerrainValueNoise(float2 p)
 {
-    float value = 0.0;
-    float amplitude = 1.0;
-    float frequency = 1.0;
-    float maxValue = 0.0;
+    int2 i = int2(floor(p));
+    float2 f = frac(p);
+    float2 u = f * f * (3.0 - 2.0 * f);
 
-    pos += seedOffset * 10.0;
+    float a = TNoiseHash2D((float2)(i + int2(0, 0)));
+    float b = TNoiseHash2D((float2)(i + int2(1, 0)));
+    float c = TNoiseHash2D((float2)(i + int2(0, 1)));
+    float d = TNoiseHash2D((float2)(i + int2(1, 1)));
+    return lerp(lerp(a, b, u.x), lerp(c, d, u.x), u.y) * 2.0 - 1.0;
+}
 
-    float2x2 rot = { 0.8, 0.6, -0.6, 0.8 };
+float2 TerrainRotate(float2 p, float angle)
+{
+    float s, c;
+    sincos(angle, s, c);
+    return float2(c * p.x - s * p.y, s * p.x + c * p.y);
+}
 
-    [unroll]
-    for (uint i = 0; i < 8; i++)
+float2 TerrainApplyPlacement(uint layer, float2 worldXZ)
+{
+    int placementMode = gNoiseLayerOptions[layer].z;
+    float4 placement = gNoiseLayerPlacement[layer];
+    float2 scale = max(abs(placement.zw), float2(0.0001, 0.0001));
+    float2 p = worldXZ * scale + placement.xy;
+
+    if (placementMode == TERRAIN_PLACEMENT_ROTATED)
     {
-        if (i >= octaves) break;
-        value += amplitude * TerrainGradientNoise(pos * frequency);
-        maxValue += amplitude;
-        frequency *= lacunarity;
-        amplitude *= persistence;
-        pos = mul(rot, pos) + float2(1.7, 9.2);
+        p = TerrainRotate(p, gNoiseLayerWarp[layer].w);
+    }
+    else if (placementMode == TERRAIN_PLACEMENT_MIRRORED)
+    {
+        p = abs(p);
     }
 
-    return value / maxValue;
+    return p;
 }
 
-// --- Ridge noise with explicit parameters ---
-float TerrainRidgeNoiseImpl(float2 pos, uint octaves, float lacunarity, float persistence, float seedOffset)
+float2 TerrainApplyLayerWarp(uint layer, float2 placedWorld)
 {
-    float value = 0.0;
-    float amplitude = 1.0;
-    float frequency = 1.0;
-    float maxValue = 0.0;
-
-    pos += seedOffset * 8.0;
-
-    float2x2 rot = { 0.8, 0.6, -0.6, 0.8 };
-
-    [unroll]
-    for (uint i = 0; i < 8; i++)
+    int warpMode = gNoiseLayerOptions[layer].x;
+    if (warpMode == TERRAIN_WARP_NONE)
     {
-        if (i >= octaves) break;
-        float n = TerrainGradientNoise(pos * frequency);
-        n = 1.0 - abs(n);
-        n = n * n;
-        value += amplitude * n;
-        maxValue += amplitude;
-        frequency *= lacunarity;
-        amplitude *= persistence;
-        pos = mul(rot, pos) + float2(5.3, 1.7);
+        return placedWorld;
     }
 
-    return value / maxValue;
+    float warpAmplitude = gNoiseLayerWarp[layer].y;
+    float warpFrequency = max(gNoiseLayerWarp[layer].z, 0.0001);
+    if (warpAmplitude <= 0.0001)
+    {
+        return placedWorld;
+    }
+
+    float2 p = placedWorld;
+    float seed = (float)gNoiseSeed * 0.013 + (float)layer * 17.37;
+
+    for (int i = 0; i < 3; ++i)
+    {
+        float2 warpPos = p * warpFrequency + float2(seed + 19.1 * i, seed * 1.7 + 7.3 * i);
+        float2 warp = float2(
+            TerrainGradientNoise(warpPos),
+            TerrainGradientNoise(warpPos + float2(5.2, 1.3)));
+        p += warp * (warpAmplitude / (1.0 + (float)i));
+
+        if (warpMode == TERRAIN_WARP_FIXED)
+        {
+            break;
+        }
+    }
+
+    return p;
 }
 
-float2 TerrainHighFreqLayerOffset(uint seed, uint layer)
+float TerrainVoronoiNoise(float2 p, int mode)
 {
-    float2 key = float2((float)seed + (float)layer * 37.17, (float)seed * 1.73 + (float)layer * 19.91);
-    return (TNoiseHash2D2(key) - 0.5) * 64.0;
+    int2 cell = int2(floor(p));
+    float2 f = frac(p);
+    float f1 = 1000.0;
+    float f2 = 1000.0;
+
+    for (int y = -1; y <= 1; ++y)
+    {
+        for (int x = -1; x <= 1; ++x)
+        {
+            int2 neighbor = int2(x, y);
+            float2 featurePoint = TerrainRandom22(cell + neighbor);
+            float dist = length(float2(neighbor) + featurePoint - f);
+            if (dist < f1)
+            {
+                f2 = f1;
+                f1 = dist;
+            }
+            else
+            {
+                f2 = min(f2, dist);
+            }
+        }
+    }
+
+    if (mode == 1)
+    {
+        return saturate((f2 - f1) * 2.0) * 2.0 - 1.0;
+    }
+
+    return (1.0 - saturate(f1)) * 2.0 - 1.0;
 }
 
-float TerrainHighFreqLayerFrequency(uint seed, uint layer, float lacunarity)
+float TerrainGaborApprox(float2 p)
 {
-    float jitter = lerp(0.83, 1.19, TNoiseHash2D(float2((float)seed * 0.37, (float)layer * 11.13)));
-    return 6.0 * pow(max(lacunarity * 0.93, 1.25), (float)layer) * jitter;
+    float result = 0.0;
+
+    for (int i = 0; i < 4; ++i)
+    {
+        float2 dir = TerrainRandom22(int2(i * 17 + 3, i * 29 + 11)) * 2.0 - 1.0;
+        dir = normalize(dir);
+        float phase = TNoiseHash2D(float2((float)i, 31.7)) * PI2;
+        result += sin(dot(p, dir) * PI2 + phase);
+    }
+
+    return result * 0.25;
 }
 
-float TerrainHighFreqLayerMask(float2 worldXZ, float2 layerOffset, float noiseScale, uint seed, uint layer)
+float TerrainPhasorApprox(float2 p)
 {
-    float seedOffset = TNoiseHash2D(float2((float)seed * 2.31 + (float)layer, (float)seed * 0.67));
-    float macro = TerrainFBMImpl((worldXZ + layerOffset) * noiseScale * 0.11, 4, 2.07, 0.55, seedOffset);
-    return lerp(0.35, 1.0, saturate(macro * 0.5 + 0.5));
+    float a = sin((p.x + p.y * 0.37) * PI2);
+    float b = cos((p.y - p.x * 0.61) * PI2);
+    return (a + b) * 0.5;
 }
 
-// --- Full height evaluation ---
-// highFreqLayers: number of extra high-frequency noise layers stacked on top.
-//   0 = smooth, 8 = maximum fine detail.
+float TerrainEvaluateSingleNoise(int noiseType, float2 p, int voronoiMode)
+{
+    if (noiseType == TERRAIN_NOISE_BILLOW)
+    {
+        return abs(TerrainGradientNoise(p)) * 2.0 - 1.0;
+    }
+    if (noiseType == TERRAIN_NOISE_GABOR)
+    {
+        return TerrainGaborApprox(p);
+    }
+    if (noiseType == TERRAIN_NOISE_PHASOR)
+    {
+        return TerrainPhasorApprox(p);
+    }
+    if (noiseType == TERRAIN_NOISE_RIDGED)
+    {
+        return (1.0 - abs(TerrainGradientNoise(p))) * 2.0 - 1.0;
+    }
+    if (noiseType == TERRAIN_NOISE_SIMPLEX)
+    {
+        return TerrainGradientNoise(TerrainRotate(p, 0.523599) + float2(13.1, 7.7));
+    }
+    if (noiseType == TERRAIN_NOISE_VALUE)
+    {
+        return TerrainValueNoise(p);
+    }
+    if (noiseType == TERRAIN_NOISE_VORONOI || noiseType == TERRAIN_NOISE_WORLEY)
+    {
+        return TerrainVoronoiNoise(p, voronoiMode);
+    }
+    if (noiseType == TERRAIN_NOISE_WAVE)
+    {
+        return sin((p.x + p.y) * PI2);
+    }
+    if (noiseType == TERRAIN_NOISE_WHITE)
+    {
+        return TNoiseHash2D(p) * 2.0 - 1.0;
+    }
+
+    return TerrainGradientNoise(p);
+}
+
+float3 TerrainEvaluateSingleNoiseWithGradient(int noiseType, float2 p, int voronoiMode)
+{
+    if (noiseType == TERRAIN_NOISE_BILLOW)
+    {
+        float3 n = TerrainGradientNoised(p);
+        return float3(abs(n.x) * 2.0 - 1.0, sign(n.x) * n.yz * 2.0);
+    }
+    if (noiseType == TERRAIN_NOISE_RIDGED)
+    {
+        float3 n = TerrainGradientNoised(p);
+        return float3((1.0 - abs(n.x)) * 2.0 - 1.0, -sign(n.x) * n.yz * 2.0);
+    }
+    if (noiseType == TERRAIN_NOISE_SIMPLEX)
+    {
+        float3 n = TerrainGradientNoised(TerrainRotate(p, 0.523599) + float2(13.1, 7.7));
+        float2 grad = TerrainRotate(n.yz, 0.523599);
+        return float3(n.x, grad);
+    }
+    if (noiseType == TERRAIN_NOISE_WAVE)
+    {
+        float phase = (p.x + p.y) * PI2;
+        float c = cos(phase) * PI2;
+        return float3(sin(phase), float2(c, c));
+    }
+    if (noiseType == TERRAIN_NOISE_PERLIN)
+    {
+        return TerrainGradientNoised(p);
+    }
+
+    return float3(TerrainEvaluateSingleNoise(noiseType, p, voronoiMode), 0.0, 0.0);
+}
+
+float3 EvaluateTerrainNoiseLayerWithGradient(uint layer, float2 worldXZ)
+{
+    int4 controls = gNoiseLayerControls[layer];
+    int4 options = gNoiseLayerOptions[layer];
+    float4 shape = gNoiseLayerShape[layer];
+    float4 warp = gNoiseLayerWarp[layer];
+
+    float frequency = max(shape.z, 0.0001);
+    float lacunarity = max(shape.w, 1.0001);
+    float gain = saturate(warp.x);
+    uint octaves = (uint)clamp(options.y, 1, 8);
+    float seedOffset = (float)gNoiseSeed * 0.071 + (float)layer * 23.13;
+
+    float2 placed = TerrainApplyPlacement(layer, worldXZ);
+    float2 warped = TerrainApplyLayerWarp(layer, placed);
+    float2 p = warped * frequency + seedOffset;
+    float2 dWorldX = float2(gNoiseLayerPlacement[layer].z, 0.0);
+    float2 dWorldZ = float2(0.0, gNoiseLayerPlacement[layer].w);
+    if (options.z == TERRAIN_PLACEMENT_ROTATED)
+    {
+        dWorldX = TerrainRotate(dWorldX, warp.w);
+        dWorldZ = TerrainRotate(dWorldZ, warp.w);
+    }
+    else if (options.z == TERRAIN_PLACEMENT_MIRRORED)
+    {
+        float2 mirrorSign = lerp(float2(-1.0, -1.0), float2(1.0, 1.0), step(0.0, placed));
+        dWorldX *= mirrorSign;
+        dWorldZ *= mirrorSign;
+    }
+    dWorldX *= frequency;
+    dWorldZ *= frequency;
+
+    if (controls.z == TERRAIN_FRACTAL_SINGLE)
+    {
+        float3 n = TerrainEvaluateSingleNoiseWithGradient(controls.y, p, options.w);
+        float2 worldGrad = float2(dot(n.yz, dWorldX), dot(n.yz, dWorldZ));
+        return float3(n.x * shape.y, worldGrad * shape.y);
+    }
+
+    float value = 0.0;
+    float2 gradient = 0.0;
+    float amplitude = 1.0;
+    float maxValue = 0.0;
+    float2 octavePos = p;
+    const float2x2 rot = { 0.8, 0.6, -0.6, 0.8 };
+    const float2x2 rotT = { 0.8, -0.6, 0.6, 0.8 };
+    float2x2 jac = { 1.0, 0.0, 0.0, 1.0 };
+
+    for (uint octave = 0; octave < 8; ++octave)
+    {
+        if (octave >= octaves)
+        {
+            break;
+        }
+
+        float3 n = TerrainEvaluateSingleNoiseWithGradient(controls.y, octavePos, options.w);
+        if (controls.z == TERRAIN_FRACTAL_RIDGED)
+        {
+            n = float3((1.0 - abs(n.x)) * 2.0 - 1.0, -sign(n.x) * n.yz * 2.0);
+        }
+
+        value += n.x * amplitude;
+        gradient += mul(jac, n.yz) * amplitude;
+        maxValue += amplitude;
+        amplitude *= gain;
+        octavePos = mul(rot, octavePos * lacunarity) + float2(1.7, 9.2);
+        jac = mul(rotT * lacunarity, jac);
+    }
+
+    float invMaxValue = 1.0 / max(maxValue, 0.0001);
+    gradient *= invMaxValue;
+    float2 worldGrad = float2(dot(gradient, dWorldX), dot(gradient, dWorldZ));
+    return float3(value * invMaxValue * shape.y, worldGrad * shape.y);
+}
+
+float EvaluateTerrainNoiseLayer(uint layer, float2 worldXZ)
+{
+    return EvaluateTerrainNoiseLayerWithGradient(layer, worldXZ).x;
+}
+
+float TerrainCombineLayerValue(float currentValue, float layerValue, float opacity, int op, bool hasValue)
+{
+    if (!hasValue)
+    {
+        return layerValue * opacity;
+    }
+
+    if (op == TERRAIN_COMBINE_MULTIPLY)
+    {
+        return lerp(currentValue, currentValue * (1.0 + layerValue), opacity);
+    }
+    if (op == TERRAIN_COMBINE_SUBTRACT)
+    {
+        return currentValue - layerValue * opacity;
+    }
+    if (op == TERRAIN_COMBINE_MIN)
+    {
+        return lerp(currentValue, min(currentValue, layerValue), opacity);
+    }
+    if (op == TERRAIN_COMBINE_MAX)
+    {
+        return lerp(currentValue, max(currentValue, layerValue), opacity);
+    }
+    if (op == TERRAIN_COMBINE_BLEND)
+    {
+        return lerp(currentValue, layerValue, opacity);
+    }
+
+    return currentValue + layerValue * opacity;
+}
+
+float3 TerrainCombineLayerResult(float3 currentResult, float3 layerResult, float opacity, int op, bool hasValue)
+{
+    if (!hasValue)
+    {
+        return layerResult * opacity;
+    }
+
+    if (op == TERRAIN_COMBINE_MULTIPLY)
+    {
+        float value = currentResult.x * (1.0 + layerResult.x);
+        float2 gradient = currentResult.yz * (1.0 + layerResult.x) + currentResult.x * layerResult.yz;
+        return lerp(currentResult, float3(value, gradient), opacity);
+    }
+    if (op == TERRAIN_COMBINE_SUBTRACT)
+    {
+        return currentResult - layerResult * opacity;
+    }
+    if (op == TERRAIN_COMBINE_MIN)
+    {
+        return layerResult.x < currentResult.x ? lerp(currentResult, layerResult, opacity) : currentResult;
+    }
+    if (op == TERRAIN_COMBINE_MAX)
+    {
+        return layerResult.x > currentResult.x ? lerp(currentResult, layerResult, opacity) : currentResult;
+    }
+    if (op == TERRAIN_COMBINE_BLEND)
+    {
+        return lerp(currentResult, layerResult, opacity);
+    }
+
+    return currentResult + layerResult * opacity;
+}
+
+float3 EvaluateNoiseStackWithGradient(uint startLayer, uint layerCount, float2 worldXZ)
+{
+    float3 result = 0.0;
+    bool hasValue = false;
+
+    for (uint i = 0; i < 4; ++i)
+    {
+        if (i >= layerCount)
+        {
+            break;
+        }
+
+        uint layer = startLayer + i;
+        if (gNoiseLayerControls[layer].x == 0)
+        {
+            continue;
+        }
+
+        float opacity = saturate(gNoiseLayerShape[layer].x);
+        float3 layerResult = EvaluateTerrainNoiseLayerWithGradient(layer, worldXZ);
+        result = TerrainCombineLayerResult(result, layerResult, opacity, gNoiseLayerControls[layer].w, hasValue);
+        hasValue = true;
+    }
+
+    return result;
+}
+
+float EvaluateNoiseStack(uint startLayer, uint layerCount, float2 worldXZ)
+{
+    return EvaluateNoiseStackWithGradient(startLayer, layerCount, worldXZ).x;
+}
+
 float ComputeTerrainHeight(
     float2 worldXZ,
-    float noiseScale,
-    uint seed,
-    uint octaves,
-    float lacunarity,
-    float persistence,
-    float warpScale,
-    float heightScale,
-    uint highFreqLayers)
+    float heightScale)
 {
-    float seedOffset = TNoiseHash2D(float2(seed, seed * 1.37));
-    float seedOffset2 = TNoiseHash2D(float2(seed * 2.17, seed * 0.73));
+    uint baseCount = (uint)clamp(gNoiseLayerCounts.x, 0, 4);
+    uint detailCount = (uint)clamp(gNoiseLayerCounts.y, 0, 4);
 
-    // Continental base
-    float continental = TerrainFBMImpl(worldXZ * noiseScale * 0.1, octaves, lacunarity, persistence, seedOffset);
-    float baseMask = smoothstep(0.2, 0.8, continental);
-
-    // Domain warping
-    float2 warp = float2(
-        TerrainFBMImpl(worldXZ * warpScale + float2(0.0, 0.0), octaves, lacunarity, persistence, seedOffset),
-        TerrainFBMImpl(worldXZ * warpScale + float2(5.2, 1.3), octaves, lacunarity, persistence, seedOffset)
-    );
-    float2 warpedXZ = worldXZ + warp * 30.0;
-
-    // Mid-frequency FBM terrain
-    float baseHeight = TerrainFBMImpl(warpedXZ * noiseScale, octaves, lacunarity, persistence, seedOffset);
-
-    // Ridge noise for mountains
-    float ridge = TerrainRidgeNoiseImpl(warpedXZ * noiseScale * 0.7, octaves, lacunarity, persistence, seedOffset2);
-
-    // Blend base and ridge
-    float ridgeMask = smoothstep(0.3, 0.7, TerrainFBMImpl(worldXZ * noiseScale * 0.3, octaves, lacunarity, persistence, seedOffset));
-
-    // Continental base modulates amplitude
-    float detail = lerp(baseHeight, ridge, ridgeMask);
-    float height = lerp(detail * 0.3, detail * 1.5, baseMask) * heightScale;
-
-    // High-frequency detail layers with decorrelated offsets, non-harmonic
-    // frequencies, and macro masking to avoid obvious repeated tiling.
-    [unroll]
-    for (uint h = 0; h < 8; h++)
-    {
-        if (h >= highFreqLayers) break;
-        float2 layerOffset = TerrainHighFreqLayerOffset(seed, h);
-        float freq = TerrainHighFreqLayerFrequency(seed, h, lacunarity);
-        float amp = 0.42 * pow(persistence, (float)h) / (1.0 + 0.25 * (float)h);
-        float mask = TerrainHighFreqLayerMask(worldXZ, layerOffset, noiseScale, seed, h);
-        float bump = TerrainGradientNoise((warpedXZ + layerOffset) * noiseScale * freq);
-        height += bump * amp * mask * heightScale * 0.018;
-    }
+    float baseValue = EvaluateNoiseStack(0, baseCount, worldXZ);
+    float detailValue = EvaluateNoiseStack(4, detailCount, worldXZ);
+    float height = (baseValue + detailValue) * heightScale;
 
     return clamp(height, -heightScale, heightScale);
 }
 
-// --- FBM with derivative modulation and analytical gradient ---
-// Technique #2: derivative-guided modulation from iq's "Elevated" (1/(1+dot(d,d)))
-// Technique #1: analytical gradient via chain rule through octave rotation
-// Returns float3: .x = height value, .yz = gradient dh/d(input_x), dh/d(input_y)
-// NOTE: Produces different values than TerrainFBMImpl due to derivative modulation.
-//       Use ComputeTerrainHeightWithDerivatives (not ComputeTerrainHeight) to avoid mismatches.
-float3 TerrainFBMDerivImpl(float2 pos, uint octaves, float lacunarity, float persistence, float seedOffset)
-{
-    pos += seedOffset * 10.0;
-
-    const float2x2 rot = { 0.8, 0.6, -0.6, 0.8 };
-    const float2x2 rotT = { 0.8, -0.6, 0.6, 0.8 }; // transpose = inverse for rotation
-
-    float value = 0.0;
-    float amplitude = 1.0;
-    float frequency = 1.0;
-    float maxValue = 0.0;
-
-    float2 derivAccum = float2(0.0, 0.0); // accumulated derivative energy for modulation
-    float2 gradient = float2(0.0, 0.0);    // analytical gradient w.r.t. input pos
-    float2x2 jac = { 1.0, 0.0, 0.0, 1.0 }; // tracks (rot^T)^i for chain rule
-
-    [unroll]
-    for (uint i = 0; i < 8; i++)
-    {
-        if (i >= octaves) break;
-
-        float3 n = TerrainGradientNoised(pos * frequency); // .x=value, .yz=d/d(arg)
-
-        // Derivative-guided modulation: suppress detail where derivatives are high
-        derivAccum += n.yz;
-        float mod = 1.0 / (1.0 + dot(derivAccum, derivAccum));
-        value += amplitude * n.x * mod;
-
-        // Analytical gradient via chain rule: amp * freq * mod * (rot^T)^i * noise'
-        // (first-order approximation: omits n.x * d(mod)/d(pos) which is small for smooth mod)
-        gradient += amplitude * frequency * mod * mul(jac, n.yz);
-
-        maxValue += amplitude;
-        frequency *= lacunarity;
-        amplitude *= persistence;
-        pos = mul(rot, pos) + float2(1.7, 9.2);
-        jac = mul(rotT, jac);
-    }
-
-    return float3(value / maxValue, gradient / maxValue);
-}
-
-// --- Ridge noise with derivative modulation and analytical gradient ---
-float3 TerrainRidgeNoiseDerivImpl(float2 pos, uint octaves, float lacunarity, float persistence, float seedOffset)
-{
-    pos += seedOffset * 8.0;
-
-    const float2x2 rot = { 0.8, 0.6, -0.6, 0.8 };
-    const float2x2 rotT = { 0.8, -0.6, 0.6, 0.8 };
-
-    float value = 0.0;
-    float amplitude = 1.0;
-    float frequency = 1.0;
-    float maxValue = 0.0;
-
-    float2 derivAccum = float2(0.0, 0.0);
-    float2 gradient = float2(0.0, 0.0);
-    float2x2 jac = { 1.0, 0.0, 0.0, 1.0 };
-
-    [unroll]
-    for (uint i = 0; i < 8; i++)
-    {
-        if (i >= octaves) break;
-
-        float3 n = TerrainGradientNoised(pos * frequency);
-
-        // Ridge: r = (1 - |n|)^2, d/dx = -2*(1-|n|)*sign(n)*n'
-        float ridgeVal = 1.0 - abs(n.x);
-        float ridgeDeriv = -2.0 * ridgeVal * sign(n.x);
-
-        derivAccum += n.yz;
-        float mod = 1.0 / (1.0 + dot(derivAccum, derivAccum));
-
-        value += amplitude * ridgeVal * ridgeVal * mod;
-        gradient += amplitude * frequency * ridgeDeriv * mod * mul(jac, n.yz);
-
-        maxValue += amplitude;
-        frequency *= lacunarity;
-        amplitude *= persistence;
-        pos = mul(rot, pos) + float2(5.3, 1.7);
-        jac = mul(rotT, jac);
-    }
-
-    return float3(value / maxValue, gradient / maxValue);
-}
-
-// --- Full height evaluation with analytical gradient ---
-// Returns float3: .x = height, .yz = gradient (dh/dworldX, dh/dworldZ)
-// highFreqLayers: number of extra high-frequency noise layers (0=smooth, 8=max detail)
 float3 ComputeTerrainHeightWithDerivatives(
     float2 worldXZ,
-    float noiseScale,
-    uint seed,
-    uint octaves,
-    float lacunarity,
-    float persistence,
-    float warpScale,
-    float heightScale,
-    uint highFreqLayers)
+    float heightScale)
 {
-    float seedOffset = TNoiseHash2D(float2(seed, seed * 1.37));
-    float seedOffset2 = TNoiseHash2D(float2(seed * 2.17, seed * 0.73));
+    uint baseCount = (uint)clamp(gNoiseLayerCounts.x, 0, 4);
+    uint detailCount = (uint)clamp(gNoiseLayerCounts.y, 0, 4);
 
-    // Continental base
-    float continental = TerrainFBMImpl(worldXZ * noiseScale * 0.1, octaves, lacunarity, persistence, seedOffset);
-    float baseMask = smoothstep(0.2, 0.8, continental);
-
-    // Domain warping with gradient tracking
-    float3 warpX = TerrainFBMDerivImpl(worldXZ * warpScale, octaves, lacunarity, persistence, seedOffset);
-    float3 warpZ = TerrainFBMDerivImpl(worldXZ * warpScale + float2(5.2, 1.3), octaves, lacunarity, persistence, seedOffset);
-    float2 warp = float2(warpX.x, warpZ.x);
-    float2 warpedXZ = worldXZ + warp * 30.0;
-
-    // Main terrain with gradient
-    float3 terrain = TerrainFBMDerivImpl(warpedXZ * noiseScale, octaves, lacunarity, persistence, seedOffset);
-
-    // Ridge noise with gradient
-    float3 ridge = TerrainRidgeNoiseDerivImpl(warpedXZ * noiseScale * 0.7, octaves, lacunarity, persistence, seedOffset2);
-
-    // Ridge mask (value only)
-    float ridgeMask = smoothstep(0.3, 0.7, TerrainFBMImpl(worldXZ * noiseScale * 0.3, octaves, lacunarity, persistence, seedOffset));
-
-    // Convert FBM gradients to w.r.t. warpedXZ (chain rule: multiply by noiseScale)
-    float2 terrainGrad = terrain.yz * noiseScale;
-    float2 ridgeGrad = ridge.yz * noiseScale * 0.7;
-
-    // Blend height and gradient
-    float detail = lerp(terrain.x, ridge.x, ridgeMask);
-    float2 detailGrad = lerp(terrainGrad, ridgeGrad, ridgeMask);
-
-    // Apply continental mask
-    float height = lerp(detail * 0.3, detail * 1.5, baseMask) * heightScale;
-    float2 grad = lerp(detailGrad * 0.3, detailGrad * 1.5, baseMask) * heightScale;
-
-    // High-frequency detail layers with per-layer decorrelation to reduce tiling.
-    [unroll]
-    for (uint h = 0; h < 8; h++)
-    {
-        if (h >= highFreqLayers) break;
-        float2 layerOffset = TerrainHighFreqLayerOffset(seed, h);
-        float freq = TerrainHighFreqLayerFrequency(seed, h, lacunarity);
-        float amp = 0.42 * pow(persistence, (float)h) / (1.0 + 0.25 * (float)h);
-        float mask = TerrainHighFreqLayerMask(worldXZ, layerOffset, noiseScale, seed, h);
-        float hfScale = noiseScale * freq;
-        float3 bump = TerrainGradientNoised((warpedXZ + layerOffset) * hfScale);
-        height += bump.x * amp * mask * heightScale * 0.018;
-        grad += bump.yz * hfScale * amp * mask * heightScale * 0.018;
-    }
-
-    // Chain rule through domain warping:
-    // J = d(warpedXZ)/d(worldXZ) = I + 30.0 * warpScale * J_warp
-    // gradient_wrt_worldXZ = J^T * gradient_wrt_warpedXZ
-    float ws = 30.0 * warpScale;
-    float2x2 chainJacT = float2x2(
-        1.0 + ws * warpX.y, ws * warpZ.y,
-        ws * warpX.z,        1.0 + ws * warpZ.z
-    );
-    grad = mul(chainJacT, grad);
-
-    return float3(clamp(height, -heightScale, heightScale), grad);
+    float3 baseResult = EvaluateNoiseStackWithGradient(0, baseCount, worldXZ);
+    float3 detailResult = EvaluateNoiseStackWithGradient(4, detailCount, worldXZ);
+    float3 result = (baseResult + detailResult) * heightScale;
+    result.x = clamp(result.x, -heightScale, heightScale);
+    return result;
 }
 
 #endif // TERRAIN_NOISE_HLSLI

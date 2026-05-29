@@ -3,6 +3,8 @@
 #include "Engine/EngineUtility.h"
 #include "Engine/EngineGlobal.h"
 
+#include <algorithm>
+
 #include "CompiledShaders/TerrainNoiseCS.h"
 
 using namespace DirectX;
@@ -14,7 +16,6 @@ TerrainNoiseGenerator::TerrainNoiseGenerator(
     : mDevice(Device)
     , mSeed(Info.Seed)
     , mHeightScale(Info.HeightScale)
-    , mNoiseScale(Info.NoiseScale)
     , mTileSize(Info.TileSize)
     , mHeightmapSize(Info.HeightmapSize)
 {
@@ -29,6 +30,17 @@ TerrainNoiseGenerator::~TerrainNoiseGenerator()
     {
         mConstantBuffer->Unmap(0, nullptr);
         mMappedCB = nullptr;
+    }
+}
+
+void TerrainNoiseGenerator::SetNoiseLayers(const TerrainNoiseLayerSettings* Layers, UINT Count)
+{
+    if (!Layers) return;
+
+    UINT layerCount = std::min<UINT>(Count, kTerrainNoiseMaxLayers);
+    for (UINT i = 0; i < layerCount; ++i)
+    {
+        mNoiseLayers[i] = Layers[i];
     }
 }
 
@@ -95,14 +107,49 @@ void TerrainNoiseGenerator::GenerateTiles(
         mNoiseCBData.TileSize = mTileSize;
         mNoiseCBData.HeightmapSize = mHeightmapSize;
         mNoiseCBData.HeightScale = mHeightScale;
-        mNoiseCBData.NoiseScale = mNoiseScale;
         mNoiseCBData.Seed = mSeed;
-        mNoiseCBData.Octaves = mOctaves;
-        mNoiseCBData.Lacunarity = mLacunarity;
-        mNoiseCBData.Persistence = mPersistence;
-        mNoiseCBData.WarpScale = mWarpScale;
+        mNoiseCBData.LayerCounts = {
+            (int)kTerrainNoiseMaxBaseLayers,
+            (int)kTerrainNoiseMaxDetailLayers,
+            0,
+            0
+        };
 
-        mNoiseCBData.HighFreqLayers = mHighFreqLayers;
+        for (UINT layerIndex = 0; layerIndex < kTerrainNoiseMaxLayers; ++layerIndex)
+        {
+            const TerrainNoiseLayerSettings& layer = mNoiseLayers[layerIndex];
+            mNoiseCBData.LayerControls[layerIndex] = {
+                layer.Enabled ? 1 : 0,
+                layer.NoiseType,
+                layer.FractalType,
+                layer.CombineOp
+            };
+            mNoiseCBData.LayerOptions[layerIndex] = {
+                layer.WarpMode,
+                layer.Octaves,
+                layer.PlacementMode,
+                layer.VoronoiMode
+            };
+            mNoiseCBData.LayerShape[layerIndex] = {
+                layer.Opacity,
+                layer.Amplitude,
+                layer.Frequency,
+                layer.Lacunarity
+            };
+            mNoiseCBData.LayerWarp[layerIndex] = {
+                layer.Gain,
+                layer.WarpAmplitude,
+                layer.WarpFrequency,
+                layer.Rotation
+            };
+            mNoiseCBData.LayerPlacement[layerIndex] = {
+                layer.Offset.x,
+                layer.Offset.y,
+                layer.Scale.x,
+                layer.Scale.y
+            };
+        }
+
         mNoiseCBData.SnowHeight = mSnowHeight;
         mNoiseCBData.SnowTransition = mSnowTransition;
         mNoiseCBData.StoneSlope = mStoneSlope;

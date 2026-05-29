@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
+#include <cstring>
 #include "Engine/EngineUtility.h"
 #include "Engine/EngineGlobal.h"
 #include "Engine/Scene.h"
@@ -24,6 +26,73 @@ using namespace DirectX;
 
 namespace
 {
+    constexpr uint64_t kFnvOffset = 1469598103934665603ull;
+    constexpr uint64_t kFnvPrime = 1099511628211ull;
+
+    const char* const kNoiseTypeLabels[] =
+    {
+        "Billow", "Gabor", "Perlin", "Phasor", "Ridged", "Simplex",
+        "Value", "Voronoi", "Wave", "White", "Worley"
+    };
+
+    const char* const kFractalTypeLabels[] = { "Single", "FBM", "Ridged" };
+    const char* const kWarpModeLabels[] = { "None", "Fixed", "Recursive" };
+    const char* const kCombineOpLabels[] = { "Add", "Multiply", "Subtract", "Min", "Max", "Blend" };
+    const char* const kPlacementLabels[] = { "World", "Rotated", "Mirrored" };
+    const char* const kVoronoiModeLabels[] = { "F1 Distance", "Distance To Edge" };
+
+    void HashBytes(uint64_t& hash, const void* data, size_t size)
+    {
+        const uint8_t* bytes = reinterpret_cast<const uint8_t*>(data);
+        for (size_t i = 0; i < size; ++i)
+        {
+            hash ^= bytes[i];
+            hash *= kFnvPrime;
+        }
+    }
+
+    void HashInt(uint64_t& hash, int value)
+    {
+        HashBytes(hash, &value, sizeof(value));
+    }
+
+    void HashFloat(uint64_t& hash, float value)
+    {
+        HashBytes(hash, &value, sizeof(value));
+    }
+
+    void DrawTerrainNoiseLayerUI(const char* label, TerrainNoiseLayerSettings& layer)
+    {
+        if (!ImGui::TreeNode(label))
+        {
+            return;
+        }
+
+        ImGui::Checkbox("Enabled", &layer.Enabled);
+        ImGui::Combo("Type", &layer.NoiseType, kNoiseTypeLabels, IM_ARRAYSIZE(kNoiseTypeLabels));
+        ImGui::Combo("Fractal", &layer.FractalType, kFractalTypeLabels, IM_ARRAYSIZE(kFractalTypeLabels));
+        ImGui::Combo("Operation", &layer.CombineOp, kCombineOpLabels, IM_ARRAYSIZE(kCombineOpLabels));
+        ImGui::SliderFloat("Opacity", &layer.Opacity, 0.0f, 1.0f);
+        ImGui::SliderFloat("Amplitude", &layer.Amplitude, 0.0f, 2.0f);
+        ImGui::DragFloat("Frequency", &layer.Frequency, 0.0001f, 0.00001f, 0.1f, "%.6f");
+        ImGui::SliderInt("Octaves", &layer.Octaves, 1, 8);
+        ImGui::SliderFloat("Lacunarity", &layer.Lacunarity, 1.01f, 4.0f);
+        ImGui::SliderFloat("Gain", &layer.Gain, 0.05f, 0.95f);
+        ImGui::Combo("Placement", &layer.PlacementMode, kPlacementLabels, IM_ARRAYSIZE(kPlacementLabels));
+        ImGui::DragFloat2("Offset", &layer.Offset.x, 1.0f, -10000.0f, 10000.0f);
+        ImGui::DragFloat2("Scale", &layer.Scale.x, 0.01f, 0.01f, 20.0f);
+        ImGui::SliderFloat("Rotation", &layer.Rotation, -3.14159f, 3.14159f);
+        ImGui::Combo("Warp", &layer.WarpMode, kWarpModeLabels, IM_ARRAYSIZE(kWarpModeLabels));
+        ImGui::SliderFloat("Warp Amplitude", &layer.WarpAmplitude, 0.0f, 300.0f);
+        ImGui::DragFloat("Warp Frequency", &layer.WarpFrequency, 0.0001f, 0.00001f, 0.1f, "%.6f");
+        if (layer.NoiseType == TerrainNoise_Voronoi || layer.NoiseType == TerrainNoise_Worley)
+        {
+            ImGui::Combo("Voronoi Mode", &layer.VoronoiMode, kVoronoiModeLabels, IM_ARRAYSIZE(kVoronoiModeLabels));
+        }
+
+        ImGui::TreePop();
+    }
+
     bool SamePlane(const XMFLOAT4& left, const XMFLOAT4& right)
     {
         return left.x == right.x &&
@@ -62,8 +131,8 @@ ProceduralTerrain::ProceduralTerrain(
     SetShadowRenderFlag(false);
 
     // Initialize UI parameters from init info so first frame uses correct values
-    mNoiseScaleUI = Info.NoiseScale;
     mHeightScaleUI = Info.HeightScale;
+    InitializeNoiseLayerPresets();
 
     // Create clipmap manager
     mClipmap = make_unique<TerrainClipmap>(
@@ -74,6 +143,7 @@ ProceduralTerrain::ProceduralTerrain(
 
     // Create noise generator
     mNoiseGen = make_unique<TerrainNoiseGenerator>(g_Device, CmdList, Info);
+    mNoiseGen->SetNoiseLayers(mNoiseLayersUI, kTerrainNoiseMaxLayers);
 
     // Build render pipeline
     BuildRootSignature();
@@ -162,6 +232,107 @@ ProceduralTerrain::~ProceduralTerrain()
         mShadowConstantBuffer->Unmap(0, nullptr);
         mMappedShadowCB = nullptr;
     }
+}
+
+void ProceduralTerrain::InitializeNoiseLayerPresets()
+{
+    for (UINT i = 0; i < kTerrainNoiseMaxLayers; ++i)
+    {
+        mNoiseLayersUI[i] = TerrainNoiseLayerSettings();
+        mNoiseLayersUI[i].Enabled = false;
+        mNoiseLayersUI[i].Octaves = 4;
+        mNoiseLayersUI[i].Lacunarity = 2.0f;
+        mNoiseLayersUI[i].Gain = 0.5f;
+        mNoiseLayersUI[i].Scale = { 1.0f, 1.0f };
+    }
+
+    TerrainNoiseLayerSettings& base0 = mNoiseLayersUI[0];
+    base0.Enabled = true;
+    base0.NoiseType = TerrainNoise_Ridged;
+    base0.FractalType = TerrainFractal_FBM;
+    base0.CombineOp = TerrainCombine_Add;
+    base0.WarpMode = TerrainWarp_Fixed;
+    base0.Opacity = 1.0f;
+    base0.Amplitude = 0.85f;
+    base0.Frequency = 0.00065f;
+    base0.Octaves = 7;
+    base0.Lacunarity = 2.05f;
+    base0.Gain = 0.50f;
+    base0.WarpAmplitude = 35.0f;
+    base0.WarpFrequency = 0.00045f;
+
+    TerrainNoiseLayerSettings& base1 = mNoiseLayersUI[1];
+    base1.Enabled = true;
+    base1.NoiseType = TerrainNoise_Perlin;
+    base1.FractalType = TerrainFractal_FBM;
+    base1.CombineOp = TerrainCombine_Blend;
+    base1.WarpMode = TerrainWarp_None;
+    base1.Opacity = 0.35f;
+    base1.Amplitude = 0.55f;
+    base1.Frequency = 0.00022f;
+    base1.Octaves = 5;
+    base1.Lacunarity = 2.0f;
+    base1.Gain = 0.55f;
+
+    TerrainNoiseLayerSettings& detail0 = mNoiseLayersUI[kTerrainNoiseMaxBaseLayers];
+    detail0.Enabled = true;
+    detail0.NoiseType = TerrainNoise_Billow;
+    detail0.FractalType = TerrainFractal_FBM;
+    detail0.CombineOp = TerrainCombine_Add;
+    detail0.WarpMode = TerrainWarp_Fixed;
+    detail0.Opacity = 1.0f;
+    detail0.Amplitude = 0.045f;
+    detail0.Frequency = 0.0055f;
+    detail0.Octaves = 4;
+    detail0.Lacunarity = 2.2f;
+    detail0.Gain = 0.48f;
+    detail0.WarpAmplitude = 8.0f;
+    detail0.WarpFrequency = 0.003f;
+
+    TerrainNoiseLayerSettings& detail1 = mNoiseLayersUI[kTerrainNoiseMaxBaseLayers + 1];
+    detail1.Enabled = true;
+    detail1.NoiseType = TerrainNoise_Voronoi;
+    detail1.FractalType = TerrainFractal_Single;
+    detail1.CombineOp = TerrainCombine_Add;
+    detail1.WarpMode = TerrainWarp_None;
+    detail1.Opacity = 0.65f;
+    detail1.Amplitude = 0.025f;
+    detail1.Frequency = 0.011f;
+    detail1.Octaves = 1;
+    detail1.VoronoiMode = 1;
+}
+
+uint64_t ProceduralTerrain::ComputeNoiseLayerStateHash() const
+{
+    uint64_t hash = kFnvOffset;
+    HashFloat(hash, mHeightScaleUI);
+
+    for (UINT i = 0; i < kTerrainNoiseMaxLayers; ++i)
+    {
+        const TerrainNoiseLayerSettings& layer = mNoiseLayersUI[i];
+        HashInt(hash, layer.Enabled ? 1 : 0);
+        HashInt(hash, layer.NoiseType);
+        HashInt(hash, layer.FractalType);
+        HashInt(hash, layer.WarpMode);
+        HashInt(hash, layer.CombineOp);
+        HashInt(hash, layer.PlacementMode);
+        HashInt(hash, layer.Octaves);
+        HashInt(hash, layer.VoronoiMode);
+        HashFloat(hash, layer.Opacity);
+        HashFloat(hash, layer.Amplitude);
+        HashFloat(hash, layer.Frequency);
+        HashFloat(hash, layer.Lacunarity);
+        HashFloat(hash, layer.Gain);
+        HashFloat(hash, layer.WarpAmplitude);
+        HashFloat(hash, layer.WarpFrequency);
+        HashFloat(hash, layer.Rotation);
+        HashFloat(hash, layer.Offset.x);
+        HashFloat(hash, layer.Offset.y);
+        HashFloat(hash, layer.Scale.x);
+        HashFloat(hash, layer.Scale.y);
+    }
+
+    return hash;
 }
 
 void ProceduralTerrain::BuildRootSignature()
@@ -358,20 +529,18 @@ void ProceduralTerrain::Update(float dt, GraphicsContext* Context)
     // Propagate UI params to noise generator before tile generation
     if (mNoiseGen)
     {
-        mNoiseGen->SetNoiseScale(mNoiseScaleUI);
         mNoiseGen->SetHeightScale(mHeightScaleUI);
-        mNoiseGen->SetHighFreqLayers(mHighFreqLayersUI);
+        mNoiseGen->SetNoiseLayers(mNoiseLayersUI, kTerrainNoiseMaxLayers);
     }
     mInitInfo.HeightScale = mHeightScaleUI;
 
     // Detect noise parameter changes and force full tile regeneration
-    if (mNoiseScaleUI != mPrevNoiseScale || mHeightScaleUI != mPrevHeightScale ||
-        (float)mHighFreqLayersUI != mPrevHighFreqLayers)
+    const uint64_t noiseLayerStateHash = ComputeNoiseLayerStateHash();
+    if (mHeightScaleUI != mPrevHeightScale || noiseLayerStateHash != mPrevNoiseLayerStateHash)
     {
         mClipmap->ForceRegenerateAll();
-        mPrevNoiseScale = mNoiseScaleUI;
         mPrevHeightScale = mHeightScaleUI;
-        mPrevHighFreqLayers = (float)mHighFreqLayersUI;
+        mPrevNoiseLayerStateHash = noiseLayerStateHash;
     }
 
     // Generate dirty tiles via compute
@@ -1566,9 +1735,34 @@ void ProceduralTerrain::DrawUI()
     {
         if (ImGui::TreeNode("Generation"))
         {
-            ImGui::SliderFloat("Noise Scale", &mNoiseScaleUI, 0.001f, 0.005f);
             ImGui::SliderFloat("Height Scale", &mHeightScaleUI, 10.0f, 3000.0f);
-            ImGui::SliderInt("High Freq Layers", &mHighFreqLayersUI, 0, 8);
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Base Layers"))
+        {
+            for (UINT layerIndex = 0; layerIndex < kTerrainNoiseMaxBaseLayers; ++layerIndex)
+            {
+                ImGui::PushID((int)layerIndex);
+                char label[32];
+                sprintf_s(label, "Base %u", layerIndex);
+                DrawTerrainNoiseLayerUI(label, mNoiseLayersUI[layerIndex]);
+                ImGui::PopID();
+            }
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Detail Layers"))
+        {
+            for (UINT layerIndex = 0; layerIndex < kTerrainNoiseMaxDetailLayers; ++layerIndex)
+            {
+                const UINT noiseLayerIndex = kTerrainNoiseMaxBaseLayers + layerIndex;
+                ImGui::PushID((int)noiseLayerIndex);
+                char label[32];
+                sprintf_s(label, "Detail %u", layerIndex);
+                DrawTerrainNoiseLayerUI(label, mNoiseLayersUI[noiseLayerIndex]);
+                ImGui::PopID();
+            }
             ImGui::TreePop();
         }
 

@@ -64,11 +64,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float2 worldXZ = ((float2)gNoiseTileOffset + tileUV * (float)gNoiseTileSize) * gNoiseCellSize;
 
     // Single evaluation: height + analytical gradient
-    float3 result = ComputeTerrainHeightWithDerivatives(worldXZ,
-        gNoiseScale, gNoiseSeed, gNoiseOctaves,
-        gNoiseLacunarity, gNoisePersistence,
-        gNoiseWarpScale, gNoiseHeightScale,
-        gNoiseHighFreqLayers);
+    float3 result = ComputeTerrainHeightWithDerivatives(worldXZ, gNoiseHeightScale);
 
     float height = result.x;
     float2 gradient = result.yz;

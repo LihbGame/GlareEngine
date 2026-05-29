@@ -122,20 +122,26 @@ cbuffer TerrainNoiseCB : register(b0)
     int     gNoiseTileSize;
     int     gNoiseHeightmapSize;
     float   gNoiseHeightScale;
-    float   gNoiseScale;
     uint    gNoiseSeed;
-    uint    gNoiseOctaves;
-    float   gNoiseLacunarity;
-    float   gNoisePersistence;
-    float   gNoiseWarpPad0;          // was WarpStrength (hardcoded in noise functions)
-    float   gNoiseWarpScale;
+    float   gNoisePadHeader0;
+    float   gNoisePadHeader1;
+    float   gNoisePadHeader2;
+    float   gNoisePadHeader3;
+    float   gNoisePadHeader4;
+    float   gNoisePadHeader5;
+    int4    gNoiseLayerControls[8];  // enabled, noise type, fractal type, combine op
+    int4    gNoiseLayerOptions[8];   // warp mode, octaves, placement mode, voronoi mode
+    float4  gNoiseLayerShape[8];     // opacity, amplitude, frequency, lacunarity
+    float4  gNoiseLayerWarp[8];      // gain, warp amplitude, warp frequency, rotation
+    float4  gNoiseLayerPlacement[8]; // offset xz, scale xz
+    int4    gNoiseLayerCounts;       // base count, detail count, reserved
 
     float   gNoiseSnowHeight;
     float   gNoiseSnowTransition;
     float   gNoiseStoneSlope;
     float   gNoiseStoneTransition;
     int     gNoiseLODLevel;
-    uint    gNoiseHighFreqLayers;
+    int     gNoisePadFooter0;
     float   gNoisePad1;
     float   gNoisePad2;
 };
