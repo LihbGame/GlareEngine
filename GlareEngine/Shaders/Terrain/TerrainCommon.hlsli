@@ -104,9 +104,8 @@ cbuffer ProceduralTerrainCB : register(b1)
     int         gTerrainUseHeightBlend;
     int         gTerrainUseTriplanar;
     float       gTerrainParallaxHeightScale;
-    float       gTerrainParallaxFadeStart;
-    float       gTerrainParallaxFadeEnd;
     int         gTerrainUseParallax;
+    float2      _PadParallax;
     int4        gDetailLayerAlbedo[5];
     int4        gDetailLayerNormal[5];
     int4        gDetailLayerRoughness[5];

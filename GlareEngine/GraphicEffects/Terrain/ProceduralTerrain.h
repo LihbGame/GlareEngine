@@ -110,8 +110,6 @@ private:
     bool  mUseParallaxUI = true;
     bool  mUseTriplanarUI = true;
     float mParallaxHeightScaleUI = 0.012f;
-    float mParallaxFadeStartUI = 80.0f;
-    float mParallaxFadeEndUI = 500.0f;
 
     // Debug: render only a specific LOD level (-1 = all)
     int mDebugLODLevel = -1;

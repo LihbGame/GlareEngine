@@ -406,12 +406,18 @@ float3 WorldSpaceToTBN(float3 WorldSpaceVector, float3 unitNormalW, float3 tange
 
 
 //Parallax Occlusion Mapping
-float2 ParallaxMapping(uint HeightMapIndex, float2 texCoords, float3 viewDir, float height_scale)
+float2 ParallaxMapping(uint HeightMapIndex, float2 texCoords, float3 viewDir, float3 viewDirW, float3 normalW, float height_scale, float maxLayers)
 {
     // number of depth layers
-    const float minLayers = 10;
-    const float maxLayers = 20;
-    float numLayers = lerp(maxLayers, minLayers, abs(dot(float3(0.0, 0.0, 1.0), viewDir)));
+    maxLayers = max(maxLayers, 0.0);
+    if (maxLayers < 1.0 || abs(height_scale) < 0.00001)
+    {
+        return texCoords;
+    }
+
+    float minLayers = 0;
+    float viewAngle = saturate(abs(dot(normalize(normalW), normalize(viewDirW))));
+    float numLayers = max(lerp(maxLayers, minLayers, viewAngle), 1.0);
     // calculate the size of each layer
     float layerDepth = 1.0 / numLayers;
     // depth of current layer
@@ -443,10 +449,21 @@ float2 ParallaxMapping(uint HeightMapIndex, float2 texCoords, float3 viewDir, fl
     float beforeDepth = 1 - gSRVMap[HeightMapIndex].SampleLevel(gSamplerLinearWrap, prevTexCoords, 0).r - currentLayerDepth + layerDepth;
 
     // interpolation of texture coordinates
-    float weight = afterDepth / (afterDepth - beforeDepth);
-    float2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
+    float depthRange = afterDepth - beforeDepth;
+    float weight = (abs(depthRange) > 0.00001) ? saturate(afterDepth / depthRange) : 0.0;
+    float2 finalTexCoords = lerp(currentTexCoords, prevTexCoords, weight);
 
     return finalTexCoords;
+}
+
+float2 ParallaxMapping(uint HeightMapIndex, float2 texCoords, float3 viewDir, float3 viewDirW, float3 normalW, float height_scale)
+{
+    return ParallaxMapping(HeightMapIndex, texCoords, viewDir, viewDirW, normalW, height_scale, 20.0);
+}
+
+float2 ParallaxMapping(uint HeightMapIndex, float2 texCoords, float3 viewDir, float height_scale)
+{
+    return ParallaxMapping(HeightMapIndex, texCoords, viewDir, viewDir, float3(0.0, 0.0, 1.0), height_scale, 20.0);
 }
 
 

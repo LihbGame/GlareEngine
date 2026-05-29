@@ -25,7 +25,7 @@ PBRParams BlendMaterialLayers(
     float3x3 tbn,
     float3 viewDirW,
     float3 viewDirT,
-    float parallaxFade)
+    float parallaxMaxLayers)
 {
     float w[5];
     w[0] = weights.r; // grass (layer 0)
@@ -56,7 +56,7 @@ PBRParams BlendMaterialLayers(
             continue;
         }
 
-        float layerParallaxFade = parallaxFade;
+        float layerParallaxFade = detailFade;
         bool hasParallax = (gTerrainUseParallax != 0 && gTerrainLayerHeight[i].x >= 0 && layerParallaxFade > 0.001);
         float planarParallaxFade = 1.0 - triplanarFade;
         bool hasPlanarParallax = hasParallax && planarParallaxFade > 0.001;
@@ -64,8 +64,8 @@ PBRParams BlendMaterialLayers(
         float2 layerDetailUV = detailUV;
         if (hasPlanarParallax)
         {
-            layerDetailUV = ParallaxMapping((uint)gTerrainLayerHeight[i].x, detailUV, viewDirT,
-                gTerrainParallaxHeightScale * layerParallaxFade * planarParallaxFade);
+            layerDetailUV = ParallaxMapping((uint)gTerrainLayerHeight[i].x, detailUV, viewDirT, viewDirW, surfaceNormalW,
+                gTerrainParallaxHeightScale * layerParallaxFade * planarParallaxFade, parallaxMaxLayers);
         }
 
         bool useAlignedSampling = hasPlanarParallax;
@@ -79,11 +79,11 @@ PBRParams BlendMaterialLayers(
 
         if (usePlanarProjection)
         {
-            planarAlbedo = TerrainSamplePlanarRGB(gTerrainLayerAlbedo[i].x, layerUV, tiledUvDx, tiledUvDy, useAlignedSampling);
-            planarNormalW = TerrainPlanarNormalToWorld(TerrainSamplePlanarRGB(gTerrainLayerNormal[i].x, layerUV, tiledUvDx, tiledUvDy, useAlignedSampling), tbn);
-            planarRoughness = TerrainSamplePlanarScalar(gTerrainLayerRoughness[i].x, layerUV, tiledUvDx, tiledUvDy, useAlignedSampling) * gTerrainRoughnessScale;
-            planarMetallic = TerrainSamplePlanarScalar(gTerrainLayerMetallic[i].x, layerUV, tiledUvDx, tiledUvDy, useAlignedSampling) * gTerrainMetallicScale;
-            planarAO = TerrainSamplePlanarScalar(gTerrainLayerAO[i].x, layerUV, tiledUvDx, tiledUvDy, useAlignedSampling);
+            planarAlbedo = TerrainSamplePlanarRGB(gTerrainLayerAlbedo[i].x, layerUV, tiledUvDx, tiledUvDy, true);
+            planarNormalW = TerrainPlanarNormalToWorld(TerrainSamplePlanarRGB(gTerrainLayerNormal[i].x, layerUV, tiledUvDx, tiledUvDy, true), tbn);
+            planarRoughness = TerrainSamplePlanarScalar(gTerrainLayerRoughness[i].x, layerUV, tiledUvDx, tiledUvDy, true) * gTerrainRoughnessScale;
+            planarMetallic = TerrainSamplePlanarScalar(gTerrainLayerMetallic[i].x, layerUV, tiledUvDx, tiledUvDy, true) * gTerrainMetallicScale;
+            planarAO = TerrainSamplePlanarScalar(gTerrainLayerAO[i].x, layerUV, tiledUvDx, tiledUvDy, true);
         }
 
         float3 triAlbedo = 0.0;
@@ -199,7 +199,7 @@ PBRParams BlendMaterialLayers(
         if (gTerrainUseHeightBlend && gTerrainLayerHeight[i].x >= 0)
         {
             float planarHeight = usePlanarProjection
-                ? TerrainSamplePlanarScalar(gTerrainLayerHeight[i].x, layerUV, tiledUvDx, tiledUvDy, useAlignedSampling)
+                ? TerrainSamplePlanarScalar(gTerrainLayerHeight[i].x, layerUV, tiledUvDx, tiledUvDy, true)
                 : 0.0;
             float triHeight = useTriplanarProjection
                 ? TerrainSampleTriplanarScalar(gTerrainLayerHeight[i].x, baseTriplanarUV)
@@ -277,9 +277,9 @@ void main(ClipmapDomainOut pin,
     float3 viewDirW = normalize(gTerrainEyePosW - pin.PosW);
     float3 viewDirT = mul(viewDirW, transpose(TBN));
     float distToEye = distance(pin.PosW, gTerrainEyePosW);
-    float parallaxFade = saturate((gTerrainParallaxFadeEnd - distToEye) / max(gTerrainParallaxFadeEnd - gTerrainParallaxFadeStart, 1.0));
-
     float detailFade = saturate(1.0 - distToEye / gDetailFadeDistance) * 0.8;
+    float parallaxStepFade = detailFade * detailFade * (3.0 - 2.0 * detailFade);
+    float parallaxMaxLayers = lerp(0.0, 30.0, parallaxStepFade);
     PBRParams mat = BlendMaterialLayers(
         pin.MatWeights,
         tiledUV,
@@ -296,7 +296,7 @@ void main(ClipmapDomainOut pin,
         TBN,
         viewDirW,
         viewDirT,
-        parallaxFade);
+        parallaxMaxLayers);
 
     float3 bumpedNormalW = normalize(mat.NormalW);
 
