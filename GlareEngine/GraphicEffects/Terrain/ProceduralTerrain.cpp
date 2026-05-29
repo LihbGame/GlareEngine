@@ -42,7 +42,7 @@ namespace
     const char* const kVoronoiModeLabels[] = { "F1 Distance", "Distance To Edge" };
     const char* const kFilterTypeLabels[] =
     {
-        "None", "Smooth", "Terrace", "Strata", "Distortion", "Sediment Fill"
+        "None", "Smooth", "Terrace", "Strata", "Distortion", "Sediment Fill", "Hydraulic Erosion"
     };
 
     void HashBytes(uint64_t& hash, const void* data, size_t size)
@@ -138,6 +138,15 @@ namespace
             ImGui::SliderInt("Iterations", &filter.Iterations, 1, 4);
             ImGui::SliderFloat("Radius", &filter.Radius, 1.0f, 256.0f);
             ImGui::SliderFloat("Fill Limit", &filter.Param0, 0.0f, 500.0f);
+        }
+        else if (filter.FilterType == TerrainFilter_HydraulicErosion)
+        {
+            ImGui::SliderInt("Iterations", &filter.Iterations, 1, 4);
+            ImGui::SliderFloat("Radius", &filter.Radius, 1.0f, 256.0f);
+            ImGui::SliderFloat("Rain", &filter.Param0, 0.0f, 2.0f);
+            ImGui::SliderFloat("Surface Erosion", &filter.Param1, 0.0f, 2.0f);
+            ImGui::SliderFloat("Max Erosion Depth", &filter.Param2, 0.0f, 500.0f);
+            ImGui::SliderFloat("Sediment Deposit", &filter.Param3, 0.0f, 2.0f);
         }
 
         ImGui::TreePop();
@@ -388,12 +397,16 @@ void ProceduralTerrain::InitializeFilterPresets()
     strata.Param2 = 0.05f;
     strata.Param3 = 0.0f;
 
-    TerrainFilterSettings& sediment = mFiltersUI[3];
-    sediment.FilterType = TerrainFilter_SedimentFill;
-    sediment.Strength = 0.45f;
-    sediment.Radius = 32.0f;
-    sediment.Param0 = 120.0f;
-    sediment.Iterations = 1;
+    TerrainFilterSettings& erosion = mFiltersUI[3];
+    erosion.Enabled = true;
+    erosion.FilterType = TerrainFilter_HydraulicErosion;
+    erosion.Strength = 0.75f;
+    erosion.Radius = 42.0f;
+    erosion.Param0 = 0.85f;
+    erosion.Param1 = 0.8f;
+    erosion.Param2 = 110.0f;
+    erosion.Param3 = 0.45f;
+    erosion.Iterations = 2;
 }
 
 uint64_t ProceduralTerrain::ComputeNoiseLayerStateHash() const

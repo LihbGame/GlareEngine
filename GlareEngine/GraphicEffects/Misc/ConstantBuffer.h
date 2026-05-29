@@ -247,6 +247,7 @@ enum TerrainFilterType : int
     TerrainFilter_Strata,
     TerrainFilter_Distortion,
     TerrainFilter_SedimentFill,
+    TerrainFilter_HydraulicErosion,
     TerrainFilter_Count
 };
 

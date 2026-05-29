@@ -40,6 +40,7 @@
 #define TERRAIN_FILTER_STRATA        3
 #define TERRAIN_FILTER_DISTORTION    4
 #define TERRAIN_FILTER_SEDIMENT_FILL 5
+#define TERRAIN_FILTER_HYDRAULIC     6
 
 // --- Hash utilities ---
 float TNoiseHash2D(float2 p)
@@ -644,6 +645,86 @@ float TerrainApplySedimentFillFilter(float2 worldXZ, float currentHeight, float 
     return height;
 }
 
+float TerrainApplyHydraulicErosionFilter(
+    float2 worldXZ,
+    float currentHeight,
+    float radius,
+    float rain,
+    float surfaceErosion,
+    float maxErosionDepth,
+    float sedimentDeposit,
+    int iterations,
+    float heightScale)
+{
+    float height = currentHeight;
+    float sampleRadius = max(radius, gNoiseCellSize);
+    int iterationCount = clamp(iterations, 1, 4);
+
+    for (int i = 0; i < 4; ++i)
+    {
+        if (i >= iterationCount)
+        {
+            break;
+        }
+
+        float hL = ComputeTerrainRawHeight(worldXZ + float2(-sampleRadius, 0.0), heightScale);
+        float hR = ComputeTerrainRawHeight(worldXZ + float2(sampleRadius, 0.0), heightScale);
+        float hD = ComputeTerrainRawHeight(worldXZ + float2(0.0, -sampleRadius), heightScale);
+        float hU = ComputeTerrainRawHeight(worldXZ + float2(0.0, sampleRadius), heightScale);
+        float hLD = ComputeTerrainRawHeight(worldXZ + float2(-sampleRadius, -sampleRadius), heightScale);
+        float hRD = ComputeTerrainRawHeight(worldXZ + float2(sampleRadius, -sampleRadius), heightScale);
+        float hLU = ComputeTerrainRawHeight(worldXZ + float2(-sampleRadius, sampleRadius), heightScale);
+        float hRU = ComputeTerrainRawHeight(worldXZ + float2(sampleRadius, sampleRadius), heightScale);
+
+        float2 grad = float2(hR - hL, hU - hD) / max(sampleRadius * 2.0, 0.001);
+        float slope = length(grad);
+        float2 flowDir = slope > 0.0001 ? normalize(-grad) : normalize(TerrainRandom22(int2(worldXZ)) * 2.0 - 1.0);
+
+        float upstream = 0.0;
+        float valley = 0.0;
+        float ringHeights[8] = { hL, hR, hD, hU, hLD, hRD, hLU, hRU };
+        float2 ringDirs[8] =
+        {
+            float2(-1.0, 0.0),
+            float2(1.0, 0.0),
+            float2(0.0, -1.0),
+            float2(0.0, 1.0),
+            normalize(float2(-1.0, -1.0)),
+            normalize(float2(1.0, -1.0)),
+            normalize(float2(-1.0, 1.0)),
+            normalize(float2(1.0, 1.0))
+        };
+
+        for (int n = 0; n < 8; ++n)
+        {
+            float neighborHeight = ringHeights[n];
+            float heightDelta = neighborHeight - height;
+            float incoming = saturate(heightDelta / max(sampleRadius, 1.0)) * saturate(dot(-ringDirs[n], flowDir) * 0.5 + 0.5);
+            upstream += incoming;
+            valley += max(height - neighborHeight, 0.0);
+        }
+
+        upstream *= 0.125;
+        valley *= 0.125;
+
+        float downstreamHeight = ComputeTerrainRawHeight(worldXZ + flowDir * sampleRadius, heightScale);
+        float downhillDrop = max(height - downstreamHeight, 0.0);
+        float flowPower = saturate((slope * 8.0 + upstream) * max(rain, 0.0));
+        float channelNoise = saturate(TerrainGradientNoise(worldXZ * 0.013 + (float)i * 19.17) * 0.35 + 0.75);
+        float erosion = min(maxErosionDepth, downhillDrop + sampleRadius * slope);
+        erosion *= flowPower * max(surfaceErosion, 0.0) * channelNoise;
+
+        float depositMask = saturate((valley / max(sampleRadius, 1.0)) + saturate(1.0 - downhillDrop / max(sampleRadius * 0.5, 1.0)));
+        float deposit = min(maxErosionDepth, max(upstream - slope * 0.25, 0.0) * sampleRadius);
+        deposit *= max(sedimentDeposit, 0.0) * depositMask;
+
+        height += deposit - erosion;
+        sampleRadius *= 1.45;
+    }
+
+    return height;
+}
+
 float ApplyTerrainFilterStack(float2 worldXZ, float rawHeight, float heightScale)
 {
     float height = rawHeight;
@@ -688,6 +769,19 @@ float ApplyTerrainFilterStack(float2 worldXZ, float rawHeight, float heightScale
         else if (controls.y == TERRAIN_FILTER_SEDIMENT_FILL)
         {
             candidate = TerrainApplySedimentFillFilter(worldXZ, height, radius, params0.z, iterations, heightScale);
+        }
+        else if (controls.y == TERRAIN_FILTER_HYDRAULIC)
+        {
+            candidate = TerrainApplyHydraulicErosionFilter(
+                worldXZ,
+                height,
+                radius,
+                params0.z,
+                params0.w,
+                params1.x,
+                params1.y,
+                iterations,
+                heightScale);
         }
 
         height = TerrainCombineFilterHeight(height, candidate, strength, controls.z, heightScale);
