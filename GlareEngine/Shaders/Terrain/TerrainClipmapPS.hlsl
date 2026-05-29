@@ -1,4 +1,5 @@
 #include "TerrainCommon.hlsli"
+#include "../Shadow/RealTimeShadowHelper.hlsli"
 
 struct PBRParams
 {
@@ -61,7 +62,9 @@ float4 main(ClipmapDomainOut pin) : SV_TARGET
 
     // Simple directional light for forward path
     float3 lightDir = normalize(float3(0.5, 0.8, 0.3));
+    float shadow = CalcCascadedShadowFactor(pin.PosW);
     float3 lit = mat.Albedo * max(dot(bumpedNormalW, lightDir), 0.3);
+    lit *= lerp(1.0f, shadow, gShadowIntensity);
 
     return float4(lit, 1.0);
 }

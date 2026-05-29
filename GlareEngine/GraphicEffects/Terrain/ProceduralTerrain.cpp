@@ -57,9 +57,9 @@ ProceduralTerrain::ProceduralTerrain(
 {
     mObjectType = ObjectType::Terrain;
 
-    // Enable shadow casting
-    SetShadowFlag(true);
-    SetShadowRenderFlag(true);
+    // Terrain shadow casting is opt-in because it is expensive with cascaded shadow maps.
+    SetShadowFlag(false);
+    SetShadowRenderFlag(false);
 
     // Initialize UI parameters from init info so first frame uses correct values
     mNoiseScaleUI = Info.NoiseScale;

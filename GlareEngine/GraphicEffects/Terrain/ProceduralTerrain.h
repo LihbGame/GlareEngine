@@ -170,5 +170,5 @@ public:
         mMainCBData = data;
         mMainCBSize = size;
     }
-    void CacheShadowVP(const XMFLOAT4X4& shadowVP) { mCachedShadowVP = shadowVP; }
+    void CacheShadowVP(const XMFLOAT4X4& shadowVP) override { mCachedShadowVP = shadowVP; }
 };

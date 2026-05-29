@@ -99,6 +99,16 @@ __declspec(align(16))struct MainConstants
 	XMFLOAT4X4	InvViewProj				= MathHelper::Identity4x4();
 	XMFLOAT4X4	ShadowTransform			= MathHelper::Identity4x4();
 	XMFLOAT4X4	PreViewProjMatrix		= MathHelper::Identity4x4();
+	XMFLOAT4X4	CSMShadowTransform[4]	= {
+		MathHelper::Identity4x4(), MathHelper::Identity4x4(),
+		MathHelper::Identity4x4(), MathHelper::Identity4x4()
+	};
+	XMFLOAT4	CSMCascadeSplits		= { 0.0f, 0.0f, 0.0f, 0.0f };
+	XMINT4		CSMShadowMapIndices		= { 0, 0, 0, 0 };
+	int			CSMCascadeCount			= 1;
+	int			_CSMPad0				= 0;
+	int			_CSMPad1				= 0;
+	int			_CSMPad2				= 0;
 
 	XMFLOAT3	EyePosW					= { 0.0f, 0.0f, 0.0f };
 	float		ZMagic					= 0.0f;     // (zFar - zNear) / zNear

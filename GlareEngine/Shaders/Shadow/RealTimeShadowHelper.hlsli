@@ -1,5 +1,64 @@
 #include "../Misc/PBRLighting.hlsli"
 
+uint SelectCSMCascade(float3 worldPos)
+{
+    float viewDepth = mul(float4(worldPos, 1.0f), gView).z;
+    uint cascadeIndex = 0;
+
+    if (gCSMCascadeCount > 1 && viewDepth > gCSMCascadeSplits.x)
+    {
+        cascadeIndex = 1;
+    }
+    if (gCSMCascadeCount > 2 && viewDepth > gCSMCascadeSplits.y)
+    {
+        cascadeIndex = 2;
+    }
+    if (gCSMCascadeCount > 3 && viewDepth > gCSMCascadeSplits.z)
+    {
+        cascadeIndex = 3;
+    }
+
+    return min(cascadeIndex, (uint)max(gCSMCascadeCount - 1, 0));
+}
+
+float SampleCSMShadowMap(uint cascadeIndex, float3 shadowCoord)
+{
+    if (any(shadowCoord.xy < 0.0f) || any(shadowCoord.xy > 1.0f) || shadowCoord.z < 0.0f || shadowCoord.z > 1.0f)
+    {
+        return 1.0f;
+    }
+
+    int shadowMapIndex = gCSMShadowMapIndex[cascadeIndex];
+    uint width, height, numMips;
+    gSRVMap[NonUniformResourceIndex(shadowMapIndex)].GetDimensions(0, width, height, numMips);
+
+    float2 texelSize = 1.0f / float2(width, height);
+    float percentLit = 0.0f;
+    const float2 offsets[9] =
+    {
+        float2(-1.0f, -1.0f), float2(0.0f, -1.0f), float2(1.0f, -1.0f),
+        float2(-1.0f,  0.0f), float2(0.0f,  0.0f), float2(1.0f,  0.0f),
+        float2(-1.0f,  1.0f), float2(0.0f,  1.0f), float2(1.0f,  1.0f)
+    };
+
+    [unroll]
+    for (int i = 0; i < 9; ++i)
+    {
+        percentLit += gSRVMap[NonUniformResourceIndex(shadowMapIndex)].SampleCmpLevelZero(
+            gSamplerShadow, shadowCoord.xy + offsets[i] * texelSize, shadowCoord.z).r;
+    }
+
+    return saturate(percentLit / 9.0f);
+}
+
+float CalcCascadedShadowFactor(float3 worldPos)
+{
+    uint cascadeIndex = SelectCSMCascade(worldPos);
+    float4 shadowPosH = mul(float4(worldPos, 1.0f), gCSMShadowTransform[cascadeIndex]);
+    shadowPosH.xyz /= shadowPosH.w;
+    return SampleCSMShadowMap(cascadeIndex, shadowPosH.xyz);
+}
+
 
 //---------------------------------------------------------------------------------------
 // PCF for shadow mapping.

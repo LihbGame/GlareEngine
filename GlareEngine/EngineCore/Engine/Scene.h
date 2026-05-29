@@ -79,6 +79,9 @@ public:
 	//Shadow Map
 	void CreateShadowMap(GraphicsContext& Context, vector<RenderObject*> RenderObjects);
 	void CreateShadowMapForGLTF(GraphicsContext& Context);
+	void CreateSunShadowMap(GraphicsContext& Context);
+	void CreateGLTFShadowMap(GraphicsContext& Context, UINT cascadeIndex);
+	void CreateTerrainShadowMap(GraphicsContext& Context, UINT cascadeIndex);
 
 	vector<RenderObject*> GetRenderObjects() { return m_pGLTFRenderObjects; }
 	vector<RenderObject*> GetRenderObjects(ObjectType objectType) { return m_pRenderObjectsType[(int)objectType]; }

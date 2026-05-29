@@ -113,7 +113,7 @@ float4 main(VSOutput vsOutput) : SV_Target0
     float3 color = emissive;
 
     //Lighting and Shadow
-    Surface.ShadowFactor = CalcShadowFactor(float4(vsOutput.sunShadowCoord, 1.0f));
+    Surface.ShadowFactor = CalcCascadedShadowFactor(vsOutput.worldPos);
     color += ComputeLighting(gLights, Surface);
    
     //SSAO

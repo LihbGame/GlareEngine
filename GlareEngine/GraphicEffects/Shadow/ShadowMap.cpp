@@ -1,5 +1,6 @@
 #include "ShadowMap.h"
 #include "Graphics/GraphicsCore.h"
+#include "Engine/Camera.h"
 
 //shader
 #include "CompiledShaders/ModelShadowVS.h"
@@ -20,9 +21,18 @@ ShadowMap::ShadowMap(XMFLOAT3 LightDirection, UINT width, UINT height)
 	mViewport = { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f };
 	mScissorRect = { 0, 0, (int)width, (int)height };
 
-	//Create shadow buffer
-	mShadowBuffer.Create(L"Shadow Map", width, height, mFormat);
-	mShadowMapIndex = AddToGlobalTextureSRVDescriptor(mShadowBuffer.GetSRV());
+	for (UINT cascadeIndex = 0; cascadeIndex < CSM_CASCADE_COUNT; ++cascadeIndex)
+	{
+		std::wstring bufferName = L"CSM Shadow Map " + std::to_wstring(cascadeIndex);
+		mCascadeShadowBuffers[cascadeIndex].Create(bufferName, width, height, mFormat);
+		mShadowMapIndices[cascadeIndex] = AddToGlobalTextureSRVDescriptor(mCascadeShadowBuffers[cascadeIndex].GetSRV());
+		mCascadeViews[cascadeIndex] = MathHelper::Identity4x4();
+		mCascadeProjs[cascadeIndex] = MathHelper::Identity4x4();
+		mCascadeViewProjs[cascadeIndex] = MathHelper::Identity4x4();
+		mCascadeShadowTransforms[cascadeIndex] = MathHelper::Identity4x4();
+		mCascadeConstantBuffers[cascadeIndex].gShadowViewProj = MathHelper::Identity4x4();
+	}
+	mShadowMapIndex = mShadowMapIndices[0];
 
 	mSceneBounds.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	mSceneBounds.Radius = 700.0f;
@@ -30,54 +40,185 @@ ShadowMap::ShadowMap(XMFLOAT3 LightDirection, UINT width, UINT height)
 	InitMaterial();
 }
 
-
 void ShadowMap::Update(float DeltaTime)
 {
-	// Recompute shadow transform every frame to track camera movement
+	Update(DeltaTime, nullptr);
+}
+
+void ShadowMap::Update(float DeltaTime, const Camera* camera)
+{
+	// Recompute shadow transform every frame to track camera movement.
 	XMMATRIX R = XMMatrixRotationY(mLightRotationAngle);
 	XMVECTOR lightDir = XMLoadFloat3(&mBaseLightDirection);
-	lightDir = XMVector3TransformNormal(lightDir, R);
+	lightDir = XMVector3Normalize(XMVector3TransformNormal(lightDir, R));
 	XMStoreFloat3(&mRotatedLightDirection, lightDir);
 
-	// Only the first "main" light casts a shadow.
-	XMVECTOR LightPos = -2.0f * this->mSceneBounds.Radius * lightDir;
-	XMVECTOR targetPos = XMLoadFloat3(&this->mSceneBounds.Center);
-	XMVECTOR lightUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	XMMATRIX lightView = XMMatrixLookAtLH(LightPos, targetPos, lightUp);
-
-	XMStoreFloat3(&this->mLightPosW, LightPos);
-
-	// Transform bounding sphere to light space.
-	XMFLOAT3 sphereCenterLS;
-	XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(targetPos, lightView));
-
-	//Orthographic frustum in light space encloses scene.
-	float l = sphereCenterLS.x - this->mSceneBounds.Radius;
-	float b = sphereCenterLS.y - this->mSceneBounds.Radius;
-	float n = sphereCenterLS.z - this->mSceneBounds.Radius;
-	float r = sphereCenterLS.x + this->mSceneBounds.Radius;
-	float t = sphereCenterLS.y + this->mSceneBounds.Radius;
-	float f = sphereCenterLS.z + this->mSceneBounds.Radius;
-
-	this->mLightNearZ = n;
-	this->mLightFarZ = f;
-	XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);
-
-	// Transform NDC space [-1,+1]^2 to texture space [0,1]^2
-	XMMATRIX T(
+	// Transform NDC space [-1,+1]^2 to texture space [0,1]^2.
+	XMMATRIX toTextureSpace(
 		0.5f, 0.0f, 0.0f, 0.0f,
 		0.0f, -0.5f, 0.0f, 0.0f,
 		0.0f, 0.0f, 1.0f, 0.0f,
 		0.5f, 0.5f, 0.0f, 1.0f);
 
-	XMMATRIX S = lightView * lightProj * T;
-	XMStoreFloat4x4(&this->mLightView, lightView);
-	XMStoreFloat4x4(&this->mLightProj, lightProj);
-	XMStoreFloat4x4(&this->mShadowTransform, S);
+	XMVECTOR lightUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	if (fabsf(XMVectorGetX(XMVector3Dot(lightDir, lightUp))) > 0.95f)
+	{
+		lightUp = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+	}
 
-	XMMATRIX ShadowViewProj = XMMatrixMultiply(lightView, lightProj);
-	XMStoreFloat4x4(&mLightViewProj, ShadowViewProj);
-	XMStoreFloat4x4(&mConstantBuffer.gShadowViewProj, XMMatrixTranspose(ShadowViewProj));
+	if (camera == nullptr)
+	{
+		XMVECTOR lightPos = -2.0f * mSceneBounds.Radius * lightDir;
+		XMVECTOR targetPos = XMLoadFloat3(&mSceneBounds.Center);
+		XMMATRIX lightView = XMMatrixLookAtLH(lightPos, targetPos, lightUp);
+
+		XMStoreFloat3(&mLightPosW, lightPos);
+
+		XMFLOAT3 sphereCenterLS;
+		XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(targetPos, lightView));
+
+		float l = sphereCenterLS.x - mSceneBounds.Radius;
+		float b = sphereCenterLS.y - mSceneBounds.Radius;
+		float n = sphereCenterLS.z - mSceneBounds.Radius;
+		float r = sphereCenterLS.x + mSceneBounds.Radius;
+		float t = sphereCenterLS.y + mSceneBounds.Radius;
+		float f = sphereCenterLS.z + mSceneBounds.Radius;
+
+		mLightNearZ = n;
+		mLightFarZ = f;
+		XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);
+		XMMATRIX shadowViewProj = lightView * lightProj;
+		XMMATRIX shadowTransform = shadowViewProj * toTextureSpace;
+
+		XMStoreFloat4x4(&mLightView, lightView);
+		XMStoreFloat4x4(&mLightProj, lightProj);
+		XMStoreFloat4x4(&mLightViewProj, shadowViewProj);
+		XMStoreFloat4x4(&mShadowTransform, shadowTransform);
+		XMStoreFloat4x4(&mConstantBuffer.gShadowViewProj, XMMatrixTranspose(shadowViewProj));
+
+		for (UINT cascadeIndex = 0; cascadeIndex < CSM_CASCADE_COUNT; ++cascadeIndex)
+		{
+			mCascadeViews[cascadeIndex] = mLightView;
+			mCascadeProjs[cascadeIndex] = mLightProj;
+			mCascadeViewProjs[cascadeIndex] = mLightViewProj;
+			mCascadeShadowTransforms[cascadeIndex] = mShadowTransform;
+			mCascadeConstantBuffers[cascadeIndex] = mConstantBuffer;
+		}
+		mCascadeSplits = XMFLOAT4(mSceneBounds.Radius, mSceneBounds.Radius, mSceneBounds.Radius, mSceneBounds.Radius);
+		return;
+	}
+
+	const float nearZ = camera->GetNearZ() > 0.1f ? camera->GetNearZ() : 0.1f;
+	const float farZ = camera->GetFarZ();
+	const float splitLambda = 0.75f;
+	float splitDistances[CSM_CASCADE_COUNT] = {};
+	float previousSplit = nearZ;
+
+	XMVECTOR cameraPos = camera->GetPosition();
+	XMVECTOR cameraRight = XMVector3Normalize(camera->GetRight());
+	XMVECTOR cameraUp = XMVector3Normalize(camera->GetUp());
+	XMVECTOR cameraLook = XMVector3Normalize(camera->GetLook());
+	const float tanHalfFovY = tanf(camera->GetFovY() * 0.5f);
+	const float aspect = camera->GetAspect();
+
+	for (UINT cascadeIndex = 0; cascadeIndex < CSM_CASCADE_COUNT; ++cascadeIndex)
+	{
+		float p = static_cast<float>(cascadeIndex + 1) / static_cast<float>(CSM_CASCADE_COUNT);
+		float logarithmic = nearZ * powf(farZ / nearZ, p);
+		float uniform = nearZ + (farZ - nearZ) * p;
+		float splitDistance = splitLambda * logarithmic + (1.0f - splitLambda) * uniform;
+		splitDistances[cascadeIndex] = splitDistance;
+
+		float cascadeNear = previousSplit;
+		float cascadeFar = splitDistance;
+		previousSplit = splitDistance;
+
+		std::array<XMVECTOR, 8> frustumCorners;
+		auto buildCorners = [&](float distance, UINT offset)
+		{
+			float halfHeight = tanHalfFovY * distance;
+			float halfWidth = halfHeight * aspect;
+			XMVECTOR center = cameraPos + cameraLook * distance;
+			frustumCorners[offset + 0] = center - cameraRight * halfWidth + cameraUp * halfHeight;
+			frustumCorners[offset + 1] = center + cameraRight * halfWidth + cameraUp * halfHeight;
+			frustumCorners[offset + 2] = center - cameraRight * halfWidth - cameraUp * halfHeight;
+			frustumCorners[offset + 3] = center + cameraRight * halfWidth - cameraUp * halfHeight;
+		};
+		buildCorners(cascadeNear, 0);
+		buildCorners(cascadeFar, 4);
+
+		XMVECTOR cascadeCenter = XMVectorZero();
+		for (const XMVECTOR& corner : frustumCorners)
+		{
+			cascadeCenter += corner;
+		}
+		cascadeCenter /= 8.0f;
+
+		float cascadeRadius = 0.0f;
+		for (const XMVECTOR& corner : frustumCorners)
+		{
+			float cornerDistance = XMVectorGetX(XMVector3Length(corner - cascadeCenter));
+			cascadeRadius = cascadeRadius > cornerDistance ? cascadeRadius : cornerDistance;
+		}
+		cascadeRadius = ceilf(cascadeRadius * 16.0f) / 16.0f;
+
+		XMVECTOR lightPos = cascadeCenter - lightDir * (cascadeRadius + mSceneBounds.Radius);
+		XMMATRIX lightView = XMMatrixLookAtLH(lightPos, cascadeCenter, lightUp);
+
+		XMFLOAT3 minLS(FLT_MAX, FLT_MAX, FLT_MAX);
+		XMFLOAT3 maxLS(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+		for (const XMVECTOR& corner : frustumCorners)
+		{
+			XMFLOAT3 cornerLS;
+			XMStoreFloat3(&cornerLS, XMVector3TransformCoord(corner, lightView));
+			minLS.x = minLS.x < cornerLS.x ? minLS.x : cornerLS.x;
+			minLS.y = minLS.y < cornerLS.y ? minLS.y : cornerLS.y;
+			minLS.z = minLS.z < cornerLS.z ? minLS.z : cornerLS.z;
+			maxLS.x = maxLS.x > cornerLS.x ? maxLS.x : cornerLS.x;
+			maxLS.y = maxLS.y > cornerLS.y ? maxLS.y : cornerLS.y;
+			maxLS.z = maxLS.z > cornerLS.z ? maxLS.z : cornerLS.z;
+		}
+
+		float width = maxLS.x - minLS.x;
+		float height = maxLS.y - minLS.y;
+		float dimension = width > height ? width : height;
+		float centerX = (minLS.x + maxLS.x) * 0.5f;
+		float centerY = (minLS.y + maxLS.y) * 0.5f;
+		float texelSize = dimension / static_cast<float>(mWidth);
+		centerX = floorf(centerX / texelSize) * texelSize;
+		centerY = floorf(centerY / texelSize) * texelSize;
+
+		float l = centerX - dimension * 0.5f;
+		float r = centerX + dimension * 0.5f;
+		float b = centerY - dimension * 0.5f;
+		float t = centerY + dimension * 0.5f;
+		float n = minLS.z - mSceneBounds.Radius;
+		float f = maxLS.z + mSceneBounds.Radius;
+
+		XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);
+		XMMATRIX shadowViewProj = lightView * lightProj;
+		XMMATRIX shadowTransform = shadowViewProj * toTextureSpace;
+
+		XMStoreFloat4x4(&mCascadeViews[cascadeIndex], lightView);
+		XMStoreFloat4x4(&mCascadeProjs[cascadeIndex], lightProj);
+		XMStoreFloat4x4(&mCascadeViewProjs[cascadeIndex], shadowViewProj);
+		XMStoreFloat4x4(&mCascadeShadowTransforms[cascadeIndex], shadowTransform);
+		XMStoreFloat4x4(&mCascadeConstantBuffers[cascadeIndex].gShadowViewProj, XMMatrixTranspose(shadowViewProj));
+
+		if (cascadeIndex == 0)
+		{
+			XMStoreFloat3(&mLightPosW, lightPos);
+			mLightNearZ = n;
+			mLightFarZ = f;
+			mLightView = mCascadeViews[cascadeIndex];
+			mLightProj = mCascadeProjs[cascadeIndex];
+			mLightViewProj = mCascadeViewProjs[cascadeIndex];
+			mShadowTransform = mCascadeShadowTransforms[cascadeIndex];
+			mConstantBuffer = mCascadeConstantBuffers[cascadeIndex];
+		}
+	}
+
+	mCascadeSplits = XMFLOAT4(splitDistances[0], splitDistances[1], splitDistances[2], splitDistances[3]);
 }
 
 UINT ShadowMap::Width()const
@@ -100,23 +241,33 @@ D3D12_RECT ShadowMap::ScissorRect()const
 	return mScissorRect;
 }
 
-void ShadowMap::Draw(GraphicsContext& Context,vector<RenderObject*> RenderObjects)
+void ShadowMap::Draw(GraphicsContext& Context, vector<RenderObject*> RenderObjects)
 {
-	//set Viewport And Scissor
-	Context.SetViewportAndScissor(mViewport, mScissorRect);
-	//set scene render target & Depth Stencil target
-	Context.TransitionResource(mShadowBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
-	Context.ClearDepth(mShadowBuffer);
-	Context.SetDepthStencilTarget(GetDSV());
-	//set shadow constant buffer
-	Context.SetDynamicConstantBufferView((int)RootSignatureType::eCommonConstantBuffer, sizeof(ShadowConstantBuffer), &mConstantBuffer);
+	for (UINT cascadeIndex = 0; cascadeIndex < CSM_CASCADE_COUNT; ++cascadeIndex)
+	{
+		DrawCascade(Context, RenderObjects, cascadeIndex);
+	}
+}
 
-	for (auto& object:RenderObjects)
+void ShadowMap::DrawCascade(GraphicsContext& Context, vector<RenderObject*> RenderObjects, UINT cascadeIndex)
+{
+	cascadeIndex = ClampCSMCascadeIndex(cascadeIndex);
+	mActiveCascadeIndex = cascadeIndex;
+	ShadowBuffer& shadowBuffer = mCascadeShadowBuffers[cascadeIndex];
+
+	Context.SetViewportAndScissor(mViewport, mScissorRect);
+	Context.TransitionResource(shadowBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+	Context.ClearDepth(shadowBuffer);
+	Context.SetDepthStencilTarget(GetDSV(cascadeIndex));
+	Context.SetDynamicConstantBufferView((int)RootSignatureType::eCommonConstantBuffer, sizeof(ShadowConstantBuffer), &mCascadeConstantBuffers[cascadeIndex]);
+
+	for (auto& object : RenderObjects)
 	{
 		if (object->GetVisible() && object->GetShadowRenderFlag())
 		{
+			object->CacheShadowVP(mCascadeViewProjs[cascadeIndex]);
 			Context.PIXBeginEvent(object->GetName().c_str());
-			if(object->GetMaskFlag())
+			if (object->GetMaskFlag())
 			{
 				object->DrawShadow(Context, &mMaskShadowMaterial->GetGraphicsPSO());
 			}
@@ -127,7 +278,7 @@ void ShadowMap::Draw(GraphicsContext& Context,vector<RenderObject*> RenderObject
 			Context.PIXEndEvent();
 		}
 	}
-	Context.TransitionResource(mShadowBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
+	Context.TransitionResource(shadowBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
 }
 
 void ShadowMap::InitMaterial()
@@ -188,10 +339,18 @@ void ShadowMap::BuildPSO(const PSOCommonProperty CommonProperty)
 
 void ShadowMap::OnResize(UINT newWidth, UINT newHeight)
 {
-	//resize
-	mShadowBuffer.Create(L"Shadow Map", newWidth, newHeight);
-	if (g_TextureSRV.size() > mShadowMapIndex)
+	mWidth = newWidth;
+	mHeight = newHeight;
+	mViewport = { 0.0f, 0.0f, (float)newWidth, (float)newHeight, 0.0f, 1.0f };
+	mScissorRect = { 0, 0, (int)newWidth, (int)newHeight };
+
+	for (UINT cascadeIndex = 0; cascadeIndex < CSM_CASCADE_COUNT; ++cascadeIndex)
 	{
-		g_TextureSRV[mShadowMapIndex] = mShadowBuffer.GetSRV();
+		std::wstring bufferName = L"CSM Shadow Map " + std::to_wstring(cascadeIndex);
+		mCascadeShadowBuffers[cascadeIndex].Create(bufferName, newWidth, newHeight, mFormat);
+		if (g_TextureSRV.size() > mShadowMapIndices[cascadeIndex])
+		{
+			g_TextureSRV[mShadowMapIndices[cascadeIndex]] = mCascadeShadowBuffers[cascadeIndex].GetSRV();
+		}
 	}
 }

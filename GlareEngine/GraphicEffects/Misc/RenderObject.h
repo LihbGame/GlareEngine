@@ -56,6 +56,7 @@ public:
 	virtual void Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO = nullptr) {};
 	virtual void DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificShadowPSO = nullptr) {};
 	virtual void DrawDepthOnly(GraphicsContext& Context) {};
+	virtual void CacheShadowVP(const XMFLOAT4X4& shadowVP) {};
 	virtual void Update(float DeltaTime, GraphicsContext* Context = nullptr) {};
 	virtual void DrawUI() {};
 	virtual void InitMaterial() {};
@@ -70,5 +71,4 @@ protected:
 	bool mIsVisible = true;
 	bool mIsMaskMaterial = false;
 };
-
 

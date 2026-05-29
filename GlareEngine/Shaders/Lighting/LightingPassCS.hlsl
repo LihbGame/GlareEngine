@@ -21,8 +21,6 @@ void main( uint3 DTid : SV_DispatchThreadID )
         float3 metallicSpecRoughness = GBUFFER_MSR[pixelPos].xyz;
         float4 baseColorAndAO = GBUFFER_BaseColor[pixelPos];
         float3 worldPos = Reconstruct_Position(pixelPos * gInvRenderTargetSize, DepthTexture[pixelPos], gInvViewProj);
-        float3 sunShadowCoord = mul(float4(worldPos, 1.0), gShadowTransform).xyz;
-
         //metallicSpecRoughness.z = 0.1f;
         //metallicSpecRoughness.x = 0.9f;
 
@@ -42,7 +40,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
         float3 color = emissive;
 
         //Lighting and Shadow
-        Surface.ShadowFactor = CalcShadowFactor(float4(sunShadowCoord, 1.0f));
+        Surface.ShadowFactor = CalcCascadedShadowFactor(worldPos);
         color += ComputeLighting(gLights, Surface);
    
         //SSAO

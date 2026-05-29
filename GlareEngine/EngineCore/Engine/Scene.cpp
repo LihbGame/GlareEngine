@@ -84,7 +84,7 @@ void Scene::Update(float DeltaTime)
 	}
 
 	//Update shadow map
-	m_pShadowMap->Update(DeltaTime);
+	m_pShadowMap->Update(DeltaTime, mSceneView.m_pCamera);
 
 	//Update Main Constant Buffer
 	UpdateMainConstantBuffer(DeltaTime);
@@ -383,9 +383,22 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 	XMStoreFloat4x4(&mSceneView.mMainConstants.InvProj, XMMatrixTranspose(InvProj));
 	XMStoreFloat4x4(&mSceneView.mMainConstants.ViewProj, XMMatrixTranspose(ViewProj));
 	XMStoreFloat4x4(&mSceneView.mMainConstants.InvViewProj, XMMatrixTranspose(InvViewProj));
-	XMFLOAT4X4 ShadowTransform = m_pShadowMap->GetShadowTransform();
+	XMFLOAT4X4 ShadowTransform = m_pShadowMap->GetShadowTransform(0);
 	XMStoreFloat4x4(&mSceneView.mMainConstants.ShadowTransform, XMMatrixTranspose(XMLoadFloat4x4(&ShadowTransform)));
 	XMStoreFloat4x4(&mSceneView.mMainConstants.PreViewProjMatrix, XMMatrixTranspose(mSceneView.m_pCamera->GetPreViewProj()));
+	for (UINT cascadeIndex = 0; cascadeIndex < m_pShadowMap->GetCascadeCount(); ++cascadeIndex)
+	{
+		XMFLOAT4X4 cascadeTransform = m_pShadowMap->GetShadowTransform(cascadeIndex);
+		XMStoreFloat4x4(&mSceneView.mMainConstants.CSMShadowTransform[cascadeIndex], XMMatrixTranspose(XMLoadFloat4x4(&cascadeTransform)));
+	}
+	mSceneView.mMainConstants.CSMCascadeSplits = m_pShadowMap->GetCascadeSplits();
+	const auto& shadowMapIndices = m_pShadowMap->GetShadowMapIndices();
+	mSceneView.mMainConstants.CSMShadowMapIndices = XMINT4(
+		shadowMapIndices[0],
+		shadowMapIndices[1],
+		shadowMapIndices[2],
+		shadowMapIndices[3]);
+	mSceneView.mMainConstants.CSMCascadeCount = static_cast<int>(m_pShadowMap->GetCascadeCount());
 
 	mSceneView.mMainConstants.EyePosW = mSceneView.m_pCamera->GetPosition3f();
 	mSceneView.mMainConstants.RenderTargetSize = XMFLOAT2((float)g_SceneColorBuffer.GetWidth(), (float)g_SceneColorBuffer.GetHeight());
@@ -466,13 +479,34 @@ void Scene::CreateShadowMap(GraphicsContext& Context,vector<RenderObject*> Rende
 	m_pShadowMap->Draw(Context,RenderObjects);
 }
 
+void Scene::CreateSunShadowMap(GraphicsContext& Context)
+{
+	ScopedTimer SunShadowScope(L"Shadow Map", Context);
+
+	for (UINT cascadeIndex = 0; cascadeIndex < m_pShadowMap->GetCascadeCount(); ++cascadeIndex)
+	{
+		m_pShadowMap->SetActiveCascadeIndex(cascadeIndex);
+		CreateGLTFShadowMap(Context, cascadeIndex);
+		CreateTerrainShadowMap(Context, cascadeIndex);
+	}
+}
+
 void Scene::CreateShadowMapForGLTF(GraphicsContext& Context)
 {
 	ScopedTimer SunShadowScope(L"Shadow Map", Context);
 
+	for (UINT cascadeIndex = 0; cascadeIndex < m_pShadowMap->GetCascadeCount(); ++cascadeIndex)
+	{
+		m_pShadowMap->SetActiveCascadeIndex(cascadeIndex);
+		CreateGLTFShadowMap(Context, cascadeIndex);
+	}
+}
+
+void Scene::CreateGLTFShadowMap(GraphicsContext& Context, UINT cascadeIndex)
+{
 	MeshRenderPass ShadowMeshPass(MeshRenderPass::eShadows);
 	ShadowMeshPass.SetCamera(*m_pSunShadowCamera.get());
-	ShadowMeshPass.SetDepthStencilTarget(m_pSunShadowCamera->GetShadowMap()->GetShadowBuffer());
+	ShadowMeshPass.SetDepthStencilTarget(m_pSunShadowCamera->GetShadowMap()->GetShadowBuffer(cascadeIndex));
 
 	for (auto& model : m_pGLTFRenderObjects)
 	{
@@ -483,6 +517,27 @@ void Scene::CreateShadowMapForGLTF(GraphicsContext& Context)
 	}
 	ShadowMeshPass.Sort();
 	ShadowMeshPass.RenderMeshes(MeshRenderPass::eZPass, Context, mSceneView.mMainConstants);
+}
+
+void Scene::CreateTerrainShadowMap(GraphicsContext& Context, UINT cascadeIndex)
+{
+	auto& shadowBuf = m_pShadowMap->GetShadowBuffer(cascadeIndex);
+	Context.TransitionResource(shadowBuf, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+	Context.SetDepthStencilTarget(shadowBuf.GetDSV());
+	Context.SetViewportAndScissor(m_pShadowMap->Viewport(), m_pShadowMap->ScissorRect());
+
+	for (auto& obj : m_pRenderObjectsType[(int)ObjectType::Terrain])
+	{
+		if (obj->GetVisible() && obj->GetShadowRenderFlag())
+		{
+			obj->CacheShadowVP(m_pShadowMap->GetViewProjNoTranspose(cascadeIndex));
+			obj->DrawShadow(Context);
+		}
+	}
+
+	// Restore scene root signature because terrain shadow rendering owns its own signature.
+	Context.SetRootSignature(*m_pRootSignature);
+	Context.TransitionResource(shadowBuf, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
 }
 
 void Scene::ForwardRendering()
@@ -757,27 +812,7 @@ void Scene::ForwardRendering(RasterRenderPipelineType ForwardRenderPipeline)
 
 
 				//Sun Shadow Map
-				CreateShadowMapForGLTF(Context);
-
-				// Terrain shadow appends to existing model shadow depth without clearing.
-				{
-					auto& shadowBuf = m_pShadowMap->GetShadowBuffer();
-					Context.TransitionResource(shadowBuf, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-					Context.SetDepthStencilTarget(shadowBuf.GetDSV());
-					Context.SetViewportAndScissor(m_pShadowMap->Viewport(), m_pShadowMap->ScissorRect());
-
-					for (auto& obj : m_pRenderObjectsType[(int)ObjectType::Terrain])
-					{
-						if (obj->GetVisible() && obj->GetShadowRenderFlag())
-						{
-							static_cast<ProceduralTerrain*>(obj)->CacheShadowVP(m_pShadowMap->GetViewProjNoTranspose());
-							obj->DrawShadow(Context);
-						}
-					}
-					// Restore scene root signature (DrawShadow changed it to terrain's)
-					Context.SetRootSignature(*m_pRootSignature);
-					Context.TransitionResource(shadowBuf, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
-				}
+				CreateSunShadowMap(Context);
 
 				//Base Pass
 				{
@@ -1020,32 +1055,12 @@ void Scene::DeferredRendering(RasterRenderPipelineType DeferredRenderPipeline)
 
 			if (LoadingFinish)
 			{
-				ScopedTimer MainRenderScope(L"oneShadowMap", Context);
+				ScopedTimer MainRenderScope(L"TileConeShadowMap", Context);
 				CreateTileConeShadowMap(Context);
 			}
 
 			//Sun Shadow Map
-			CreateShadowMapForGLTF(Context);
-
-			// Terrain shadow appends to existing model shadow depth without clearing.
-			{
-				auto& shadowBuf = m_pShadowMap->GetShadowBuffer();
-				Context.TransitionResource(shadowBuf, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-				Context.SetDepthStencilTarget(shadowBuf.GetDSV());
-				Context.SetViewportAndScissor(m_pShadowMap->Viewport(), m_pShadowMap->ScissorRect());
-
-				for (auto& obj : m_pRenderObjectsType[(int)ObjectType::Terrain])
-				{
-					if (obj->GetVisible() && obj->GetShadowRenderFlag())
-					{
-						static_cast<ProceduralTerrain*>(obj)->CacheShadowVP(m_pShadowMap->GetViewProjNoTranspose());
-						obj->DrawShadow(Context);
-					}
-				}
-				// Restore scene root signature (DrawShadow changed it to terrain's)
-				Context.SetRootSignature(*m_pRootSignature);
-				Context.TransitionResource(shadowBuf, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
-			}
+			CreateSunShadowMap(Context);
 
 			//Base Pass
 			{
