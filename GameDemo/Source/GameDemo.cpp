@@ -6,6 +6,7 @@
 #include "Misc/ConstantBuffer.h"
 #include "Engine/EngineInput.h"
 #include "Graphics/BufferManager.h"
+#include "Graphics/Display.h"
 #include "Graphics/SamplerManager.h"
 #include "EngineGUI.h"
 #include "Engine/EngineLog.h"
@@ -338,8 +339,12 @@ void App::Update(float DeltaTime)
 
 void App::UpdateSceneState(float DeltaTime)
 {
-	if (gScenes[mEngineUI->GetSceneIndex()]->LoadingFinish)
-		EngineGlobal::gCurrentScene = gScenes[mEngineUI->GetSceneIndex()];
+	Scene* selectedScene = gScenes[mEngineUI->GetSceneIndex()];
+	if (selectedScene->LoadingFinish && EngineGlobal::gCurrentScene != selectedScene)
+	{
+		EngineGlobal::gCurrentScene = selectedScene;
+		EngineGlobal::gCurrentScene->ResizeViewport(Display::g_RenderWidth, Display::g_RenderHeight);
+	}
 
 	assert(EngineGlobal::gCurrentScene);
 	EngineGlobal::gCurrentScene->VisibleUpdateForType();

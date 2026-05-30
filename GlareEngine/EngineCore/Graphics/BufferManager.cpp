@@ -283,15 +283,27 @@ void GlareEngine::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t N
 			Math::UINT2 renderSize = { Display::g_RenderWidth, Display::g_RenderHeight };
 			Math::UINT2 displaySize = { Display::g_DisplayWidth, Display::g_DisplayHeight };
 
-			// If render and display are the same size, use DLAA (native AA) mode
-			bool isDLAA = (renderSize.x == displaySize.x && renderSize.y == displaySize.y);
-
 			DLSS::DLSSSettings settings;
 			settings.Enable = DLSS::GetInstance()->IsDLSSEnabled();
 			settings.Quality = DLSS::GetInstance()->GetQuality();
 			settings.EnableSharpening = DLSS::GetInstance()->IsSharpeningEnabled();
 			settings.Sharpness = DLSS::GetInstance()->GetSharpness();
 			settings.RenderPreset = DLSS::GetInstance()->GetRenderPreset();
+
+			bool isDLAA = settings.Quality == NVSDK_NGX_PerfQuality_Value_DLAA;
+			if (!isDLAA && renderSize.x == displaySize.x && renderSize.y == displaySize.y)
+			{
+				DLSS::DLSSRecommendedSettings recommendedSettings;
+				if (DLSS::GetInstance()->QueryOptimalSettings(displaySize, settings.Quality, &recommendedSettings))
+				{
+					renderSize = recommendedSettings.m_ngxRecommendedOptimalRenderSize;
+					Display::g_RenderWidth = renderSize.x;
+					Display::g_RenderHeight = renderSize.y;
+					NativeWidth = renderSize.x;
+					NativeHeight = renderSize.y;
+					EngineGlobal::gCurrentScene->ResizeViewport(renderSize.x, renderSize.y);
+				}
+			}
 
 			if (DLSS::GetInstance()->InitializeDLSSFeatures(renderSize, displaySize, settings))
 			{
