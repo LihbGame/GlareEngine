@@ -25,6 +25,7 @@ public:
 
 private:
 	RenderMaterial* mInstanceModelMaterial = nullptr;
+	RenderMaterial* mInstanceModelMaskMaterial = nullptr;
 
 	InstanceRenderData mInstanceData;
 };

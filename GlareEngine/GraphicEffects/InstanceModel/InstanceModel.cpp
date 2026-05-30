@@ -4,6 +4,7 @@
 //Shader
 #include "CompiledShaders/InstanceModelVS.h"
 #include "CompiledShaders/InstanceModelPS.h"
+#include "CompiledShaders/InstanceModelMaskPS.h"
 
 
 InstanceModel::InstanceModel(wstring Name,InstanceRenderData InstanceData)
@@ -26,7 +27,8 @@ void InstanceModel::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 		}
 		else
 		{
-			Context.SetPipelineState(mInstanceModelMaterial->GetGraphicsPSO());
+			RenderMaterial* material = GetMaskFlag() ? mInstanceModelMaskMaterial : mInstanceModelMaterial;
+			Context.SetPipelineState(material->GetGraphicsPSO());
 		}
 
 		//Set Instance data
@@ -69,6 +71,7 @@ void InstanceModel::DrawShadow(GraphicsContext& Context, GraphicsPSO* SpecificSh
 void InstanceModel::InitMaterial()
 {
 	mInstanceModelMaterial = RenderMaterialManager::GetInstance().GetMaterial("Instance Model Material");
+	mInstanceModelMaskMaterial = RenderMaterialManager::GetInstance().GetMaterial("Instance Model Mask Material");
 	if (!mInstanceModelMaterial->IsInitialized)
 	{
 		mInstanceModelMaterial->BindPSOCreateFunc([&](const PSOCommonProperty CommonProperty) {
@@ -119,5 +122,57 @@ void InstanceModel::InitMaterial()
 			});
 
 		mInstanceModelMaterial->IsInitialized = true;
+	}
+
+	if (!mInstanceModelMaskMaterial->IsInitialized)
+	{
+		mInstanceModelMaskMaterial->BindPSOCreateFunc([&](const PSOCommonProperty CommonProperty) {
+			D3D12_RASTERIZER_DESC Rasterizer = RasterizerTwoSidedCw;
+			D3D12_BLEND_DESC Blend = BlendDisable;
+			if (CommonProperty.IsWireframe)
+			{
+				Rasterizer.CullMode = D3D12_CULL_MODE_NONE;
+				Rasterizer.FillMode = D3D12_FILL_MODE_WIREFRAME;
+			}
+			if (CommonProperty.IsMSAA)
+			{
+				Rasterizer.MultisampleEnable = true;
+				Blend.AlphaToCoverageEnable = true;
+			}
+
+			GraphicsPSO& InstanceModelMaskPSO = mInstanceModelMaskMaterial->GetGraphicsPSO();
+
+			InstanceModelMaskPSO.SetRootSignature(*CommonProperty.pRootSignature);
+			InstanceModelMaskPSO.SetRasterizerState(Rasterizer);
+			InstanceModelMaskPSO.SetBlendState(Blend);
+			if (REVERSE_Z)
+			{
+				InstanceModelMaskPSO.SetDepthStencilState(DepthStateReadWriteReversed);
+			}
+			else
+			{
+				InstanceModelMaskPSO.SetDepthStencilState(DepthStateReadWrite);
+			}
+
+			if (CommonProperty.IsWireframe)
+			{
+				InstanceModelMaskPSO.SetDepthStencilState(DepthStateDisabled);
+			}
+
+			InstanceModelMaskPSO.SetSampleMask(0xFFFFFFFF);
+			InstanceModelMaskPSO.SetInputLayout((UINT)InputLayout::InstancePosNormalTangentTexc.size(), InputLayout::InstancePosNormalTangentTexc.data());
+			InstanceModelMaskPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+			InstanceModelMaskPSO.SetVertexShader(g_pInstanceModelVS, sizeof(g_pInstanceModelVS));
+			InstanceModelMaskPSO.SetPixelShader(g_pInstanceModelMaskPS, sizeof(g_pInstanceModelMaskPS));
+			InstanceModelMaskPSO.SetRenderTargetFormat(DefaultHDRColorFormat, g_SceneDepthBuffer.GetFormat(), CommonProperty.MSAACount, CommonProperty.MSAAQuality);
+			InstanceModelMaskPSO.Finalize();
+			});
+
+		mInstanceModelMaskMaterial->BindPSORuntimeModifyFunc([&]() {
+			RuntimePSOManager::Get().RegisterPSO(&mInstanceModelMaskMaterial->GetGraphicsPSO(), GET_SHADER_PATH("PBRInstanceModel/InstanceModelVS.hlsl"), D3D12_SHVER_VERTEX_SHADER);
+			RuntimePSOManager::Get().RegisterPSO(&mInstanceModelMaskMaterial->GetGraphicsPSO(), GET_SHADER_PATH("PBRInstanceModel/InstanceModelMaskPS.hlsl"), D3D12_SHVER_PIXEL_SHADER);
+			});
+
+		mInstanceModelMaskMaterial->IsInitialized = true;
 	}
 }
