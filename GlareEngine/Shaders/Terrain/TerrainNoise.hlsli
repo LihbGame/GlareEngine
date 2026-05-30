@@ -403,7 +403,52 @@ float3 EvaluateTerrainNoiseLayerWithGradient(uint layer, float2 worldXZ)
 
 float EvaluateTerrainNoiseLayer(uint layer, float2 worldXZ)
 {
-    return EvaluateTerrainNoiseLayerWithGradient(layer, worldXZ).x;
+    int4 controls = gNoiseLayerControls[layer];
+    int4 options = gNoiseLayerOptions[layer];
+    float4 shape = gNoiseLayerShape[layer];
+    float4 warp = gNoiseLayerWarp[layer];
+
+    float frequency = max(shape.z, 0.0001);
+    float lacunarity = max(shape.w, 1.0001);
+    float gain = saturate(warp.x);
+    uint octaves = (uint)clamp(options.y, 1, 8);
+    float seedOffset = (float)gNoiseSeed * 0.071 + (float)layer * 23.13;
+
+    float2 placed = TerrainApplyPlacement(layer, worldXZ);
+    float2 warped = TerrainApplyLayerWarp(layer, placed);
+    float2 p = warped * frequency + seedOffset;
+
+    if (controls.z == TERRAIN_FRACTAL_SINGLE)
+    {
+        return TerrainEvaluateSingleNoise(controls.y, p, options.w) * shape.y;
+    }
+
+    float value = 0.0;
+    float amplitude = 1.0;
+    float maxValue = 0.0;
+    float2 octavePos = p;
+    const float2x2 rot = { 0.8, 0.6, -0.6, 0.8 };
+
+    for (uint octave = 0; octave < 8; ++octave)
+    {
+        if (octave >= octaves)
+        {
+            break;
+        }
+
+        float n = TerrainEvaluateSingleNoise(controls.y, octavePos, options.w);
+        if (controls.z == TERRAIN_FRACTAL_RIDGED)
+        {
+            n = (1.0 - abs(n)) * 2.0 - 1.0;
+        }
+
+        value += n * amplitude;
+        maxValue += amplitude;
+        amplitude *= gain;
+        octavePos = mul(rot, octavePos * lacunarity) + float2(1.7, 9.2);
+    }
+
+    return value / max(maxValue, 0.0001) * shape.y;
 }
 
 float TerrainCombineLayerValue(float currentValue, float layerValue, float opacity, int op, bool hasValue)
@@ -539,7 +584,14 @@ float3 ComputeTerrainHeightWithDerivatives(
     float2 worldXZ,
     float heightScale)
 {
-    return ComputeTerrainRawHeightWithDerivatives(worldXZ, heightScale);
+    float height = ComputeTerrainHeight(worldXZ, heightScale);
+    float derivativeStep = max(gNoiseCellSize, 0.01);
+    float hL = ComputeTerrainHeight(worldXZ + float2(-derivativeStep, 0.0), heightScale);
+    float hR = ComputeTerrainHeight(worldXZ + float2(derivativeStep, 0.0), heightScale);
+    float hD = ComputeTerrainHeight(worldXZ + float2(0.0, -derivativeStep), heightScale);
+    float hU = ComputeTerrainHeight(worldXZ + float2(0.0, derivativeStep), heightScale);
+    float2 gradient = float2(hR - hL, hU - hD) / (2.0 * derivativeStep);
+    return float3(height, gradient);
 }
 
 #endif // TERRAIN_NOISE_HLSLI
