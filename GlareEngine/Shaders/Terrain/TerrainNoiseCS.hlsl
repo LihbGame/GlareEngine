@@ -92,9 +92,11 @@ float4 ComputeMaterialWeights(float height, float slope, float2 worldXZ)
         height + macroNoise * snowH * 0.1);
     float darkDirt = darkDirtHeight * (1.0 - snow) * (1.0 - saturate(stone)) * 0.9;
 
-    // Light dirt: default base layer
-    float lightDirt = max(0.05, (1.0 - snow) * (1.0 - saturate(stone)) * (1.0 - saturate(grass)) * 0.65);
-    lightDirt += scree * stoneBase;
+    // Light dirt: default base layer, forced to zero wherever snow is visible.
+    float noSnowDirtMask = 1.0 - step(0.001, snow);
+    float lightDirt = max(0.05 * noSnowDirtMask,
+        noSnowDirtMask * (1.0 - saturate(stone)) * (1.0 - saturate(grass)) * 0.65);
+    lightDirt += scree * stoneBase * noSnowDirtMask;
 
     // Pack into RGBA matching texture layer order: grass, lightdirt, darkdirt, stone
     float w[5];

@@ -391,23 +391,26 @@ float darkDirt = darkDirtHeight
 Light dirt 是默认补位 layer，用于非 snow、非 stone、非 grass 的普通裸土或稀疏地表：
 
 ```hlsl
+float noSnowDirtMask = 1.0 - step(0.001, snow);
+
 float lightDirt = max(
-    0.05,
-    (1.0 - snow)
+    0.05 * noSnowDirtMask,
+    noSnowDirtMask
     * (1.0 - saturate(stone))
     * (1.0 - saturate(grass))
     * 0.65);
 
-lightDirt += scree * stoneBase;
+lightDirt += scree * stoneBase * noSnowDirtMask;
 ```
 
 语义：
 
 - 在 snow、stone、grass 之外补充基础地表。
-- 至少保留 `0.05` raw weight，避免所有非 snow layer 都接近 0 时归一化不稳定。
+- `noSnowDirtMask` 使用 `step(0.001, snow)` 做硬排除：只要 snow 达到可见阈值，lightdirt 直接为 0。
+- 在无 snow 区域保留 `0.05` raw weight 下限，避免所有 layer 都接近 0 时归一化不稳定。
 - grass 越强，light dirt 越弱。
 - stone/snow 越强，light dirt 越弱。
-- stone 内部的 `scree` 会额外增加 light dirt，用 lightdirt 材质代理碎石/岩屑，而不是把岩缝表现成湿泥。
+- stone 内部的 `scree` 只会在无 snow 区域额外增加 light dirt，用 lightdirt 材质代理碎石/岩屑，而不是把岩缝表现成湿泥。
 
 ## 9. 归一化和 RGBA 打包
 
