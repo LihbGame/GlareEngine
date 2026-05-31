@@ -29,6 +29,13 @@ public:
     void SetSeed(UINT Seed) { mSeed = Seed; }
     void SetHeightScale(float Scale) { mHeightScale = Scale; }
     void SetNoiseLayers(const TerrainNoiseLayerSettings* Layers, UINT Count);
+    void SetMaterialMaskParams(
+        float SnowHeight,
+        float StoneSlope,
+        float GrassCoverage,
+        float GrassPatchiness,
+        float GrassMaxSlope,
+        float GrassMoistureBias);
 
     // Get root signature for PSO creation
     RootSignature& GetRootSignature() { return mRootSig; }
@@ -58,6 +65,10 @@ private:
     float   mSnowTransition = 20.0f;
     float   mStoneSlope     = 0.6f;
     float   mStoneTransition = 0.15f;
+    float   mGrassCoverage = 1.0f;
+    float   mGrassPatchiness = 0.55f;
+    float   mGrassMaxSlope = 0.35f;
+    float   mGrassMoistureBias = 0.45f;
     UINT    mTileSize       = 64;
     UINT    mHeightmapSize  = 256;
 };

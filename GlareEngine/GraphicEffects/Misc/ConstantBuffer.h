@@ -291,6 +291,10 @@ __declspec(align(256)) struct ProceduralTerrainNoiseCB
     float       SnowTransition      = 20.0f;
     float       StoneSlope          = 0.6f;
     float       StoneTransition     = 0.15f;
+    float       GrassCoverage       = 1.0f;
+    float       GrassPatchiness     = 0.55f;
+    float       GrassMaxSlope       = 0.35f;
+    float       GrassMoistureBias   = 0.45f;
     int         LODLevel            = 0;
     int         PadNoiseFooter0     = 0;
     float       PadNoiseFooter1     = 0.0f;

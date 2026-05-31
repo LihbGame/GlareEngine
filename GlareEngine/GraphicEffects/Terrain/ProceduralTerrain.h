@@ -97,6 +97,10 @@ private:
     float mHeightScaleUI = 500.0f;
     float mSnowHeightUI = 150.0f;
     float mStoneSlopeUI = 0.6f;
+    float mGrassCoverageUI = 1.0f;
+    float mGrassPatchinessUI = 0.55f;
+    float mGrassMaxSlopeUI = 0.35f;
+    float mGrassMoistureBiasUI = 0.45f;
     float mTexScaleUI = 100.0f;
     float mRoughnessScaleUI = 9.0f;
     float mStochasticStrengthUI = 0.35f;

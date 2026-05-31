@@ -140,6 +140,10 @@ cbuffer TerrainNoiseCB : register(b0)
     float   gNoiseSnowTransition;
     float   gNoiseStoneSlope;
     float   gNoiseStoneTransition;
+    float   gGrassCoverage;
+    float   gGrassPatchiness;
+    float   gGrassMaxSlope;
+    float   gGrassMoistureBias;
     int     gNoiseLODLevel;
     int     gNoisePadFooter0;
     float   gNoisePad1;

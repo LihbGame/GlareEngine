@@ -306,6 +306,12 @@ uint64_t ProceduralTerrain::ComputeNoiseLayerStateHash() const
 {
     uint64_t hash = kFnvOffset;
     HashFloat(hash, mHeightScaleUI);
+    HashFloat(hash, mSnowHeightUI);
+    HashFloat(hash, mStoneSlopeUI);
+    HashFloat(hash, mGrassCoverageUI);
+    HashFloat(hash, mGrassPatchinessUI);
+    HashFloat(hash, mGrassMaxSlopeUI);
+    HashFloat(hash, mGrassMoistureBiasUI);
 
     for (UINT i = 0; i < kTerrainNoiseMaxLayers; ++i)
     {
@@ -531,6 +537,13 @@ void ProceduralTerrain::Update(float dt, GraphicsContext* Context)
     {
         mNoiseGen->SetHeightScale(mHeightScaleUI);
         mNoiseGen->SetNoiseLayers(mNoiseLayersUI, kTerrainNoiseMaxLayers);
+        mNoiseGen->SetMaterialMaskParams(
+            mSnowHeightUI,
+            mStoneSlopeUI,
+            mGrassCoverageUI,
+            mGrassPatchinessUI,
+            mGrassMaxSlopeUI,
+            mGrassMoistureBiasUI);
     }
     mInitInfo.HeightScale = mHeightScaleUI;
 
@@ -1781,6 +1794,10 @@ void ProceduralTerrain::DrawUI()
             ImGui::SliderFloat("Stochastic Strength", &mStochasticStrengthUI, 0.0f, 1.0f);
             ImGui::SliderFloat("Snow Height", &mSnowHeightUI, 50.0f, 300.0f);
             ImGui::SliderFloat("Stone Slope", &mStoneSlopeUI, 0.1f, 1.0f);
+            ImGui::SliderFloat("Grass Coverage", &mGrassCoverageUI, 0.0f, 2.0f);
+            ImGui::SliderFloat("Grass Patchiness", &mGrassPatchinessUI, 0.0f, 1.0f);
+            ImGui::SliderFloat("Grass Max Slope", &mGrassMaxSlopeUI, 0.05f, 0.8f);
+            ImGui::SliderFloat("Grass Moisture Bias", &mGrassMoistureBiasUI, 0.0f, 1.0f);
             ImGui::SliderFloat("Detail Scale", &mDetailScaleUI, 1.0f, 100.0f);
             ImGui::SliderFloat("Detail Fade Dist", &mDetailFadeDistanceUI, 5.0f, 1000.0f);
             ImGui::Checkbox("Height Blend", &mUseHeightBlendUI);

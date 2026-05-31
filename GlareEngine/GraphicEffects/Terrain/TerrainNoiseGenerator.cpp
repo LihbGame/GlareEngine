@@ -44,6 +44,22 @@ void TerrainNoiseGenerator::SetNoiseLayers(const TerrainNoiseLayerSettings* Laye
     }
 }
 
+void TerrainNoiseGenerator::SetMaterialMaskParams(
+    float SnowHeight,
+    float StoneSlope,
+    float GrassCoverage,
+    float GrassPatchiness,
+    float GrassMaxSlope,
+    float GrassMoistureBias)
+{
+    mSnowHeight = SnowHeight;
+    mStoneSlope = StoneSlope;
+    mGrassCoverage = GrassCoverage;
+    mGrassPatchiness = GrassPatchiness;
+    mGrassMaxSlope = GrassMaxSlope;
+    mGrassMoistureBias = GrassMoistureBias;
+}
+
 void TerrainNoiseGenerator::BuildRootSignature(ID3D12Device* Device)
 {
     mRootSig.Reset(2, 0);
@@ -154,6 +170,10 @@ void TerrainNoiseGenerator::GenerateTiles(
         mNoiseCBData.SnowTransition = mSnowTransition;
         mNoiseCBData.StoneSlope = mStoneSlope;
         mNoiseCBData.StoneTransition = mStoneTransition;
+        mNoiseCBData.GrassCoverage = mGrassCoverage;
+        mNoiseCBData.GrassPatchiness = mGrassPatchiness;
+        mNoiseCBData.GrassMaxSlope = mGrassMaxSlope;
+        mNoiseCBData.GrassMoistureBias = mGrassMoistureBias;
         mNoiseCBData.LODLevel = tile->LODLevel;
 
         // Upload CB to ring buffer slot

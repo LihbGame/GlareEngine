@@ -68,7 +68,6 @@ PBRParams BlendMaterialLayers(
                 gTerrainParallaxHeightScale * layerParallaxFade * planarParallaxFade, parallaxMaxLayers);
         }
 
-        bool useAlignedSampling = hasPlanarParallax;
         TerrainTriplanarUVSet baseTriplanarUV = (TerrainTriplanarUVSet)0;
 
         float3 planarAlbedo = 0.0;
@@ -79,11 +78,11 @@ PBRParams BlendMaterialLayers(
 
         if (usePlanarProjection)
         {
-            planarAlbedo = TerrainSamplePlanarRGB(gTerrainLayerAlbedo[i].x, layerUV, tiledUvDx, tiledUvDy, true);
-            planarNormalW = TerrainPlanarNormalToWorld(TerrainSamplePlanarRGB(gTerrainLayerNormal[i].x, layerUV, tiledUvDx, tiledUvDy, true), tbn);
-            planarRoughness = TerrainSamplePlanarScalar(gTerrainLayerRoughness[i].x, layerUV, tiledUvDx, tiledUvDy, true) * gTerrainRoughnessScale;
-            planarMetallic = TerrainSamplePlanarScalar(gTerrainLayerMetallic[i].x, layerUV, tiledUvDx, tiledUvDy, true) * gTerrainMetallicScale;
-            planarAO = TerrainSamplePlanarScalar(gTerrainLayerAO[i].x, layerUV, tiledUvDx, tiledUvDy, true);
+            planarAlbedo = TerrainSamplePlanarRGB(gTerrainLayerAlbedo[i].x, layerUV, tiledUvDx, tiledUvDy, false);
+            planarNormalW = TerrainPlanarNormalToWorld(TerrainSamplePlanarRGB(gTerrainLayerNormal[i].x, layerUV, tiledUvDx, tiledUvDy, false), tbn);
+            planarRoughness = TerrainSamplePlanarScalar(gTerrainLayerRoughness[i].x, layerUV, tiledUvDx, tiledUvDy, false) * gTerrainRoughnessScale;
+            planarMetallic = TerrainSamplePlanarScalar(gTerrainLayerMetallic[i].x, layerUV, tiledUvDx, tiledUvDy, false) * gTerrainMetallicScale;
+            planarAO = TerrainSamplePlanarScalar(gTerrainLayerAO[i].x, layerUV, tiledUvDx, tiledUvDy, false);
         }
 
         float3 triAlbedo = 0.0;
@@ -143,9 +142,9 @@ PBRParams BlendMaterialLayers(
 
             if (usePlanarProjection)
             {
-                planarDetailAlb = TerrainSamplePlanarRGB(gDetailLayerAlbedo[i].x, layerDetailUV, detailUvDx, detailUvDy, useAlignedSampling);
-                planarDetailNrmW = TerrainPlanarNormalToWorld(TerrainSamplePlanarRGB(gDetailLayerNormal[i].x, layerDetailUV, detailUvDx, detailUvDy, useAlignedSampling), tbn);
-                planarDetailRgh = TerrainSamplePlanarScalar(gDetailLayerRoughness[i].x, layerDetailUV, detailUvDx, detailUvDy, useAlignedSampling);
+                planarDetailAlb = TerrainSamplePlanarRGB(gDetailLayerAlbedo[i].x, layerDetailUV, detailUvDx, detailUvDy, true);
+                planarDetailNrmW = TerrainPlanarNormalToWorld(TerrainSamplePlanarRGB(gDetailLayerNormal[i].x, layerDetailUV, detailUvDx, detailUvDy, true), tbn);
+                planarDetailRgh = TerrainSamplePlanarScalar(gDetailLayerRoughness[i].x, layerDetailUV, detailUvDx, detailUvDy, true);
             }
 
             float3 triDetailAlb = 0.0;
