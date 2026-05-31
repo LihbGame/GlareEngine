@@ -17,10 +17,10 @@ TerrainClipmap::TerrainClipmap(
     , mDevice(Device)
 {
     // Create descriptor heap for per-tile resources
-    // Each tile needs 3 SRVs + 3 UAVs = 6 descriptors
+    // Each tile needs front/back SRV+UAV descriptors for atomic terrain updates.
     // Total tiles: up to 25 per level (5x5) * levels
     UINT maxTiles = 25 * mClipmapLevels;
-    mDescriptorHeapSize = maxTiles * 6;
+    mDescriptorHeapSize = maxTiles * 12;
 
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
     heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -59,74 +59,102 @@ CD3DX12_CPU_DESCRIPTOR_HANDLE TerrainClipmap::AllocateTileDescriptor()
 void TerrainClipmap::CreateTileGPUResources(ClipmapTile* Tile, ID3D12GraphicsCommandList*)
 {
     UINT texSize = mHeightmapSize;
-
-    // Height map: R32_FLOAT for full precision
-    D3D12_RESOURCE_DESC heightDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-        DXGI_FORMAT_R32_FLOAT, texSize, texSize, 1, 1);
-    heightDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-
     CD3DX12_HEAP_PROPERTIES defaultHeap(D3D12_HEAP_TYPE_DEFAULT);
-    ThrowIfFailed(mDevice->CreateCommittedResource(
-        &defaultHeap, D3D12_HEAP_FLAG_NONE, &heightDesc,
-        D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-        nullptr, IID_PPV_ARGS(&Tile->HeightMap)));
 
-    // Normal map: RGB stores the terrain normal in world-space X/Y/Z.
-    D3D12_RESOURCE_DESC normalDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-        DXGI_FORMAT_R16G16B16A16_FLOAT, texSize, texSize, 1, 1);
-    normalDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+    auto createTexture = [&](DXGI_FORMAT format, ComPtr<ID3D12Resource>& resource)
+    {
+        D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Tex2D(format, texSize, texSize, 1, 1);
+        desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+        ThrowIfFailed(mDevice->CreateCommittedResource(
+            &defaultHeap, D3D12_HEAP_FLAG_NONE, &desc,
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+            nullptr, IID_PPV_ARGS(&resource)));
+    };
 
-    ThrowIfFailed(mDevice->CreateCommittedResource(
-        &defaultHeap, D3D12_HEAP_FLAG_NONE, &normalDesc,
-        D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-        nullptr, IID_PPV_ARGS(&Tile->NormalMap)));
+    auto createViews = [&](ComPtr<ID3D12Resource>& heightMap,
+                           ComPtr<ID3D12Resource>& normalMap,
+                           ComPtr<ID3D12Resource>& weightMap,
+                           CD3DX12_CPU_DESCRIPTOR_HANDLE& heightSRV,
+                           CD3DX12_CPU_DESCRIPTOR_HANDLE& normalSRV,
+                           CD3DX12_CPU_DESCRIPTOR_HANDLE& weightSRV,
+                           CD3DX12_CPU_DESCRIPTOR_HANDLE& heightUAV,
+                           CD3DX12_CPU_DESCRIPTOR_HANDLE& normalUAV,
+                           CD3DX12_CPU_DESCRIPTOR_HANDLE& weightUAV,
+                           int& heightSRVIndex,
+                           int& normalSRVIndex,
+                           int& weightSRVIndex)
+    {
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Texture2D.MipLevels = 1;
 
-    // Material weight map: RGBA8_UNORM
-    D3D12_RESOURCE_DESC weightDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-        DXGI_FORMAT_R8G8B8A8_UNORM, texSize, texSize, 1, 1);
-    weightDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+        heightSRV = AllocateTileDescriptor();
+        srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+        mDevice->CreateShaderResourceView(heightMap.Get(), &srvDesc, heightSRV);
 
-    ThrowIfFailed(mDevice->CreateCommittedResource(
-        &defaultHeap, D3D12_HEAP_FLAG_NONE, &weightDesc,
-        D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-        nullptr, IID_PPV_ARGS(&Tile->MaterialWeightMap)));
+        normalSRV = AllocateTileDescriptor();
+        srvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+        mDevice->CreateShaderResourceView(normalMap.Get(), &srvDesc, normalSRV);
 
-    // Create SRV descriptors
-    Tile->HeightSRV = AllocateTileDescriptor();
-    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Texture2D.MipLevels = 1;
-    srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
-    mDevice->CreateShaderResourceView(Tile->HeightMap.Get(), &srvDesc, Tile->HeightSRV);
+        weightSRV = AllocateTileDescriptor();
+        srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        mDevice->CreateShaderResourceView(weightMap.Get(), &srvDesc, weightSRV);
 
-    Tile->NormalSRV = AllocateTileDescriptor();
-    srvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-    mDevice->CreateShaderResourceView(Tile->NormalMap.Get(), &srvDesc, Tile->NormalSRV);
+        D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+        uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
 
-    Tile->WeightSRV = AllocateTileDescriptor();
-    srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    mDevice->CreateShaderResourceView(Tile->MaterialWeightMap.Get(), &srvDesc, Tile->WeightSRV);
+        heightUAV = AllocateTileDescriptor();
+        uavDesc.Format = DXGI_FORMAT_R32_FLOAT;
+        mDevice->CreateUnorderedAccessView(heightMap.Get(), nullptr, &uavDesc, heightUAV);
 
-    // Create UAV descriptors
-    Tile->HeightUAV = AllocateTileDescriptor();
-    D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-    uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-    uavDesc.Format = DXGI_FORMAT_R32_FLOAT;
-    mDevice->CreateUnorderedAccessView(Tile->HeightMap.Get(), nullptr, &uavDesc, Tile->HeightUAV);
+        normalUAV = AllocateTileDescriptor();
+        uavDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+        mDevice->CreateUnorderedAccessView(normalMap.Get(), nullptr, &uavDesc, normalUAV);
 
-    Tile->NormalUAV = AllocateTileDescriptor();
-    uavDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-    mDevice->CreateUnorderedAccessView(Tile->NormalMap.Get(), nullptr, &uavDesc, Tile->NormalUAV);
+        weightUAV = AllocateTileDescriptor();
+        uavDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        mDevice->CreateUnorderedAccessView(weightMap.Get(), nullptr, &uavDesc, weightUAV);
 
-    Tile->WeightUAV = AllocateTileDescriptor();
-    uavDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    mDevice->CreateUnorderedAccessView(Tile->MaterialWeightMap.Get(), nullptr, &uavDesc, Tile->WeightUAV);
+        heightSRVIndex = AddToGlobalTextureSRVDescriptor(heightSRV);
+        normalSRVIndex = AddToGlobalTextureSRVDescriptor(normalSRV);
+        weightSRVIndex = AddToGlobalTextureSRVDescriptor(weightSRV);
+    };
 
-    // Register in global SRV table
-    Tile->HeightSRVIndex = AddToGlobalTextureSRVDescriptor(Tile->HeightSRV);
-    Tile->NormalSRVIndex = AddToGlobalTextureSRVDescriptor(Tile->NormalSRV);
-    Tile->WeightSRVIndex = AddToGlobalTextureSRVDescriptor(Tile->WeightSRV);
+    createTexture(DXGI_FORMAT_R32_FLOAT, Tile->HeightMap);
+    createTexture(DXGI_FORMAT_R16G16B16A16_FLOAT, Tile->NormalMap);
+    createTexture(DXGI_FORMAT_R8G8B8A8_UNORM, Tile->MaterialWeightMap);
+    createTexture(DXGI_FORMAT_R32_FLOAT, Tile->PendingHeightMap);
+    createTexture(DXGI_FORMAT_R16G16B16A16_FLOAT, Tile->PendingNormalMap);
+    createTexture(DXGI_FORMAT_R8G8B8A8_UNORM, Tile->PendingMaterialWeightMap);
+
+    createViews(
+        Tile->HeightMap,
+        Tile->NormalMap,
+        Tile->MaterialWeightMap,
+        Tile->HeightSRV,
+        Tile->NormalSRV,
+        Tile->WeightSRV,
+        Tile->HeightUAV,
+        Tile->NormalUAV,
+        Tile->WeightUAV,
+        Tile->HeightSRVIndex,
+        Tile->NormalSRVIndex,
+        Tile->WeightSRVIndex);
+
+    createViews(
+        Tile->PendingHeightMap,
+        Tile->PendingNormalMap,
+        Tile->PendingMaterialWeightMap,
+        Tile->PendingHeightSRV,
+        Tile->PendingNormalSRV,
+        Tile->PendingWeightSRV,
+        Tile->PendingHeightUAV,
+        Tile->PendingNormalUAV,
+        Tile->PendingWeightUAV,
+        Tile->PendingHeightSRVIndex,
+        Tile->PendingNormalSRVIndex,
+        Tile->PendingWeightSRVIndex);
 
     Tile->IsDirty = true;
 }
@@ -213,6 +241,7 @@ void TerrainClipmap::UpdateActiveTiles(UINT Level, const XMINT2& NewOrigin)
             {
                 tile->GridCoord = newCoord;
                 tile->IsDirty = true;
+                tile->HasPendingContent = false;
             }
             tile->IsActive = true;
         }
@@ -230,9 +259,43 @@ ClipmapTile* TerrainClipmap::GetTile(UINT Level, XMINT2 GridCoord)
     return nullptr;
 }
 
-void TerrainClipmap::MarkTileClean(ClipmapTile* Tile)
+void TerrainClipmap::MarkTileGenerated(ClipmapTile* Tile)
 {
-    if (Tile) Tile->IsDirty = false;
+    if (Tile)
+    {
+        Tile->IsDirty = false;
+        Tile->PendingGridCoord = Tile->GridCoord;
+        Tile->HasPendingContent = true;
+    }
+}
+
+void TerrainClipmap::CommitTile(ClipmapTile* Tile)
+{
+    if (!Tile || !Tile->HasPendingContent)
+    {
+        return;
+    }
+
+    std::swap(Tile->HeightMap, Tile->PendingHeightMap);
+    std::swap(Tile->NormalMap, Tile->PendingNormalMap);
+    std::swap(Tile->MaterialWeightMap, Tile->PendingMaterialWeightMap);
+
+    std::swap(Tile->HeightSRV, Tile->PendingHeightSRV);
+    std::swap(Tile->NormalSRV, Tile->PendingNormalSRV);
+    std::swap(Tile->WeightSRV, Tile->PendingWeightSRV);
+
+    std::swap(Tile->HeightUAV, Tile->PendingHeightUAV);
+    std::swap(Tile->NormalUAV, Tile->PendingNormalUAV);
+    std::swap(Tile->WeightUAV, Tile->PendingWeightUAV);
+
+    std::swap(Tile->HeightSRVIndex, Tile->PendingHeightSRVIndex);
+    std::swap(Tile->NormalSRVIndex, Tile->PendingNormalSRVIndex);
+    std::swap(Tile->WeightSRVIndex, Tile->PendingWeightSRVIndex);
+    std::swap(Tile->NeedsSRVTransition, Tile->PendingNeedsSRVTransition);
+
+    Tile->RenderGridCoord = Tile->PendingGridCoord;
+    Tile->HasGeneratedContent = true;
+    Tile->HasPendingContent = false;
 }
 
 void TerrainClipmap::ForceRegenerateAll()

@@ -8,30 +8,49 @@
 struct ClipmapTile
 {
     XMINT2    GridCoord       = { 0, 0 };     // grid coordinates in this LOD level
+    XMINT2    RenderGridCoord = { 0, 0 };     // grid coordinates matching the generated GPU data
+    XMINT2    PendingGridCoord = { 0, 0 };    // grid coordinates matching the pending GPU data
     int     LODLevel        = 0;
     bool    IsDirty         = true;          // needs GPU regeneration
     bool    IsActive        = false;
+    bool    HasGeneratedContent = false;
+    bool    HasPendingContent = false;
     bool    NeedsSRVTransition = true;       // true after compute generation, cleared after draw transition
+    bool    PendingNeedsSRVTransition = true;
 
-    // GPU resources per tile
+    // GPU resources used by rendering.
     ComPtr<ID3D12Resource>  HeightMap;
     ComPtr<ID3D12Resource>  NormalMap;
     ComPtr<ID3D12Resource>  MaterialWeightMap;
+
+    // GPU resources used by background tile generation.
+    ComPtr<ID3D12Resource>  PendingHeightMap;
+    ComPtr<ID3D12Resource>  PendingNormalMap;
+    ComPtr<ID3D12Resource>  PendingMaterialWeightMap;
 
     // SRV descriptors
     CD3DX12_CPU_DESCRIPTOR_HANDLE HeightSRV;
     CD3DX12_CPU_DESCRIPTOR_HANDLE NormalSRV;
     CD3DX12_CPU_DESCRIPTOR_HANDLE WeightSRV;
+    CD3DX12_CPU_DESCRIPTOR_HANDLE PendingHeightSRV;
+    CD3DX12_CPU_DESCRIPTOR_HANDLE PendingNormalSRV;
+    CD3DX12_CPU_DESCRIPTOR_HANDLE PendingWeightSRV;
 
     // UAV descriptors for compute write
     CD3DX12_CPU_DESCRIPTOR_HANDLE HeightUAV;
     CD3DX12_CPU_DESCRIPTOR_HANDLE NormalUAV;
     CD3DX12_CPU_DESCRIPTOR_HANDLE WeightUAV;
+    CD3DX12_CPU_DESCRIPTOR_HANDLE PendingHeightUAV;
+    CD3DX12_CPU_DESCRIPTOR_HANDLE PendingNormalUAV;
+    CD3DX12_CPU_DESCRIPTOR_HANDLE PendingWeightUAV;
 
     // Global SRV indices for shader access
     int     HeightSRVIndex  = 0;
     int     NormalSRVIndex  = 0;
     int     WeightSRVIndex  = 0;
+    int     PendingHeightSRVIndex  = 0;
+    int     PendingNormalSRVIndex  = 0;
+    int     PendingWeightSRVIndex  = 0;
 };
 
 class TerrainClipmap
@@ -52,7 +71,8 @@ public:
     const vector<ClipmapTile*>& GetDirtyTiles() const { return mDirtyTiles; }
     const vector<ClipmapTile*>& GetActiveTiles() const { return mActiveTiles; }
 
-    void MarkTileClean(ClipmapTile* Tile);
+    void MarkTileGenerated(ClipmapTile* Tile);
+    void CommitTile(ClipmapTile* Tile);
     void ForceRegenerateAll();
     void ActivateTilesForLevel(UINT Level, const XMINT2& NewOrigin);
 

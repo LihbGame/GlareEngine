@@ -1,5 +1,33 @@
 #include "TerrainCommon.hlsli"
 
+bool IsPatchCoveredByFinerLevel(float3 worldPos[4])
+{
+    if (gHasFinerLevel == 0)
+    {
+        return false;
+    }
+
+    float minX = min(min(worldPos[0].x, worldPos[1].x), min(worldPos[2].x, worldPos[3].x));
+    float maxX = max(max(worldPos[0].x, worldPos[1].x), max(worldPos[2].x, worldPos[3].x));
+    float minZ = min(min(worldPos[0].z, worldPos[1].z), min(worldPos[2].z, worldPos[3].z));
+    float maxZ = max(max(worldPos[0].z, worldPos[1].z), max(worldPos[2].z, worldPos[3].z));
+
+    return minX >= gFinerLevelMinX && maxX <= gFinerLevelMaxX &&
+           minZ >= gFinerLevelMinZ && maxZ <= gFinerLevelMaxZ;
+}
+
+ClipmapPatchTess MakeCulledPatchTess()
+{
+    ClipmapPatchTess pt;
+    pt.EdgeTess[0] = 0.0;
+    pt.EdgeTess[1] = 0.0;
+    pt.EdgeTess[2] = 0.0;
+    pt.EdgeTess[3] = 0.0;
+    pt.InsideTess[0] = 0.0;
+    pt.InsideTess[1] = 0.0;
+    return pt;
+}
+
 ClipmapPatchTess CalcClipmapPatchConstants(
     InputPatch<ClipmapVertexOut, 4> patch,
     uint patchID : SV_PrimitiveID)
@@ -20,6 +48,11 @@ ClipmapPatchTess CalcClipmapPatchConstants(
             0,
             (uv.y * TERRAIN_TILE_SIZE * cellSize) + tileOffsetWorld.y
         );
+    }
+
+    if (IsPatchCoveredByFinerLevel(worldPos))
+    {
+        return MakeCulledPatchTess();
     }
 
     // Distance-based tessellation inversely scaled by LOD level.

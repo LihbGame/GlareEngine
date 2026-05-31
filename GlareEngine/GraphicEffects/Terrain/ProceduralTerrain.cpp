@@ -117,6 +117,65 @@ namespace
                 return left->GridCoord.x < right->GridCoord.x;
             });
     }
+
+    float ComputeTileDistanceSqToCamera(
+        const ClipmapTile* tile,
+        const XMFLOAT3& cameraPos,
+        UINT tileSize,
+        float cellSizeBase)
+    {
+        const float cellSize = cellSizeBase * (float)(1u << tile->LODLevel);
+        const float tileWorldSize = (float)tileSize * cellSize;
+        const float centerX = ((float)tile->GridCoord.x + 0.5f) * tileWorldSize;
+        const float centerZ = ((float)tile->GridCoord.y + 0.5f) * tileWorldSize;
+        const float dx = centerX - cameraPos.x;
+        const float dz = centerZ - cameraPos.z;
+        return dx * dx + dz * dz;
+    }
+
+    void SortTilesByUpdatePriority(
+        vector<ClipmapTile*>& tiles,
+        const XMFLOAT3& cameraPos,
+        UINT tileSize,
+        float cellSizeBase)
+    {
+        std::sort(tiles.begin(), tiles.end(),
+            [&](const ClipmapTile* left, const ClipmapTile* right)
+            {
+                const float leftDistanceSq = ComputeTileDistanceSqToCamera(left, cameraPos, tileSize, cellSizeBase);
+                const float rightDistanceSq = ComputeTileDistanceSqToCamera(right, cameraPos, tileSize, cellSizeBase);
+                if (leftDistanceSq != rightDistanceSq)
+                {
+                    return leftDistanceSq < rightDistanceSq;
+                }
+                if (left->LODLevel != right->LODLevel)
+                {
+                    return left->LODLevel < right->LODLevel;
+                }
+                if (left->GridCoord.y != right->GridCoord.y)
+                {
+                    return left->GridCoord.y < right->GridCoord.y;
+                }
+                return left->GridCoord.x < right->GridCoord.x;
+            });
+    }
+
+    void SortRenderTiles(vector<ClipmapTile*>& tiles)
+    {
+        std::sort(tiles.begin(), tiles.end(),
+            [](const ClipmapTile* left, const ClipmapTile* right)
+            {
+                if (left->LODLevel != right->LODLevel)
+                {
+                    return left->LODLevel < right->LODLevel;
+                }
+                if (left->RenderGridCoord.y != right->RenderGridCoord.y)
+                {
+                    return left->RenderGridCoord.y < right->RenderGridCoord.y;
+                }
+                return left->RenderGridCoord.x < right->RenderGridCoord.x;
+            });
+    }
 }
 
 ProceduralTerrain::ProceduralTerrain(
@@ -556,17 +615,58 @@ void ProceduralTerrain::Update(float dt, GraphicsContext* Context)
         mPrevNoiseLayerStateHash = noiseLayerStateHash;
     }
 
-    // Generate dirty tiles via compute
+    // Generate dirty tiles over multiple frames to keep terrain CS work bounded.
     const auto& dirtyTiles = mClipmap->GetDirtyTiles();
-    if (!dirtyTiles.empty() && Context)
+    mGeneratedTileCountThisFrame = 0;
+    mTileGenerationBatch.clear();
+    for (ClipmapTile* tile : dirtyTiles)
+    {
+        if (tile && tile->IsDirty && tile->HeightMap)
+        {
+            mTileGenerationBatch.push_back(tile);
+        }
+    }
+
+    SortTilesByUpdatePriority(mTileGenerationBatch, camPos, mInitInfo.TileSize, mInitInfo.CellSizeBase);
+    const uint32_t dirtyTileCount = (uint32_t)mTileGenerationBatch.size();
+    const uint32_t generationBudget = (uint32_t)(std::max)(1, mTileGenerationBudgetUI);
+    if (mTileGenerationBatch.size() > generationBudget)
+    {
+        mTileGenerationBatch.resize(generationBudget);
+    }
+
+    if (!mTileGenerationBatch.empty() && Context && mNoiseGen)
     {
         ComputeContext& computeCtx = Context->GetComputeContext();
-        mNoiseGen->GenerateTiles(computeCtx, dirtyTiles, camPos, mInitInfo.CellSizeBase);
+        mNoiseGen->GenerateTiles(computeCtx, mTileGenerationBatch, camPos, mInitInfo.CellSizeBase);
 
-        // Mark tiles as clean after generation
-        for (auto* tile : dirtyTiles)
+        for (ClipmapTile* tile : mTileGenerationBatch)
         {
-            mClipmap->MarkTileClean(tile);
+            mClipmap->MarkTileGenerated(tile);
+            if (std::find(mPendingTileCommitQueue.begin(), mPendingTileCommitQueue.end(), tile) == mPendingTileCommitQueue.end())
+            {
+                mPendingTileCommitQueue.push_back(tile);
+            }
+        }
+        mGeneratedTileCountThisFrame = (uint32_t)mTileGenerationBatch.size();
+    }
+    mPendingTileGenerationCount = dirtyTileCount - mGeneratedTileCountThisFrame;
+    mTerrainTilesReadyForRender = mPendingTileGenerationCount == 0;
+    if (mTerrainTilesReadyForRender && !mPendingTileCommitQueue.empty())
+    {
+        bool committedAnyTile = false;
+        for (ClipmapTile* tile : mPendingTileCommitQueue)
+        {
+            if (tile && tile->HasPendingContent)
+            {
+                mClipmap->CommitTile(tile);
+                committedAnyTile = true;
+            }
+        }
+        mPendingTileCommitQueue.clear();
+        if (committedAnyTile)
+        {
+            RebuildCommittedRenderState();
         }
     }
 
@@ -576,11 +676,11 @@ void ProceduralTerrain::Update(float dt, GraphicsContext* Context)
     UpdateCulling(Context);
 
 #ifdef DEBUG
-    // Register first active tile textures in debug visualization panel
-    const auto& debugActiveTiles = mClipmap->GetActiveTiles();
-    if (!debugActiveTiles.empty())
+    // Register first committed tile textures in debug visualization panel
+    const auto& debugRenderTiles = mCommittedRenderTiles;
+    if (!debugRenderTiles.empty())
     {
-        ClipmapTile* dbgTile = debugActiveTiles[0];
+        ClipmapTile* dbgTile = debugRenderTiles[0];
         if (dbgTile && dbgTile->HeightMap)
         {
             float hmSize = (float)mInitInfo.HeightmapSize;
@@ -659,10 +759,112 @@ void ProceduralTerrain::UpdateConstantBuffer()
     }
 }
 
+void ProceduralTerrain::RebuildCommittedRenderState()
+{
+    mCommittedRenderTiles.clear();
+
+    const auto& activeTiles = mClipmap->GetActiveTiles();
+    mCommittedRenderTiles.reserve(activeTiles.size());
+    for (ClipmapTile* tile : activeTiles)
+    {
+        if (tile && tile->HasGeneratedContent)
+        {
+            mCommittedRenderTiles.push_back(tile);
+        }
+    }
+    SortRenderTiles(mCommittedRenderTiles);
+
+    const UINT levelCount = mClipmap->GetClipmapLevels();
+    mCommittedLevelOrigins.resize(levelCount);
+    mCommittedLevelInitialized.resize(levelCount);
+    for (UINT level = 0; level < levelCount; ++level)
+    {
+        mCommittedLevelOrigins[level] = mClipmap->GetLevelOrigin(level);
+        mCommittedLevelInitialized[level] = mClipmap->IsLevelInitialized(level);
+    }
+
+    // Force culling to rebuild against the newly committed render snapshot.
+    mPrevCullingTileStates.clear();
+    mHasPrevCullingFrustum = false;
+}
+
+bool ProceduralTerrain::IsCommittedLevelInitialized(UINT Level) const
+{
+    return Level < mCommittedLevelInitialized.size() && mCommittedLevelInitialized[Level];
+}
+
+XMINT2 ProceduralTerrain::GetCommittedLevelOrigin(UINT Level) const
+{
+    if (Level >= mCommittedLevelOrigins.size())
+    {
+        return { 0, 0 };
+    }
+    return mCommittedLevelOrigins[Level];
+}
+
+bool ProceduralTerrain::IsCoveredByCommittedFinerLevel(const ClipmapTile* Tile) const
+{
+    if (!Tile || Tile->LODLevel == 0)
+    {
+        return false;
+    }
+
+    const UINT finerLevel = (UINT)Tile->LODLevel - 1u;
+    if (!IsCommittedLevelInitialized(finerLevel))
+    {
+        return false;
+    }
+
+    const float cellSize = mClipmap->GetCellSize(Tile->LODLevel);
+    const float tileWorldSize = (float)mInitInfo.TileSize * cellSize;
+    const float tileMinX = (float)Tile->RenderGridCoord.x * tileWorldSize;
+    const float tileMaxX = tileMinX + tileWorldSize;
+    const float tileMinZ = (float)Tile->RenderGridCoord.y * tileWorldSize;
+    const float tileMaxZ = tileMinZ + tileWorldSize;
+
+    const float finerCellSize = mClipmap->GetCellSize(finerLevel);
+    const float finerTileWorldSize = (float)mInitInfo.TileSize * finerCellSize;
+    const XMINT2 finerOrigin = GetCommittedLevelOrigin(finerLevel);
+    constexpr int halfTiles = 2;
+    const float finerMinX = ((float)finerOrigin.x - (float)halfTiles) * finerTileWorldSize;
+    const float finerMaxX = ((float)finerOrigin.x + (float)(halfTiles + 1)) * finerTileWorldSize;
+    const float finerMinZ = ((float)finerOrigin.y - (float)halfTiles) * finerTileWorldSize;
+    const float finerMaxZ = ((float)finerOrigin.y + (float)(halfTiles + 1)) * finerTileWorldSize;
+
+    return tileMinX >= finerMinX && tileMaxX <= finerMaxX &&
+           tileMinZ >= finerMinZ && tileMaxZ <= finerMaxZ;
+}
+
+void ProceduralTerrain::SetupCommittedFinerLevelCoverage(const ClipmapTile* Tile, ProceduralTerrainConstants& Constants) const
+{
+    if (!Tile || Tile->LODLevel <= 0)
+    {
+        Constants.HasFinerLevel = 0;
+        return;
+    }
+
+    const UINT finerLevel = (UINT)Tile->LODLevel - 1u;
+    if (!IsCommittedLevelInitialized(finerLevel))
+    {
+        Constants.HasFinerLevel = 0;
+        return;
+    }
+
+    const float finerCellSize = mClipmap->GetCellSize(finerLevel);
+    const float finerTileWorldSize = (float)mInitInfo.TileSize * finerCellSize;
+    const float coarseCellSize = mClipmap->GetCellSize(Tile->LODLevel);
+    const XMINT2 finerOrigin = GetCommittedLevelOrigin(finerLevel);
+    Constants.HasFinerLevel = 1;
+    Constants.FinerLevelMinX = ((float)finerOrigin.x - 2.0f) * finerTileWorldSize + coarseCellSize;
+    Constants.FinerLevelMaxX = ((float)finerOrigin.x + 3.0f) * finerTileWorldSize - coarseCellSize;
+    Constants.FinerLevelMinZ = ((float)finerOrigin.y - 2.0f) * finerTileWorldSize + coarseCellSize;
+    Constants.FinerLevelMaxZ = ((float)finerOrigin.y + 3.0f) * finerTileWorldSize - coarseCellSize;
+}
+
 void ProceduralTerrain::UpdateCulling(GraphicsContext* Context)
 {
-    const auto& activeTiles = mClipmap->GetActiveTiles();
-    if (activeTiles.empty())
+    const auto& renderTiles = mCommittedRenderTiles;
+    if (renderTiles.empty())
     {
         mCullingTree.Clear();
         mCullingItems.clear();
@@ -677,16 +879,18 @@ void ProceduralTerrain::UpdateCulling(GraphicsContext* Context)
     }
 
     vector<CullingTileState> tileStates;
-    tileStates.reserve(activeTiles.size());
-    for (const ClipmapTile* tile : activeTiles)
+    tileStates.reserve(renderTiles.size());
+    for (const ClipmapTile* tile : renderTiles)
     {
         CullingTileState state;
         state.Tile = tile;
         if (tile)
         {
-            state.GridCoord = tile->GridCoord;
+            state.GridCoord = tile->RenderGridCoord;
+            state.RenderGridCoord = tile->RenderGridCoord;
             state.LODLevel = tile->LODLevel;
             state.HasHeightMap = tile->HeightMap != nullptr;
+            state.HasGeneratedContent = tile->HasGeneratedContent;
         }
         tileStates.push_back(state);
     }
@@ -701,8 +905,11 @@ void ProceduralTerrain::UpdateCulling(GraphicsContext* Context)
             if (current.Tile != previous.Tile ||
                 current.GridCoord.x != previous.GridCoord.x ||
                 current.GridCoord.y != previous.GridCoord.y ||
+                current.RenderGridCoord.x != previous.RenderGridCoord.x ||
+                current.RenderGridCoord.y != previous.RenderGridCoord.y ||
                 current.LODLevel != previous.LODLevel ||
-                current.HasHeightMap != previous.HasHeightMap)
+                current.HasHeightMap != previous.HasHeightMap ||
+                current.HasGeneratedContent != previous.HasGeneratedContent)
             {
                 activeTilesChanged = true;
                 break;
@@ -747,9 +954,9 @@ void ProceduralTerrain::UpdateCulling(GraphicsContext* Context)
     if (rebuildTree)
     {
         uint32_t itemId = 0;
-        for (ClipmapTile* tile : activeTiles)
+        for (ClipmapTile* tile : renderTiles)
         {
-            if (!tile || !tile->HeightMap)
+            if (!tile || !tile->HeightMap || !tile->HasGeneratedContent)
             {
                 continue;
             }
@@ -766,9 +973,9 @@ void ProceduralTerrain::UpdateCulling(GraphicsContext* Context)
                 (std::max)(mCullingMinHeightUI, mCullingMaxHeightUI) + mCullingHeightPaddingUI);
             SceneCullingBounds bounds;
             bounds.Min = {
-                (float)tile->GridCoord.x * tileWorldSize,
+                (float)tile->RenderGridCoord.x * tileWorldSize,
                 cullMinHeight,
-                (float)tile->GridCoord.y * tileWorldSize
+                (float)tile->RenderGridCoord.y * tileWorldSize
             };
             bounds.Max = {
                 bounds.Min.x + tileWorldSize,
@@ -909,7 +1116,7 @@ void ProceduralTerrain::QueryVisibleTiles(const XMFLOAT4 FrustumPlanes[6], vecto
             continue;
         }
 
-        if (mClipmap->IsCoveredByFinerLevel(tile))
+        if (IsCoveredByCommittedFinerLevel(tile))
         {
             continue;
         }
@@ -920,7 +1127,7 @@ void ProceduralTerrain::QueryVisibleTiles(const XMFLOAT4 FrustumPlanes[6], vecto
 
 const vector<ClipmapTile*>& ProceduralTerrain::GetMainRenderTiles() const
 {
-    return mEnableQuadtreeCullingUI ? mVisibleTiles : mClipmap->GetActiveTiles();
+    return mEnableQuadtreeCullingUI ? mVisibleTiles : mCommittedRenderTiles;
 }
 
 void ProceduralTerrain::UpdateCullingDebugTexture(GraphicsContext* Context)
@@ -1143,7 +1350,8 @@ void ProceduralTerrain::UpdateCullingDebugTexture(GraphicsContext* Context)
         {
             color = colorFiltered;
         }
-        else if (frustumResult != SceneCullingResult::Culled && mClipmap->IsCoveredByFinerLevel(tile))
+        else if (frustumResult != SceneCullingResult::Culled &&
+                 IsCoveredByCommittedFinerLevel(tile))
         {
             color = colorCovered;
         }
@@ -1341,7 +1549,7 @@ void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
     for (int i = (int)activeTiles.size() - 1; i >= 0; --i)
     {
         ClipmapTile* tile = activeTiles[i];
-        if (!tile || !tile->HeightMap)
+        if (!tile || !tile->HeightMap || !tile->HasGeneratedContent)
         {
             continue;
         }
@@ -1353,7 +1561,7 @@ void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
         }
 
         // Skip tiles entirely covered by a finer LOD level
-        if (mClipmap->IsCoveredByFinerLevel(tile))
+        if (IsCoveredByCommittedFinerLevel(tile))
         {
             continue;
         }
@@ -1364,29 +1572,10 @@ void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
         mConstants.MaterialWeightMapIndex = tile->WeightSRVIndex;
         mConstants.ClipmapLevel = tile->LODLevel;
         mConstants.CellSize = mClipmap->GetCellSize(tile->LODLevel);
-        mConstants.TileGridOffsetX = tile->GridCoord.x * (int)mInitInfo.TileSize;
-        mConstants.TileGridOffsetY = tile->GridCoord.y * (int)mInitInfo.TileSize;
+        mConstants.TileGridOffsetX = tile->RenderGridCoord.x * (int)mInitInfo.TileSize;
+        mConstants.TileGridOffsetY = tile->RenderGridCoord.y * (int)mInitInfo.TileSize;
 
-        // Compute finer LOD level coverage bounds for patch-level clipping.
-        // Shrink bounds by one coarse cell to create overlap zone at LOD boundary,
-        // preventing gaps between LOD levels.
-        if (tile->LODLevel > 0 && mClipmap->IsLevelInitialized(tile->LODLevel - 1))
-        {
-            UINT finerLevel = tile->LODLevel - 1;
-            float finerCellSize = mClipmap->GetCellSize(finerLevel);
-            float finerTileWorldSize = (float)mInitInfo.TileSize * finerCellSize;
-            float coarseCellSize = mClipmap->GetCellSize(tile->LODLevel);
-            XMINT2 finerOrigin = mClipmap->GetLevelOrigin(finerLevel);
-            mConstants.HasFinerLevel = 1;
-            mConstants.FinerLevelMinX = ((float)finerOrigin.x - 2.0f) * finerTileWorldSize + coarseCellSize;
-            mConstants.FinerLevelMaxX = ((float)finerOrigin.x + 3.0f) * finerTileWorldSize - coarseCellSize;
-            mConstants.FinerLevelMinZ = ((float)finerOrigin.y - 2.0f) * finerTileWorldSize + coarseCellSize;
-            mConstants.FinerLevelMaxZ = ((float)finerOrigin.y + 3.0f) * finerTileWorldSize - coarseCellSize;
-        }
-        else
-        {
-            mConstants.HasFinerLevel = 0;
-        }
+        SetupCommittedFinerLevelCoverage(tile, mConstants);
 
         ComputeSkirtFlags(tile);
 
@@ -1435,21 +1624,21 @@ void ProceduralTerrain::ComputeSkirtFlags(const ClipmapTile* tile)
         return;
 
     UINT finerLevel = tile->LODLevel - 1;
-    if (!mClipmap->IsLevelInitialized(finerLevel))
+    if (!IsCommittedLevelInitialized(finerLevel))
         return;
 
     // Compute this tile's world-space bounds
     float cellSize = mClipmap->GetCellSize(tile->LODLevel);
     float tileWorldSize = (float)mInitInfo.TileSize * cellSize;
-    float tileMinX = (float)tile->GridCoord.x * tileWorldSize;
+    float tileMinX = (float)tile->RenderGridCoord.x * tileWorldSize;
     float tileMaxX = tileMinX + tileWorldSize;
-    float tileMinZ = (float)tile->GridCoord.y * tileWorldSize;
+    float tileMinZ = (float)tile->RenderGridCoord.y * tileWorldSize;
     float tileMaxZ = tileMinZ + tileWorldSize;
 
     // Finer level's 5x5 coverage bounds
     float finerCellSize = mClipmap->GetCellSize(finerLevel);
     float finerTileWorldSize = (float)mInitInfo.TileSize * finerCellSize;
-    XMINT2 finerOrigin = mClipmap->GetLevelOrigin(finerLevel);
+    XMINT2 finerOrigin = GetCommittedLevelOrigin(finerLevel);
     int halfTiles = 2;
     float finerMinX = ((float)finerOrigin.x - (float)halfTiles) * finerTileWorldSize;
     float finerMaxX = ((float)finerOrigin.x + (float)(halfTiles + 1)) * finerTileWorldSize;
@@ -1477,19 +1666,19 @@ void ProceduralTerrain::ComputeSkirtFlagsFor(const ClipmapTile* tile, Procedural
         return;
 
     UINT finerLevel = tile->LODLevel - 1;
-    if (!mClipmap->IsLevelInitialized(finerLevel))
+    if (!IsCommittedLevelInitialized(finerLevel))
         return;
 
     float cellSize = mClipmap->GetCellSize(tile->LODLevel);
     float tileWorldSize = (float)mInitInfo.TileSize * cellSize;
-    float tileMinX = (float)tile->GridCoord.x * tileWorldSize;
+    float tileMinX = (float)tile->RenderGridCoord.x * tileWorldSize;
     float tileMaxX = tileMinX + tileWorldSize;
-    float tileMinZ = (float)tile->GridCoord.y * tileWorldSize;
+    float tileMinZ = (float)tile->RenderGridCoord.y * tileWorldSize;
     float tileMaxZ = tileMinZ + tileWorldSize;
 
     float finerCellSize = mClipmap->GetCellSize(finerLevel);
     float finerTileWorldSize = (float)mInitInfo.TileSize * finerCellSize;
-    XMINT2 finerOrigin = mClipmap->GetLevelOrigin(finerLevel);
+    XMINT2 finerOrigin = GetCommittedLevelOrigin(finerLevel);
     int halfTiles = 2;
     float finerMinX = ((float)finerOrigin.x - (float)halfTiles) * finerTileWorldSize;
     float finerMaxX = ((float)finerOrigin.x + (float)(halfTiles + 1)) * finerTileWorldSize;
@@ -1550,27 +1739,15 @@ void ProceduralTerrain::DrawShadow(GraphicsContext& Context, GraphicsPSO* Specif
     if (mEnableQuadtreeCullingUI)
     {
         QueryVisibleTiles(lightFrustumPlanes, shadowVisibleTiles);
-        std::sort(shadowVisibleTiles.begin(), shadowVisibleTiles.end(),
-            [](const ClipmapTile* left, const ClipmapTile* right)
-            {
-                if (left->LODLevel != right->LODLevel)
-                {
-                    return left->LODLevel < right->LODLevel;
-                }
-                if (left->GridCoord.y != right->GridCoord.y)
-                {
-                    return left->GridCoord.y < right->GridCoord.y;
-                }
-                return left->GridCoord.x < right->GridCoord.x;
-            });
+        SortRenderTiles(shadowVisibleTiles);
     }
-    const auto& activeTiles = mEnableQuadtreeCullingUI ? shadowVisibleTiles : mClipmap->GetActiveTiles();
+    const auto& activeTiles = mEnableQuadtreeCullingUI ? shadowVisibleTiles : mCommittedRenderTiles;
     for (int i = (int)activeTiles.size() - 1; i >= 0; --i)
     {
         ClipmapTile* tile = activeTiles[i];
-        if (!tile || !tile->HeightMap) continue;
+        if (!tile || !tile->HeightMap || !tile->HasGeneratedContent) continue;
         if (mDebugLODLevel >= 0 && tile->LODLevel != mDebugLODLevel) continue;
-        if (mClipmap->IsCoveredByFinerLevel(tile)) continue;
+        if (IsCoveredByCommittedFinerLevel(tile)) continue;
 
         // Per-tile constants
         mShadowConstants.HeightMapIndex = tile->HeightSRVIndex;
@@ -1578,27 +1755,10 @@ void ProceduralTerrain::DrawShadow(GraphicsContext& Context, GraphicsPSO* Specif
         mShadowConstants.MaterialWeightMapIndex = tile->WeightSRVIndex;
         mShadowConstants.ClipmapLevel = tile->LODLevel;
         mShadowConstants.CellSize = mClipmap->GetCellSize(tile->LODLevel);
-        mShadowConstants.TileGridOffsetX = tile->GridCoord.x * (int)mInitInfo.TileSize;
-        mShadowConstants.TileGridOffsetY = tile->GridCoord.y * (int)mInitInfo.TileSize;
+        mShadowConstants.TileGridOffsetX = tile->RenderGridCoord.x * (int)mInitInfo.TileSize;
+        mShadowConstants.TileGridOffsetY = tile->RenderGridCoord.y * (int)mInitInfo.TileSize;
 
-        // Finer LOD level coverage bounds
-        if (tile->LODLevel > 0 && mClipmap->IsLevelInitialized(tile->LODLevel - 1))
-        {
-            UINT finerLevel = tile->LODLevel - 1;
-            float finerCellSize = mClipmap->GetCellSize(finerLevel);
-            float finerTileWorldSize = (float)mInitInfo.TileSize * finerCellSize;
-            float coarseCellSize = mClipmap->GetCellSize(tile->LODLevel);
-            XMINT2 finerOrigin = mClipmap->GetLevelOrigin(finerLevel);
-            mShadowConstants.HasFinerLevel = 1;
-            mShadowConstants.FinerLevelMinX = ((float)finerOrigin.x - 2.0f) * finerTileWorldSize + coarseCellSize;
-            mShadowConstants.FinerLevelMaxX = ((float)finerOrigin.x + 3.0f) * finerTileWorldSize - coarseCellSize;
-            mShadowConstants.FinerLevelMinZ = ((float)finerOrigin.y - 2.0f) * finerTileWorldSize + coarseCellSize;
-            mShadowConstants.FinerLevelMaxZ = ((float)finerOrigin.y + 3.0f) * finerTileWorldSize - coarseCellSize;
-        }
-        else
-        {
-            mShadowConstants.HasFinerLevel = 0;
-        }
+        SetupCommittedFinerLevelCoverage(tile, mShadowConstants);
 
         ComputeSkirtFlagsFor(tile, mShadowConstants);
 
@@ -1673,41 +1833,23 @@ void ProceduralTerrain::DrawDepthOnly(GraphicsContext& Context)
     for (int i = (int)activeTiles.size() - 1; i >= 0; --i)
     {
         ClipmapTile* tile = activeTiles[i];
-        if (!tile || !tile->HeightMap) continue;
+        if (!tile || !tile->HeightMap || !tile->HasGeneratedContent) continue;
 
         // Debug: filter to a single LOD level
         if (mDebugLODLevel >= 0 && tile->LODLevel != mDebugLODLevel) continue;
 
         // Skip tiles entirely covered by a finer LOD level
-        if (mClipmap->IsCoveredByFinerLevel(tile)) continue;
+        if (IsCoveredByCommittedFinerLevel(tile)) continue;
 
         mConstants.HeightMapIndex = tile->HeightSRVIndex;
         mConstants.NormalMapIndex = tile->NormalSRVIndex;
         mConstants.MaterialWeightMapIndex = tile->WeightSRVIndex;
         mConstants.ClipmapLevel = tile->LODLevel;
         mConstants.CellSize = mClipmap->GetCellSize(tile->LODLevel);
-        mConstants.TileGridOffsetX = tile->GridCoord.x * (int)mInitInfo.TileSize;
-        mConstants.TileGridOffsetY = tile->GridCoord.y * (int)mInitInfo.TileSize;
+        mConstants.TileGridOffsetX = tile->RenderGridCoord.x * (int)mInitInfo.TileSize;
+        mConstants.TileGridOffsetY = tile->RenderGridCoord.y * (int)mInitInfo.TileSize;
 
-        // Compute finer LOD level coverage bounds for patch-level clipping.
-        // Shrink bounds by one coarse cell to create overlap zone at LOD boundary.
-        if (tile->LODLevel > 0 && mClipmap->IsLevelInitialized(tile->LODLevel - 1))
-        {
-            UINT finerLevel = tile->LODLevel - 1;
-            float finerCellSize = mClipmap->GetCellSize(finerLevel);
-            float finerTileWorldSize = (float)mInitInfo.TileSize * finerCellSize;
-            float coarseCellSize = mClipmap->GetCellSize(tile->LODLevel);
-            XMINT2 finerOrigin = mClipmap->GetLevelOrigin(finerLevel);
-            mConstants.HasFinerLevel = 1;
-            mConstants.FinerLevelMinX = ((float)finerOrigin.x - 2.0f) * finerTileWorldSize + coarseCellSize;
-            mConstants.FinerLevelMaxX = ((float)finerOrigin.x + 3.0f) * finerTileWorldSize - coarseCellSize;
-            mConstants.FinerLevelMinZ = ((float)finerOrigin.y - 2.0f) * finerTileWorldSize + coarseCellSize;
-            mConstants.FinerLevelMaxZ = ((float)finerOrigin.y + 3.0f) * finerTileWorldSize - coarseCellSize;
-        }
-        else
-        {
-            mConstants.HasFinerLevel = 0;
-        }
+        SetupCommittedFinerLevelCoverage(tile, mConstants);
 
         ComputeSkirtFlags(tile);
 
@@ -1749,6 +1891,7 @@ void ProceduralTerrain::DrawUI()
         if (ImGui::TreeNode("Generation"))
         {
             ImGui::SliderFloat("Height Scale", &mHeightScaleUI, 10.0f, 3000.0f);
+            ImGui::SliderInt("Tile CS Budget / Frame", &mTileGenerationBudgetUI, 1, 64);
             ImGui::TreePop();
         }
 
@@ -1811,6 +1954,10 @@ void ProceduralTerrain::DrawUI()
         ImGui::Text("Active Tiles: %d  Dirty: %d",
             (int)mClipmap->GetActiveTiles().size(),
             (int)mClipmap->GetDirtyTiles().size());
+        ImGui::Text("Tile CS: %u generated this frame, %u pending, render %s",
+            mGeneratedTileCountThisFrame,
+            mPendingTileGenerationCount,
+            mTerrainTilesReadyForRender ? "ready" : "waiting");
         ImGui::Text("Culled Visible: %d / %d",
             (int)mVisibleTiles.size(),
             (int)mCullingItems.size());

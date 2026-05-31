@@ -185,32 +185,32 @@ void TerrainNoiseGenerator::GenerateTiles(
         // Set root parameters
         Context.SetConstantBuffer(0, cbAddr);
 
-        // Transition resources to UAV (only needed if not already in UAV state)
-        if (!tile->NeedsSRVTransition)
+        // Transition pending resources to UAV (only needed if not already in UAV state)
+        if (!tile->PendingNeedsSRVTransition)
         {
             CD3DX12_RESOURCE_BARRIER barriers[3] = {
                 CD3DX12_RESOURCE_BARRIER::Transition(
-                    tile->HeightMap.Get(),
+                    tile->PendingHeightMap.Get(),
                     D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
                     D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
                 CD3DX12_RESOURCE_BARRIER::Transition(
-                    tile->NormalMap.Get(),
+                    tile->PendingNormalMap.Get(),
                     D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
                     D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
                 CD3DX12_RESOURCE_BARRIER::Transition(
-                    tile->MaterialWeightMap.Get(),
+                    tile->PendingMaterialWeightMap.Get(),
                     D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
                     D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
             };
             Context.GetCommandList()->ResourceBarrier(3, barriers);
         }
-        // Mark that this tile now needs SRV transition when drawn
-        tile->NeedsSRVTransition = true;
+        // Mark that the pending buffers need SRV transition after commit.
+        tile->PendingNeedsSRVTransition = true;
 
         // Set UAVs
-        Context.SetDynamicDescriptor(1, 0, tile->HeightUAV);
-        Context.SetDynamicDescriptor(1, 1, tile->NormalUAV);
-        Context.SetDynamicDescriptor(1, 2, tile->WeightUAV);
+        Context.SetDynamicDescriptor(1, 0, tile->PendingHeightUAV);
+        Context.SetDynamicDescriptor(1, 1, tile->PendingNormalUAV);
+        Context.SetDynamicDescriptor(1, 2, tile->PendingWeightUAV);
 
         // Dispatch: one thread per heightmap texel
         Context.Dispatch2D(mHeightmapSize, mHeightmapSize, 8, 8);

@@ -39,6 +39,11 @@ private:
     void UpdateCulling(GraphicsContext* Context);
     void QueryVisibleTiles(const XMFLOAT4 FrustumPlanes[6], vector<ClipmapTile*>& VisibleTiles);
     const vector<ClipmapTile*>& GetMainRenderTiles() const;
+    void RebuildCommittedRenderState();
+    bool IsCommittedLevelInitialized(UINT Level) const;
+    XMINT2 GetCommittedLevelOrigin(UINT Level) const;
+    bool IsCoveredByCommittedFinerLevel(const ClipmapTile* Tile) const;
+    void SetupCommittedFinerLevelCoverage(const ClipmapTile* Tile, ProceduralTerrainConstants& Constants) const;
     void UpdateCullingDebugTexture(GraphicsContext* Context);
     void EnsureCullingDebugTextureResources();
     D3D12_CPU_DESCRIPTOR_HANDLE GetCullingDebugSRV() const { return mCullingDebugSRV; }
@@ -116,6 +121,15 @@ private:
     bool  mUseParallaxUI = true;
     bool  mUseTriplanarUI = true;
     float mParallaxHeightScaleUI = 0.012f;
+    int   mTileGenerationBudgetUI = 8;
+    bool  mTerrainTilesReadyForRender = false;
+    uint32_t mPendingTileGenerationCount = 0;
+    uint32_t mGeneratedTileCountThisFrame = 0;
+    vector<ClipmapTile*> mTileGenerationBatch;
+    vector<ClipmapTile*> mPendingTileCommitQueue;
+    vector<ClipmapTile*> mCommittedRenderTiles;
+    vector<XMINT2> mCommittedLevelOrigins;
+    vector<bool> mCommittedLevelInitialized;
 
     // Debug: render only a specific LOD level (-1 = all)
     int mDebugLODLevel = -1;
@@ -132,8 +146,10 @@ private:
     {
         const ClipmapTile* Tile = nullptr;
         XMINT2 GridCoord = { 0, 0 };
+        XMINT2 RenderGridCoord = { 0, 0 };
         int LODLevel = 0;
         bool HasHeightMap = false;
+        bool HasGeneratedContent = false;
     };
 
     SceneQuadtreeCulling mCullingTree;
