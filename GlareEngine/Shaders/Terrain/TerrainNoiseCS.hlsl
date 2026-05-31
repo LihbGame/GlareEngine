@@ -52,8 +52,18 @@ float4 ComputeMaterialWeights(float height, float slope, float2 worldXZ)
 
     float snowH = gNoiseSnowHeight;
 
-    // Snow: high elevation
-    float snow = smoothstep(snowH - gNoiseSnowTransition, snowH + gNoiseSnowTransition, height);
+    // Snow: high elevation with noisy breakup only around the snowline edge.
+    float baseSnow = smoothstep(snowH - gNoiseSnowTransition, snowH + gNoiseSnowTransition, height);
+    float snowEdgeMask = baseSnow * (1.0 - baseSnow) * 4.0;
+    float snowEdgeNoise = TerrainGradientNoise(worldXZ * 0.014) * gNoiseSnowTransition * 0.8;
+    float snowBreakupNoise = TerrainGradientNoise(worldXZ * 0.075) * 0.5 + 0.5;
+    float snowAccumulation = 1.0 - smoothstep(0.18, 0.75, slope);
+    float snow = smoothstep(
+        snowH - gNoiseSnowTransition,
+        snowH + gNoiseSnowTransition,
+        height + snowEdgeNoise);
+    snow *= snowAccumulation;
+    snow = saturate(snow + (snowBreakupNoise - 0.5) * snowEdgeMask * 0.35 * snowAccumulation);
 
     // Stone: steep slopes + high elevation
     float slopeStone = smoothstep(
@@ -62,7 +72,17 @@ float4 ComputeMaterialWeights(float height, float slope, float2 worldXZ)
         slope);
     float heightStone = smoothstep(snowH * 0.7, snowH * 0.95,
         height + macroNoise * snowH * 0.2);
-    float stone = max(slopeStone, heightStone) * (1.0 - snow) * 1.35;
+    float stoneBase = max(slopeStone, heightStone) * (1.0 - snow) * 1.35;
+    float rockCreviceNoise = TerrainGradientNoise(worldXZ * 0.055);
+    float rockCreviceRidges = 1.0 - abs(rockCreviceNoise);
+    float screeNoise = TerrainGradientNoise(worldXZ * 0.16) * 0.5 + 0.5;
+    float rockCreviceMask = smoothstep(0.62, 0.92, rockCreviceRidges)
+        * (0.55 + 0.45 * screeNoise)
+        * saturate(stoneBase)
+        * (0.35 + 0.65 * saturate(slopeStone))
+        * (1.0 - snow);
+    float scree = rockCreviceMask * 0.55;
+    float stone = stoneBase * (1.0 - scree * 0.65);
 
     // Grass: alpine meadows favor snowline-adjacent gentle slopes, benches, and concave moisture pockets.
     float grass = ComputeGrassSuitability(height, slope, worldXZ) * (1.0 - snow) * (1.0 - saturate(slopeStone) * 0.85);
@@ -74,6 +94,7 @@ float4 ComputeMaterialWeights(float height, float slope, float2 worldXZ)
 
     // Light dirt: default base layer
     float lightDirt = max(0.05, (1.0 - snow) * (1.0 - saturate(stone)) * (1.0 - saturate(grass)) * 0.65);
+    lightDirt += scree * stoneBase;
 
     // Pack into RGBA matching texture layer order: grass, lightdirt, darkdirt, stone
     float w[5];

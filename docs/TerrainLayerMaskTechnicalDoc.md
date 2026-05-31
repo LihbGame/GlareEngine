@@ -121,13 +121,26 @@ float macroNoise = TerrainGradientNoise(worldXZ * 0.008);
 
 ## 4. Snow Mask
 
-Snow 是最直接的高度带 mask：
+Snow 不是单纯的高度全覆盖。当前实现先用高度得到基础雪线，再叠加表面坡度积雪能力，以及只作用在雪线边缘的噪声破碎。
 
 ```hlsl
-float snow = smoothstep(
+float baseSnow = smoothstep(
     snowH - gNoiseSnowTransition,
     snowH + gNoiseSnowTransition,
     height);
+
+float snowEdgeMask = baseSnow * (1.0 - baseSnow) * 4.0;
+float snowEdgeNoise = TerrainGradientNoise(worldXZ * 0.014) * gNoiseSnowTransition * 0.8;
+float snowBreakupNoise = TerrainGradientNoise(worldXZ * 0.075) * 0.5 + 0.5;
+float snowAccumulation = 1.0 - smoothstep(0.18, 0.75, slope);
+
+float snow = smoothstep(
+    snowH - gNoiseSnowTransition,
+    snowH + gNoiseSnowTransition,
+    height + snowEdgeNoise);
+
+snow *= snowAccumulation;
+snow = saturate(snow + (snowBreakupNoise - 0.5) * snowEdgeMask * 0.35 * snowAccumulation);
 ```
 
 语义：
@@ -135,11 +148,17 @@ float snow = smoothstep(
 - 当 `height <= snowH - transition` 时，snow 接近 `0`。
 - 当 `height >= snowH + transition` 时，snow 接近 `1`。
 - 中间使用 `smoothstep` 平滑过渡。
+- `snowEdgeMask` 只在雪线过渡区接近 1，在无雪区和雪地核心区接近 0。
+- `snowEdgeNoise` 用低频 world-space 噪声扰动雪线高度，让雪地边缘不再沿等高线规则展开。
+- `snowAccumulation` 根据坡度控制积雪能力：缓坡和平台容易积雪，陡坡会露出 stone/lightdirt。
+- `snowBreakupNoise` 只通过 `snowEdgeMask` 轻微破碎边缘，不影响雪地核心。
 
 设计目的：
 
 - 高海拔区域逐渐进入 snow。
 - 过渡带宽度由 `SnowTransition` 控制。
+- 高海拔陡峭岩壁不会被雪完全覆盖。
+- 雪地边缘具有随机、自然的破碎形状。
 - snow 最终不写入 RGBA，而是由 deferred shader 中的剩余权重推导。
 
 注意：
@@ -183,7 +202,18 @@ float heightStone = smoothstep(
 ### 5.3 Stone 合成
 
 ```hlsl
-float stone = max(slopeStone, heightStone) * (1.0 - snow) * 1.35;
+float stoneBase = max(slopeStone, heightStone) * (1.0 - snow) * 1.35;
+
+float rockCreviceNoise = TerrainGradientNoise(worldXZ * 0.055);
+float rockCreviceRidges = 1.0 - abs(rockCreviceNoise);
+float screeNoise = TerrainGradientNoise(worldXZ * 0.16) * 0.5 + 0.5;
+float rockCreviceMask = smoothstep(0.62, 0.92, rockCreviceRidges)
+    * (0.55 + 0.45 * screeNoise)
+    * saturate(stoneBase)
+    * (0.35 + 0.65 * saturate(slopeStone))
+    * (1.0 - snow);
+float scree = rockCreviceMask * 0.55;
+float stone = stoneBase * (1.0 - scree * 0.65);
 ```
 
 语义：
@@ -191,6 +221,9 @@ float stone = max(slopeStone, heightStone) * (1.0 - snow) * 1.35;
 - 坡度和高度任一条件强，就提高 stone。
 - snow 区域压制 stone，避免 snow 与 stone 同时占满。
 - `1.35` 是强度放大，让陡坡和高海拔裸岩在归一化竞争中更有优势。
+- `rockCreviceMask` 只在 stone 已经较强的区域内出现，用 ridged noise 模拟岩石裂隙。
+- `scree` 从 stone 中让出一部分权重，后续转给 lightdirt，用当前材质资源模拟碎石/岩屑填缝。
+- 这里不使用 darkdirt 表示岩缝，因为 darkdirt 更适合低洼湿润泥土；岩石裂隙中的碎石应更接近 lightdirt/scree 的视觉。
 
 ## 6. Grass Mask
 
@@ -364,6 +397,8 @@ float lightDirt = max(
     * (1.0 - saturate(stone))
     * (1.0 - saturate(grass))
     * 0.65);
+
+lightDirt += scree * stoneBase;
 ```
 
 语义：
@@ -372,6 +407,7 @@ float lightDirt = max(
 - 至少保留 `0.05` raw weight，避免所有非 snow layer 都接近 0 时归一化不稳定。
 - grass 越强，light dirt 越弱。
 - stone/snow 越强，light dirt 越弱。
+- stone 内部的 `scree` 会额外增加 light dirt，用 lightdirt 材质代理碎石/岩屑，而不是把岩缝表现成湿泥。
 
 ## 9. 归一化和 RGBA 打包
 
