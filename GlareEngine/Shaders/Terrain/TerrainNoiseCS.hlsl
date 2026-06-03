@@ -57,13 +57,15 @@ float4 ComputeMaterialWeights(float height, float slope, float2 worldXZ)
     float snowEdgeMask = baseSnow * (1.0 - baseSnow) * 4.0;
     float snowEdgeNoise = TerrainGradientNoise(worldXZ * 0.014) * gNoiseSnowTransition * 0.8;
     float snowBreakupNoise = TerrainGradientNoise(worldXZ * 0.075) * 0.5 + 0.5;
-    float snowAccumulation = 1.0 - smoothstep(0.18, 0.75, slope);
+    float snowAccumulation = 1.0 - smoothstep(0.45, 0.92, slope);
     float snow = smoothstep(
         snowH - gNoiseSnowTransition,
         snowH + gNoiseSnowTransition,
         height + snowEdgeNoise);
     snow *= snowAccumulation;
     snow = saturate(snow + (snowBreakupNoise - 0.5) * snowEdgeMask * 0.35 * snowAccumulation);
+    float snowStoneExclusion = 1.0 - smoothstep(0.65, 0.98, snow);
+    float snowDirtExclusion = 1.0 - smoothstep(0.02, 0.18, snow);
 
     // Stone: steep slopes + high elevation
     float slopeStone = smoothstep(
@@ -72,7 +74,8 @@ float4 ComputeMaterialWeights(float height, float slope, float2 worldXZ)
         slope);
     float heightStone = smoothstep(snowH * 0.7, snowH * 0.95,
         height + macroNoise * snowH * 0.2);
-    float stoneBase = max(slopeStone, heightStone) * (1.0 - snow) * 1.35;
+    float stoneSource = saturate(slopeStone + heightStone - slopeStone * heightStone);
+    float stoneBase = stoneSource * snowStoneExclusion * 1.35;
     float rockCreviceNoise = TerrainGradientNoise(worldXZ * 0.055);
     float rockCreviceRidges = 1.0 - abs(rockCreviceNoise);
     float screeNoise = TerrainGradientNoise(worldXZ * 0.16) * 0.5 + 0.5;
@@ -80,7 +83,7 @@ float4 ComputeMaterialWeights(float height, float slope, float2 worldXZ)
         * (0.55 + 0.45 * screeNoise)
         * saturate(stoneBase)
         * (0.35 + 0.65 * saturate(slopeStone))
-        * (1.0 - snow);
+        * snowStoneExclusion;
     float scree = rockCreviceMask * 0.55;
     float stone = stoneBase * (1.0 - scree * 0.65);
 
@@ -92,11 +95,10 @@ float4 ComputeMaterialWeights(float height, float slope, float2 worldXZ)
         height + macroNoise * snowH * 0.1);
     float darkDirt = darkDirtHeight * (1.0 - snow) * (1.0 - saturate(stone)) * 0.9;
 
-    // Light dirt: default base layer, forced to zero wherever snow is visible.
-    float noSnowDirtMask = 1.0 - step(0.001, snow);
-    float lightDirt = max(0.05 * noSnowDirtMask,
-        noSnowDirtMask * (1.0 - saturate(stone)) * (1.0 - saturate(grass)) * 0.65);
-    lightDirt += scree * stoneBase * noSnowDirtMask;
+    // Light dirt: default base layer, softly suppressed near snow and zero in the snow core.
+    float lightDirt = max(0.05 * snowDirtExclusion,
+        snowDirtExclusion * (1.0 - saturate(stone)) * (1.0 - saturate(grass)) * 0.65);
+    lightDirt += scree * stoneBase * snowDirtExclusion;
 
     // Pack into RGBA matching texture layer order: grass, lightdirt, darkdirt, stone
     float w[5];

@@ -19,12 +19,13 @@ PBRParams BlendMaterialLayers(float4 weights, float2 tiledUV, float2 tiledUvDx, 
     w[2] = weights.b; // darkdirt
     w[3] = weights.a; // stone
     w[4] = max(0, 1.0 - w[0] - w[1] - w[2] - w[3]); // snow
+    float layerSampleThreshold = 0.0001;
 
-    // Early-out for dominant layer
+    // Skip only negligible layers to preserve soft mask transitions.
     [unroll]
     for (int i = 0; i < TERRAIN_NUM_LAYERS; i++)
     {
-        if (w[i] < 0.01) continue;
+        if (w[i] < layerSampleThreshold) continue;
 
         float3 albedo = SampleStableStochastic(gTerrainLayerAlbedo[i].x, tiledUV, tiledUvDx, tiledUvDy);
         float3 normalSample = SampleStableStochastic(gTerrainLayerNormal[i].x, tiledUV, tiledUvDx, tiledUvDy);

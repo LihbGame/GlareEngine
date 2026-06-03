@@ -106,7 +106,7 @@ private:
     float mGrassPatchinessUI = 0.55f;
     float mGrassMaxSlopeUI = 0.35f;
     float mGrassMoistureBiasUI = 0.45f;
-    float mTexScaleUI = 100.0f;
+    float mTexScaleUI = 200.0f;
     float mRoughnessScaleUI = 9.0f;
     float mStochasticStrengthUI = 0.35f;
     float mMaxTessFactorUI = 4.0f;
@@ -120,7 +120,7 @@ private:
     bool  mUseHeightBlendUI = true;
     bool  mUseParallaxUI = true;
     bool  mUseTriplanarUI = true;
-    float mParallaxHeightScaleUI = 0.012f;
+    float mParallaxHeightScaleUI = 0.1f;
     int   mTileGenerationBudgetUI = 8;
     bool  mTerrainTilesReadyForRender = false;
     uint32_t mPendingTileGenerationCount = 0;

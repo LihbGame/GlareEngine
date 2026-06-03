@@ -132,7 +132,7 @@ float baseSnow = smoothstep(
 float snowEdgeMask = baseSnow * (1.0 - baseSnow) * 4.0;
 float snowEdgeNoise = TerrainGradientNoise(worldXZ * 0.014) * gNoiseSnowTransition * 0.8;
 float snowBreakupNoise = TerrainGradientNoise(worldXZ * 0.075) * 0.5 + 0.5;
-float snowAccumulation = 1.0 - smoothstep(0.18, 0.75, slope);
+float snowAccumulation = 1.0 - smoothstep(0.45, 0.92, slope);
 
 float snow = smoothstep(
     snowH - gNoiseSnowTransition,
@@ -141,6 +141,8 @@ float snow = smoothstep(
 
 snow *= snowAccumulation;
 snow = saturate(snow + (snowBreakupNoise - 0.5) * snowEdgeMask * 0.35 * snowAccumulation);
+float snowStoneExclusion = 1.0 - smoothstep(0.65, 0.98, snow);
+float snowDirtExclusion = 1.0 - smoothstep(0.02, 0.18, snow);
 ```
 
 语义：
@@ -150,8 +152,10 @@ snow = saturate(snow + (snowBreakupNoise - 0.5) * snowEdgeMask * 0.35 * snowAccu
 - 中间使用 `smoothstep` 平滑过渡。
 - `snowEdgeMask` 只在雪线过渡区接近 1，在无雪区和雪地核心区接近 0。
 - `snowEdgeNoise` 用低频 world-space 噪声扰动雪线高度，让雪地边缘不再沿等高线规则展开。
-- `snowAccumulation` 根据坡度控制积雪能力：缓坡和平台容易积雪，陡坡会露出 stone/lightdirt。
+- `snowAccumulation` 根据坡度控制积雪能力：缓坡和中陡坡仍保留积雪，接近垂直的极陡坡才明显露出 stone/lightdirt。
 - `snowBreakupNoise` 只通过 `snowEdgeMask` 轻微破碎边缘，不影响雪地核心。
+- `snowStoneExclusion` 让 stone 只在 snow 接近核心覆盖时完全退让，保留雪边缘的 rock/snow 混合缓冲。
+- `snowDirtExclusion` 让 lightdirt 在 snow 边缘渐隐，在 snow core 中保持 0，避免 `step` 型硬切。
 
 设计目的：
 
@@ -202,7 +206,8 @@ float heightStone = smoothstep(
 ### 5.3 Stone 合成
 
 ```hlsl
-float stoneBase = max(slopeStone, heightStone) * (1.0 - snow) * 1.35;
+float stoneSource = saturate(slopeStone + heightStone - slopeStone * heightStone);
+float stoneBase = stoneSource * snowStoneExclusion * 1.35;
 
 float rockCreviceNoise = TerrainGradientNoise(worldXZ * 0.055);
 float rockCreviceRidges = 1.0 - abs(rockCreviceNoise);
@@ -211,7 +216,7 @@ float rockCreviceMask = smoothstep(0.62, 0.92, rockCreviceRidges)
     * (0.55 + 0.45 * screeNoise)
     * saturate(stoneBase)
     * (0.35 + 0.65 * saturate(slopeStone))
-    * (1.0 - snow);
+    * snowStoneExclusion;
 float scree = rockCreviceMask * 0.55;
 float stone = stoneBase * (1.0 - scree * 0.65);
 ```
@@ -219,7 +224,8 @@ float stone = stoneBase * (1.0 - scree * 0.65);
 语义：
 
 - 坡度和高度任一条件强，就提高 stone。
-- snow 区域压制 stone，避免 snow 与 stone 同时占满。
+- `stoneSource` 使用 soft union `a + b - a * b`，避免 `max(slopeStone, heightStone)` 在两套条件交界处形成硬折线。
+- `snowStoneExclusion` 使用较宽的 snow 权重缓冲区压制 stone，避免 `1.0 - snow` 直接互斥造成 rock/snow 边界硬边。
 - `1.35` 是强度放大，让陡坡和高海拔裸岩在归一化竞争中更有优势。
 - `rockCreviceMask` 只在 stone 已经较强的区域内出现，用 ridged noise 模拟岩石裂隙。
 - `scree` 从 stone 中让出一部分权重，后续转给 lightdirt，用当前材质资源模拟碎石/岩屑填缝。
@@ -391,22 +397,22 @@ float darkDirt = darkDirtHeight
 Light dirt 是默认补位 layer，用于非 snow、非 stone、非 grass 的普通裸土或稀疏地表：
 
 ```hlsl
-float noSnowDirtMask = 1.0 - step(0.001, snow);
+float snowDirtExclusion = 1.0 - smoothstep(0.02, 0.18, snow);
 
 float lightDirt = max(
-    0.05 * noSnowDirtMask,
-    noSnowDirtMask
+    0.05 * snowDirtExclusion,
+    snowDirtExclusion
     * (1.0 - saturate(stone))
     * (1.0 - saturate(grass))
     * 0.65);
 
-lightDirt += scree * stoneBase * noSnowDirtMask;
+lightDirt += scree * stoneBase * snowDirtExclusion;
 ```
 
 语义：
 
 - 在 snow、stone、grass 之外补充基础地表。
-- `noSnowDirtMask` 使用 `step(0.001, snow)` 做硬排除：只要 snow 达到可见阈值，lightdirt 直接为 0。
+- `snowDirtExclusion` 使用 `smoothstep(0.02, 0.18, snow)` 做软排除：snow 边缘渐隐，snow core 中 lightdirt 为 0。
 - 在无 snow 区域保留 `0.05` raw weight 下限，避免所有 layer 都接近 0 时归一化不稳定。
 - grass 越强，light dirt 越弱。
 - stone/snow 越强，light dirt 越弱。
@@ -503,8 +509,18 @@ layerHeight[i] = dot(albedo, float3(0.299, 0.587, 0.114));
 最终调整：
 
 ```hlsl
-float blendSharpness = 2.0;
-adjustedW[j] = w[j] * (layerHeight[j] * blendSharpness + 0.01);
+float layerSampleThreshold = 0.0001;
+float blendSharpness = 0.9;
+float blendFloor = 0.20;
+
+if (w[j] < layerSampleThreshold)
+{
+    adjustedW[j] = 0;
+}
+else
+{
+    adjustedW[j] = w[j] * (layerHeight[j] * blendSharpness + blendFloor);
+}
 ```
 
 语义：
@@ -512,6 +528,8 @@ adjustedW[j] = w[j] * (layerHeight[j] * blendSharpness + 0.01);
 - 原始 material mask 决定“哪些 layer 应该出现”。
 - height/luminance 决定 transition zone 中“哪个材质 texel 更容易穿透”。
 - 这样可以让石头、泥土、草地边界更自然，减少单纯线性混合的糊感。
+- `layerSampleThreshold` 降到 `0.0001`，避免较高 cutoff 提前切断 rock/snow 过渡。
+- `blendSharpness` 降低并加入 `blendFloor`，避免 height map 把低 height 材质权重压到接近 0，从而减少硬边。
 
 调整后再次归一化：
 

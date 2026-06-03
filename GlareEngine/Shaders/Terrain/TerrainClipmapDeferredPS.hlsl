@@ -33,6 +33,7 @@ PBRParams BlendMaterialLayers(
     w[2] = weights.b; // darkdirt (layer 2)
     w[3] = weights.a; // stone (layer 3)
     w[4] = max(0, 1.0 - w[0] - w[1] - w[2] - w[3]); // snow (layer 4)
+    float layerSampleThreshold = 0.0001;
 
     // Sample all active layers first (needed for height-based blending)
     float3 layerAlbedo[5];
@@ -48,7 +49,7 @@ PBRParams BlendMaterialLayers(
     [unroll]
     for (int i = 0; i < TERRAIN_NUM_LAYERS; i++)
     {
-        if (w[i] < 0.01)
+        if (w[i] < layerSampleThreshold)
         {
             layerAlbedo[i] = 0; layerNormalW[i] = 0;
             layerRoughness[i] = 0; layerMetallic[i] = 0;
@@ -214,16 +215,17 @@ PBRParams BlendMaterialLayers(
         }
     }
 
-    // Height-based weight adjustment: brighter texels punch through in transition zones
-    float blendSharpness = 2.0;
+    // Height-based weight adjustment, kept soft so mask transitions do not collapse into hard edges.
+    float blendSharpness = 0.9;
+    float blendFloor = 0.20;
     float adjustedW[5];
     float totalW = 0.0;
 
     [unroll]
     for (int j = 0; j < TERRAIN_NUM_LAYERS; j++)
     {
-        if (w[j] < 0.01) { adjustedW[j] = 0; continue; }
-        adjustedW[j] = w[j] * (layerHeight[j] * blendSharpness + 0.01);
+        if (w[j] < layerSampleThreshold) { adjustedW[j] = 0; continue; }
+        adjustedW[j] = w[j] * (layerHeight[j] * blendSharpness + blendFloor);
         totalW += adjustedW[j];
     }
 
