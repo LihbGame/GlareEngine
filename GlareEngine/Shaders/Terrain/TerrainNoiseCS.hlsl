@@ -17,6 +17,25 @@ float ComputeTerrainCurvature(float height, float2 worldXZ)
     return clamp((neighborAverage - height) / max(gNoiseHeightScale * 0.08, 1.0), -1.0, 1.0);
 }
 
+float TerrainMaskFBM(float2 worldXZ, float frequency)
+{
+    float2 p = worldXZ * frequency;
+    float value = 0.0;
+    float amplitude = 0.5;
+    float amplitudeSum = 0.0;
+
+    [unroll]
+    for (int i = 0; i < 4; ++i)
+    {
+        value += TerrainGradientNoise(p) * amplitude;
+        amplitudeSum += amplitude;
+        p = mul(float2x2(0.8, 0.6, -0.6, 0.8), p * 2.03) + float2(13.7, 7.1);
+        amplitude *= 0.5;
+    }
+
+    return value / max(amplitudeSum, 0.0001);
+}
+
 float ComputeGrassSuitability(float height, float slope, float2 worldXZ)
 {
     float snowH = max(gNoiseSnowHeight, 1.0);
@@ -48,44 +67,50 @@ float ComputeGrassSuitability(float height, float slope, float2 worldXZ)
 // Layer indices match C++ texture order: 0=grass, 1=lightdirt, 2=darkdirt, 3=stone, 4=snow
 float4 ComputeMaterialWeights(float height, float slope, float2 worldXZ)
 {
-    float macroNoise = TerrainGradientNoise(worldXZ * 0.008);
-
     float snowH = gNoiseSnowHeight;
+    float snowTransition = max(gNoiseSnowTransition, 1.0);
+    float normalY = saturate(1.0 - slope);
+    float macroNoise = TerrainMaskFBM(worldXZ, 0.0035);
 
-    // Snow: high elevation with noisy breakup only around the snowline edge.
-    float baseSnow = smoothstep(snowH - gNoiseSnowTransition, snowH + gNoiseSnowTransition, height);
-    float snowEdgeMask = baseSnow * (1.0 - baseSnow) * 4.0;
-    float snowEdgeNoise = TerrainGradientNoise(worldXZ * 0.014) * gNoiseSnowTransition * 0.8;
-    float snowBreakupNoise = TerrainGradientNoise(worldXZ * 0.075) * 0.5 + 0.5;
-    float snowAccumulation = 1.0 - smoothstep(0.45, 0.92, slope);
-    float snow = smoothstep(
-        snowH - gNoiseSnowTransition,
-        snowH + gNoiseSnowTransition,
-        height + snowEdgeNoise);
-    snow *= snowAccumulation;
-    snow = saturate(snow + (snowBreakupNoise - 0.5) * snowEdgeMask * 0.35 * snowAccumulation);
+    // Snow follows the Elevated-style score: elevation, broad FBM snowline drift, and upward-facing accumulation.
+    float snowLineDrift = macroNoise * snowTransition * 2.4;
+    float snowHeightScore = (height - snowH + snowLineDrift) / snowTransition;
+    float snowFacingScore = (normalY - 0.58) * 1.85;
+    float baseSnow = smoothstep(-1.15, 1.15, snowHeightScore + snowFacingScore);
+    float snowAccumulation = smoothstep(0.08, 0.62, normalY);
+    float snow = baseSnow * snowAccumulation;
+
+    float snowEdgeMask = snow * (1.0 - snow) * 4.0;
+    float snowEdgeNoise = TerrainMaskFBM(worldXZ, 0.026);
+    float snowGranularNoise = TerrainGradientNoise(worldXZ * 0.095) * 0.5 + 0.5;
+    float snowEdgeBreakup = snowEdgeNoise * 0.24 + (snowGranularNoise - 0.5) * 0.16;
+    snow = saturate((snow + snowEdgeBreakup * snowEdgeMask * snowAccumulation) * max(gSnowCoverage, 0.0));
     float snowStoneExclusion = 1.0 - smoothstep(0.65, 0.98, snow);
     float snowDirtExclusion = 1.0 - smoothstep(0.02, 0.18, snow);
 
-    // Stone: steep slopes + high elevation
+    // Stone favors steep faces and high exposed ridges, with crevice noise breaking the boundary.
     float slopeStone = smoothstep(
         gNoiseStoneSlope - gNoiseStoneTransition,
         gNoiseStoneSlope + gNoiseStoneTransition,
         slope);
-    float heightStone = smoothstep(snowH * 0.7, snowH * 0.95,
-        height + macroNoise * snowH * 0.2);
-    float stoneSource = saturate(slopeStone + heightStone - slopeStone * heightStone);
-    float stoneBase = stoneSource * snowStoneExclusion * 1.35;
-    float rockCreviceNoise = TerrainGradientNoise(worldXZ * 0.055);
-    float rockCreviceRidges = 1.0 - abs(rockCreviceNoise);
-    float screeNoise = TerrainGradientNoise(worldXZ * 0.16) * 0.5 + 0.5;
-    float rockCreviceMask = smoothstep(0.62, 0.92, rockCreviceRidges)
-        * (0.55 + 0.45 * screeNoise)
+    float exposureNoise = TerrainMaskFBM(worldXZ + float2(41.0, 19.0), 0.006);
+    float heightStone = smoothstep(snowH * 0.58, snowH * 0.94,
+        height + exposureNoise * snowH * 0.18);
+    float rockRidgeNoise = TerrainMaskFBM(worldXZ + float2(11.0, 37.0), 0.018);
+    float rockRidges = 1.0 - abs(rockRidgeNoise);
+    float rockFaceBreakup = lerp(0.82, 1.18, smoothstep(0.28, 0.86, rockRidges));
+    float stoneSource = saturate(max(slopeStone, heightStone * 0.72) * rockFaceBreakup);
+    float stoneBase = stoneSource * snowStoneExclusion * 1.28;
+    float creviceNoise = TerrainGradientNoise(worldXZ * 0.078);
+    float creviceRidges = 1.0 - abs(creviceNoise);
+    float screeNoise = TerrainGradientNoise(worldXZ * 0.18) * 0.5 + 0.5;
+    float rockCreviceMask = smoothstep(0.58, 0.90, creviceRidges)
+        * (0.50 + 0.50 * screeNoise)
         * saturate(stoneBase)
-        * (0.35 + 0.65 * saturate(slopeStone))
+        * (0.30 + 0.70 * saturate(slopeStone))
         * snowStoneExclusion;
-    float scree = rockCreviceMask * 0.55;
-    float stone = stoneBase * (1.0 - scree * 0.65);
+    float scree = rockCreviceMask * 0.50;
+    float stone = saturate(stoneBase * (1.0 - scree * 0.55) + rockCreviceMask * 0.18);
 
     // Grass: alpine meadows favor snowline-adjacent gentle slopes, benches, and concave moisture pockets.
     float grass = ComputeGrassSuitability(height, slope, worldXZ) * (1.0 - snow) * (1.0 - saturate(slopeStone) * 0.85);

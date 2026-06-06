@@ -290,6 +290,7 @@ __declspec(align(256)) struct ProceduralTerrainNoiseCB
     };
     float       SnowHeight          = 150.0f;
     float       SnowTransition      = 20.0f;
+    float       SnowCoverage        = 1.0f;
     float       StoneSlope          = 0.6f;
     float       StoneTransition     = 0.15f;
     float       GrassCoverage       = 1.0f;
@@ -299,7 +300,6 @@ __declspec(align(256)) struct ProceduralTerrainNoiseCB
     int         LODLevel            = 0;
     int         PadNoiseFooter0     = 0;
     float       PadNoiseFooter1     = 0.0f;
-    float       PadNoiseFooter2     = 0.0f;
 };
 
 // Procedural terrain render constants

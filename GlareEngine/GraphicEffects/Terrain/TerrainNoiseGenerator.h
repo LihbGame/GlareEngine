@@ -31,6 +31,7 @@ public:
     void SetNoiseLayers(const TerrainNoiseLayerSettings* Layers, UINT Count);
     void SetMaterialMaskParams(
         float SnowHeight,
+        float SnowCoverage,
         float StoneSlope,
         float GrassCoverage,
         float GrassPatchiness,
@@ -63,6 +64,7 @@ private:
     TerrainNoiseLayerSettings mNoiseLayers[kTerrainNoiseMaxLayers];
     float   mSnowHeight     = 150.0f;
     float   mSnowTransition = 20.0f;
+    float   mSnowCoverage   = 1.0f;
     float   mStoneSlope     = 0.6f;
     float   mStoneTransition = 0.15f;
     float   mGrassCoverage = 1.0f;

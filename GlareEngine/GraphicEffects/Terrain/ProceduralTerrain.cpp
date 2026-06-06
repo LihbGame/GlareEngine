@@ -366,6 +366,7 @@ uint64_t ProceduralTerrain::ComputeNoiseLayerStateHash() const
     uint64_t hash = kFnvOffset;
     HashFloat(hash, mHeightScaleUI);
     HashFloat(hash, mSnowHeightUI);
+    HashFloat(hash, mSnowCoverageUI);
     HashFloat(hash, mStoneSlopeUI);
     HashFloat(hash, mGrassCoverageUI);
     HashFloat(hash, mGrassPatchinessUI);
@@ -598,6 +599,7 @@ void ProceduralTerrain::Update(float dt, GraphicsContext* Context)
         mNoiseGen->SetNoiseLayers(mNoiseLayersUI, kTerrainNoiseMaxLayers);
         mNoiseGen->SetMaterialMaskParams(
             mSnowHeightUI,
+            mSnowCoverageUI,
             mStoneSlopeUI,
             mGrassCoverageUI,
             mGrassPatchinessUI,
@@ -1936,6 +1938,7 @@ void ProceduralTerrain::DrawUI()
             ImGui::SliderFloat("Roughness Scale", &mRoughnessScaleUI, 0.1f, 10.0f);
             ImGui::SliderFloat("Stochastic Strength", &mStochasticStrengthUI, 0.0f, 1.0f);
             ImGui::SliderFloat("Snow Height", &mSnowHeightUI, 50.0f, 3000.0f);
+            ImGui::SliderFloat("Snow Coverage", &mSnowCoverageUI, 0.0f, 2.0f);
             ImGui::SliderFloat("Stone Slope", &mStoneSlopeUI, 0.1f, 1.0f);
             ImGui::SliderFloat("Grass Coverage", &mGrassCoverageUI, 0.0f, 2.0f);
             ImGui::SliderFloat("Grass Patchiness", &mGrassPatchinessUI, 0.0f, 1.0f);

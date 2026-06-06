@@ -138,6 +138,7 @@ cbuffer TerrainNoiseCB : register(b0)
 
     float   gNoiseSnowHeight;
     float   gNoiseSnowTransition;
+    float   gSnowCoverage;
     float   gNoiseStoneSlope;
     float   gNoiseStoneTransition;
     float   gGrassCoverage;
@@ -147,7 +148,6 @@ cbuffer TerrainNoiseCB : register(b0)
     int     gNoiseLODLevel;
     int     gNoisePadFooter0;
     float   gNoisePad1;
-    float   gNoisePad2;
 };
 
 // --- Stochastic sampling utility ---

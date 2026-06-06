@@ -46,6 +46,7 @@ void TerrainNoiseGenerator::SetNoiseLayers(const TerrainNoiseLayerSettings* Laye
 
 void TerrainNoiseGenerator::SetMaterialMaskParams(
     float SnowHeight,
+    float SnowCoverage,
     float StoneSlope,
     float GrassCoverage,
     float GrassPatchiness,
@@ -53,6 +54,7 @@ void TerrainNoiseGenerator::SetMaterialMaskParams(
     float GrassMoistureBias)
 {
     mSnowHeight = SnowHeight;
+    mSnowCoverage = SnowCoverage;
     mStoneSlope = StoneSlope;
     mGrassCoverage = GrassCoverage;
     mGrassPatchiness = GrassPatchiness;
@@ -168,6 +170,7 @@ void TerrainNoiseGenerator::GenerateTiles(
 
         mNoiseCBData.SnowHeight = mSnowHeight;
         mNoiseCBData.SnowTransition = mSnowTransition;
+        mNoiseCBData.SnowCoverage = mSnowCoverage;
         mNoiseCBData.StoneSlope = mStoneSlope;
         mNoiseCBData.StoneTransition = mStoneTransition;
         mNoiseCBData.GrassCoverage = mGrassCoverage;

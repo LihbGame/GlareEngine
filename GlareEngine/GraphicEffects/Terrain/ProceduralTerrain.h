@@ -101,6 +101,7 @@ private:
     // ImGui parameters
     float mHeightScaleUI = 500.0f;
     float mSnowHeightUI = 150.0f;
+    float mSnowCoverageUI = 1.0f;
     float mStoneSlopeUI = 0.6f;
     float mGrassCoverageUI = 1.0f;
     float mGrassPatchinessUI = 0.55f;
