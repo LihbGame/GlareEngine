@@ -108,7 +108,7 @@ private:
     float mGrassMoistureBiasUI = 0.45f;
     float mTexScaleUI = 200.0f;
     float mRoughnessScaleUI = 9.0f;
-    float mStochasticStrengthUI = 0.35f;
+    float mStochasticStrengthUI = 0.0f;
     float mMaxTessFactorUI = 4.0f;
     float mMaxTessDistUI = 500.0f;
     float mTessScaleUI = 1.0f;

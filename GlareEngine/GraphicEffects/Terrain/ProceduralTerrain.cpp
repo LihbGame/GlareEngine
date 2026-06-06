@@ -1935,7 +1935,7 @@ void ProceduralTerrain::DrawUI()
             ImGui::SliderFloat("Tex Scale", &mTexScaleUI, 1.0f, 300.0f);
             ImGui::SliderFloat("Roughness Scale", &mRoughnessScaleUI, 0.1f, 10.0f);
             ImGui::SliderFloat("Stochastic Strength", &mStochasticStrengthUI, 0.0f, 1.0f);
-            ImGui::SliderFloat("Snow Height", &mSnowHeightUI, 50.0f, 300.0f);
+            ImGui::SliderFloat("Snow Height", &mSnowHeightUI, 50.0f, 3000.0f);
             ImGui::SliderFloat("Stone Slope", &mStoneSlopeUI, 0.1f, 1.0f);
             ImGui::SliderFloat("Grass Coverage", &mGrassCoverageUI, 0.0f, 2.0f);
             ImGui::SliderFloat("Grass Patchiness", &mGrassPatchinessUI, 0.0f, 1.0f);
