@@ -346,18 +346,18 @@ void ProceduralTerrain::InitializeNoiseLayerPresets()
     detail0.Lacunarity = 2.2f;
     detail0.Gain = 0.48f;
     detail0.WarpAmplitude = 8.0f;
-    detail0.WarpFrequency = 0.003f;
+    detail0.WarpFrequency = 0.009f;
 
     TerrainNoiseLayerSettings& detail1 = mNoiseLayersUI[kTerrainNoiseMaxBaseLayers + 1];
     detail1.Enabled = true;
-    detail1.NoiseType = TerrainNoise_Voronoi;
-    detail1.FractalType = TerrainFractal_Single;
+    detail1.NoiseType = TerrainNoise_Ridged;
+    detail1.FractalType = TerrainFractal_FBM;
     detail1.CombineOp = TerrainCombine_Add;
     detail1.WarpMode = TerrainWarp_None;
     detail1.Opacity = 0.65f;
     detail1.Amplitude = 0.025f;
     detail1.Frequency = 0.011f;
-    detail1.Octaves = 1;
+    detail1.Octaves = 5;
     detail1.VoronoiMode = 1;
 }
 
@@ -1932,7 +1932,7 @@ void ProceduralTerrain::DrawUI()
 
         if (ImGui::TreeNode("Materials"))
         {
-            ImGui::SliderFloat("Tex Scale", &mTexScaleUI, 1.0f, 200.0f);
+            ImGui::SliderFloat("Tex Scale", &mTexScaleUI, 1.0f, 300.0f);
             ImGui::SliderFloat("Roughness Scale", &mRoughnessScaleUI, 0.1f, 10.0f);
             ImGui::SliderFloat("Stochastic Strength", &mStochasticStrengthUI, 0.0f, 1.0f);
             ImGui::SliderFloat("Snow Height", &mSnowHeightUI, 50.0f, 300.0f);

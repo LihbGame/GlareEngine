@@ -10,8 +10,8 @@ struct SkyVSOut
     float3 PrePosition : TEXCOORD1;
 };
 
-//曝光参数
-#define exposure 1.0f
+// Exposure parameter.
+#define exposure 0.3f
 
 
 float4 main(SkyVSOut pin) : SV_Target
@@ -20,11 +20,11 @@ float4 main(SkyVSOut pin) : SV_Target
 
     float2 cancelJitter = gPreJitterOffset - gCurJitterOffset;
     MotionVector[pin.PosH.xy] = (((pin.PrePosition.xy / pin.PrePosition.z) - (pin.CurPosition.xy / pin.CurPosition.z)) - cancelJitter) * float2(0.5f, -0.5f);
-	// Reinhard色调映射
+	// Reinhard tone mapping.
 	//litColor.rgb = litColor.rgb / (litColor.rgb + float3(1.0f, 1.0f, 1.0f));
 
-	// 曝光色调映射
-    //litColor.rgb = float3(1.0f, 1.0f, 1.0f) - exp(-litColor.rgb * exposure);
+	// Exposure tone mapping.
+    litColor.rgb = float3(1.0f, 1.0f, 1.0f) - exp(-litColor.rgb * exposure);
 
     return litColor;
 }

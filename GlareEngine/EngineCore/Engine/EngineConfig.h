@@ -15,7 +15,7 @@
 
 #define SHADOWMAPSIZE				2048
 
-#define FAR_Z						5000.0f
+#define FAR_Z						20000.0f
 
 #define CAMERA_SPEED				100.0f
 
