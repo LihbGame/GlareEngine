@@ -15,6 +15,10 @@ mUp{ 0.0f, 1.0f, 0.0f },
 mLook{ 0.0f, 0.0f, 1.0f }
 {
 	SetLens(0.25f * MathHelper::Pi, 16.0f / 9.0f, 1.0f, FAR_Z);
+	mViewProjNoTranspose = GetView() * GetProj();
+	XMStoreFloat4x4(&mViewProj, DirectX::XMMatrixTranspose(mViewProjNoTranspose));
+	m_PreviousViewProjMatrix = Matrix4(mViewProjNoTranspose);
+	m_PreviousPosition = mPosition;
 }
 
 Camera::~Camera()
@@ -328,6 +332,10 @@ void Camera::RotateY(float angle)
 void Camera::UpdateViewMatrix()
 {
 	m_PreviousViewProjMatrix = Matrix4(mViewProjNoTranspose);
+	XMMATRIX previousView = XMLoadFloat4x4(&mView);
+	XMVECTOR previousViewDeterminant = XMMatrixDeterminant(previousView);
+	XMMATRIX previousInvView = XMMatrixInverse(&previousViewDeterminant, previousView);
+	XMStoreFloat3(&m_PreviousPosition, previousInvView.r[3]);
 	if(mViewDirty)
 	{
 		XMVECTOR R = XMLoadFloat3(&mRight);

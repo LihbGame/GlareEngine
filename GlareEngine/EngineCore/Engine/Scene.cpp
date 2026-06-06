@@ -401,6 +401,7 @@ void Scene::UpdateMainConstantBuffer(float DeltaTime)
 	mSceneView.mMainConstants.CSMCascadeCount = static_cast<int>(m_pShadowMap->GetCascadeCount());
 
 	mSceneView.mMainConstants.EyePosW = mSceneView.m_pCamera->GetPosition3f();
+	mSceneView.mMainConstants.PrevEyePosW = mSceneView.m_pCamera->GetPreviousPosition3f();
 	mSceneView.mMainConstants.RenderTargetSize = XMFLOAT2((float)g_SceneColorBuffer.GetWidth(), (float)g_SceneColorBuffer.GetHeight());
 	mSceneView.mMainConstants.InvRenderTargetSize = XMFLOAT2(1.0f / g_SceneColorBuffer.GetWidth(), 1.0f / g_SceneColorBuffer.GetHeight());
 	mSceneView.mMainConstants.NearZ = mSceneView.m_pCamera->GetNearZ();

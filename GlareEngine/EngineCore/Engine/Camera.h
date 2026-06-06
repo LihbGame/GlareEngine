@@ -55,6 +55,7 @@ public:
 
 	Matrix4 GetReprojectMatrix()const { return m_ReprojectMatrix; }
 	Matrix4 GetPreViewProj()const { return m_PreviousViewProjMatrix; }
+	DirectX::XMFLOAT3 GetPreviousPosition3f()const { return m_PreviousPosition; }
 
 	// Get View/Proj matrices.
 	virtual DirectX::XMMATRIX GetView()const;
@@ -126,6 +127,7 @@ protected:
 
 	// The view-projection matrix from the previous frame
 	Matrix4 m_PreviousViewProjMatrix;
+	DirectX::XMFLOAT3 m_PreviousPosition = { 0.0f, 0.0f, 0.0f };
 
 	// Projects a clip-space coordinate to the previous frame (useful for temporal effects).
 	Matrix4 m_ReprojectMatrix;

@@ -163,6 +163,7 @@ __declspec(align(16))struct MainConstants
 	XMFLOAT2    gPreJitterOffset;
 
 	float       gShadowIntensity = 1.0f;
+	XMFLOAT3    PrevEyePosW = { 0.0f, 0.0f, 0.0f };
 };
 
 

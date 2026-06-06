@@ -23,15 +23,17 @@ SkyVSOut main(float3 PosL : POSITION)
 	// Use local vertex positions as cubemap sampling vectors.
     vout.PosL = PosL;
 
-	// Convert to world space
+	// Convert to world space.
     float4 posW = mul(float4(PosL, 1.0f), gWorld);
+    float4 prevPosW = posW;
 
-	//Fix the skybox to the eye position
+	// Fix the skybox to the current and previous eye positions.
     posW.xyz += gEyePosW;
+    prevPosW.xyz += gPrevEyePosW;
 
 	// Set z = w so that z/w = 1 (i.e. the celestial dome is always on the far plane).
     vout.PosH = mul(posW, gViewProj).xyww;
-    float4 preposition = mul(float4(posW.xyz, 1.0), gPreViewProjMatrix);
+    float4 preposition = mul(prevPosW, gPreViewProjMatrix);
     vout.CurPosition = vout.PosH.xyw;
     vout.PrePosition = preposition.xyw;
     
