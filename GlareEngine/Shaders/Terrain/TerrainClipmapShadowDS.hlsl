@@ -66,7 +66,11 @@ ShadowDomainOut main(
     if (topSkirt)    height -= gTerrainSkirtDepth;
     if (bottomSkirt) height -= gTerrainSkirtDepth;
 
-    float3 posW = float3(worldXZ.x, height, worldXZ.y);
+    float3 normal = normalize(SampleTerrainNormal(hmUV));
+    float4 matWeights = SampleMaterialWeights(hmUV);
+    float snowWeight = saturate(1.0 - matWeights.r - matWeights.g - matWeights.b - matWeights.a);
+    float snowDisplacement = snowWeight * max(gTerrainSnowDisplacement, 0.0);
+    float3 posW = float3(worldXZ.x, height, worldXZ.y) + normal * snowDisplacement;
 
     // Project to shadow clip space (ViewProj contains light VP)
     dout.PosH = mul(gTerrainViewProj, float4(posW, 1.0));

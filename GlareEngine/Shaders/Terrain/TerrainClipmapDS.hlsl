@@ -69,21 +69,23 @@ ClipmapDomainOut main(
     if (topSkirt)    height -= gTerrainSkirtDepth;
     if (bottomSkirt) height -= gTerrainSkirtDepth;
 
-    // Construct world position
-    dout.PosW = float3(worldXZ.x, height, worldXZ.y);
-    dout.WorldXZ = worldXZ;
-
     // Sample the generated normal map as a full XYZ world-space normal.
     float3 normal = normalize(SampleTerrainNormal(hmUV));
+
+    // Sample material weights before projection so snow can add real thickness.
+    dout.MatWeights = SampleMaterialWeights(hmUV);
+    float snowWeight = saturate(1.0 - dout.MatWeights.r - dout.MatWeights.g - dout.MatWeights.b - dout.MatWeights.a);
+    float snowDisplacement = snowWeight * max(gTerrainSnowDisplacement, 0.0);
+
+    // Construct world position and expand snow-covered vertices along the terrain normal.
+    dout.PosW = float3(worldXZ.x, height, worldXZ.y) + normal * snowDisplacement;
+    dout.WorldXZ = worldXZ;
 
     // Build tangent from world-space X axis, orthogonalized against normal.
     float3 tangent = normalize(float3(1.0, 0.0, 0.0) - normal.x * normal);
 
     dout.NormalW = normal;
     dout.TangentW = tangent;
-
-    // Sample material weights
-    dout.MatWeights = SampleMaterialWeights(hmUV);
 
     // Project to clip space
     dout.PosH = mul(gTerrainViewProj, float4(dout.PosW, 1.0));

@@ -724,6 +724,7 @@ void ProceduralTerrain::UpdateConstantBuffer()
     mConstants.TexScale = mTexScaleUI;
     mConstants.RoughnessScale = mRoughnessScaleUI;
     mConstants.StochasticSharpness = mStochasticStrengthUI;
+    mConstants.SnowDisplacement = mSnowDisplacementUI;
 
     // Extract frustum planes
     XMFLOAT4 planes[6];
@@ -936,6 +937,7 @@ void ProceduralTerrain::UpdateCulling(GraphicsContext* Context)
         mCullingMaxDepthUI != mPrevCullingMaxDepthUI ||
         mCullingMaxItemsPerLeafUI != mPrevCullingMaxItemsPerLeafUI ||
         mHeightScaleUI != mPrevCullingHeightScaleUI ||
+        mSnowDisplacementUI != mPrevCullingSnowDisplacementUI ||
         mCullingMinHeightUI != mPrevCullingMinHeightUI ||
         mCullingMaxHeightUI != mPrevCullingMaxHeightUI ||
         mCullingHeightPaddingUI != mPrevCullingHeightPaddingUI;
@@ -966,23 +968,24 @@ void ProceduralTerrain::UpdateCulling(GraphicsContext* Context)
             const float cellSize = mClipmap->GetCellSize(tile->LODLevel);
             const float tileWorldSize = (float)mInitInfo.TileSize * cellSize;
             const float skirtDepth = mHeightScaleUI * 0.005f;
+            const float snowBoundsPadding = (std::max)(mSnowDisplacementUI, 0.0f);
 
             const float cullMinHeight = (std::max)(
-                -mHeightScaleUI - skirtDepth,
-                (std::min)(mCullingMinHeightUI, mCullingMaxHeightUI) - mCullingHeightPaddingUI - skirtDepth);
+                -mHeightScaleUI - skirtDepth - snowBoundsPadding,
+                (std::min)(mCullingMinHeightUI, mCullingMaxHeightUI) - mCullingHeightPaddingUI - skirtDepth - snowBoundsPadding);
             const float cullMaxHeight = (std::min)(
-                mHeightScaleUI,
-                (std::max)(mCullingMinHeightUI, mCullingMaxHeightUI) + mCullingHeightPaddingUI);
+                mHeightScaleUI + snowBoundsPadding,
+                (std::max)(mCullingMinHeightUI, mCullingMaxHeightUI) + mCullingHeightPaddingUI + snowBoundsPadding);
             SceneCullingBounds bounds;
             bounds.Min = {
-                (float)tile->RenderGridCoord.x * tileWorldSize,
+                (float)tile->RenderGridCoord.x * tileWorldSize - snowBoundsPadding,
                 cullMinHeight,
-                (float)tile->RenderGridCoord.y * tileWorldSize
+                (float)tile->RenderGridCoord.y * tileWorldSize - snowBoundsPadding
             };
             bounds.Max = {
-                bounds.Min.x + tileWorldSize,
+                (float)tile->RenderGridCoord.x * tileWorldSize + tileWorldSize + snowBoundsPadding,
                 cullMaxHeight,
-                bounds.Min.z + tileWorldSize
+                (float)tile->RenderGridCoord.y * tileWorldSize + tileWorldSize + snowBoundsPadding
             };
 
             SceneCullingItem item;
@@ -1091,6 +1094,7 @@ void ProceduralTerrain::UpdateCulling(GraphicsContext* Context)
     mPrevCullingMaxDepthUI = mCullingMaxDepthUI;
     mPrevCullingMaxItemsPerLeafUI = mCullingMaxItemsPerLeafUI;
     mPrevCullingHeightScaleUI = mHeightScaleUI;
+    mPrevCullingSnowDisplacementUI = mSnowDisplacementUI;
     mPrevCullingMinHeightUI = mCullingMinHeightUI;
     mPrevCullingMaxHeightUI = mCullingMaxHeightUI;
     mPrevCullingHeightPaddingUI = mCullingHeightPaddingUI;
@@ -1939,6 +1943,7 @@ void ProceduralTerrain::DrawUI()
             ImGui::SliderFloat("Stochastic Strength", &mStochasticStrengthUI, 0.0f, 1.0f);
             ImGui::SliderFloat("Snow Height", &mSnowHeightUI, 50.0f, 3000.0f);
             ImGui::SliderFloat("Snow Coverage", &mSnowCoverageUI, 0.0f, 2.0f);
+            ImGui::SliderFloat("Snow Thickness", &mSnowDisplacementUI, 0.0f, 100.0f);
             ImGui::SliderFloat("Stone Slope", &mStoneSlopeUI, 0.1f, 1.0f);
             ImGui::SliderFloat("Grass Coverage", &mGrassCoverageUI, 0.0f, 2.0f);
             ImGui::SliderFloat("Grass Patchiness", &mGrassPatchinessUI, 0.0f, 1.0f);

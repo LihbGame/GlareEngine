@@ -103,6 +103,7 @@ private:
     float mSnowHeightUI = 150.0f;
     float mSnowCoverageUI = 1.0f;
     float mStoneSlopeUI = 0.6f;
+    float mSnowDisplacementUI = 0.0f;
     float mGrassCoverageUI = 1.0f;
     float mGrassPatchinessUI = 0.55f;
     float mGrassMaxSlopeUI = 0.35f;
@@ -172,6 +173,7 @@ private:
     int mPrevCullingMaxDepthUI = 6;
     int mPrevCullingMaxItemsPerLeafUI = 4;
     float mPrevCullingHeightScaleUI = 2000.0f;
+    float mPrevCullingSnowDisplacementUI = 0.0f;
     float mPrevCullingMinHeightUI = -300.0f;
     float mPrevCullingMaxHeightUI = 600.0f;
     float mPrevCullingHeightPaddingUI = 0.0f;

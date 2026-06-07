@@ -317,7 +317,8 @@ __declspec(align(256)) struct ProceduralTerrainConstants
     float       HeightScale         = 200.0f;
     float       TexScale            = 50.0f;
     float       StochasticSharpness = 0.35f;
-    float       _PadTessScale[3]    = {};
+    float       SnowDisplacement    = 0.0f;
+    float       _PadTessScale[2]    = {};
     XMFLOAT4    gWorldFrustumPlanes[6];
     // Per-tile SRV indices set dynamically
     int         HeightMapIndex      = 0;

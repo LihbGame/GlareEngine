@@ -71,7 +71,8 @@ cbuffer ProceduralTerrainCB : register(b1)
     float       gTerrainHeightScale;
     float       gTerrainTexScale;
     float       gStochasticSharpness;
-    float3      _PadTessScale;
+    float       gTerrainSnowDisplacement;
+    float2      _PadTessScale;
     float4      gTerrainFrustumPlanes[6];
     int         gTerrainHeightMapIndex;
     int         gTerrainNormalMapIndex;
