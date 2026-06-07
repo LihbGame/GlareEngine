@@ -76,9 +76,11 @@ ClipmapDomainOut main(
     dout.MatWeights = SampleMaterialWeights(hmUV);
     float snowWeight = saturate(1.0 - dout.MatWeights.r - dout.MatWeights.g - dout.MatWeights.b - dout.MatWeights.a);
     float snowDisplacement = snowWeight * max(gTerrainSnowDisplacement, 0.0);
+    float3 basePosW = float3(worldXZ.x, height, worldXZ.y);
+    float detailDisplacement = SampleTerrainDetailHeightDisplacement(dout.MatWeights, basePosW);
 
-    // Construct world position and expand snow-covered vertices along the terrain normal.
-    dout.PosW = float3(worldXZ.x, height, worldXZ.y) + normal * snowDisplacement;
+    // Construct world position and expand material height details along the terrain normal.
+    dout.PosW = basePosW + normal * (snowDisplacement + detailDisplacement);
     dout.WorldXZ = worldXZ;
 
     // Build tangent from world-space X axis, orthogonalized against normal.

@@ -106,7 +106,8 @@ cbuffer ProceduralTerrainCB : register(b1)
     int         gTerrainUseTriplanar;
     float       gTerrainParallaxHeightScale;
     int         gTerrainUseParallax;
-    float2      _PadParallax;
+    float       gTerrainDetailDisplacementScale;
+    float       _PadParallax;
     int4        gDetailLayerAlbedo[5];
     int4        gDetailLayerNormal[5];
     int4        gDetailLayerRoughness[5];
@@ -467,6 +468,52 @@ float3 SampleTerrainNormal(float2 tileUV)
 float4 SampleMaterialWeights(float2 tileUV)
 {
     return gSRVMap[gTerrainWeightMapIndex].SampleLevel(gSamplerLinearClamp, tileUV, 0);
+}
+
+float SampleTerrainDetailHeightDisplacement(float4 weights, float3 posW)
+{
+    if (gTerrainDetailDisplacementScale <= 0.0)
+    {
+        return 0.0;
+    }
+
+    float detailFade = saturate(1.0 - distance(posW, gTerrainEyePosW) / max(gDetailFadeDistance, 0.001)) * 0.8;
+    if (detailFade <= 0.0001)
+    {
+        return 0.0;
+    }
+
+    float w[5];
+    w[0] = weights.r;
+    w[1] = weights.g;
+    w[2] = weights.b;
+    w[3] = weights.a;
+    w[4] = saturate(1.0 - w[0] - w[1] - w[2] - w[3]);
+
+    float totalWeight = 0.0;
+    float blendedHeight = 0.0;
+    float2 detailUV = posW.xz / max(gDetailScale, 0.001);
+
+    [unroll]
+    for (int i = 0; i < TERRAIN_NUM_LAYERS; ++i)
+    {
+        if (w[i] <= 0.0001 || gTerrainLayerHeight[i].x < 0)
+        {
+            continue;
+        }
+
+        float layerHeight = gSRVMap[gTerrainLayerHeight[i].x].SampleLevel(gSamplerLinearWrap, detailUV, 0).r;
+        blendedHeight += layerHeight * w[i];
+        totalWeight += w[i];
+    }
+
+    if (totalWeight <= 0.0001)
+    {
+        return 0.0;
+    }
+
+    blendedHeight /= totalWeight;
+    return (blendedHeight - 0.5) * gTerrainDetailDisplacementScale * detailFade;
 }
 
 #endif // TERRAIN_COMMON_HLSLI

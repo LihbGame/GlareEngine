@@ -754,6 +754,7 @@ void ProceduralTerrain::UpdateConstantBuffer()
     mConstants.UseTriplanar = mUseTriplanarUI ? 1 : 0;
     mConstants.ParallaxHeightScale = mParallaxHeightScaleUI;
     mConstants.UseTerrainParallax = mUseParallaxUI ? 1 : 0;
+    mConstants.DetailDisplacementScale = mDetailDisplacementScaleUI;
     for (int i = 0; i < 5; i++)
     {
         mConstants.DetailAlbedoIndices[i].Index = mLayerSRVIndices[i][0];    // reuse base albedo
@@ -937,6 +938,7 @@ void ProceduralTerrain::UpdateCulling(GraphicsContext* Context)
         mCullingMaxDepthUI != mPrevCullingMaxDepthUI ||
         mCullingMaxItemsPerLeafUI != mPrevCullingMaxItemsPerLeafUI ||
         mHeightScaleUI != mPrevCullingHeightScaleUI ||
+        mDetailDisplacementScaleUI != mPrevCullingDetailDisplacementScaleUI ||
         mSnowDisplacementUI != mPrevCullingSnowDisplacementUI ||
         mCullingMinHeightUI != mPrevCullingMinHeightUI ||
         mCullingMaxHeightUI != mPrevCullingMaxHeightUI ||
@@ -968,14 +970,16 @@ void ProceduralTerrain::UpdateCulling(GraphicsContext* Context)
             const float cellSize = mClipmap->GetCellSize(tile->LODLevel);
             const float tileWorldSize = (float)mInitInfo.TileSize * cellSize;
             const float skirtDepth = mHeightScaleUI * 0.005f;
+            const float detailDisplacementPadding = fabsf(mDetailDisplacementScaleUI);
             const float snowBoundsPadding = (std::max)(mSnowDisplacementUI, 0.0f);
+            const float displacementPadding = detailDisplacementPadding + snowBoundsPadding;
 
             const float cullMinHeight = (std::max)(
-                -mHeightScaleUI - skirtDepth - snowBoundsPadding,
-                (std::min)(mCullingMinHeightUI, mCullingMaxHeightUI) - mCullingHeightPaddingUI - skirtDepth - snowBoundsPadding);
+                -mHeightScaleUI - skirtDepth - displacementPadding,
+                (std::min)(mCullingMinHeightUI, mCullingMaxHeightUI) - mCullingHeightPaddingUI - skirtDepth - displacementPadding);
             const float cullMaxHeight = (std::min)(
-                mHeightScaleUI + snowBoundsPadding,
-                (std::max)(mCullingMinHeightUI, mCullingMaxHeightUI) + mCullingHeightPaddingUI + snowBoundsPadding);
+                mHeightScaleUI + displacementPadding,
+                (std::max)(mCullingMinHeightUI, mCullingMaxHeightUI) + mCullingHeightPaddingUI + displacementPadding);
             SceneCullingBounds bounds;
             bounds.Min = {
                 (float)tile->RenderGridCoord.x * tileWorldSize - snowBoundsPadding,
@@ -1094,6 +1098,7 @@ void ProceduralTerrain::UpdateCulling(GraphicsContext* Context)
     mPrevCullingMaxDepthUI = mCullingMaxDepthUI;
     mPrevCullingMaxItemsPerLeafUI = mCullingMaxItemsPerLeafUI;
     mPrevCullingHeightScaleUI = mHeightScaleUI;
+    mPrevCullingDetailDisplacementScaleUI = mDetailDisplacementScaleUI;
     mPrevCullingSnowDisplacementUI = mSnowDisplacementUI;
     mPrevCullingMinHeightUI = mCullingMinHeightUI;
     mPrevCullingMaxHeightUI = mCullingMaxHeightUI;
@@ -1951,6 +1956,7 @@ void ProceduralTerrain::DrawUI()
             ImGui::SliderFloat("Grass Moisture Bias", &mGrassMoistureBiasUI, 0.0f, 1.0f);
             ImGui::SliderFloat("Detail Scale", &mDetailScaleUI, 1.0f, 100.0f);
             ImGui::SliderFloat("Detail Fade Dist", &mDetailFadeDistanceUI, 5.0f, 1000.0f);
+            ImGui::SliderFloat("Detail Displacement Scale", &mDetailDisplacementScaleUI, 0.0f, 1.0f);
             ImGui::Checkbox("Height Blend", &mUseHeightBlendUI);
             ImGui::Checkbox("Parallax Mapping", &mUseParallaxUI);
             ImGui::Checkbox("Triplanar Mapping", &mUseTriplanarUI);

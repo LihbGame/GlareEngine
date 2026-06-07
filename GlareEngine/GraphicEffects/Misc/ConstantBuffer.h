@@ -359,7 +359,8 @@ __declspec(align(256)) struct ProceduralTerrainConstants
     int         UseTriplanar             = 1;
     float       ParallaxHeightScale      = 0.012f;
     int         UseTerrainParallax       = 1;
-    float       _PadParallax[2]          = {};
+    float       DetailDisplacementScale  = 0.0f;
+    float       _PadParallax[1]          = {};
     struct { int Index; int _Pad[3]; } DetailAlbedoIndices[5]    = {};
     struct { int Index; int _Pad[3]; } DetailNormalIndices[5]    = {};
     struct { int Index; int _Pad[3]; } DetailRoughnessIndices[5] = {};

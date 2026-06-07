@@ -100,6 +100,7 @@ private:
 
     // ImGui parameters
     float mHeightScaleUI = 500.0f;
+    float mDetailDisplacementScaleUI = 0.0f;
     float mSnowHeightUI = 150.0f;
     float mSnowCoverageUI = 1.0f;
     float mStoneSlopeUI = 0.6f;
@@ -173,6 +174,7 @@ private:
     int mPrevCullingMaxDepthUI = 6;
     int mPrevCullingMaxItemsPerLeafUI = 4;
     float mPrevCullingHeightScaleUI = 2000.0f;
+    float mPrevCullingDetailDisplacementScaleUI = -1.0f;
     float mPrevCullingSnowDisplacementUI = 0.0f;
     float mPrevCullingMinHeightUI = -300.0f;
     float mPrevCullingMaxHeightUI = 600.0f;
