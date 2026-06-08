@@ -185,9 +185,9 @@ ProceduralTerrain::ProceduralTerrain(
 {
     mObjectType = ObjectType::Terrain;
 
-    // Terrain shadow casting is opt-in because it is expensive with cascaded shadow maps.
-    SetShadowFlag(false);
-    SetShadowRenderFlag(false);
+    // Terrain casts into cascaded shadow maps by default.
+    SetShadowFlag(true);
+    SetShadowRenderFlag(true);
 
     // Initialize UI parameters from init info so first frame uses correct values
     mHeightScaleUI = Info.HeightScale;
@@ -969,7 +969,7 @@ void ProceduralTerrain::UpdateCulling(GraphicsContext* Context)
 
             const float cellSize = mClipmap->GetCellSize(tile->LODLevel);
             const float tileWorldSize = (float)mInitInfo.TileSize * cellSize;
-            const float skirtDepth = mHeightScaleUI * 0.005f;
+            const float skirtDepth = mHeightScaleUI * 0.05f;
             const float detailDisplacementPadding = fabsf(mDetailDisplacementScaleUI);
             const float snowBoundsPadding = (std::max)(mSnowDisplacementUI, 0.0f);
             const float displacementPadding = detailDisplacementPadding + snowBoundsPadding;
@@ -1628,7 +1628,7 @@ void ProceduralTerrain::Draw(GraphicsContext& Context, GraphicsPSO* SpecificPSO)
 void ProceduralTerrain::ComputeSkirtFlags(const ClipmapTile* tile)
 {
     mConstants.SkirtEdgeFlags = 0;
-    mConstants.SkirtDepth = mHeightScaleUI * 0.005f;
+    mConstants.SkirtDepth = mHeightScaleUI * 0.05f;
 
     // Only coarser tiles (LOD > 0) can have LOD boundary edges
     if (tile->LODLevel == 0)
@@ -1671,7 +1671,7 @@ void ProceduralTerrain::ComputeSkirtFlags(const ClipmapTile* tile)
 void ProceduralTerrain::ComputeSkirtFlagsFor(const ClipmapTile* tile, ProceduralTerrainConstants& outConstants)
 {
     outConstants.SkirtEdgeFlags = 0;
-    outConstants.SkirtDepth = mHeightScaleUI * 0.005f;
+    outConstants.SkirtDepth = mHeightScaleUI * 0.05f;
 
     if (tile->LODLevel == 0)
         return;
