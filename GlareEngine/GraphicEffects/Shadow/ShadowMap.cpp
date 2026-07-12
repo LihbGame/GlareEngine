@@ -278,7 +278,9 @@ void ShadowMap::DrawCascade(GraphicsContext& Context, vector<RenderObject*> Rend
 			Context.PIXEndEvent();
 		}
 	}
-	Context.TransitionResource(shadowBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
+	Context.TransitionResource(shadowBuffer,
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+		true);
 }
 
 void ShadowMap::InitMaterial()

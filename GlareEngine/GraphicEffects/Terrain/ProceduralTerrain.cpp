@@ -270,13 +270,6 @@ ProceduralTerrain::ProceduralTerrain(
     mCBGPU = mConstantBuffer->GetGPUVirtualAddress();
     ThrowIfFailed(mConstantBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mMappedCB)));
 
-    // Create shadow pass constant buffer (separate ring buffer to prevent main pass overwrite)
-    ThrowIfFailed(g_Device->CreateCommittedResource(
-        &uploadHeap, D3D12_HEAP_FLAG_NONE, &cbDesc,
-        D3D12_RESOURCE_STATE_GENERIC_READ,
-        nullptr, IID_PPV_ARGS(&mShadowConstantBuffer)));
-    mShadowCBGPU = mShadowConstantBuffer->GetGPUVirtualAddress();
-    ThrowIfFailed(mShadowConstantBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mMappedShadowCB)));
 }
 
 ProceduralTerrain::~ProceduralTerrain()
@@ -285,11 +278,6 @@ ProceduralTerrain::~ProceduralTerrain()
     {
         mConstantBuffer->Unmap(0, nullptr);
         mMappedCB = nullptr;
-    }
-    if (mShadowConstantBuffer && mMappedShadowCB)
-    {
-        mShadowConstantBuffer->Unmap(0, nullptr);
-        mMappedShadowCB = nullptr;
     }
 }
 
@@ -1742,10 +1730,6 @@ void ProceduralTerrain::DrawShadow(GraphicsContext& Context, GraphicsPSO* Specif
     ExtractFrustumPlanes(lightFrustumPlanes, shadowVP);
     memcpy(mShadowConstants.gWorldFrustumPlanes, lightFrustumPlanes, sizeof(lightFrustumPlanes));
 
-    const UINT cbAlignedSize = Math::AlignUp(sizeof(ProceduralTerrainConstants), 256u);
-    const UINT cRingBufferSize = 256;
-    UINT ringIndex = 0;
-
     vector<ClipmapTile*> shadowVisibleTiles;
     if (mEnableQuadtreeCullingUI)
     {
@@ -1773,13 +1757,8 @@ void ProceduralTerrain::DrawShadow(GraphicsContext& Context, GraphicsPSO* Specif
 
         ComputeSkirtFlagsFor(tile, mShadowConstants);
 
-        // Upload to shadow ring buffer (separate from main pass ring buffer)
-        memcpy(mMappedShadowCB + ringIndex * cbAlignedSize, &mShadowConstants, sizeof(ProceduralTerrainConstants));
-
-        D3D12_GPU_VIRTUAL_ADDRESS tileCBAddr = mShadowCBGPU + ringIndex * cbAlignedSize;
-        ringIndex = (ringIndex + 1) % cRingBufferSize;
-
-        Context.SetConstantBuffer(1, tileCBAddr);
+        // Allocate immutable per-draw constants for the lifetime of this command context.
+        Context.SetDynamicConstantBufferView(1, sizeof(ProceduralTerrainConstants), &mShadowConstants);
 
         // Transition tile resources for reading
         if (tile->NeedsSRVTransition)

@@ -73,11 +73,8 @@ private:
     D3D12_GPU_VIRTUAL_ADDRESS  mCBGPU = 0;
     uint8_t*                   mMappedCB = nullptr;
 
-    // Shadow pass constant buffer (separate to avoid ring buffer overwrite by main pass)
+    // Shadow pass constants are uploaded per draw through the command context allocator.
     ProceduralTerrainConstants mShadowConstants;
-    ComPtr<ID3D12Resource>     mShadowConstantBuffer;
-    D3D12_GPU_VIRTUAL_ADDRESS  mShadowCBGPU = 0;
-    uint8_t*                   mMappedShadowCB = nullptr;
 
     // Material layer SRV indices: [layer][albedo, normal, roughness, metallic, AO]
     int mLayerSRVIndices[5][5] = {};

@@ -538,7 +538,9 @@ void Scene::CreateTerrainShadowMap(GraphicsContext& Context, UINT cascadeIndex)
 
 	// Restore scene root signature because terrain shadow rendering owns its own signature.
 	Context.SetRootSignature(*m_pRootSignature);
-	Context.TransitionResource(shadowBuf, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
+	Context.TransitionResource(shadowBuf,
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+		true);
 }
 
 void Scene::ForwardRendering()
